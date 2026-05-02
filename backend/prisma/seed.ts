@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { ensureAdminRbacSeeded } from '../src/admin/seed/ensure-admin-rbac';
 
 const prisma = new PrismaClient();
 
@@ -61,6 +62,9 @@ async function main() {
       metadata: {},
     },
   });
+
+  await ensureAdminRbacSeeded(prisma);
+  console.log('Seed: admin RBAC (permissions + super-admin, manager, support roles).');
 
   console.log('Seed completed: Default shipping zone, Standard Shipping (99 PKR), and COD payment method.');
 }

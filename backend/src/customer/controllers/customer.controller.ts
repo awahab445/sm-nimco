@@ -11,9 +11,9 @@ import {
 } from '@nestjs/common';
 import { CustomerService } from '../services/customer.service';
 import { UpdateCustomerDto } from '../dto/update-customer.dto';
-import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { CustomerJwtAuthGuard } from '../../auth/guards/customer-jwt-auth.guard';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
-import type { JwtValidatePayload } from '../../auth/strategies/jwt.strategy';
+import type { CustomerJwtPayload } from '../../auth/strategies/jwt.strategy';
 
 @Controller('customers')
 export class CustomerController {
@@ -50,8 +50,8 @@ export class CustomerController {
    * Get current authenticated customer's profile. Requires Bearer token.
    */
   @Get('me')
-  @UseGuards(JwtAuthGuard)
-  async getMe(@CurrentUser() user: JwtValidatePayload) {
+  @UseGuards(CustomerJwtAuthGuard)
+  async getMe(@CurrentUser() user: CustomerJwtPayload) {
     return this.customerService.findMe(user.customerId);
   }
 
@@ -60,10 +60,10 @@ export class CustomerController {
    * Update current authenticated customer's profile. Requires Bearer token.
    */
   @Patch('me')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(CustomerJwtAuthGuard)
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
   async updateMe(
-    @CurrentUser() user: JwtValidatePayload,
+    @CurrentUser() user: CustomerJwtPayload,
     @Body() updateDto: UpdateCustomerDto,
   ) {
     return this.customerService.updateMe(user.customerId, updateDto);

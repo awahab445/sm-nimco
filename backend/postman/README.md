@@ -13,6 +13,7 @@ This folder contains a **Postman collection** for the Ecommerce Platform backend
 ## Configuration
 
 - **Base URL**: The collection variable `baseUrl` defaults to `http://localhost:3000`. Change it in the collection variables if your API runs elsewhere (e.g. `http://localhost:4000`).
+- **Staff admin**: `admin_access_token` and `admin_role_id` are set automatically by Tests on **Admin (staff)** requests where noted. Use **Bootstrap — first super-admin** once (after `prisma migrate` + `npm run seed`) when `admin_users` is empty, or **Admin — Login** afterward.
 - **Path variables**: Set these as you get IDs from responses:
   - `cartId` – from **Cart → Create cart**
   - `checkoutId` – from **Checkout → Start checkout**
@@ -25,6 +26,7 @@ You can set variables at collection level: click the collection → **Variables*
 
 ## Suggested verification order
 
+0. **Admin (staff)** – Bootstrap first super-admin (or login), then List roles / Create user as needed.
 1. **App** – Root (sanity check).
 2. **Tax** – Create tax class + tax (needed for checkout tax calculation).
 3. **Admin - Customer groups** – Create default/wholesale group if needed.
@@ -35,7 +37,7 @@ You can set variables at collection level: click the collection → **Variables*
 8. **Orders** – Get order by ID, list orders.
 9. **Payments** – Get methods, get payment by order.
 10. **Promotions** – Create promotion, validate.
-11. Remaining **Admin** and **Customers** endpoints as needed.
+11. Remaining catalog/admin and **Customers** endpoints as needed.
 
 ## Notes
 

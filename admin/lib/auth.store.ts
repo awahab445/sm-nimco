@@ -1,9 +1,9 @@
 import { create } from 'zustand';
-import { authService, type LoginCredentials, type User } from './auth.service';
+import { authService, type LoginCredentials, type AdminUser } from './auth.service';
 import { clearToken } from './auth-token';
 
 interface AuthState {
-  user: User | null;
+  user: AdminUser | null;
   isLoading: boolean;
   isAuthenticated: boolean;
   error: string | null;

@@ -13,9 +13,9 @@ import {
 import { OrderService } from '../services/order.service';
 import { CreateOrderDto } from '../dto/create-order.dto';
 import { OrderQueryDto } from '../dto/order-query.dto';
-import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { CustomerJwtAuthGuard } from '../../auth/guards/customer-jwt-auth.guard';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
-import type { JwtValidatePayload } from '../../auth/strategies/jwt.strategy';
+import type { CustomerJwtPayload } from '../../auth/strategies/jwt.strategy';
 
 @Controller('orders')
 export class OrderController {
@@ -44,10 +44,10 @@ export class OrderController {
    * GET /orders/my
    */
   @Get('my')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(CustomerJwtAuthGuard)
   async findMyOrders(
     @Query() query: OrderQueryDto,
-    @CurrentUser() user: JwtValidatePayload,
+    @CurrentUser() user: CustomerJwtPayload,
   ) {
     return this.orderService.findAll(query, user.customerId);
   }

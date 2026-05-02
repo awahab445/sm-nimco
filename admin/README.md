@@ -1,6 +1,6 @@
 # Ecommerce admin (Next.js)
 
-Standalone admin UI for the ecommerce platform. **Module A** provides foundation and authentication against the existing backend (`POST /auth/login`, `GET /auth/me`, `POST /auth/logout`).
+Standalone admin UI for the ecommerce platform. **Module A** authenticates staff users against **`POST /admin/auth/login`**, **`GET /admin/auth/me`**, **`POST /admin/auth/logout`** (JWT includes `typ: "admin"`). Storefront customers continue to use `/auth/*`.
 
 ## Requirements
 
@@ -28,14 +28,16 @@ Open [http://localhost:3002](http://localhost:3002). Unauthenticated requests ar
 
 ## CORS
 
-Ensure the backend allows this origin. For example, if the API reads `CORS_ORIGIN` (comma-separated), include:
+In **`backend/.env`**, set `CORS_ORIGIN` to a **comma-separated** list of every browser origin that calls the API. For storefront + admin on the default ports:
 
-`http://localhost:3002`
+`CORS_ORIGIN=http://localhost:3001,http://localhost:3002`
+
+If `CORS_ORIGIN` is omitted, the API defaults to both URLs above. **Restart the Nest server** after changing `.env`. A value of only `http://localhost:3001` will block the admin app on port 3002.
 
 ## Auth notes
 
 - JWT is stored in **localStorage** and an **`admin-auth-token`** cookie (7-day `max-age`) so refreshes keep the session and middleware can gate routes.
-- v1 uses the same customer JWT as the storefront until the API adds admin-only roles; navigation or API errors may later be gated with an “Access denied” page.
+- Create the first staff account after migrate + seed: **`POST /admin/bootstrap/first-user`** with `email`, `password`, optional names. Then sign in via **`POST /admin/auth/login`**. Additional users: **`POST /admin/users`** (requires `admin.users.create`). Roles: **`GET /admin/roles`** (`admin.roles.read`).
 
 ## Project layout
 

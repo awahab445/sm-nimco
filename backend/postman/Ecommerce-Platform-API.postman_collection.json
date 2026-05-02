@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Ecommerce Platform API",
-    "description": "API collection for the ecommerce platform backend. Use to verify all endpoints before building the frontend.\n\n**Setup:** Set `baseUrl` to your API root (default: http://localhost:3000).",
+    "description": "API collection for the ecommerce platform backend. Use to verify all endpoints before building the frontend.\n\n**Setup:** Set `baseUrl` to your API root (default: http://localhost:3000).\n\n**Staff admin:** Apply migration `20260502120000_admin_rbac`, then **Admin (staff) → Bootstrap — first super-admin** (or **Admin login**). If roles were never seeded, the API creates permissions/roles on first bootstrap. `npm run seed` still recommended for shipping/COD defaults. Collection vars `admin_access_token` / `admin_role_id` are set by Tests where noted. Customer JWT: `access_token`.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -43,6 +43,14 @@
     },
     {
       "key": "access_token",
+      "value": ""
+    },
+    {
+      "key": "admin_access_token",
+      "value": ""
+    },
+    {
+      "key": "admin_role_id",
       "value": ""
     },
     {
@@ -126,6 +134,132 @@
             "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
             "url": "{{baseUrl}}/auth/logout",
             "description": "Logout. Client should discard token. Returns success message."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin (staff)",
+      "description": "RBAC staff APIs. **Requires** DB migration `20260502120000_admin_rbac`. Permissions and system roles are created automatically on first bootstrap if missing (or run `npm run seed`). **First user:** **Bootstrap — first super-admin** only when `admin_users` is empty. JWT `typ: \"admin\"` — use `admin_access_token`.",
+      "item": [
+        {
+          "name": "Bootstrap — first super-admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "  const json = pm.response.json();",
+                  "  if (json.access_token) {",
+                  "    pm.collectionVariables.set('admin_access_token', json.access_token);",
+                  "  }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"ChangeMeSecure123!\",\n  \"firstName\": \"Super\",\n  \"lastName\": \"Admin\"\n}"
+            },
+            "url": "{{baseUrl}}/admin/bootstrap/first-user",
+            "description": "Creates the first staff user with **super-admin** role and returns `access_token` + `user` (same as login). **Allowed only when there are zero admin users.** Tests save `access_token` → collection var `admin_access_token`."
+          }
+        },
+        {
+          "name": "Admin — Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const json = pm.response.json();",
+                  "  if (json.access_token) {",
+                  "    pm.collectionVariables.set('admin_access_token', json.access_token);",
+                  "  }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"ChangeMeSecure123!\"\n}"
+            },
+            "url": "{{baseUrl}}/admin/auth/login",
+            "description": "Staff login. Response includes `user.roles`, `user.permissions`, `user.typ: \"admin\"`. Tests save token to `admin_access_token`."
+          }
+        },
+        {
+          "name": "Admin — Get me",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_access_token}}" }],
+            "url": "{{baseUrl}}/admin/auth/me",
+            "description": "Current staff profile + roles + effective permission keys. Requires `admin_access_token`."
+          }
+        },
+        {
+          "name": "Admin — Logout",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_access_token}}" }],
+            "url": "{{baseUrl}}/admin/auth/logout",
+            "description": "Stateless logout message. Clear `admin_access_token` locally if you want."
+          }
+        },
+        {
+          "name": "Admin — List roles",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const roles = pm.response.json();",
+                  "  if (Array.isArray(roles)) {",
+                  "    const sup = roles.find((r) => r.slug === 'super-admin');",
+                  "    if (sup && sup.id) {",
+                  "      pm.collectionVariables.set('admin_role_id', sup.id);",
+                  "    }",
+                  "  }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_access_token}}" }],
+            "url": "{{baseUrl}}/admin/roles",
+            "description": "Requires permission `admin.roles.read`. Returns roles with nested permissions. Tests set `admin_role_id` to **super-admin** id for the Create admin user request."
+          }
+        },
+        {
+          "name": "Admin — Create user",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"staff@example.com\",\n  \"password\": \"AnotherSecure123!\",\n  \"firstName\": \"Staff\",\n  \"lastName\": \"User\",\n  \"roleIds\": [\"{{admin_role_id}}\"]\n}"
+            },
+            "url": "{{baseUrl}}/admin/users",
+            "description": "Requires permission `admin.users.create`. Run **List roles** first so `admin_role_id` is set, or paste UUIDs from that response into `roleIds`."
           }
         }
       ]

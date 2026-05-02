@@ -15,11 +15,13 @@ import { CustomerModule } from './customer/customer.module';
 import { CustomerGroupModule } from './customer-group/customer-group.module';
 import { AuthModule } from './auth/auth.module';
 import { AddressModule } from './address/address.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
     EventEmitterModule.forRoot(),
     AuthModule,
+    AdminModule,
     CatalogModule,
     InventoryModule,
     CartModule,

@@ -14,9 +14,13 @@ import { MailService } from './mail.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 
+export type JwtPrincipalType = 'customer' | 'admin';
+
+/** JWT claims. Omit `typ` for legacy customer tokens (treated as customer). */
 export interface JwtPayload {
   sub: string;
   email: string;
+  typ?: JwtPrincipalType;
 }
 
 export interface AuthResponse {
@@ -242,6 +246,7 @@ export class AuthService {
     const payload: JwtPayload = {
       sub: customer.id,
       email: customer.email,
+      typ: 'customer',
     };
     const access_token = this.jwtService.sign(payload);
 

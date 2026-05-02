@@ -8,6 +8,7 @@ import {
   UseGuards,
   UsePipes,
   ValidationPipe,
+  ForbiddenException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
@@ -89,6 +90,11 @@ export class AuthController {
   @Get('me')
   @UseGuards(JwtAuthGuard)
   async me(@CurrentUser() user: JwtValidatePayload) {
+    if (user.typ !== 'customer') {
+      throw new ForbiddenException(
+        'Customer session required. Admin users should use GET /admin/auth/me.',
+      );
+    }
     return this.authService.getProfile(user.customerId);
   }
 }

@@ -13,12 +13,12 @@ import {
 import { AddressService } from './address.service';
 import { CreateAddressDto } from './dto/create-address.dto';
 import { UpdateAddressDto } from './dto/update-address.dto';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CustomerJwtAuthGuard } from '../auth/guards/customer-jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
-import type { JwtValidatePayload } from '../auth/strategies/jwt.strategy';
+import type { CustomerJwtPayload } from '../auth/strategies/jwt.strategy';
 
 @Controller('addresses')
-@UseGuards(JwtAuthGuard)
+@UseGuards(CustomerJwtAuthGuard)
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 export class AddressController {
   constructor(private readonly addressService: AddressService) {}
@@ -28,7 +28,7 @@ export class AddressController {
    * List all saved addresses for the current customer.
    */
   @Get()
-  findAll(@CurrentUser() user: JwtValidatePayload) {
+  findAll(@CurrentUser() user: CustomerJwtPayload) {
     return this.addressService.findAll(user.customerId);
   }
 
@@ -37,7 +37,7 @@ export class AddressController {
    * Get a single address by id (must belong to current customer).
    */
   @Get(':id')
-  findOne(@CurrentUser() user: JwtValidatePayload, @Param('id') id: string) {
+  findOne(@CurrentUser() user: CustomerJwtPayload, @Param('id') id: string) {
     return this.addressService.findOne(user.customerId, id);
   }
 
@@ -47,7 +47,7 @@ export class AddressController {
    */
   @Post()
   create(
-    @CurrentUser() user: JwtValidatePayload,
+    @CurrentUser() user: CustomerJwtPayload,
     @Body() createAddressDto: CreateAddressDto,
   ) {
     return this.addressService.create(user.customerId, createAddressDto);
@@ -59,7 +59,7 @@ export class AddressController {
    */
   @Patch(':id')
   update(
-    @CurrentUser() user: JwtValidatePayload,
+    @CurrentUser() user: CustomerJwtPayload,
     @Param('id') id: string,
     @Body() updateAddressDto: UpdateAddressDto,
   ) {
@@ -71,7 +71,7 @@ export class AddressController {
    * Delete an address (must belong to current customer).
    */
   @Delete(':id')
-  remove(@CurrentUser() user: JwtValidatePayload, @Param('id') id: string) {
+  remove(@CurrentUser() user: CustomerJwtPayload, @Param('id') id: string) {
     return this.addressService.remove(user.customerId, id);
   }
 
@@ -81,7 +81,7 @@ export class AddressController {
    */
   @Post(':id/default-billing')
   setDefaultBilling(
-    @CurrentUser() user: JwtValidatePayload,
+    @CurrentUser() user: CustomerJwtPayload,
     @Param('id') id: string,
   ) {
     return this.addressService.setDefaultBilling(user.customerId, id);
@@ -93,7 +93,7 @@ export class AddressController {
    */
   @Post(':id/default-shipping')
   setDefaultShipping(
-    @CurrentUser() user: JwtValidatePayload,
+    @CurrentUser() user: CustomerJwtPayload,
     @Param('id') id: string,
   ) {
     return this.addressService.setDefaultShipping(user.customerId, id);

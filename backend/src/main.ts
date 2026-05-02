@@ -2,11 +2,25 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 
+/** Comma-separated in CORS_ORIGIN, e.g. storefront + admin: http://localhost:3001,http://localhost:3002 */
+function corsOriginsFromEnv(): string | string[] {
+  const fallback = 'http://localhost:3001,http://localhost:3002';
+  const raw = process.env.CORS_ORIGIN?.trim() || fallback;
+  const list = raw
+    .split(',')
+    .map((o) => o.trim())
+    .filter(Boolean);
+  if (list.length === 0) {
+    return fallback.split(',')[0].trim();
+  }
+  return list.length === 1 ? list[0] : list;
+}
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.enableCors({
-    origin: process.env.CORS_ORIGIN || 'http://localhost:3001',
+    origin: corsOriginsFromEnv(),
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
