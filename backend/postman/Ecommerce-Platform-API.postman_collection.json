@@ -1,0 +1,1591 @@
+{
+  "info": {
+    "name": "Ecommerce Platform API",
+    "description": "API collection for the ecommerce platform backend. Use to verify all endpoints before building the frontend.\n\n**Setup:** Set `baseUrl` to your API root (default: http://localhost:3000).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    },
+    {
+      "key": "cartId",
+      "value": ""
+    },
+    {
+      "key": "checkoutId",
+      "value": ""
+    },
+    {
+      "key": "orderId",
+      "value": ""
+    },
+    {
+      "key": "orderNumber",
+      "value": "ORD-001"
+    },
+    {
+      "key": "productId",
+      "value": ""
+    },
+    {
+      "key": "variantId",
+      "value": ""
+    },
+    {
+      "key": "promotionId",
+      "value": ""
+    },
+    {
+      "key": "paymentId",
+      "value": ""
+    },
+    {
+      "key": "access_token",
+      "value": ""
+    },
+    {
+      "key": "addressId",
+      "value": ""
+    },
+    {
+      "key": "categoryId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"customer@example.com\",\n  \"password\": \"password123\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/register",
+            "description": "Create account. Returns access_token and user. Save access_token to {{access_token}} for protected routes."
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"customer@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/login",
+            "description": "Authenticate. Returns access_token and user. Save access_token to {{access_token}}."
+          }
+        },
+        {
+          "name": "Get me (profile)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": "{{baseUrl}}/auth/me",
+            "description": "Current user profile. Requires Bearer token."
+          }
+        },
+        {
+          "name": "Request account creation",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"customer@example.com\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/request-account-creation",
+            "description": "Send email with link to set password and create account (guest checkout flow)."
+          }
+        },
+        {
+          "name": "Set password",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"<token-from-email-link>\",\n  \"password\": \"newSecurePassword123\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/set-password",
+            "description": "Set password using token from email. Returns access_token and user (logged in)."
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": "{{baseUrl}}/auth/logout",
+            "description": "Logout. Client should discard token. Returns success message."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Addresses",
+      "item": [
+        {
+          "name": "List my addresses",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": "{{baseUrl}}/addresses",
+            "description": "List all saved addresses for the current customer. Requires Bearer token."
+          }
+        },
+        {
+          "name": "Create address",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"label\": \"Home\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"addressLine1\": \"123 Main St\",\n  \"addressLine2\": \"Apt 4\",\n  \"city\": \"New York\",\n  \"state\": \"NY\",\n  \"postalCode\": \"10001\",\n  \"country\": \"US\",\n  \"phone\": \"+15551234567\",\n  \"isDefaultBilling\": true,\n  \"isDefaultShipping\": true\n}"
+            },
+            "url": "{{baseUrl}}/addresses",
+            "description": "Create a new saved address. Optional: label, company, addressLine2, phone, isDefaultBilling, isDefaultShipping."
+          }
+        },
+        {
+          "name": "Get address by id",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": "{{baseUrl}}/addresses/{{addressId}}",
+            "description": "Get one address by id. Requires Bearer token. Set addressId from create response."
+          }
+        },
+        {
+          "name": "Update address",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"label\": \"Office\",\n  \"city\": \"Brooklyn\",\n  \"state\": \"NY\",\n  \"postalCode\": \"11201\"\n}"
+            },
+            "url": "{{baseUrl}}/addresses/{{addressId}}",
+            "description": "Update an address. Partial body allowed. Set addressId."
+          }
+        },
+        {
+          "name": "Set default billing",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": "{{baseUrl}}/addresses/{{addressId}}/default-billing",
+            "description": "Set this address as the default billing address. Set addressId."
+          }
+        },
+        {
+          "name": "Set default shipping",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": "{{baseUrl}}/addresses/{{addressId}}/default-shipping",
+            "description": "Set this address as the default shipping address. Set addressId."
+          }
+        },
+        {
+          "name": "Delete address",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": "{{baseUrl}}/addresses/{{addressId}}",
+            "description": "Delete an address. Set addressId."
+          }
+        }
+      ]
+    },
+    {
+      "name": "App",
+      "item": [
+        {
+          "name": "Root",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/",
+            "description": "Health/root endpoint"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cart",
+      "item": [
+        {
+          "name": "Create cart",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": "{{baseUrl}}/cart",
+            "description": "Creates a new cart. Returns cart with id; save as {{cartId}} for subsequent requests."
+          }
+        },
+        {
+          "name": "Get cart",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/cart/{{cartId}}",
+            "description": "Get cart by ID"
+          }
+        },
+        {
+          "name": "Add item to cart",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"{{productId}}\",\n  \"variantId\": \"{{variantId}}\",\n  \"quantity\": 1\n}"
+            },
+            "url": "{{baseUrl}}/cart/{{cartId}}/items",
+            "description": "Add product variant to cart. productId, variantId are UUIDs from products API."
+          }
+        },
+        {
+          "name": "Update cart item",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 2\n}"
+            },
+            "url": "{{baseUrl}}/cart/{{cartId}}/items/{{variantId}}",
+            "description": "Update quantity for a variant in the cart"
+          }
+        },
+        {
+          "name": "Remove cart item",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/cart/{{cartId}}/items/{{variantId}}",
+            "description": "Remove a variant from the cart"
+          }
+        },
+        {
+          "name": "Clear cart",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/cart/{{cartId}}",
+            "description": "Clear cart and release inventory reservations"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Checkout",
+      "item": [
+        {
+          "name": "Start checkout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cartId\": \"{{cartId}}\",\n  \"customerEmail\": \"customer@example.com\",\n  \"customerId\": null\n}"
+            },
+            "url": "{{baseUrl}}/checkout/start",
+            "description": "Start checkout from cart. Returns checkoutId; save as {{checkoutId}}."
+          }
+        },
+        {
+          "name": "Get checkout",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/checkout/{{checkoutId}}",
+            "description": "Get checkout session"
+          }
+        },
+        {
+          "name": "Update addresses",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"billingAddress\": {\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\",\n    \"addressLine1\": \"123 Main St\",\n    \"city\": \"New York\",\n    \"state\": \"NY\",\n    \"postalCode\": \"10001\",\n    \"country\": \"US\"\n  },\n  \"shippingAddress\": {\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\",\n    \"addressLine1\": \"123 Main St\",\n    \"city\": \"New York\",\n    \"state\": \"NY\",\n    \"postalCode\": \"10001\",\n    \"country\": \"US\"\n  }\n}"
+            },
+            "url": "{{baseUrl}}/checkout/{{checkoutId}}/address",
+            "description": "Set billing and/or shipping address"
+          }
+        },
+        {
+          "name": "Update shipping method",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"methodId\": \"<shipping-method-uuid>\",\n  \"methodName\": \"Standard\",\n  \"cost\": 5.99,\n  \"currency\": \"USD\",\n  \"estimatedDays\": 3\n}"
+            },
+            "url": "{{baseUrl}}/checkout/{{checkoutId}}/shipping",
+            "description": "Set shipping method (use methodId from shipping/calculate)"
+          }
+        },
+        {
+          "name": "Set guest customer",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerEmail\": \"guest@example.com\"\n}"
+            },
+            "url": "{{baseUrl}}/checkout/{{checkoutId}}/customer",
+            "description": "Set guest customer by email (get-or-create). Use when guest enters email at checkout."
+          }
+        },
+        {
+          "name": "Apply coupon",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"couponCode\": \"SAVE10\"\n}"
+            },
+            "url": "{{baseUrl}}/checkout/{{checkoutId}}/coupon",
+            "description": "Apply coupon. Send { \"couponCode\": \"\" } to clear."
+          }
+        },
+        {
+          "name": "Update checkout item quantity",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 2\n}"
+            },
+            "url": "{{baseUrl}}/checkout/{{checkoutId}}/items/{{variantId}}",
+            "description": "Update item quantity. Send quantity 0 to remove."
+          }
+        },
+        {
+          "name": "Confirm checkout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerEmail\": \"customer@example.com\",\n  \"customerName\": \"John Doe\",\n  \"paymentMethodCode\": \"cod\",\n  \"notes\": \"Leave at door\"\n}"
+            },
+            "url": "{{baseUrl}}/checkout/{{checkoutId}}/confirm",
+            "description": "Confirm and create order. paymentMethodCode: e.g. cod, stripe."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "Create order (from cart)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cartId\": \"{{cartId}}\",\n  \"customerEmail\": \"customer@example.com\",\n  \"customerName\": \"John Doe\",\n  \"billingAddress\": {\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\",\n    \"addressLine1\": \"123 Main St\",\n    \"city\": \"New York\",\n    \"state\": \"NY\",\n    \"postalCode\": \"10001\",\n    \"country\": \"US\"\n  },\n  \"shippingAddress\": {\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\",\n    \"addressLine1\": \"123 Main St\",\n    \"city\": \"New York\",\n    \"state\": \"NY\",\n    \"postalCode\": \"10001\",\n    \"country\": \"US\"\n  }\n}"
+            },
+            "url": "{{baseUrl}}/orders",
+            "description": "Create order directly from cart (alternative to checkout flow)"
+          }
+        },
+        {
+          "name": "Get my orders",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/orders/my?page=1&limit=20",
+            "description": "Requires auth (customerId in session/JWT)"
+          }
+        },
+        {
+          "name": "Get order by ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/orders/{{orderId}}",
+            "description": "Get single order"
+          }
+        },
+        {
+          "name": "Get order by number",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/orders/number/ORD-001",
+            "description": "Get order by order number (e.g. ORD-001)"
+          }
+        },
+        {
+          "name": "List orders",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/orders?page=1&limit=20&status=pending&sortBy=createdAt&sortOrder=desc",
+            "description": "List orders with optional filters: status, paymentStatus, page, limit, sortBy, sortOrder"
+          }
+        },
+        {
+          "name": "List orders by customer email (guest lookup)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/orders?customerEmail=customer@example.com&limit=200&sortBy=createdAt&sortOrder=desc",
+            "description": "Guest order lookup: list orders by email (no auth). Use with order number to find one order."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Products",
+      "item": [
+        {
+          "name": "List products",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/products?page=1&limit=20&search=&minPrice=&maxPrice=&category=",
+            "description": "Query: page, limit, search, minPrice, maxPrice, category (UUID)"
+          }
+        },
+        {
+          "name": "Get product by ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/products/id/{{productId}}",
+            "description": "Get product by UUID"
+          }
+        },
+        {
+          "name": "Get product by slug",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/products/my-product-slug",
+            "description": "Get product by URL slug"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Categories",
+      "item": [
+        {
+          "name": "List categories",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/categories?tree=false",
+            "description": "List active categories (flat). Optional: ?tree=true for nested, ?parentId= for children."
+          }
+        },
+        {
+          "name": "Get category by slug",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/categories/slug/electronics",
+            "description": "Get one category by slug for storefront category page."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Inventory",
+      "item": [
+        {
+          "name": "Get availability",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/inventory/availability?variantIds={{variantId}}",
+            "description": "Get available quantity per variant. Query: variantIds comma-separated (e.g. variantIds=id1,id2). For simple products use product id."
+          }
+        },
+        {
+          "name": "Reserve stock",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"variantId\": \"{{variantId}}\",\n  \"quantity\": 1,\n  \"referenceType\": \"cart\",\n  \"referenceId\": \"{{cartId}}\",\n  \"expiresInMinutes\": 15\n}"
+            },
+            "url": "{{baseUrl}}/inventory/reserve",
+            "description": "Reserve inventory (called by cart when adding item). referenceType: cart | order."
+          }
+        },
+        {
+          "name": "Release stock",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reservationId\": \"<reservation-uuid>\",\n  \"referenceType\": \"cart\",\n  \"referenceId\": \"{{cartId}}\"\n}"
+            },
+            "url": "{{baseUrl}}/inventory/release",
+            "description": "Release a reservation"
+          }
+        },
+        {
+          "name": "Consume stock",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reservationId\": \"<reservation-uuid>\"\n}"
+            },
+            "url": "{{baseUrl}}/inventory/consume",
+            "description": "Consume reserved stock (e.g. after order placed)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Promotions",
+      "item": [
+        {
+          "name": "Create promotion",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"SAVE10\",\n  \"name\": \"10% off\",\n  \"type\": \"percentage\",\n  \"scope\": \"cart\",\n  \"discountValue\": 10,\n  \"discountType\": \"percentage\",\n  \"startDate\": \"2025-01-01T00:00:00Z\",\n  \"endDate\": \"2025-12-31T23:59:59Z\"\n}"
+            },
+            "url": "{{baseUrl}}/promotions",
+            "description": "type: percentage | fixed_amount | buy_x_get_y | free_shipping; scope: cart | product | category"
+          }
+        },
+        {
+          "name": "Get promotion by ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/promotions/{{promotionId}}"
+          }
+        },
+        {
+          "name": "List promotions",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/promotions"
+          }
+        },
+        {
+          "name": "Validate promotion",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cartId\": \"{{cartId}}\",\n  \"couponCode\": \"SAVE10\",\n  \"customerGroupId\": null\n}"
+            },
+            "url": "{{baseUrl}}/promotions/{{promotionId}}/validate",
+            "description": "Check if promotion applies to cart/checkout"
+          }
+        },
+        {
+          "name": "Get promotion logs",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/promotions/{{promotionId}}/logs?cartId=&checkoutId=&orderId="
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tax",
+      "item": [
+        {
+          "name": "Create tax class",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"standard\",\n  \"name\": \"Standard Rate\",\n  \"description\": \"Default tax class\"\n}"
+            },
+            "url": "{{baseUrl}}/tax/classes"
+          }
+        },
+        {
+          "name": "List tax classes",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/tax/classes"
+          }
+        },
+        {
+          "name": "Get tax class",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/tax/classes/:id"
+          }
+        },
+        {
+          "name": "Update tax class",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Standard VAT\"\n}"
+            },
+            "url": "{{baseUrl}}/tax/classes/:id"
+          }
+        },
+        {
+          "name": "Delete tax class",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/tax/classes/:id"
+          }
+        },
+        {
+          "name": "Create tax",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"taxClassId\": \"<tax-class-uuid>\",\n  \"country\": \"US\",\n  \"region\": \"NY\",\n  \"rate\": 8.5,\n  \"isInclusive\": false,\n  \"isActive\": true\n}"
+            },
+            "url": "{{baseUrl}}/tax/taxes"
+          }
+        },
+        {
+          "name": "List taxes",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/tax/taxes"
+          }
+        },
+        {
+          "name": "Get tax",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/tax/taxes/:id"
+          }
+        },
+        {
+          "name": "Update tax",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rate\": 9\n}"
+            },
+            "url": "{{baseUrl}}/tax/taxes/:id"
+          }
+        },
+        {
+          "name": "Delete tax",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/tax/taxes/:id"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Payments",
+      "item": [
+        {
+          "name": "Create payment intent",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderId\": \"{{orderId}}\",\n  \"paymentMethodCode\": \"stripe\",\n  \"returnUrl\": \"https://example.com/success\",\n  \"cancelUrl\": \"https://example.com/cancel\"\n}"
+            },
+            "url": "{{baseUrl}}/payments/intent",
+            "description": "Create Stripe (or other) payment intent for an order"
+          }
+        },
+        {
+          "name": "Payment callback",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": "{{baseUrl}}/payments/callback/stripe",
+            "description": "Gateway callback (provider: stripe, cod, etc.)"
+          }
+        },
+        {
+          "name": "Get payment methods",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/payments/methods"
+          }
+        },
+        {
+          "name": "Get payment by ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/payments/:id"
+          }
+        },
+        {
+          "name": "Get payments by order",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/payments/order/{{orderId}}"
+          }
+        },
+        {
+          "name": "Get pending COD payments",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/payments/cod/pending"
+          }
+        },
+        {
+          "name": "Mark COD as collected",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/payments/cod/:paymentId/collect"
+          }
+        },
+        {
+          "name": "Mark COD as failed",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Customer refused delivery\"\n}"
+            },
+            "url": "{{baseUrl}}/payments/cod/:paymentId/fail"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Shipping",
+      "item": [
+        {
+          "name": "Calculate shipping",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"shippingAddress\": {\n    \"country\": \"US\",\n    \"region\": \"NY\",\n    \"city\": \"New York\",\n    \"postalCode\": \"10001\"\n  },\n  \"items\": [\n    {\n      \"variantId\": \"{{variantId}}\",\n      \"quantity\": 1,\n      \"price\": 29.99,\n      \"weight\": 0.5\n    }\n  ],\n  \"subtotal\": 29.99,\n  \"currency\": \"USD\",\n  \"customerGroupId\": null\n}"
+            },
+            "url": "{{baseUrl}}/shipping/calculate",
+            "description": "Get available shipping options and costs for an address + items"
+          }
+        },
+        {
+          "name": "Get order shipping",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/shipping/order/{{orderId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Customers",
+      "item": [
+        {
+          "name": "Get customer by email",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/customers/email/customer@example.com"
+          }
+        },
+        {
+          "name": "Get or create by email",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/customers/get-or-create?email=customer@example.com&isGuest=true"
+          }
+        },
+        {
+          "name": "Get me",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/customers/me",
+            "description": "Requires auth"
+          }
+        },
+        {
+          "name": "Update me",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\"\n}"
+            },
+            "url": "{{baseUrl}}/customers/me",
+            "description": "Requires auth"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Products",
+      "item": [
+        {
+          "name": "Create product",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sku\": \"SKU-001\",\n  \"name\": \"Test Product\",\n  \"type\": \"simple\",\n  \"basePrice\": 29.99,\n  \"status\": \"active\",\n  \"visibility\": \"both\"\n}"
+            },
+            "url": "{{baseUrl}}/admin/products",
+            "description": "type: simple | configurable | bundle | virtual"
+          }
+        },
+        {
+          "name": "Get product (admin)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/admin/products/{{productId}}"
+          }
+        },
+        {
+          "name": "Update product",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Name\",\n  \"basePrice\": 34.99\n}"
+            },
+            "url": "{{baseUrl}}/admin/products/{{productId}}"
+          }
+        },
+        {
+          "name": "Delete product",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/admin/products/{{productId}}"
+          }
+        },
+        {
+          "name": "Create variant",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sku\": \"SKU-001-S\",\n  \"name\": \"Small\",\n  \"price\": 29.99,\n  \"position\": 1,\n  \"isActive\": true\n}"
+            },
+            "url": "{{baseUrl}}/admin/products/{{productId}}/variants"
+          }
+        },
+        {
+          "name": "Update variant",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price\": 32.99,\n  \"quantity\": 10\n}"
+            },
+            "url": "{{baseUrl}}/admin/products/variants/{{variantId}}"
+          }
+        },
+        {
+          "name": "Delete variant",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/admin/products/variants/{{variantId}}"
+          }
+        },
+        {
+          "name": "Create image",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"url\": \"https://example.com/image.jpg\",\n  \"altText\": \"Product image\",\n  \"position\": 0,\n  \"isPrimary\": true\n}"
+            },
+            "url": "{{baseUrl}}/admin/products/{{productId}}/images"
+          }
+        },
+        {
+          "name": "Update image",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"altText\": \"Updated alt\",\n  \"isPrimary\": false\n}"
+            },
+            "url": "{{baseUrl}}/admin/products/images/:imageId"
+          }
+        },
+        {
+          "name": "Delete image",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/admin/products/images/:imageId"
+          }
+        },
+        {
+          "name": "Assign category",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categoryId\": \"{{categoryId}}\",\n  \"position\": 0\n}"
+            },
+            "url": "{{baseUrl}}/admin/products/{{productId}}/categories"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Categories",
+      "item": [
+        {
+          "name": "List all categories",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/admin/categories",
+            "description": "List all categories (includes inactive)."
+          }
+        },
+        {
+          "name": "Get category",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/admin/categories/{{categoryId}}",
+            "description": "Get one category by id. Save id as {{categoryId}} for assign product."
+          }
+        },
+        {
+          "name": "Create category",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Electronics\",\n  \"slug\": \"electronics\",\n  \"description\": \"Electronic devices and accessories\",\n  \"parentId\": null,\n  \"position\": 0\n}"
+            },
+            "url": "{{baseUrl}}/admin/categories",
+            "description": "Create category. slug optional (auto from name). parentId for subcategory."
+          }
+        },
+        {
+          "name": "Update category",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Electronics & Gadgets\",\n  \"slug\": \"electronics-gadgets\",\n  \"description\": \"Updated description\",\n  \"position\": 1,\n  \"isActive\": true\n}"
+            },
+            "url": "{{baseUrl}}/admin/categories/{{categoryId}}",
+            "description": "Update category. Partial body allowed."
+          }
+        },
+        {
+          "name": "Delete category",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/admin/categories/{{categoryId}}",
+            "description": "Delete category. Children get parentId=null; product assignments removed."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Inventory",
+      "item": [
+        {
+          "name": "Get inventory status",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/admin/inventory/status?variantId={{variantId}}",
+            "description": "Check quantity and availability. variantId: product id for simple, variant id for configurable. Optional: &warehouseId=default-warehouse"
+          }
+        },
+        {
+          "name": "Adjust stock",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"variantId\": \"{{variantId}}\",\n  \"quantity\": 100,\n  \"reason\": \"Restock\"\n}"
+            },
+            "url": "{{baseUrl}}/admin/inventory/adjust",
+            "description": "Add stock. variantId: use product id for simple products, variant id for configurable. warehouseId optional (defaults to default-warehouse for storefront)."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Shipping",
+      "item": [
+        {
+          "name": "Create zone",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"US Mainland\",\n  \"description\": \"Continental US\",\n  \"coverage\": {\n    \"countries\": [\"US\"]\n  },\n  \"priority\": 10,\n  \"isActive\": true\n}"
+            },
+            "url": "{{baseUrl}}/admin/shipping/zones"
+          }
+        },
+        {
+          "name": "List zones",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/admin/shipping/zones?includeInactive=false"
+          }
+        },
+        {
+          "name": "Get zone",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/admin/shipping/zones/:zoneId"
+          }
+        },
+        {
+          "name": "Update zone",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"US & Canada\",\n  \"coverage\": {\n    \"countries\": [\"US\", \"CA\"]\n  }\n}"
+            },
+            "url": "{{baseUrl}}/admin/shipping/zones/:zoneId"
+          }
+        },
+        {
+          "name": "Delete zone",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/admin/shipping/zones/:zoneId"
+          }
+        },
+        {
+          "name": "Create method",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"zoneId\": \"<zone-uuid>\",\n  \"code\": \"flat-standard\",\n  \"name\": \"Standard Shipping\",\n  \"type\": \"flat_rate\",\n  \"config\": {\n    \"cost\": 5.99\n  },\n  \"priority\": 0,\n  \"isActive\": true\n}"
+            },
+            "url": "{{baseUrl}}/admin/shipping/methods",
+            "description": "type: flat_rate | weight_based | amount_based | courier_api"
+          }
+        },
+        {
+          "name": "List methods by zone",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/admin/shipping/zones/:zoneId/methods?includeInactive=false"
+          }
+        },
+        {
+          "name": "Get method",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/admin/shipping/methods/:methodId"
+          }
+        },
+        {
+          "name": "Update method",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Standard (Updated)\",\n  \"config\": {\n    \"cost\": 6.99\n  }\n}"
+            },
+            "url": "{{baseUrl}}/admin/shipping/methods/:methodId"
+          }
+        },
+        {
+          "name": "Delete method",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/admin/shipping/methods/:methodId"
+          }
+        },
+        {
+          "name": "Assign shipping to order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"shippingMethodId\": \"<method-uuid>\"\n}"
+            },
+            "url": "{{baseUrl}}/admin/shipping/orders/{{orderId}}/assign"
+          }
+        },
+        {
+          "name": "Update shipping status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"shipped\",\n  \"trackingNumber\": \"1Z999AA10123456784\",\n  \"trackingUrl\": \"https://tracking.example.com/1Z999AA10123456784\"\n}"
+            },
+            "url": "{{baseUrl}}/admin/shipping/orders/{{orderId}}/status",
+            "description": "status: pending | shipped | in_transit | delivered | cancelled"
+          }
+        },
+        {
+          "name": "Assign customer group to method",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerGroupId\": \"<group-uuid>\",\n  \"discountPercent\": 10,\n  \"fixedCost\": 4.99\n}"
+            },
+            "url": "{{baseUrl}}/admin/shipping/methods/:methodId/customer-groups"
+          }
+        },
+        {
+          "name": "Get method customer groups",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/admin/shipping/methods/:methodId/customer-groups"
+          }
+        },
+        {
+          "name": "Update customer group pricing",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"discountPercent\": 15,\n  \"fixedCost\": 3.99\n}"
+            },
+            "url": "{{baseUrl}}/admin/shipping/methods/:methodId/customer-groups/:customerGroupId"
+          }
+        },
+        {
+          "name": "Remove customer group from method",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/admin/shipping/methods/:methodId/customer-groups/:customerGroupId"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Customers",
+      "item": [
+        {
+          "name": "Create customer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"new@example.com\",\n  \"firstName\": \"Jane\",\n  \"lastName\": \"Doe\",\n  \"isGuest\": false,\n  \"customerGroupId\": null\n}"
+            },
+            "url": "{{baseUrl}}/admin/customers"
+          }
+        },
+        {
+          "name": "List customers",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/admin/customers?page=1&limit=20"
+          }
+        },
+        {
+          "name": "Get customer",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/admin/customers/:id"
+          }
+        },
+        {
+          "name": "Update customer",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Jane\",\n  \"lastName\": \"Smith\"\n}"
+            },
+            "url": "{{baseUrl}}/admin/customers/:id"
+          }
+        },
+        {
+          "name": "Assign customer to group",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"groupId\": \"<customer-group-uuid>\"\n}"
+            },
+            "url": "{{baseUrl}}/admin/customers/:id/assign-group"
+          }
+        },
+        {
+          "name": "Delete customer",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/admin/customers/:id"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Customer groups",
+      "item": [
+        {
+          "name": "Create customer group",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Wholesale\",\n  \"description\": \"Wholesale customers\",\n  \"isDefault\": false,\n  \"taxClassId\": null,\n  \"discountPercent\": 10\n}"
+            },
+            "url": "{{baseUrl}}/admin/customer-groups"
+          }
+        },
+        {
+          "name": "List customer groups",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/admin/customer-groups"
+          }
+        },
+        {
+          "name": "Get default group",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/admin/customer-groups/default"
+          }
+        },
+        {
+          "name": "Get customer group",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/admin/customer-groups/:id"
+          }
+        },
+        {
+          "name": "Update customer group",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Wholesale (Updated)\",\n  \"discountPercent\": 15\n}"
+            },
+            "url": "{{baseUrl}}/admin/customer-groups/:id"
+          }
+        },
+        {
+          "name": "Delete customer group",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/admin/customer-groups/:id"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Orders",
+      "item": [
+        {
+          "name": "List all orders",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/admin/orders?page=1&limit=20&status=&paymentStatus=&sortBy=createdAt&sortOrder=desc"
+          }
+        },
+        {
+          "name": "Get order",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/admin/orders/{{orderId}}"
+          }
+        },
+        {
+          "name": "Update order status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"processing\",\n  \"paymentStatus\": \"paid\",\n  \"fulfillmentStatus\": \"unfulfilled\"\n}"
+            },
+            "url": "{{baseUrl}}/admin/orders/{{orderId}}/status",
+            "description": "status: pending|processing|completed|cancelled; paymentStatus: pending|paid|failed|refunded; fulfillmentStatus: unfulfilled|partially_fulfilled|fulfilled|shipped|delivered"
+          }
+        }
+      ]
+    }
+  ]
+}

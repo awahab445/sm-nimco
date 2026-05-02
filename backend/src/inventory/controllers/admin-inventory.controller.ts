@@ -1,0 +1,45 @@
+import { Controller, Post, Get, Body, Query, HttpCode, HttpStatus, BadRequestException } from '@nestjs/common';
+import { InventoryService } from '../services/inventory.service';
+import { AdjustStockDto, DEFAULT_WAREHOUSE_ID } from '../dto/adjust-stock.dto';
+
+@Controller('admin/inventory')
+export class AdminInventoryController {
+  constructor(private readonly inventoryService: InventoryService) {}
+
+  /**
+   * Get inventory status for a variant (or simple product when variantId = product id).
+   * Use this to verify stock. Storefront uses warehouseId "default-warehouse".
+   */
+  @Get('status')
+  @HttpCode(HttpStatus.OK)
+  async getStatus(
+    @Query('variantId') variantId: string,
+    @Query('warehouseId') warehouseId?: string,
+  ) {
+    if (!variantId || typeof variantId !== 'string' || !variantId.trim()) {
+      throw new BadRequestException('Query parameter variantId is required');
+    }
+    const wh = (warehouseId && warehouseId.trim()) ? warehouseId.trim() : DEFAULT_WAREHOUSE_ID;
+    const status = await this.inventoryService.getInventoryStatus(variantId.trim(), wh);
+    return { success: true, data: status };
+  }
+
+  @Post('adjust')
+  @HttpCode(HttpStatus.OK)
+  async adjustStock(@Body() adjustStockDto: AdjustStockDto) {
+    const inventoryItem = await this.inventoryService.adjustStock(adjustStockDto);
+    return {
+      success: true,
+      data: {
+        inventoryItemId: inventoryItem.id,
+        variantId: adjustStockDto.variantId,
+        warehouseId: inventoryItem.warehouseId,
+        previousQuantity: inventoryItem.quantity - adjustStockDto.quantity,
+        newQuantity: inventoryItem.quantity,
+        availableQuantity: inventoryItem.availableQuantity,
+        reservedQuantity: inventoryItem.reservedQuantity,
+      },
+    };
+  }
+}
+
