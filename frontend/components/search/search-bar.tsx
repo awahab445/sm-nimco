@@ -109,12 +109,12 @@ export function SearchBar() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onFocus={() => query.trim().length >= MIN_QUERY_LENGTH && setOpen(true)}
-            className="w-full rounded-lg border border-gray-300 bg-gray-50 py-2 pl-4 pr-10 text-sm placeholder-gray-500 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-zinc-600 dark:bg-zinc-800 dark:placeholder-zinc-400 dark:focus:border-blue-400 dark:focus:bg-zinc-900 dark:focus:ring-blue-400"
+            className="w-full rounded-lg border border-input bg-muted py-2 pl-4 pr-10 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:bg-card focus:outline-none focus:ring-2 focus:ring-ring/25"
             aria-expanded={open}
             aria-controls="search-suggestions"
             aria-autocomplete="list"
           />
-          <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 dark:text-zinc-500" aria-hidden>
+          <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground" aria-hidden>
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
@@ -126,15 +126,15 @@ export function SearchBar() {
         <div
           id="search-suggestions"
           role="listbox"
-          className="absolute top-full left-0 right-0 z-50 mt-1 max-h-96 overflow-auto rounded-lg border border-gray-200 bg-white shadow-lg dark:border-zinc-700 dark:bg-zinc-900"
+          className="absolute top-full left-0 right-0 z-50 mt-1 max-h-96 overflow-auto rounded-lg border border-border bg-popover text-popover-foreground shadow-lg"
         >
           {loading ? (
-            <div className="flex items-center justify-center py-8 text-sm text-gray-500 dark:text-zinc-400">
-              <span className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600 dark:border-zinc-600 dark:border-t-blue-400" aria-hidden />
+            <div className="flex items-center justify-center py-8 text-sm text-muted-foreground">
+              <span className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-muted border-t-primary" aria-hidden />
               <span className="ml-2">Searching...</span>
             </div>
           ) : suggestions.length === 0 ? (
-            <div className="py-6 text-center text-sm text-gray-500 dark:text-zinc-400">
+            <div className="py-6 text-center text-sm text-muted-foreground">
               No products found. Try a different search.
             </div>
           ) : (
@@ -145,9 +145,9 @@ export function SearchBar() {
                     <Link
                       href={`/products/${item.slug}`}
                       onClick={() => setOpen(false)}
-                      className="flex items-center gap-3 px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-zinc-800"
+                      className="flex items-center gap-3 px-4 py-2 text-left hover:bg-muted"
                     >
-                      <div className="h-12 w-12 shrink-0 overflow-hidden rounded bg-gray-100 dark:bg-zinc-800">
+                      <div className="h-12 w-12 shrink-0 overflow-hidden rounded bg-muted">
                         {item.images?.[0]?.url ? (
                           <img
                             src={item.images[0].url}
@@ -156,23 +156,23 @@ export function SearchBar() {
                             loading="lazy"
                           />
                         ) : (
-                          <div className="flex h-full w-full items-center justify-center text-xs text-gray-400 dark:text-zinc-500">—</div>
+                          <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">—</div>
                         )}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <span className="block truncate font-medium text-gray-900 dark:text-zinc-50">{item.name}</span>
-                        <span className="text-sm text-gray-500 dark:text-zinc-400">{formatPrice(item.basePrice)}</span>
+                        <span className="block truncate font-medium text-foreground">{item.name}</span>
+                        <span className="text-sm text-muted-foreground">{formatPrice(item.basePrice)}</span>
                       </div>
                     </Link>
                   </li>
                 ))}
               </ul>
               {total > suggestions.length && (
-                <div className="border-t border-gray-100 dark:border-zinc-800">
+                <div className="border-t border-border">
                   <Link
                     href={`/products?search=${encodeURIComponent(query.trim())}`}
                     onClick={() => setOpen(false)}
-                    className="block px-4 py-3 text-center text-sm font-medium text-blue-600 hover:bg-gray-50 hover:text-blue-700 dark:text-blue-400 dark:hover:bg-zinc-800"
+                    className="block px-4 py-3 text-center text-sm font-medium text-primary transition-colors hover:bg-muted hover:opacity-90"
                   >
                     See all {total} results
                   </Link>

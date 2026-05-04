@@ -66,31 +66,31 @@ export default function CategoryPage() {
           <div className="mb-6">
             <Link
               href="/products"
-              className="text-sm font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400"
+              className="text-sm font-medium text-primary transition-colors hover:opacity-80"
             >
               ← All products
             </Link>
           </div>
           <div className="mb-8">
-            <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-zinc-50">
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">
               {category?.name ?? slug}
             </h1>
             {category?.description && (
-              <p className="mt-1 text-gray-600 dark:text-zinc-400">{category.description}</p>
+              <p className="mt-1 text-muted-foreground">{category.description}</p>
             )}
           </div>
 
           {loading ? (
             <div className="flex justify-center py-24">
-              <div className="h-10 w-10 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600 dark:border-zinc-600 dark:border-t-blue-400" />
+              <div className="h-10 w-10 animate-spin rounded-full border-2 border-muted border-t-primary" />
             </div>
           ) : error ? (
-            <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800 dark:border-red-800 dark:bg-red-900/20 dark:text-red-200">
+            <div className="rounded-lg border border-destructive/25 bg-destructive/10 p-4 text-destructive">
               {error}
             </div>
           ) : products.length === 0 ? (
-            <div className="rounded-lg border border-gray-200 bg-gray-50 py-16 text-center dark:border-zinc-700 dark:bg-zinc-800">
-              <p className="text-gray-600 dark:text-zinc-400">No products in this category.</p>
+            <div className="rounded-lg border border-border bg-muted/50 py-16 text-center">
+              <p className="text-muted-foreground">No products in this category.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

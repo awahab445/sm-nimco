@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { productApi, inventoryApi, type Product, type ProductVariant } from '@/lib/api-client';
 import { useCartStore } from '@/lib/cart.store';
 import { DEFAULT_CURRENCY } from '@/lib/config';
+import { storefrontUi } from '@/lib/storefront-ui';
 
 function formatPrice(value: string | number, currency = DEFAULT_CURRENCY): string {
   const n = typeof value === 'string' ? parseFloat(value) : value;
@@ -156,7 +157,7 @@ export default function ProductDetailPage() {
     return (
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="flex justify-center py-24">
-          <div className="h-10 w-10 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600 dark:border-zinc-600 dark:border-t-blue-400" />
+          <div className="h-10 w-10 animate-spin rounded-full border-2 border-muted border-t-primary" />
         </div>
       </div>
     );
@@ -165,12 +166,12 @@ export default function ProductDetailPage() {
   if (error || !product) {
     return (
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800 dark:border-red-800 dark:bg-red-900/20 dark:text-red-200">
+        <div className="rounded-lg border border-destructive/25 bg-destructive/10 p-4 text-destructive">
           {error ?? 'Product not found'}
         </div>
         <Link
           href="/products"
-          className="mt-4 inline-block text-sm font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400"
+          className={`mt-4 inline-block text-sm font-medium ${storefrontUi.link}`}
         >
           ← Back to products
         </Link>
@@ -190,13 +191,13 @@ export default function ProductDetailPage() {
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <Link
         href="/products"
-        className="mb-6 inline-block text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-zinc-400 dark:hover:text-zinc-50"
+        className="mb-6 inline-block text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
       >
         ← Back to products
       </Link>
 
       <div className="lg:grid lg:grid-cols-2 lg:gap-12">
-        <div className="aspect-square overflow-hidden rounded-lg border border-gray-200 bg-gray-100 dark:border-zinc-700 dark:bg-zinc-800">
+        <div className="aspect-square overflow-hidden rounded-lg border border-border bg-muted">
           {imageUrl ? (
             <img
               src={imageUrl}
@@ -204,27 +205,27 @@ export default function ProductDetailPage() {
               className="h-full w-full object-cover"
             />
           ) : (
-            <div className="flex h-full w-full items-center justify-center text-gray-400 dark:text-zinc-500">
+            <div className="flex h-full w-full items-center justify-center text-muted-foreground">
               No image
             </div>
           )}
         </div>
 
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-zinc-50 sm:text-3xl">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
             {product.name}
           </h1>
-          <p className="mt-2 text-lg font-medium text-gray-700 dark:text-zinc-300">
+          <p className="mt-2 text-lg font-medium text-foreground/90">
             {formatPrice(price)}
           </p>
           {product.shortDescription && (
-            <p className="mt-4 text-gray-600 dark:text-zinc-400">
+            <p className="mt-4 text-muted-foreground">
               {product.shortDescription}
             </p>
           )}
           {product.description && (
-            <div className="mt-4 text-gray-600 dark:text-zinc-400">
-              <h2 className="text-sm font-semibold text-gray-900 dark:text-zinc-50">
+            <div className="mt-4 text-muted-foreground">
+              <h2 className="text-sm font-semibold text-foreground">
                 Description
               </h2>
               <p className="mt-1 whitespace-pre-wrap">{product.description}</p>
@@ -233,7 +234,7 @@ export default function ProductDetailPage() {
 
           {variants.length > 1 && (
             <div className="mt-6">
-              <label className="block text-sm font-medium text-gray-700 dark:text-zinc-300">
+              <label className="block text-sm font-medium text-foreground/90">
                 Variant
               </label>
               <select
@@ -242,7 +243,7 @@ export default function ProductDetailPage() {
                   const v = variants.find((x) => x.id === e.target.value);
                   setSelectedVariant(v ?? null);
                 }}
-                className="mt-1 block w-full max-w-xs rounded-md border border-gray-300 py-2 pl-3 pr-10 text-base focus:border-blue-500 focus:outline-none focus:ring-blue-500 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50"
+                className={`mt-1 block w-full max-w-xs py-2 pl-3 pr-10 text-base ${storefrontUi.select}`}
               >
                 {variants.map((v) => (
                   <option key={v.id} value={v.id}>
@@ -255,7 +256,7 @@ export default function ProductDetailPage() {
 
           <div className="mt-6 flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-2">
-              <label htmlFor="qty" className="text-sm font-medium text-gray-700 dark:text-zinc-300">
+              <label htmlFor="qty" className="text-sm font-medium text-foreground/90">
                 Quantity
               </label>
               <input
@@ -264,16 +265,16 @@ export default function ProductDetailPage() {
                 min={1}
                 value={quantity}
                 onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value, 10) || 1))}
-                className="w-20 rounded-md border border-gray-300 px-2 py-1.5 text-center dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50"
+                className="w-20 rounded-md border border-input bg-card px-2 py-1.5 text-center text-foreground"
               />
             </div>
             {!hasVariant && (
-              <p className="text-sm text-amber-700 dark:text-amber-400">
+              <p className="text-sm text-warning">
                 No variants available. Add at least one variant in the admin to enable add to cart.
               </p>
             )}
             {hasVariant && currentVariant && availableQty !== undefined && availableQty === 0 && (
-              <p className="text-sm font-medium text-amber-700 dark:text-amber-400">
+              <p className="text-sm font-medium text-warning">
                 Stock unavailable for this product.
               </p>
             )}
@@ -281,14 +282,14 @@ export default function ProductDetailPage() {
               type="button"
               onClick={handleAddToCart}
               disabled={adding || !hasVariant || !currentVariant || !inStock}
-              className="rounded-md bg-gray-900 px-6 py-2.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+              className="rounded-md bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground shadow-sm transition-opacity hover:opacity-90 disabled:opacity-50"
             >
               {added ? 'Added to cart' : adding ? 'Adding…' : hasVariant ? (inStock ? 'Add to cart' : 'Out of stock') : 'Unavailable'}
             </button>
             {added && (
               <Link
                 href="/cart"
-                className="text-sm font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400"
+                className={`text-sm font-medium ${storefrontUi.link}`}
               >
                 View cart →
               </Link>

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useCheckout } from '@/lib/checkout-context';
 import { Address } from '@/lib/api-client';
+import { storefrontUi } from '@/lib/storefront-ui';
 
 interface AddressStepProps {
   onNext: () => void;
@@ -75,10 +76,10 @@ export function AddressStep({ onNext }: AddressStepProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
-        <h2 className="text-2xl font-semibold mb-4">Billing Address</h2>
+        <h2 className="mb-4 text-2xl font-semibold text-foreground">Billing Address</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="billing-firstName" className="block text-sm font-medium mb-1">
+            <label htmlFor="billing-firstName" className={storefrontUi.labelMb}>
               First Name *
             </label>
             <input
@@ -89,11 +90,11 @@ export function AddressStep({ onNext }: AddressStepProps) {
               onChange={(e) =>
                 setBillingAddress({ ...billingAddress, firstName: e.target.value })
               }
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={storefrontUi.input}
             />
           </div>
           <div>
-            <label htmlFor="billing-lastName" className="block text-sm font-medium mb-1">
+            <label htmlFor="billing-lastName" className={storefrontUi.labelMb}>
               Last Name *
             </label>
             <input
@@ -104,11 +105,11 @@ export function AddressStep({ onNext }: AddressStepProps) {
               onChange={(e) =>
                 setBillingAddress({ ...billingAddress, lastName: e.target.value })
               }
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={storefrontUi.input}
             />
           </div>
           <div className="md:col-span-2">
-            <label htmlFor="billing-company" className="block text-sm font-medium mb-1">
+            <label htmlFor="billing-company" className={storefrontUi.labelMb}>
               Company (optional)
             </label>
             <input
@@ -118,11 +119,11 @@ export function AddressStep({ onNext }: AddressStepProps) {
               onChange={(e) =>
                 setBillingAddress({ ...billingAddress, company: e.target.value })
               }
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={storefrontUi.input}
             />
           </div>
           <div className="md:col-span-2">
-            <label htmlFor="billing-addressLine1" className="block text-sm font-medium mb-1">
+            <label htmlFor="billing-addressLine1" className={storefrontUi.labelMb}>
               Address Line 1 *
             </label>
             <input
@@ -133,11 +134,11 @@ export function AddressStep({ onNext }: AddressStepProps) {
               onChange={(e) =>
                 setBillingAddress({ ...billingAddress, addressLine1: e.target.value })
               }
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={storefrontUi.input}
             />
           </div>
           <div className="md:col-span-2">
-            <label htmlFor="billing-addressLine2" className="block text-sm font-medium mb-1">
+            <label htmlFor="billing-addressLine2" className={storefrontUi.labelMb}>
               Address Line 2 (optional)
             </label>
             <input
@@ -147,11 +148,11 @@ export function AddressStep({ onNext }: AddressStepProps) {
               onChange={(e) =>
                 setBillingAddress({ ...billingAddress, addressLine2: e.target.value })
               }
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={storefrontUi.input}
             />
           </div>
           <div>
-            <label htmlFor="billing-city" className="block text-sm font-medium mb-1">
+            <label htmlFor="billing-city" className={storefrontUi.labelMb}>
               City *
             </label>
             <input
@@ -162,11 +163,11 @@ export function AddressStep({ onNext }: AddressStepProps) {
               onChange={(e) =>
                 setBillingAddress({ ...billingAddress, city: e.target.value })
               }
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={storefrontUi.input}
             />
           </div>
           <div>
-            <label htmlFor="billing-state" className="block text-sm font-medium mb-1">
+            <label htmlFor="billing-state" className={storefrontUi.labelMb}>
               State/Province *
             </label>
             <input
@@ -177,11 +178,11 @@ export function AddressStep({ onNext }: AddressStepProps) {
               onChange={(e) =>
                 setBillingAddress({ ...billingAddress, state: e.target.value })
               }
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={storefrontUi.input}
             />
           </div>
           <div>
-            <label htmlFor="billing-postalCode" className="block text-sm font-medium mb-1">
+            <label htmlFor="billing-postalCode" className={storefrontUi.labelMb}>
               Postal Code *
             </label>
             <input
@@ -192,11 +193,11 @@ export function AddressStep({ onNext }: AddressStepProps) {
               onChange={(e) =>
                 setBillingAddress({ ...billingAddress, postalCode: e.target.value })
               }
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={storefrontUi.input}
             />
           </div>
           <div>
-            <label htmlFor="billing-country" className="block text-sm font-medium mb-1">
+            <label htmlFor="billing-country" className={storefrontUi.labelMb}>
               Country *
             </label>
             <input
@@ -207,11 +208,11 @@ export function AddressStep({ onNext }: AddressStepProps) {
               onChange={(e) =>
                 setBillingAddress({ ...billingAddress, country: e.target.value })
               }
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={storefrontUi.input}
             />
           </div>
           <div className="md:col-span-2">
-            <label htmlFor="billing-phone" className="block text-sm font-medium mb-1">
+            <label htmlFor="billing-phone" className={storefrontUi.labelMb}>
               Phone (optional)
             </label>
             <input
@@ -221,7 +222,7 @@ export function AddressStep({ onNext }: AddressStepProps) {
               onChange={(e) =>
                 setBillingAddress({ ...billingAddress, phone: e.target.value })
               }
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={storefrontUi.input}
             />
           </div>
         </div>
@@ -233,19 +234,19 @@ export function AddressStep({ onNext }: AddressStepProps) {
           type="checkbox"
           checked={useSameAddress}
           onChange={(e) => setUseSameAddress(e.target.checked)}
-          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+          className={storefrontUi.checkbox}
         />
-        <label htmlFor="use-same-address" className="ml-2 text-sm text-gray-700">
+        <label htmlFor="use-same-address" className="ml-2 text-sm text-foreground/90">
           Use same address for shipping
         </label>
       </div>
 
       {!useSameAddress && (
         <div>
-          <h2 className="text-2xl font-semibold mb-4">Shipping Address</h2>
+          <h2 className="mb-4 text-2xl font-semibold text-foreground">Shipping Address</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="shipping-firstName" className="block text-sm font-medium mb-1">
+              <label htmlFor="shipping-firstName" className={storefrontUi.labelMb}>
                 First Name *
               </label>
               <input
@@ -256,11 +257,11 @@ export function AddressStep({ onNext }: AddressStepProps) {
                 onChange={(e) =>
                   setShippingAddress({ ...shippingAddress, firstName: e.target.value })
                 }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={storefrontUi.input}
               />
             </div>
             <div>
-              <label htmlFor="shipping-lastName" className="block text-sm font-medium mb-1">
+              <label htmlFor="shipping-lastName" className={storefrontUi.labelMb}>
                 Last Name *
               </label>
               <input
@@ -271,11 +272,11 @@ export function AddressStep({ onNext }: AddressStepProps) {
                 onChange={(e) =>
                   setShippingAddress({ ...shippingAddress, lastName: e.target.value })
                 }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={storefrontUi.input}
               />
             </div>
             <div className="md:col-span-2">
-              <label htmlFor="shipping-addressLine1" className="block text-sm font-medium mb-1">
+              <label htmlFor="shipping-addressLine1" className={storefrontUi.labelMb}>
                 Address Line 1 *
               </label>
               <input
@@ -286,11 +287,11 @@ export function AddressStep({ onNext }: AddressStepProps) {
                 onChange={(e) =>
                   setShippingAddress({ ...shippingAddress, addressLine1: e.target.value })
                 }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={storefrontUi.input}
               />
             </div>
             <div>
-              <label htmlFor="shipping-city" className="block text-sm font-medium mb-1">
+              <label htmlFor="shipping-city" className={storefrontUi.labelMb}>
                 City *
               </label>
               <input
@@ -301,11 +302,11 @@ export function AddressStep({ onNext }: AddressStepProps) {
                 onChange={(e) =>
                   setShippingAddress({ ...shippingAddress, city: e.target.value })
                 }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={storefrontUi.input}
               />
             </div>
             <div>
-              <label htmlFor="shipping-state" className="block text-sm font-medium mb-1">
+              <label htmlFor="shipping-state" className={storefrontUi.labelMb}>
                 State/Province *
               </label>
               <input
@@ -316,11 +317,11 @@ export function AddressStep({ onNext }: AddressStepProps) {
                 onChange={(e) =>
                   setShippingAddress({ ...shippingAddress, state: e.target.value })
                 }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={storefrontUi.input}
               />
             </div>
             <div>
-              <label htmlFor="shipping-postalCode" className="block text-sm font-medium mb-1">
+              <label htmlFor="shipping-postalCode" className={storefrontUi.labelMb}>
                 Postal Code *
               </label>
               <input
@@ -331,11 +332,11 @@ export function AddressStep({ onNext }: AddressStepProps) {
                 onChange={(e) =>
                   setShippingAddress({ ...shippingAddress, postalCode: e.target.value })
                 }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={storefrontUi.input}
               />
             </div>
             <div>
-              <label htmlFor="shipping-country" className="block text-sm font-medium mb-1">
+              <label htmlFor="shipping-country" className={storefrontUi.labelMb}>
                 Country *
               </label>
               <input
@@ -346,7 +347,7 @@ export function AddressStep({ onNext }: AddressStepProps) {
                 onChange={(e) =>
                   setShippingAddress({ ...shippingAddress, country: e.target.value })
                 }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={storefrontUi.input}
               />
             </div>
           </div>
@@ -354,7 +355,7 @@ export function AddressStep({ onNext }: AddressStepProps) {
       )}
 
       {(error || formError) && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+        <div className={storefrontUi.alertError}>
           {error || formError}
         </div>
       )}
@@ -363,7 +364,7 @@ export function AddressStep({ onNext }: AddressStepProps) {
         <button
           type="submit"
           disabled={isLoading}
-          className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="rounded-md bg-primary px-6 py-2 text-primary-foreground shadow-sm transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isLoading ? 'Saving...' : 'Continue to Shipping'}
         </button>

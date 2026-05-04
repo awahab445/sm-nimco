@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { getStoreThemeId } from "@/lib/store-theme";
+import { STORE_NAME } from "@/lib/config";
 import { AuthProvider } from "@/components/auth-provider";
 import { CartProvider } from "@/components/cart-provider";
 import { Header } from "@/components/layout/header";
@@ -17,8 +19,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Store",
-  description: "Ecommerce storefront",
+  title: STORE_NAME,
+  description: `${STORE_NAME} — shop quality products with secure checkout and order tracking.`,
 };
 
 export default function RootLayout({
@@ -26,8 +28,9 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const storeTheme = getStoreThemeId();
   return (
-    <html lang="en">
+    <html lang="en" data-store-theme={storeTheme}>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

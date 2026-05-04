@@ -34,10 +34,10 @@ export function CategorySidebar() {
   if (loading) {
     return (
       <aside className="w-56 shrink-0">
-        <div className="h-6 w-32 animate-pulse rounded bg-gray-200 dark:bg-zinc-700" />
+        <div className="h-6 w-32 animate-pulse rounded bg-muted" />
         <ul className="mt-4 space-y-1">
           {[1, 2, 3].map((i) => (
-            <li key={i} className="h-8 animate-pulse rounded bg-gray-100 dark:bg-zinc-800" />
+            <li key={i} className="h-8 animate-pulse rounded bg-muted/70" />
           ))}
         </ul>
       </aside>
@@ -46,7 +46,7 @@ export function CategorySidebar() {
 
   return (
     <aside className="w-56 shrink-0">
-      <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-zinc-400">
+      <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
         Categories
       </h2>
       <ul className="mt-3 space-y-0.5">
@@ -55,8 +55,8 @@ export function CategorySidebar() {
             href="/products"
             className={`block rounded-md px-3 py-2 text-sm font-medium ${
               pathname === '/products'
-                ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
-                : 'text-gray-700 hover:bg-gray-100 dark:text-zinc-300 dark:hover:bg-zinc-800'
+                ? 'bg-primary/10 text-primary'
+                : 'text-foreground/90 hover:bg-muted'
             }`}
           >
             All products
@@ -70,13 +70,13 @@ export function CategorySidebar() {
                 href={`/categories/${cat.slug}`}
                 className={`block rounded-md px-3 py-2 text-sm font-medium ${
                   isActive
-                    ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
-                    : 'text-gray-700 hover:bg-gray-100 dark:text-zinc-300 dark:hover:bg-zinc-800'
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-foreground/90 hover:bg-muted'
                 }`}
               >
                 {cat.name}
                 {cat.productCount != null && (
-                  <span className="ml-1.5 text-gray-400 dark:text-zinc-500">
+                  <span className="ml-1.5 text-muted-foreground">
                     ({cat.productCount})
                   </span>
                 )}

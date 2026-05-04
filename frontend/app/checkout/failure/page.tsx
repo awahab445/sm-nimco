@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
+import { storefrontUi } from '@/lib/storefront-ui';
 
 export default function CheckoutFailurePage() {
   const router = useRouter();
@@ -9,47 +10,44 @@ export default function CheckoutFailurePage() {
   const error = searchParams.get('error') || 'Payment could not be processed';
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white rounded-lg shadow-sm p-8 text-center">
-          {/* Failure Icon */}
-          <div className="text-red-600 text-6xl mb-4">✕</div>
+    <div className="min-h-screen bg-muted/30 py-8">
+      <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8">
+        <div className="rounded-lg bg-card p-8 text-center shadow-sm">
+          <div className="mb-4 text-6xl text-destructive">✕</div>
 
-          {/* Title */}
-          <h1 className="text-3xl font-bold mb-2">Payment Failed</h1>
-          <p className="text-gray-600 mb-8">{error}</p>
+          <h1 className="mb-2 text-3xl font-bold text-foreground">Payment Failed</h1>
+          <p className="mb-8 text-muted-foreground">{error}</p>
 
-          {/* Error Details */}
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 text-left">
-            <p className="text-sm text-red-800">
+          <div className="mb-6 rounded-lg border border-destructive/25 bg-destructive/10 p-4 text-left">
+            <p className="text-sm text-destructive">
               Your order may have been created, but payment could not be completed. Please try
               again or contact support if the problem persists.
             </p>
           </div>
 
-          {/* Actions */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col justify-center gap-4 sm:flex-row">
             {orderId && (
               <button
+                type="button"
                 onClick={() => router.push(`/checkout?orderId=${orderId}`)}
-                className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                className="rounded-md bg-primary px-6 py-2 text-primary-foreground shadow-sm transition-opacity hover:opacity-90"
               >
                 Retry Payment
               </button>
             )}
             <button
+              type="button"
               onClick={() => router.push('/')}
-              className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+              className="rounded-md border border-border bg-card px-6 py-2 text-foreground transition-colors hover:bg-muted"
             >
               Return to Home
             </button>
           </div>
 
-          {/* Support Info */}
-          <div className="mt-8 pt-6 border-t border-gray-200">
-            <p className="text-sm text-gray-600">
+          <div className="mt-8 border-t border-border pt-6">
+            <p className="text-sm text-muted-foreground">
               Need help? Contact our support team at{' '}
-              <a href="mailto:support@example.com" className="text-blue-600 hover:underline">
+              <a href="mailto:support@example.com" className={`${storefrontUi.link} underline`}>
                 support@example.com
               </a>
             </p>
@@ -59,4 +57,3 @@ export default function CheckoutFailurePage() {
     </div>
   );
 }
-

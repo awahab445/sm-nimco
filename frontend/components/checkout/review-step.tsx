@@ -15,7 +15,7 @@ export function ReviewStep({ onBack }: ReviewStepProps) {
   const clearCart = useCartStore((s) => s.clearCart);
 
   if (!checkout) {
-    return <div>No checkout data available</div>;
+    return <div className="text-muted-foreground">No checkout data available</div>;
   }
 
   const handlePlaceOrder = async () => {
@@ -55,12 +55,12 @@ export function ReviewStep({ onBack }: ReviewStepProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-semibold mb-4">Review Your Order</h2>
+        <h2 className="mb-4 text-2xl font-semibold text-foreground">Review Your Order</h2>
 
         {/* Order Items */}
         <div className="mb-6">
-          <h3 className="text-lg font-medium mb-3">Items</h3>
-          <div className="border border-gray-200 rounded-lg divide-y">
+          <h3 className="mb-3 text-lg font-medium text-foreground">Items</h3>
+          <div className="divide-y divide-border rounded-lg border border-border">
             {checkout.items.map((item, index) => (
               <div key={index} className="p-4 flex gap-4">
                 {item.productImage && (
@@ -74,16 +74,16 @@ export function ReviewStep({ onBack }: ReviewStepProps) {
                 )}
                 <div className="flex-1 flex justify-between">
                   <div>
-                    <div className="font-medium">
+                    <div className="font-medium text-foreground">
                       {item.productName || `Product ${item.productId}`}
                     </div>
                     {item.variantName && (
-                      <div className="text-sm text-gray-500">{item.variantName}</div>
+                      <div className="text-sm text-muted-foreground">{item.variantName}</div>
                     )}
-                    <div className="text-sm text-gray-500">Quantity: {item.quantity}</div>
+                    <div className="text-sm text-muted-foreground">Quantity: {item.quantity}</div>
                   </div>
                   <div className="text-right">
-                    <div className="font-medium">
+                    <div className="font-medium text-foreground">
                       {new Intl.NumberFormat('en-US', {
                         style: 'currency',
                         currency: DEFAULT_CURRENCY,
@@ -99,9 +99,9 @@ export function ReviewStep({ onBack }: ReviewStepProps) {
         {/* Addresses */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <div>
-            <h3 className="text-lg font-medium mb-2">Billing Address</h3>
+            <h3 className="mb-2 text-lg font-medium text-foreground">Billing Address</h3>
             {checkout.billingAddress ? (
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-muted-foreground">
                 <p>
                   {checkout.billingAddress.firstName} {checkout.billingAddress.lastName}
                 </p>
@@ -117,13 +117,13 @@ export function ReviewStep({ onBack }: ReviewStepProps) {
                 {checkout.billingAddress.phone && <p>{checkout.billingAddress.phone}</p>}
               </div>
             ) : (
-              <p className="text-sm text-gray-500">No billing address</p>
+              <p className="text-sm text-muted-foreground">No billing address</p>
             )}
           </div>
           <div>
-            <h3 className="text-lg font-medium mb-2">Shipping Address</h3>
+            <h3 className="mb-2 text-lg font-medium text-foreground">Shipping Address</h3>
             {checkout.shippingAddress ? (
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-muted-foreground">
                 <p>
                   {checkout.shippingAddress.firstName} {checkout.shippingAddress.lastName}
                 </p>
@@ -139,7 +139,7 @@ export function ReviewStep({ onBack }: ReviewStepProps) {
                 {checkout.shippingAddress.phone && <p>{checkout.shippingAddress.phone}</p>}
               </div>
             ) : (
-              <p className="text-sm text-gray-500">No shipping address</p>
+              <p className="text-sm text-muted-foreground">No shipping address</p>
             )}
           </div>
         </div>
@@ -147,8 +147,8 @@ export function ReviewStep({ onBack }: ReviewStepProps) {
         {/* Shipping Method */}
         {checkout.shippingMethod && (
           <div className="mb-6">
-            <h3 className="text-lg font-medium mb-2">Shipping Method</h3>
-            <div className="text-sm text-gray-600">
+            <h3 className="mb-2 text-lg font-medium text-foreground">Shipping Method</h3>
+            <div className="text-sm text-muted-foreground">
               <p>{checkout.shippingMethod.methodName}</p>
               <p>
                 Estimated delivery: {checkout.shippingMethod.estimatedDays} day
@@ -159,9 +159,9 @@ export function ReviewStep({ onBack }: ReviewStepProps) {
         )}
 
         {/* Order Summary */}
-        <div className="border-t border-gray-200 pt-4">
-          <h3 className="text-lg font-medium mb-3">Order Summary</h3>
-          <div className="space-y-2">
+        <div className="border-t border-border pt-4">
+          <h3 className="mb-3 text-lg font-medium text-foreground">Order Summary</h3>
+          <div className="space-y-2 text-foreground">
             <div className="flex justify-between text-sm">
               <span>Subtotal</span>
               <span>
@@ -172,7 +172,7 @@ export function ReviewStep({ onBack }: ReviewStepProps) {
               </span>
             </div>
             {checkout.discountTotal > 0 && (
-              <div className="flex justify-between text-sm text-green-600">
+              <div className="flex justify-between text-sm text-success">
                 <span>Discount</span>
                 <span>
                   -{new Intl.NumberFormat('en-US', {
@@ -202,7 +202,7 @@ export function ReviewStep({ onBack }: ReviewStepProps) {
                 </span>
               </div>
             )}
-            <div className="flex justify-between text-lg font-semibold pt-2 border-t border-gray-200">
+            <div className="flex justify-between border-t border-border pt-2 text-lg font-semibold">
               <span>Total</span>
               <span>
                 {new Intl.NumberFormat('en-US', {
@@ -220,7 +220,7 @@ export function ReviewStep({ onBack }: ReviewStepProps) {
           type="button"
           onClick={onBack}
           disabled={isLoading}
-          className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 disabled:opacity-50"
+          className="rounded-md border border-border bg-card px-6 py-2 text-foreground transition-colors hover:bg-muted disabled:opacity-50"
         >
           Back
         </button>
@@ -228,7 +228,7 @@ export function ReviewStep({ onBack }: ReviewStepProps) {
           type="button"
           onClick={handlePlaceOrder}
           disabled={isLoading}
-          className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="rounded-md bg-primary px-6 py-2 text-primary-foreground shadow-sm transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isLoading ? 'Processing...' : paymentRedirectUrl ? 'Proceed to Payment' : 'Place Order'}
         </button>

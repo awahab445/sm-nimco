@@ -97,19 +97,19 @@ export function ShippingStep({ onNext, onBack }: ShippingStepProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
-        <h2 className="text-2xl font-semibold mb-4">Shipping Method</h2>
+        <h2 className="mb-4 text-2xl font-semibold text-foreground">Shipping Method</h2>
 
         {loadingOptions ? (
-          <div className="text-center py-8">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <p className="mt-2 text-gray-600">Loading shipping options...</p>
+          <div className="py-8 text-center">
+            <div className="inline-block h-8 w-8 animate-spin rounded-full border-2 border-muted border-t-primary" />
+            <p className="mt-2 text-muted-foreground">Loading shipping options...</p>
           </div>
         ) : optionsError ? (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+          <div className="rounded border border-destructive/25 bg-destructive/10 px-4 py-3 text-destructive">
             {optionsError}
           </div>
         ) : shippingOptions.length === 0 ? (
-          <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-3 rounded">
+          <div className="rounded border border-warning/30 bg-warning/10 px-4 py-3 text-warning">
             No shipping options available for this address.
           </div>
         ) : (
@@ -117,10 +117,10 @@ export function ShippingStep({ onNext, onBack }: ShippingStepProps) {
             {shippingOptions.map((option) => (
               <label
                 key={option.methodId}
-                className={`block p-4 border-2 rounded-lg cursor-pointer transition-colors ${
+                className={`block cursor-pointer rounded-lg border-2 p-4 transition-colors ${
                   selectedMethodId === option.methodId
-                    ? 'border-blue-600 bg-blue-50'
-                    : 'border-gray-200 hover:border-gray-300'
+                    ? 'border-primary bg-primary/10'
+                    : 'border-border hover:border-input'
                 }`}
               >
                 <div className="flex items-start">
@@ -130,23 +130,23 @@ export function ShippingStep({ onNext, onBack }: ShippingStepProps) {
                     value={option.methodId}
                     checked={selectedMethodId === option.methodId}
                     onChange={(e) => setSelectedMethodId(e.target.value)}
-                    className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500"
+                    className="mt-1 h-4 w-4 text-primary focus:ring-ring"
                   />
                   <div className="ml-3 flex-1">
-                    <div className="flex justify-between items-start">
+                    <div className="flex items-start justify-between">
                       <div>
-                        <div className="font-medium text-gray-900">{option.methodName}</div>
+                        <div className="font-medium text-foreground">{option.methodName}</div>
                         {option.description && (
-                          <div className="text-sm text-gray-500 mt-1">{option.description}</div>
+                          <div className="mt-1 text-sm text-muted-foreground">{option.description}</div>
                         )}
                         {option.estimatedDays && (
-                          <div className="text-sm text-gray-500 mt-1">
+                          <div className="mt-1 text-sm text-muted-foreground">
                             Estimated delivery: {option.estimatedDays} day
                             {option.estimatedDays !== 1 ? 's' : ''}
                           </div>
                         )}
                       </div>
-                      <div className="text-lg font-semibold text-gray-900 ml-4">
+                      <div className="ml-4 text-lg font-semibold text-foreground">
                         {new Intl.NumberFormat('en-US', {
                           style: 'currency',
                           currency: DEFAULT_CURRENCY,
@@ -162,7 +162,7 @@ export function ShippingStep({ onNext, onBack }: ShippingStepProps) {
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+        <div className="rounded border border-destructive/25 bg-destructive/10 px-4 py-3 text-destructive">
           {error}
         </div>
       )}
@@ -171,14 +171,14 @@ export function ShippingStep({ onNext, onBack }: ShippingStepProps) {
         <button
           type="button"
           onClick={onBack}
-          className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+          className="rounded-md border border-border bg-card px-6 py-2 text-foreground transition-colors hover:bg-muted"
         >
           Back
         </button>
         <button
           type="submit"
           disabled={isLoading || loadingOptions || !selectedMethodId}
-          className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="rounded-md bg-primary px-6 py-2 text-primary-foreground shadow-sm transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isLoading ? 'Saving...' : 'Continue to Payment'}
         </button>

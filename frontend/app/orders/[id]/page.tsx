@@ -4,6 +4,11 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { orderApi } from '@/lib/api-client';
 import { useCartStore } from '@/lib/cart.store';
+import {
+  fulfillmentStatusBadgeClass,
+  orderStatusBadgeClass,
+  paymentStatusBadgeClass,
+} from '@/lib/order-status-badges';
 import Link from 'next/link';
 
 interface OrderItem {
@@ -124,45 +129,14 @@ export default function OrderDetailPage() {
     }
   };
 
-  const getStatusColor = (status: string) => {
-    const colors: Record<string, string> = {
-      pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
-      processing: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
-      completed: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
-      cancelled: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
-    };
-    return colors[status] || 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300';
-  };
-
-  const getPaymentStatusColor = (status: string) => {
-    const colors: Record<string, string> = {
-      pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
-      paid: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
-      failed: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
-      refunded: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300',
-    };
-    return colors[status] || 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300';
-  };
-
-  const getFulfillmentStatusColor = (status: string) => {
-    const colors: Record<string, string> = {
-      unfulfilled: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300',
-      fulfilled: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
-      shipped: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
-      delivered: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
-      cancelled: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
-    };
-    return colors[status] || 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300';
-  };
-
   const formatAddress = (address: Address | Record<string, any>) => {
     if (!isAddress(address)) {
-      return <div className="text-sm text-gray-500 dark:text-gray-400">Address not available</div>;
+      return <div className="text-sm text-muted-foreground">Address not available</div>;
     }
     
     return (
-      <div className="text-sm text-gray-600 dark:text-gray-400">
-        <div className="font-medium text-gray-900 dark:text-zinc-50">
+      <div className="text-sm text-muted-foreground">
+        <div className="font-medium text-foreground">
           {address.firstName} {address.lastName}
         </div>
         {address.company && <div>{address.company}</div>}
@@ -189,8 +163,8 @@ export default function OrderDetailPage() {
   if (loading) {
     return (
       <div className="flex min-h-[40vh] flex-col items-center justify-center py-16">
-        <div className="h-10 w-10 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600 dark:border-zinc-600 dark:border-t-blue-400" aria-hidden />
-        <p className="mt-4 text-gray-500 dark:text-zinc-400">Loading order…</p>
+        <div className="h-10 w-10 animate-spin rounded-full border-2 border-muted border-t-primary" aria-hidden />
+        <p className="mt-4 text-muted-foreground">Loading order…</p>
       </div>
     );
   }
@@ -198,12 +172,12 @@ export default function OrderDetailPage() {
   if (error) {
     return (
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400" role="alert">
+        <div className="rounded-lg border border-destructive/25 bg-destructive/10 px-4 py-3 text-destructive" role="alert">
           {error}
         </div>
         <Link
           href="/orders"
-          className="mt-6 inline-block rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+          className="mt-6 inline-block rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-opacity hover:opacity-90"
         >
           Back to orders
         </Link>
@@ -221,16 +195,16 @@ export default function OrderDetailPage() {
       <div className="mb-6">
         <Link
           href="/orders"
-          className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 mb-4 inline-block"
+          className="mb-4 inline-block text-primary transition-colors hover:opacity-80"
         >
           ← Back to Orders
         </Link>
         <div className="flex justify-between items-start mt-4">
           <div>
-            <h1 className="text-2xl font-semibold text-gray-900 dark:text-zinc-50 mb-2">
+            <h1 className="mb-2 text-2xl font-semibold text-foreground">
               Order #{order.orderNumber}
             </h1>
-              <p className="text-gray-600 dark:text-gray-400">
+              <p className="text-muted-foreground">
                 Placed on {new Date(order.createdAt).toLocaleDateString('en-US', {
                   year: 'numeric',
                   month: 'long',
@@ -242,13 +216,13 @@ export default function OrderDetailPage() {
             </div>
             <div className="flex gap-2">
               <span
-                className={`px-3 py-1 text-sm font-medium rounded ${getStatusColor(order.status)}`}
+                className={`rounded px-3 py-1 text-sm font-medium ${orderStatusBadgeClass(order.status)}`}
                 title="Order Status"
               >
                 {order.status}
               </span>
               <span
-                className={`px-3 py-1 text-sm font-medium rounded ${getPaymentStatusColor(
+                className={`rounded px-3 py-1 text-sm font-medium ${paymentStatusBadgeClass(
                   order.paymentStatus,
                 )}`}
                 title="Payment Status"
@@ -256,7 +230,7 @@ export default function OrderDetailPage() {
                 {order.paymentStatus}
               </span>
               <span
-                className={`px-3 py-1 text-sm font-medium rounded ${getFulfillmentStatusColor(
+                className={`rounded px-3 py-1 text-sm font-medium ${fulfillmentStatusBadgeClass(
                   order.fulfillmentStatus,
                 )}`}
                 title="Fulfillment Status"
@@ -271,23 +245,23 @@ export default function OrderDetailPage() {
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Order Items */}
-            <div className="bg-white dark:bg-zinc-900 rounded-lg shadow-sm border border-gray-200 dark:border-zinc-800 p-6">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-zinc-50 mb-4">
+            <div className="rounded-lg border border-border bg-card p-6 shadow-sm">
+              <h2 className="mb-4 text-xl font-semibold text-foreground">
                 Order Items
               </h2>
               <div className="space-y-4">
                 {order.items.map((item) => (
                   <div
                     key={item.id}
-                    className="flex justify-between items-start pb-4 border-b border-gray-200 dark:border-zinc-800 last:border-0 last:pb-0"
+                    className="flex items-start justify-between border-b border-border pb-4 last:border-0 last:pb-0"
                   >
                     <div className="flex-1">
-                      <h3 className="font-medium text-gray-900 dark:text-zinc-50">
+                      <h3 className="font-medium text-foreground">
                         {item.name}
                       </h3>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">SKU: {item.sku}</p>
+                      <p className="text-sm text-muted-foreground">SKU: {item.sku}</p>
                       {item.attributes && Object.keys(item.attributes).length > 0 && (
-                        <div className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                        <div className="mt-1 text-sm text-muted-foreground">
                           {Object.entries(item.attributes).map(([key, value]) => (
                             <span key={key} className="mr-3">
                               {key}: {String(value)}
@@ -295,18 +269,18 @@ export default function OrderDetailPage() {
                           ))}
                         </div>
                       )}
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                      <p className="mt-1 text-sm text-muted-foreground">
                         Quantity: {item.quantity}
                       </p>
                     </div>
                     <div className="text-right">
-                      <div className="text-gray-900 dark:text-zinc-50 font-medium">
+                      <div className="font-medium text-foreground">
                         {new Intl.NumberFormat('en-US', {
                           style: 'currency',
                           currency: order.currency,
                         }).format(item.rowTotal)}
                       </div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                      <div className="text-sm text-muted-foreground">
                         {new Intl.NumberFormat('en-US', {
                           style: 'currency',
                           currency: order.currency,
@@ -314,7 +288,7 @@ export default function OrderDetailPage() {
                         each
                       </div>
                       {item.discountAmount > 0 && (
-                        <div className="text-sm text-green-600 dark:text-green-400">
+                        <div className="text-sm text-success">
                           Discount: -{new Intl.NumberFormat('en-US', {
                             style: 'currency',
                             currency: order.currency,
@@ -329,11 +303,11 @@ export default function OrderDetailPage() {
 
             {/* Notes */}
             {order.notes && (
-              <div className="bg-white dark:bg-zinc-900 rounded-lg shadow-sm border border-gray-200 dark:border-zinc-800 p-6">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-zinc-50 mb-2">
+              <div className="rounded-lg border border-border bg-card p-6 shadow-sm">
+                <h2 className="mb-2 text-xl font-semibold text-foreground">
                   Order Notes
                 </h2>
-                <p className="text-gray-600 dark:text-gray-400">{order.notes}</p>
+                <p className="text-muted-foreground">{order.notes}</p>
               </div>
             )}
           </div>
@@ -341,12 +315,12 @@ export default function OrderDetailPage() {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Order Summary */}
-            <div className="bg-white dark:bg-zinc-900 rounded-lg shadow-sm border border-gray-200 dark:border-zinc-800 p-6">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-zinc-50 mb-4">
+            <div className="rounded-lg border border-border bg-card p-6 shadow-sm">
+              <h2 className="mb-4 text-xl font-semibold text-foreground">
                 Order Summary
               </h2>
               <div className="space-y-2 text-sm">
-                <div className="flex justify-between text-gray-600 dark:text-gray-400">
+                <div className="flex justify-between text-muted-foreground">
                   <span>Subtotal</span>
                   <span>
                     {new Intl.NumberFormat('en-US', {
@@ -356,7 +330,7 @@ export default function OrderDetailPage() {
                   </span>
                 </div>
                 {order.discountTotal > 0 && (
-                  <div className="flex justify-between text-green-600 dark:text-green-400">
+                  <div className="flex justify-between text-success">
                     <span>Discount</span>
                     <span>
                       -{new Intl.NumberFormat('en-US', {
@@ -366,7 +340,7 @@ export default function OrderDetailPage() {
                     </span>
                   </div>
                 )}
-                <div className="flex justify-between text-gray-600 dark:text-gray-400">
+                <div className="flex justify-between text-muted-foreground">
                   <span>Shipping</span>
                   <span>
                     {new Intl.NumberFormat('en-US', {
@@ -375,7 +349,7 @@ export default function OrderDetailPage() {
                     }).format(order.shippingTotal)}
                   </span>
                 </div>
-                <div className="flex justify-between text-gray-600 dark:text-gray-400">
+                <div className="flex justify-between text-muted-foreground">
                   <span>Tax</span>
                   <span>
                     {new Intl.NumberFormat('en-US', {
@@ -384,8 +358,8 @@ export default function OrderDetailPage() {
                     }).format(order.taxTotal)}
                   </span>
                 </div>
-                <div className="border-t border-gray-200 dark:border-zinc-800 pt-2 mt-2">
-                  <div className="flex justify-between text-lg font-semibold text-gray-900 dark:text-zinc-50">
+                <div className="mt-2 border-t border-border pt-2">
+                  <div className="flex justify-between text-lg font-semibold text-foreground">
                     <span>Total</span>
                     <span>
                       {new Intl.NumberFormat('en-US', {
@@ -399,18 +373,18 @@ export default function OrderDetailPage() {
             </div>
 
             {/* Actions */}
-            <div className="bg-white dark:bg-zinc-900 rounded-lg shadow-sm border border-gray-200 dark:border-zinc-800 p-6">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-zinc-50 mb-4">
+            <div className="rounded-lg border border-border bg-card p-6 shadow-sm">
+              <h2 className="mb-4 text-xl font-semibold text-foreground">
                 Actions
               </h2>
               {reorderError && (
-                <p className="mb-3 text-sm text-amber-600 dark:text-amber-400" role="alert">{reorderError}</p>
+                <p className="mb-3 text-sm text-warning" role="alert">{reorderError}</p>
               )}
               <button
                 type="button"
                 onClick={handleReorder}
                 disabled={reorderLoading}
-                className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 border border-blue-600 dark:border-blue-400 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-md border border-primary px-4 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/10 disabled:cursor-not-allowed disabled:opacity-50"
                 title="Add all items from this order to a new cart"
               >
                 {reorderLoading ? (
@@ -425,27 +399,27 @@ export default function OrderDetailPage() {
             </div>
 
             {/* Billing Address */}
-            <div className="bg-white dark:bg-zinc-900 rounded-lg shadow-sm border border-gray-200 dark:border-zinc-800 p-6">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-zinc-50 mb-4">
+            <div className="rounded-lg border border-border bg-card p-6 shadow-sm">
+              <h2 className="mb-4 text-xl font-semibold text-foreground">
                 Billing Address
               </h2>
               {formatAddress(order.billingAddress)}
             </div>
 
             {/* Shipping Address */}
-            <div className="bg-white dark:bg-zinc-900 rounded-lg shadow-sm border border-gray-200 dark:border-zinc-800 p-6">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-zinc-50 mb-4">
+            <div className="rounded-lg border border-border bg-card p-6 shadow-sm">
+              <h2 className="mb-4 text-xl font-semibold text-foreground">
                 Shipping Address
               </h2>
               {formatAddress(order.shippingAddress)}
             </div>
 
             {/* Customer Info */}
-            <div className="bg-white dark:bg-zinc-900 rounded-lg shadow-sm border border-gray-200 dark:border-zinc-800 p-6">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-zinc-50 mb-4">
+            <div className="rounded-lg border border-border bg-card p-6 shadow-sm">
+              <h2 className="mb-4 text-xl font-semibold text-foreground">
                 Customer Information
               </h2>
-              <div className="text-sm text-gray-600 dark:text-gray-400">
+              <div className="text-sm text-muted-foreground">
                 <div className="mb-1">
                   <span className="font-medium">Email:</span> {order.customerEmail}
                 </div>

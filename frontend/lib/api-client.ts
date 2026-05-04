@@ -18,7 +18,8 @@ export class ApiError extends Error {
   }
 }
 
-async function fetchApi<T>(
+/** Low-level JSON fetch to `NEXT_PUBLIC_API_URL`. Exported for server-side CMS / layout calls. */
+export async function fetchApi<T>(
   endpoint: string,
   options: RequestInit = {},
 ): Promise<T> {

@@ -11,6 +11,10 @@ function formatPrice(value: string | number, currency = DEFAULT_CURRENCY): strin
   return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(isNaN(n) ? 0 : n);
 }
 
+/** Matches primary actions elsewhere on product cards (same as Add to cart). */
+const productCardPrimaryCtaClass =
+  'w-full rounded-md bg-primary py-2 text-sm font-medium text-primary-foreground shadow-sm transition-opacity hover:opacity-90';
+
 /** Variant to use for add-to-cart: first real variant, or synthetic for simple product with no variants. */
 export function getVariantForCart(product: Product): { id: string; productId: string; price: number } | null {
   const variants = product.variants;
@@ -61,8 +65,8 @@ export function ProductCard({ product, showViewOnly = false, availableQuantity }
   };
 
   return (
-    <div className="group flex flex-col overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition hover:shadow-md dark:border-zinc-700 dark:bg-zinc-900">
-      <Link href={`/products/${product.slug}`} className="relative aspect-square overflow-hidden bg-gray-100 dark:bg-zinc-800">
+    <div className="group flex flex-col overflow-hidden rounded-lg border border-border bg-card text-card-foreground shadow-sm transition-shadow hover:shadow-md">
+      <Link href={`/products/${product.slug}`} className="relative aspect-square overflow-hidden bg-muted">
         {imageUrl ? (
           <img
             src={imageUrl}
@@ -70,18 +74,18 @@ export function ProductCard({ product, showViewOnly = false, availableQuantity }
             className="h-full w-full object-cover transition group-hover:scale-105"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-gray-400 dark:text-zinc-500">
+          <div className="flex h-full w-full items-center justify-center text-muted-foreground">
             No image
           </div>
         )}
       </Link>
       <div className="flex flex-1 flex-col p-4">
         <Link href={`/products/${product.slug}`}>
-          <h3 className="font-medium text-gray-900 dark:text-zinc-50 line-clamp-2">
+          <h3 className="font-medium text-foreground line-clamp-2">
             {product.name}
           </h3>
         </Link>
-        <p className="mt-1 text-sm font-medium text-gray-700 dark:text-zinc-300">
+        <p className="mt-1 text-sm font-medium text-foreground/90">
           {formatPrice(product.basePrice)}
         </p>
         <div className="mt-auto pt-3">
@@ -90,18 +94,18 @@ export function ProductCard({ product, showViewOnly = false, availableQuantity }
               type="button"
               onClick={handleAddToCart}
               disabled={adding}
-              className="w-full rounded-md bg-gray-900 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+              className={`${productCardPrimaryCtaClass} disabled:opacity-50`}
             >
               {added ? 'Added' : adding ? 'Adding…' : 'Add to cart'}
             </button>
           ) : variant && !showViewOnly && availableQuantity !== undefined && availableQuantity === 0 ? (
-            <div className="w-full rounded-md border border-amber-200 bg-amber-50 py-2 text-center text-sm font-medium text-amber-800 dark:border-amber-700 dark:bg-amber-900/20 dark:text-amber-200">
+            <div className="w-full rounded-md border border-warning/30 bg-warning/10 py-2 text-center text-sm font-medium text-warning">
               Stock unavailable for this product
             </div>
           ) : (
             <Link
               href={`/products/${product.slug}`}
-              className="block w-full rounded-md border border-gray-300 py-2 text-center text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-zinc-600 dark:text-zinc-300 dark:hover:bg-zinc-800"
+              className={`block text-center ${productCardPrimaryCtaClass}`}
             >
               View
             </Link>

@@ -12,13 +12,7 @@ function CheckoutContent() {
   const cartId = searchParams.get('cartId');
   const { user, isAuthenticated } = useAuthStore();
 
-  const {
-    checkoutId,
-    checkout,
-    isLoading,
-    startCheckout,
-    refreshCheckout,
-  } = useCheckout();
+  const { checkoutId, checkout, isLoading, startCheckout, refreshCheckout } = useCheckout();
 
   const [initializing, setInitializing] = useState(true);
 
@@ -49,10 +43,13 @@ function CheckoutContent() {
 
   if (initializing || (isLoading && !checkout)) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
-          <p className="mt-4 text-gray-600 dark:text-zinc-400">Loading checkout…</p>
+          <div
+            className="inline-block h-12 w-12 animate-spin rounded-full border-2 border-muted border-t-primary"
+            aria-hidden
+          />
+          <p className="mt-4 text-muted-foreground">Loading checkout…</p>
         </div>
       </div>
     );
@@ -60,17 +57,16 @@ function CheckoutContent() {
 
   if (!checkout) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-zinc-50">
-            Checkout not found
-          </h1>
-          <p className="text-gray-600 dark:text-zinc-400 mb-4">
+          <h1 className="mb-4 text-2xl font-semibold text-foreground">Checkout not found</h1>
+          <p className="mb-4 text-muted-foreground">
             Unable to load checkout session. Your cart may be empty or expired.
           </p>
           <button
+            type="button"
             onClick={() => router.push('/cart')}
-            className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            className="rounded-md bg-primary px-6 py-2 text-primary-foreground shadow-sm transition-opacity hover:opacity-90"
           >
             Return to cart
           </button>
@@ -80,16 +76,14 @@ function CheckoutContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-zinc-900 py-8">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-muted/30 py-8">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-zinc-50">Checkout</h1>
-          <p className="text-gray-600 dark:text-zinc-400 mt-1">
-            Complete your purchase in one step
-          </p>
+          <h1 className="text-3xl font-bold text-foreground">Checkout</h1>
+          <p className="mt-1 text-muted-foreground">Complete your purchase in one step</p>
         </div>
 
-        <div className="bg-white dark:bg-zinc-800 rounded-lg shadow-sm p-6 md:p-8">
+        <div className="rounded-lg bg-card p-6 shadow-sm md:p-8">
           <OnePageCheckout />
         </div>
       </div>

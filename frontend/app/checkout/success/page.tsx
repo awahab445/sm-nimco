@@ -128,10 +128,10 @@ export default function CheckoutSuccessPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-          <p className="mt-4 text-gray-600">Loading order details...</p>
+          <div className="inline-block h-12 w-12 animate-spin rounded-full border-2 border-muted border-t-primary" />
+          <p className="mt-4 text-muted-foreground">Loading order details...</p>
         </div>
       </div>
     );
@@ -139,14 +139,15 @@ export default function CheckoutSuccessPage() {
 
   if (error || !order) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-sm p-8 text-center">
-          <div className="text-red-600 text-5xl mb-4">✕</div>
-          <h1 className="text-2xl font-semibold mb-2">Order Not Found</h1>
-          <p className="text-gray-600 mb-6">{error || 'Unable to load order details.'}</p>
+      <div className="flex min-h-screen items-center justify-center bg-muted/30">
+        <div className="w-full max-w-md rounded-lg bg-card p-8 text-center shadow-sm">
+          <div className="mb-4 text-5xl text-destructive">✕</div>
+          <h1 className="mb-2 text-2xl font-semibold text-foreground">Order Not Found</h1>
+          <p className="mb-6 text-muted-foreground">{error || 'Unable to load order details.'}</p>
           <button
+            type="button"
             onClick={() => router.push('/')}
-            className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            className="rounded-md bg-primary px-6 py-2 text-primary-foreground shadow-sm transition-opacity hover:opacity-90"
           >
             Return to Home
           </button>
@@ -169,22 +170,22 @@ export default function CheckoutSuccessPage() {
   const isCODPending = isCOD && /^(PENDING|PROCESSING)$/i.test(paymentStatus);
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white rounded-lg shadow-sm p-8">
+    <div className="min-h-screen bg-muted/30 py-8">
+      <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8">
+        <div className="rounded-lg bg-card p-8 shadow-sm">
           {/* Success Icon */}
-          <div className="text-center mb-6">
+          <div className="mb-6 text-center">
             {isPaymentCompleted || isCODPending ? (
-              <div className="text-green-600 text-6xl mb-4">✓</div>
+              <div className="mb-4 text-6xl text-success">✓</div>
             ) : isPaymentPending ? (
-              <div className="text-yellow-600 text-6xl mb-4">⏳</div>
+              <div className="mb-4 text-6xl text-warning">⏳</div>
             ) : (
-              <div className="text-red-600 text-6xl mb-4">✕</div>
+              <div className="mb-4 text-6xl text-destructive">✕</div>
             )}
           </div>
 
           {/* Title */}
-          <h1 className="text-3xl font-bold text-center mb-2">
+          <h1 className="mb-2 text-center text-3xl font-bold text-foreground">
             {isPaymentCompleted || isCODPending
               ? 'Order Confirmed!'
               : isPaymentPending
@@ -192,7 +193,7 @@ export default function CheckoutSuccessPage() {
                 : 'Payment Failed'}
           </h1>
 
-          <p className="text-center text-gray-600 mb-8">
+          <p className="mb-8 text-center text-muted-foreground">
             {isPaymentCompleted
               ? 'Thank you for your order. We have received your payment and will process your order shortly.'
               : isCODPending
@@ -203,19 +204,19 @@ export default function CheckoutSuccessPage() {
           </p>
 
           {/* Order Details */}
-          <div className="border-t border-gray-200 pt-6 mb-6">
-            <h2 className="text-lg font-semibold mb-4">Order Details</h2>
+          <div className="mb-6 border-t border-border pt-6">
+            <h2 className="mb-4 text-lg font-semibold text-foreground">Order Details</h2>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-gray-600">Order Number:</span>
+                <span className="text-muted-foreground">Order Number:</span>
                 <span className="font-medium">{order.orderNumber}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Order Status:</span>
+                <span className="text-muted-foreground">Order Status:</span>
                 <span className="font-medium capitalize">{order.status.toLowerCase()}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Total Amount:</span>
+                <span className="text-muted-foreground">Total Amount:</span>
                 <span className="font-medium">
                   {new Intl.NumberFormat('en-US', {
                     style: 'currency',
@@ -227,19 +228,19 @@ export default function CheckoutSuccessPage() {
                 <>
                   {payment.paymentMethod?.name && (
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Payment Method:</span>
+                      <span className="text-muted-foreground">Payment Method:</span>
                       <span className="font-medium">{payment.paymentMethod.name}</span>
                     </div>
                   )}
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Payment Status:</span>
+                    <span className="text-muted-foreground">Payment Status:</span>
                     <span
                       className={`font-medium ${
                         isPaymentCompleted || isCODPending
-                          ? 'text-green-600'
+                          ? 'text-success'
                           : isPaymentPending
-                            ? 'text-yellow-600'
-                            : 'text-red-600'
+                            ? 'text-warning'
+                            : 'text-destructive'
                       }`}
                     >
                       {isCODPending
@@ -248,7 +249,7 @@ export default function CheckoutSuccessPage() {
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Payment Amount:</span>
+                    <span className="text-muted-foreground">Payment Amount:</span>
                     <span className="font-medium">
                       {new Intl.NumberFormat('en-US', {
                         style: 'currency',
@@ -263,8 +264,8 @@ export default function CheckoutSuccessPage() {
 
           {/* Customer Email */}
           {order.customerEmail && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-              <p className="text-sm text-blue-800">
+            <div className="mb-6 rounded-lg border border-primary/25 bg-primary/10 p-4">
+              <p className="text-sm text-foreground">
                 A confirmation email has been sent to <strong>{order.customerEmail}</strong>
               </p>
             </div>
@@ -272,13 +273,13 @@ export default function CheckoutSuccessPage() {
 
           {/* Create account with same email (guest checkout) */}
           {order.customerEmail && !isAuthenticated && (
-            <div className="border border-gray-200 rounded-lg p-4 mb-6 bg-gray-50">
-              <h3 className="font-medium text-gray-900 mb-2">Create an account</h3>
-              <p className="text-sm text-gray-600 mb-3">
+            <div className="mb-6 rounded-lg border border-border bg-muted/40 p-4">
+              <h3 className="mb-2 font-medium text-foreground">Create an account</h3>
+              <p className="mb-3 text-sm text-muted-foreground">
                 Use the same email <strong>{order.customerEmail}</strong> to create an account. We&apos;ll send you a link to set your password so you can log in next time.
               </p>
               {accountCreationSent ? (
-                <p className="text-sm text-green-700">
+                <p className="text-sm text-success">
                   Check your email for a link to create your password. The link expires in 24 hours.
                 </p>
               ) : (
@@ -298,12 +299,12 @@ export default function CheckoutSuccessPage() {
                         setAccountCreationLoading(false);
                       }
                     }}
-                    className="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 disabled:opacity-50"
+                    className="rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground shadow-sm transition-opacity hover:opacity-90 disabled:opacity-50"
                   >
                     {accountCreationLoading ? 'Sending…' : 'Create account with this email'}
                   </button>
                   {accountCreationError && (
-                    <p className="text-sm text-red-600 mt-2">{accountCreationError}</p>
+                    <p className="mt-2 text-sm text-destructive">{accountCreationError}</p>
                   )}
                 </>
               )}
@@ -315,14 +316,14 @@ export default function CheckoutSuccessPage() {
             {isPaymentFailed && (
               <button
                 onClick={() => router.push(`/checkout?orderId=${order.id}`)}
-                className="flex-1 px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                className="flex-1 rounded-md bg-primary px-6 py-2 text-primary-foreground shadow-sm transition-opacity hover:opacity-90"
               >
                 Retry Payment
               </button>
             )}
             <button
               onClick={() => router.push('/')}
-              className="flex-1 px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+              className="flex-1 rounded-md border border-border bg-card px-6 py-2 text-foreground transition-colors hover:bg-muted"
             >
               Continue Shopping
             </button>

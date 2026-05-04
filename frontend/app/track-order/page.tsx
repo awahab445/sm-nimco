@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { orderApi } from '@/lib/api-client';
+import { storefrontUi } from '@/lib/storefront-ui';
 
 export default function TrackOrderPage() {
   const router = useRouter();
@@ -15,7 +16,9 @@ export default function TrackOrderPage() {
 
   useEffect(() => {
     document.title = 'Track your order | E-commerce';
-    return () => { document.title = 'E-commerce'; };
+    return () => {
+      document.title = 'E-commerce';
+    };
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -63,26 +66,21 @@ export default function TrackOrderPage() {
 
   return (
     <div className="mx-auto max-w-md px-4 py-12 sm:px-6 lg:px-8">
-      <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
-        <h1 className="text-xl font-semibold text-gray-900 dark:text-zinc-50">
-          Track your order
-        </h1>
-        <p className="mt-1 text-sm text-gray-600 dark:text-zinc-400">
+      <div className="rounded-lg border border-border bg-card p-6 shadow-sm">
+        <h1 className="text-xl font-semibold text-foreground">Track your order</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
           Enter the email address and order number from your confirmation to view order status.
         </p>
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           {error && (
-            <div
-              className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300"
-              role="alert"
-            >
+            <div className={storefrontUi.alertErrorSm} role="alert">
               {error}
             </div>
           )}
           {validationError && (
             <div
-              className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-200"
+              className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning"
               role="alert"
             >
               {validationError}
@@ -90,10 +88,7 @@ export default function TrackOrderPage() {
           )}
 
           <div>
-            <label
-              htmlFor="track-email"
-              className="block text-sm font-medium text-gray-700 dark:text-zinc-300"
-            >
+            <label htmlFor="track-email" className={storefrontUi.label}>
               Email address
             </label>
             <input
@@ -103,16 +98,13 @@ export default function TrackOrderPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50 dark:placeholder-zinc-400 sm:text-sm"
+              className={storefrontUi.inputMt}
               disabled={loading}
             />
           </div>
 
           <div>
-            <label
-              htmlFor="track-order-number"
-              className="block text-sm font-medium text-gray-700 dark:text-zinc-300"
-            >
+            <label htmlFor="track-order-number" className={storefrontUi.label}>
               Order number
             </label>
             <input
@@ -121,7 +113,7 @@ export default function TrackOrderPage() {
               value={orderNumber}
               onChange={(e) => setOrderNumber(e.target.value)}
               placeholder="e.g. ORD-20241221-00001"
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50 dark:placeholder-zinc-400 sm:text-sm"
+              className={storefrontUi.inputMt}
               disabled={loading}
             />
           </div>
@@ -130,27 +122,24 @@ export default function TrackOrderPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-offset-zinc-900"
+              className="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-ring/30 focus:ring-offset-2 focus:ring-offset-background disabled:opacity-50"
             >
               {loading ? 'Looking up…' : 'View order'}
             </button>
             <Link
               href="/"
-              className="w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-center text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700 dark:focus:ring-offset-zinc-900"
+              className="w-full rounded-md border border-border bg-card px-4 py-2 text-center text-sm font-medium text-foreground transition-colors hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring/30 focus:ring-offset-2 focus:ring-offset-background"
             >
               Cancel
             </Link>
           </div>
         </form>
 
-        <p className="mt-6 text-center text-sm text-gray-500 dark:text-zinc-400">
-          <Link
-            href="/login"
-            className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400"
-          >
+        <p className="mt-6 text-center text-sm text-muted-foreground">
+          <Link href="/login" className={storefrontUi.link}>
             Log in
-          </Link>
-          {' '}to see all your orders.
+          </Link>{' '}
+          to see all your orders.
         </p>
       </div>
     </div>

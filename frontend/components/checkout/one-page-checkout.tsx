@@ -6,6 +6,7 @@ import { useCheckout } from '@/lib/checkout-context';
 import { useAuthStore } from '@/lib/auth.store';
 import { useCartStore } from '@/lib/cart.store';
 import { DEFAULT_CURRENCY } from '@/lib/config';
+import { storefrontUi } from '@/lib/storefront-ui';
 import { Address, AddressWithId, addressApi, shippingApi, paymentApi, promotionApi, ValidatePromotionItem } from '@/lib/api-client';
 
 const emptyAddress: Address = {
@@ -458,19 +459,18 @@ export function OnePageCheckout() {
 
   if (!checkout) return null;
 
-  const inputClass =
-    'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50';
-  const labelClass = 'block text-sm font-medium mb-1 text-gray-700 dark:text-zinc-300';
+  const inputClass = storefrontUi.input;
+  const labelClass = storefrontUi.labelMb;
 
   return (
     <form onSubmit={handlePlaceOrder} className="space-y-8">
       {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800 dark:border-red-800 dark:bg-red-900/20 dark:text-red-200">
+        <div className={storefrontUi.alertError}>
           {error}
         </div>
       )}
       {formError && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800 dark:border-red-800 dark:bg-red-900/20 dark:text-red-200">
+        <div className={storefrontUi.alertError}>
           {formError}
         </div>
       )}
@@ -480,15 +480,15 @@ export function OnePageCheckout() {
           {/* Address: saved-address selector (logged-in with addresses) or form (guest / no addresses / Add new) */}
           {loadingAddresses ? (
             <section>
-              <div className="flex items-center gap-2 text-gray-600 dark:text-zinc-400">
-                <div className="h-5 w-5 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600" />
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <div className="h-5 w-5 animate-spin rounded-full border-2 border-muted border-t-primary" />
                 Loading your addresses…
               </div>
             </section>
           ) : showAddressForm ? (
             <>
               {isAuthenticated && hasSavedAddresses && (
-                <p className="text-sm text-gray-600 dark:text-zinc-400">
+                <p className="text-sm text-muted-foreground">
                   Adding a new address. You can also{' '}
                   <button
                     type="button"
@@ -501,7 +501,7 @@ export function OnePageCheckout() {
                       setBillingAddress(addressWithIdToAddress(defaultBilling));
                       setShippingAddress(addressWithIdToAddress(defaultShipping));
                     }}
-                    className="text-blue-600 hover:underline dark:text-blue-400"
+                    className={`${storefrontUi.link} underline-offset-2 hover:underline`}
                   >
                     use a saved address
                   </button>
@@ -509,7 +509,7 @@ export function OnePageCheckout() {
               )}
               {/* Billing Address form */}
               <section>
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-zinc-50 mb-4">
+                <h2 className="mb-4 text-xl font-semibold text-foreground">
                   Billing address
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -629,9 +629,9 @@ export function OnePageCheckout() {
                   type="checkbox"
                   checked={useSameAddress}
                   onChange={(e) => setUseSameAddress(e.target.checked)}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  className={storefrontUi.checkbox}
                 />
-                <label htmlFor="use-same-address" className="ml-2 text-sm text-gray-700 dark:text-zinc-300">
+                <label htmlFor="use-same-address" className="ml-2 text-sm text-foreground/90">
                   Use same address for shipping
                 </label>
               </div>
@@ -644,9 +644,9 @@ export function OnePageCheckout() {
                       type="checkbox"
                       checked={saveBillingAddress}
                       onChange={(e) => setSaveBillingAddress(e.target.checked)}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded dark:border-zinc-600"
+                      className={storefrontUi.checkbox}
                     />
-                    <label htmlFor="save-billing-address" className="ml-2 text-sm text-gray-700 dark:text-zinc-300">
+                    <label htmlFor="save-billing-address" className="ml-2 text-sm text-foreground/90">
                       Save billing address to my address book
                     </label>
                   </div>
@@ -657,9 +657,9 @@ export function OnePageCheckout() {
                         type="checkbox"
                         checked={saveShippingAddress}
                         onChange={(e) => setSaveShippingAddress(e.target.checked)}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded dark:border-zinc-600"
+                        className={storefrontUi.checkbox}
                       />
-                      <label htmlFor="save-shipping-address" className="ml-2 text-sm text-gray-700 dark:text-zinc-300">
+                      <label htmlFor="save-shipping-address" className="ml-2 text-sm text-foreground/90">
                         Save shipping address to my address book
                       </label>
                     </div>
@@ -669,7 +669,7 @@ export function OnePageCheckout() {
 
               {!useSameAddress && (
                 <section>
-                  <h2 className="text-xl font-semibold text-gray-900 dark:text-zinc-50 mb-4">
+                  <h2 className="mb-4 text-xl font-semibold text-foreground">
                     Shipping address
                   </h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -772,7 +772,7 @@ export function OnePageCheckout() {
             <>
               {/* Saved addresses: dropdowns */}
               <section>
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-zinc-50 mb-4">
+                <h2 className="mb-4 text-xl font-semibold text-foreground">
                   Billing address
                 </h2>
                 <label htmlFor="saved-billing" className="sr-only">Choose billing address</label>
@@ -787,7 +787,7 @@ export function OnePageCheckout() {
                       if (a) setBillingAddress(addressWithIdToAddress(a));
                     }
                   }}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50"
+                  className={storefrontUi.select}
                 >
                   {savedAddresses.map((a) => (
                     <option key={a.id} value={a.id}>
@@ -810,16 +810,16 @@ export function OnePageCheckout() {
                       if (a) setShippingAddress(addressWithIdToAddress(a));
                     }
                   }}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  className={storefrontUi.checkbox}
                 />
-                <label htmlFor="use-same-address-saved" className="ml-2 text-sm text-gray-700 dark:text-zinc-300">
+                <label htmlFor="use-same-address-saved" className="ml-2 text-sm text-foreground/90">
                   Use same address for shipping
                 </label>
               </div>
 
               {!useSameAddress && (
                 <section>
-                  <h2 className="text-xl font-semibold text-gray-900 dark:text-zinc-50 mb-4">
+                  <h2 className="mb-4 text-xl font-semibold text-foreground">
                     Shipping address
                   </h2>
                   <label htmlFor="saved-shipping" className="sr-only">Choose shipping address</label>
@@ -834,7 +834,7 @@ export function OnePageCheckout() {
                         if (a) setShippingAddress(addressWithIdToAddress(a));
                       }
                     }}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50"
+                    className={storefrontUi.select}
                   >
                     {savedAddresses.map((a) => (
                       <option key={a.id} value={a.id}>
@@ -854,7 +854,7 @@ export function OnePageCheckout() {
                     setBillingAddress(emptyAddress);
                     setShippingAddress(emptyAddress);
                   }}
-                  className="text-blue-600 hover:underline dark:text-blue-400"
+                  className={`${storefrontUi.link} underline-offset-2 hover:underline`}
                 >
                   Add new address
                 </button>
@@ -864,22 +864,22 @@ export function OnePageCheckout() {
 
           {/* Shipping Method */}
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-zinc-50 mb-4">
+            <h2 className="mb-4 text-xl font-semibold text-foreground">
               Shipping method
             </h2>
             {!validateAddress(effectiveShippingAddress) ? (
-              <p className="text-sm text-gray-500 dark:text-zinc-400">
+              <p className="text-sm text-muted-foreground">
                 Complete the shipping address above to see options.
               </p>
             ) : loadingShipping ? (
-              <div className="flex items-center gap-2 text-gray-600 dark:text-zinc-400">
-                <div className="h-5 w-5 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600" />
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <div className="h-5 w-5 animate-spin rounded-full border-2 border-muted border-t-primary" />
                 Loading shipping options…
               </div>
             ) : shippingError ? (
-              <p className="text-sm text-red-600 dark:text-red-400">{shippingError}</p>
+              <p className="text-sm text-destructive">{shippingError}</p>
             ) : shippingOptions.length === 0 ? (
-              <p className="text-sm text-amber-600 dark:text-amber-400">
+              <p className="text-sm text-warning">
                 No shipping options available for this address.
               </p>
             ) : (
@@ -887,10 +887,10 @@ export function OnePageCheckout() {
                 {shippingOptions.map((opt) => (
                   <label
                     key={opt.methodId}
-                    className={`flex items-center gap-3 p-4 border-2 rounded-lg cursor-pointer transition-colors ${
+                    className={`flex cursor-pointer items-center gap-3 rounded-lg border-2 p-4 transition-colors ${
                       selectedShippingId === opt.methodId
-                        ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-500'
-                        : 'border-gray-200 dark:border-zinc-600 hover:border-gray-300'
+                        ? 'border-primary bg-primary/10'
+                        : 'border-border hover:border-input'
                     }`}
                   >
                     <input
@@ -899,19 +899,19 @@ export function OnePageCheckout() {
                       value={opt.methodId}
                       checked={selectedShippingId === opt.methodId}
                       onChange={() => setSelectedShippingId(opt.methodId)}
-                      className="h-4 w-4 text-blue-600"
+                      className="h-4 w-4 text-primary"
                     />
                     <div className="flex-1">
-                      <span className="font-medium text-gray-900 dark:text-zinc-50">
+                      <span className="font-medium text-foreground">
                         {opt.methodName}
                       </span>
                       {opt.estimatedDays != null && (
-                        <span className="ml-2 text-sm text-gray-500 dark:text-zinc-400">
+                        <span className="ml-2 text-sm text-muted-foreground">
                           ({opt.estimatedDays} day{opt.estimatedDays !== 1 ? 's' : ''})
                         </span>
                       )}
                     </div>
-                    <span className="font-medium text-gray-900 dark:text-zinc-50">
+                    <span className="font-medium text-foreground">
                       {formatPrice(opt.cost, DEFAULT_CURRENCY)}
                     </span>
                   </label>
@@ -922,20 +922,20 @@ export function OnePageCheckout() {
 
           {/* Payment & Contact */}
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-zinc-50 mb-4">
+            <h2 className="mb-4 text-xl font-semibold text-foreground">
               Payment & contact
             </h2>
             {loadingPaymentMethods ? (
-              <p className="text-sm text-gray-500">Loading payment methods…</p>
+              <p className="text-sm text-muted-foreground">Loading payment methods…</p>
             ) : (
               <div className="space-y-2 mb-6">
                 {paymentMethods.map((m) => (
                   <label
                     key={m.code}
-                    className={`flex items-center gap-3 p-4 border-2 rounded-lg cursor-pointer ${
+                    className={`flex cursor-pointer items-center gap-3 rounded-lg border-2 p-4 ${
                       selectedPaymentCode === m.code
-                        ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-500'
-                        : 'border-gray-200 dark:border-zinc-600'
+                        ? 'border-primary bg-primary/10'
+                        : 'border-border'
                     }`}
                   >
                     <input
@@ -944,9 +944,9 @@ export function OnePageCheckout() {
                       value={m.code}
                       checked={selectedPaymentCode === m.code}
                       onChange={() => setSelectedPaymentCode(m.code)}
-                      className="h-4 w-4 text-blue-600"
+                      className="h-4 w-4 text-primary"
                     />
-                    <span className="font-medium text-gray-900 dark:text-zinc-50">{m.name}</span>
+                    <span className="font-medium text-foreground">{m.name}</span>
                   </label>
                 ))}
               </div>
@@ -991,14 +991,14 @@ export function OnePageCheckout() {
 
         {/* Order summary sidebar */}
         <div className="lg:col-span-1">
-          <div className="lg:sticky lg:top-8 rounded-lg border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800/50 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-zinc-50 mb-4">
+          <div className="lg:sticky lg:top-8 rounded-lg border border-border bg-muted/40 p-6">
+            <h2 className="mb-4 text-lg font-semibold text-foreground">
               Order summary
             </h2>
-            <p className="text-xs text-gray-500 dark:text-zinc-400 mb-3">
+            <p className="mb-3 text-xs text-muted-foreground">
               Update quantity or remove items before placing your order.
             </p>
-            <ul className="divide-y divide-gray-200 dark:divide-zinc-600 mb-4">
+            <ul className="mb-4 divide-y divide-border">
               {checkout.items.map((item, idx) => {
                 const qty = localQty[item.variantId] ?? item.quantity;
                 const rowTotal = item.price * (localQty[item.variantId] ?? item.quantity);
@@ -1036,7 +1036,7 @@ export function OnePageCheckout() {
                   <li key={item.variantId + idx} className="py-4 first:pt-0">
                     <div className="flex gap-3">
                       {/* Item image */}
-                      <div className="flex-shrink-0 w-14 h-14 rounded-md bg-gray-100 dark:bg-zinc-700 overflow-hidden">
+                      <div className="h-14 w-14 flex-shrink-0 overflow-hidden rounded-md bg-muted">
                         {item.productImage ? (
                           <img
                             src={item.productImage}
@@ -1044,7 +1044,7 @@ export function OnePageCheckout() {
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-gray-400 dark:text-zinc-500 text-xs">
+                          <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">
                             No image
                           </div>
                         )}
@@ -1053,7 +1053,7 @@ export function OnePageCheckout() {
                       <div className="flex-1 min-w-0">
                         <div className="flex justify-between gap-2">
                           <div>
-                            <p className="font-medium text-gray-900 dark:text-zinc-50 text-sm">
+                            <p className="text-sm font-medium text-foreground">
                               {item.productName ?? 'Product'}
                             </p>
                             {(() => {
@@ -1062,14 +1062,14 @@ export function OnePageCheckout() {
                               );
                               if (attrLines.length > 0) {
                                 return (
-                                  <p className="text-xs text-gray-500 dark:text-zinc-400 mt-0.5">
+                                  <p className="mt-0.5 text-xs text-muted-foreground">
                                     {attrLines.join(' · ')}
                                   </p>
                                 );
                               }
                               if (item.variantName) {
                                 return (
-                                  <p className="text-xs text-gray-500 dark:text-zinc-400 mt-0.5">
+                                  <p className="mt-0.5 text-xs text-muted-foreground">
                                     {item.variantName}
                                   </p>
                                 );
@@ -1077,18 +1077,18 @@ export function OnePageCheckout() {
                               return null;
                             })()}
                           </div>
-                          <p className="font-medium text-gray-900 dark:text-zinc-50 text-sm shrink-0">
+                          <p className="shrink-0 text-sm font-medium text-foreground">
                             {formatPrice(rowTotal, DEFAULT_CURRENCY)}
                           </p>
                         </div>
                         <div className="flex items-center gap-2 mt-2">
-                          <div className="inline-flex items-center rounded-md border border-gray-300 dark:border-zinc-600 bg-white dark:bg-zinc-800">
+                          <div className="inline-flex items-center rounded-md border border-border bg-card">
                             <button
                               type="button"
                               aria-label="Decrease quantity"
                               onClick={() => handleQtyChange(Number(qty) - 1)}
                               disabled={isUpdating || qty <= 1}
-                              className="h-8 w-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 dark:text-zinc-400 dark:hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-l-md"
+                              className="flex h-8 w-8 items-center justify-center rounded-l-md text-muted-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
                             >
                               −
                             </button>
@@ -1110,14 +1110,14 @@ export function OnePageCheckout() {
                               }}
                               onBlur={handleQtyBlur}
                               disabled={isUpdating}
-                              className="w-12 h-8 border-0 border-x border-gray-300 dark:border-zinc-600 bg-transparent text-center text-sm font-medium text-gray-900 dark:text-zinc-50 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                              className="h-8 w-12 border-0 border-x border-border bg-transparent text-center text-sm font-medium text-foreground [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                             />
                             <button
                               type="button"
                               aria-label="Increase quantity"
                               onClick={() => handleQtyChange(Number(qty) + 1)}
                               disabled={isUpdating}
-                              className="h-8 w-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 dark:text-zinc-400 dark:hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-r-md"
+                              className="flex h-8 w-8 items-center justify-center rounded-r-md text-muted-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
                             >
                               +
                             </button>
@@ -1126,7 +1126,7 @@ export function OnePageCheckout() {
                             type="button"
                             onClick={handleRemove}
                             disabled={isUpdating || checkout.items.length <= 1}
-                            className="text-xs text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="text-xs text-destructive transition-colors hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-50"
                           >
                             {isUpdating ? '…' : 'Remove'}
                           </button>
@@ -1140,14 +1140,14 @@ export function OnePageCheckout() {
             {/* Coupon */}
             <div className="mb-4">
               {checkout.couponCode ? (
-                <div className="flex items-center justify-between gap-2 rounded-md border border-green-200 bg-green-50 py-2 px-3 dark:border-green-800 dark:bg-green-900/20">
-                  <span className="text-sm font-medium text-green-800 dark:text-green-200">
+                <div className="flex items-center justify-between gap-2 rounded-md border border-success/30 bg-success/10 px-3 py-2">
+                  <span className="text-sm font-medium text-success">
                     Coupon: {checkout.couponCode}
                   </span>
                   <button
                     type="button"
                     onClick={handleRemoveCoupon}
-                    className="text-sm text-green-700 hover:text-green-900 dark:text-green-300 dark:hover:text-green-100 underline"
+                    className="text-sm text-success underline underline-offset-2 transition-opacity hover:opacity-80"
                   >
                     Remove
                   </button>
@@ -1162,36 +1162,36 @@ export function OnePageCheckout() {
                       setCouponError(null);
                     }}
                     placeholder="Coupon code"
-                    className="flex-1 min-w-0 rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50"
+                    className="min-w-0 flex-1 rounded-md border border-input bg-card px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/25"
                     disabled={couponLoading}
                   />
                   <button
                     type="button"
                     onClick={handleApplyCoupon}
                     disabled={couponLoading || !couponInput.trim()}
-                    className="shrink-0 rounded-md bg-gray-200 px-3 py-2 text-sm font-medium text-gray-900 hover:bg-gray-300 disabled:opacity-50 dark:bg-zinc-600 dark:text-zinc-50 dark:hover:bg-zinc-500"
+                    className="shrink-0 rounded-md bg-secondary px-3 py-2 text-sm font-medium text-secondary-foreground transition-colors hover:opacity-90 disabled:opacity-50"
                   >
                     {couponLoading ? '…' : 'Apply'}
                   </button>
                 </div>
               )}
               {couponError && (
-                <p className="mt-1 text-xs text-red-600 dark:text-red-400">{couponError}</p>
+                <p className="mt-1 text-xs text-destructive">{couponError}</p>
               )}
             </div>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-zinc-400">Subtotal</span>
+                <span className="text-muted-foreground">Subtotal</span>
                 <span>{formatPrice(displaySubtotal, displayCurrency)}</span>
               </div>
               {displayDiscountTotal > 0 && (
-                <div className="flex justify-between text-green-600 dark:text-green-400">
+                <div className="flex justify-between text-success">
                   <span>Discount</span>
                   <span>−{formatPrice(displayDiscountTotal, displayCurrency)}</span>
                 </div>
               )}
               <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-zinc-400">Shipping</span>
+                <span className="text-muted-foreground">Shipping</span>
                 <span>
                   {selectedShipping
                     ? formatPrice(displayShippingTotal, displayCurrency)
@@ -1199,7 +1199,7 @@ export function OnePageCheckout() {
                 </span>
               </div>
             </div>
-            <div className="flex justify-between text-lg font-semibold mt-4 pt-4 border-t border-gray-200 dark:border-zinc-600">
+            <div className="mt-4 flex justify-between border-t border-border pt-4 text-lg font-semibold text-foreground">
               <span>Total</span>
               <span>{formatPrice(displayGrandTotal, displayCurrency)}</span>
             </div>
@@ -1214,7 +1214,7 @@ export function OnePageCheckout() {
                 !validateAddress(effectiveShippingAddress) ||
                 !customerEmail?.includes('@')
               }
-              className="mt-6 w-full rounded-md bg-blue-600 py-3 text-base font-medium text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-blue-500 dark:hover:bg-blue-600"
+              className={storefrontUi.btnPrimaryLg}
             >
               {isLoading ? 'Processing…' : 'Place order'}
             </button>

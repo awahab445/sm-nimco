@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/lib/auth.store';
 import Link from 'next/link';
+import { storefrontUi } from '@/lib/storefront-ui';
 
 export default function CreatePasswordPage() {
   const router = useRouter();
@@ -56,16 +57,13 @@ export default function CreatePasswordPage() {
 
   if (!token) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12">
-        <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-sm">
-          <h1 className="text-xl font-semibold text-gray-900">Invalid link</h1>
-          <p className="mt-2 text-gray-600">
+      <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4 py-12">
+        <div className="w-full max-w-md rounded-lg bg-card p-8 shadow-sm">
+          <h1 className="text-xl font-semibold text-foreground">Invalid link</h1>
+          <p className="mt-2 text-muted-foreground">
             This page requires a valid link from your email. Please use the link we sent you after placing an order, or request a new one from the order confirmation page.
           </p>
-          <Link
-            href="/"
-            className="mt-6 inline-block text-blue-600 hover:underline"
-          >
+          <Link href="/" className={`mt-6 inline-block ${storefrontUi.link} underline`}>
             Return to home
           </Link>
         </div>
@@ -74,26 +72,26 @@ export default function CreatePasswordPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12">
+    <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4 py-12">
       <div className="w-full max-w-md space-y-8">
         <div>
-          <h1 className="text-center text-2xl font-bold text-gray-900">
+          <h1 className="text-center text-2xl font-bold text-foreground">
             Create your password
           </h1>
-          <p className="mt-2 text-center text-gray-600">
+          <p className="mt-2 text-center text-muted-foreground">
             Set a password to sign in to your account.
           </p>
         </div>
 
-        <form className="mt-8 space-y-6 rounded-lg bg-white p-8 shadow-sm" onSubmit={handleSubmit}>
+        <form className="mt-8 space-y-6 rounded-lg bg-card p-8 shadow-sm" onSubmit={handleSubmit}>
           {error && (
-            <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">
+            <div className={storefrontUi.alertErrorSm} role="alert">
               {error}
             </div>
           )}
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="password" className={storefrontUi.label}>
               Password
             </label>
             <input
@@ -108,16 +106,16 @@ export default function CreatePasswordPage() {
                 setPassword(e.target.value);
                 if (validationErrors.password) setValidationErrors((p) => ({ ...p, password: undefined }));
               }}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className={storefrontUi.inputMt}
             />
             {validationErrors.password && (
-              <p className="mt-1 text-sm text-red-600">{validationErrors.password}</p>
+              <p className="mt-1 text-sm text-destructive">{validationErrors.password}</p>
             )}
-            <p className="mt-1 text-xs text-gray-500">At least 8 characters</p>
+            <p className="mt-1 text-xs text-muted-foreground">At least 8 characters</p>
           </div>
 
           <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="confirmPassword" className={storefrontUi.label}>
               Confirm password
             </label>
             <input
@@ -131,10 +129,10 @@ export default function CreatePasswordPage() {
                 setConfirmPassword(e.target.value);
                 if (validationErrors.confirmPassword) setValidationErrors((p) => ({ ...p, confirmPassword: undefined }));
               }}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className={storefrontUi.inputMt}
             />
             {validationErrors.confirmPassword && (
-              <p className="mt-1 text-sm text-red-600">{validationErrors.confirmPassword}</p>
+              <p className="mt-1 text-sm text-destructive">{validationErrors.confirmPassword}</p>
             )}
           </div>
 
@@ -142,14 +140,14 @@ export default function CreatePasswordPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full rounded-md bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+              className="w-full rounded-md bg-primary px-4 py-2 font-medium text-primary-foreground shadow-sm transition-opacity hover:opacity-90 disabled:opacity-50"
             >
               {isLoading ? 'Creating account…' : 'Create account'}
             </button>
           </div>
 
-          <p className="text-center text-sm text-gray-500">
-            <Link href="/" className="text-blue-600 hover:underline">
+          <p className="text-center text-sm text-muted-foreground">
+            <Link href="/" className={`${storefrontUi.link} underline`}>
               Return to home
             </Link>
           </p>

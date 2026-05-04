@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Address } from '@/lib/api-client';
+import { storefrontUi } from '@/lib/storefront-ui';
 
 interface AddressFormProps {
   address?: Address;
@@ -73,11 +74,13 @@ export function AddressForm({
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
+  const fieldInput = storefrontUi.input;
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="md:col-span-2">
-          <label htmlFor="label" className="block text-sm font-medium mb-1">
+          <label htmlFor="label" className={storefrontUi.label}>
             Label (optional)
           </label>
           <input
@@ -86,11 +89,11 @@ export function AddressForm({
             placeholder="e.g. Home, Office"
             value={formData.label || ''}
             onChange={(e) => updateField('label', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50"
+            className={`mt-1 ${fieldInput}`}
           />
         </div>
         <div>
-          <label htmlFor="firstName" className="block text-sm font-medium mb-1">
+          <label htmlFor="firstName" className={storefrontUi.label}>
             First Name *
           </label>
           <input
@@ -99,11 +102,11 @@ export function AddressForm({
             required
             value={formData.firstName}
             onChange={(e) => updateField('firstName', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50"
+            className={`mt-1 ${fieldInput}`}
           />
         </div>
         <div>
-          <label htmlFor="lastName" className="block text-sm font-medium mb-1">
+          <label htmlFor="lastName" className={storefrontUi.label}>
             Last Name *
           </label>
           <input
@@ -112,11 +115,11 @@ export function AddressForm({
             required
             value={formData.lastName}
             onChange={(e) => updateField('lastName', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50"
+            className={`mt-1 ${fieldInput}`}
           />
         </div>
         <div className="md:col-span-2">
-          <label htmlFor="company" className="block text-sm font-medium mb-1">
+          <label htmlFor="company" className={storefrontUi.label}>
             Company (optional)
           </label>
           <input
@@ -124,11 +127,11 @@ export function AddressForm({
             type="text"
             value={formData.company || ''}
             onChange={(e) => updateField('company', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50"
+            className={`mt-1 ${fieldInput}`}
           />
         </div>
         <div className="md:col-span-2">
-          <label htmlFor="addressLine1" className="block text-sm font-medium mb-1">
+          <label htmlFor="addressLine1" className={storefrontUi.label}>
             Address Line 1 *
           </label>
           <input
@@ -137,11 +140,11 @@ export function AddressForm({
             required
             value={formData.addressLine1}
             onChange={(e) => updateField('addressLine1', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50"
+            className={`mt-1 ${fieldInput}`}
           />
         </div>
         <div className="md:col-span-2">
-          <label htmlFor="addressLine2" className="block text-sm font-medium mb-1">
+          <label htmlFor="addressLine2" className={storefrontUi.label}>
             Address Line 2 (optional)
           </label>
           <input
@@ -149,11 +152,11 @@ export function AddressForm({
             type="text"
             value={formData.addressLine2 || ''}
             onChange={(e) => updateField('addressLine2', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50"
+            className={`mt-1 ${fieldInput}`}
           />
         </div>
         <div>
-          <label htmlFor="city" className="block text-sm font-medium mb-1">
+          <label htmlFor="city" className={storefrontUi.label}>
             City *
           </label>
           <input
@@ -162,11 +165,11 @@ export function AddressForm({
             required
             value={formData.city}
             onChange={(e) => updateField('city', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50"
+            className={`mt-1 ${fieldInput}`}
           />
         </div>
         <div>
-          <label htmlFor="state" className="block text-sm font-medium mb-1">
+          <label htmlFor="state" className={storefrontUi.label}>
             State/Province *
           </label>
           <input
@@ -175,11 +178,11 @@ export function AddressForm({
             required
             value={formData.state}
             onChange={(e) => updateField('state', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50"
+            className={`mt-1 ${fieldInput}`}
           />
         </div>
         <div>
-          <label htmlFor="postalCode" className="block text-sm font-medium mb-1">
+          <label htmlFor="postalCode" className={storefrontUi.label}>
             Postal Code *
           </label>
           <input
@@ -188,11 +191,11 @@ export function AddressForm({
             required
             value={formData.postalCode}
             onChange={(e) => updateField('postalCode', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50"
+            className={`mt-1 ${fieldInput}`}
           />
         </div>
         <div>
-          <label htmlFor="country" className="block text-sm font-medium mb-1">
+          <label htmlFor="country" className={storefrontUi.label}>
             Country *
           </label>
           <input
@@ -201,11 +204,11 @@ export function AddressForm({
             required
             value={formData.country}
             onChange={(e) => updateField('country', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50"
+            className={`mt-1 ${fieldInput}`}
           />
         </div>
         <div className="md:col-span-2">
-          <label htmlFor="phone" className="block text-sm font-medium mb-1">
+          <label htmlFor="phone" className={storefrontUi.label}>
             Phone (optional)
           </label>
           <input
@@ -213,13 +216,13 @@ export function AddressForm({
             type="tel"
             value={formData.phone || ''}
             onChange={(e) => updateField('phone', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50"
+            className={`mt-1 ${fieldInput}`}
           />
         </div>
       </div>
 
       {formError && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded dark:bg-red-900/20 dark:border-red-800 dark:text-red-400">
+        <div className={storefrontUi.alertError} role="alert">
           {formError}
         </div>
       )}
@@ -230,7 +233,7 @@ export function AddressForm({
             type="button"
             onClick={onCancel}
             disabled={isLoading}
-            className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:border-zinc-600 dark:text-zinc-50 dark:hover:bg-zinc-700"
+            className="rounded-md border border-border bg-card px-6 py-2 text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
           >
             Cancel
           </button>
@@ -238,7 +241,7 @@ export function AddressForm({
         <button
           type="submit"
           disabled={isLoading}
-          className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="rounded-md bg-primary px-6 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-ring/30 focus:ring-offset-2 focus:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isLoading ? 'Saving...' : submitLabel}
         </button>
@@ -246,4 +249,3 @@ export function AddressForm({
     </form>
   );
 }
-

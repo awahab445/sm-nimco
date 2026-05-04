@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useCheckout } from '@/lib/checkout-context';
 import { paymentApi } from '@/lib/api-client';
+import { storefrontUi } from '@/lib/storefront-ui';
 
 interface PaymentStepProps {
   onNext: () => void;
@@ -76,21 +77,21 @@ export function PaymentStep({ onNext, onBack }: PaymentStepProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
-        <h2 className="text-2xl font-semibold mb-4">Payment Method</h2>
+        <h2 className="mb-4 text-2xl font-semibold text-foreground">Payment Method</h2>
 
         {loadingMethods ? (
-          <div className="mb-6 text-center py-8 text-gray-500">Loading payment methods...</div>
+          <div className="mb-6 py-8 text-center text-muted-foreground">Loading payment methods...</div>
         ) : paymentMethods.length === 0 ? (
-          <div className="mb-6 text-center py-8 text-red-500">No payment methods available</div>
+          <div className="mb-6 py-8 text-center text-destructive">No payment methods available</div>
         ) : (
-          <div className="space-y-3 mb-6">
+          <div className="mb-6 space-y-3">
             {paymentMethods.map((method) => (
               <label
                 key={method.code}
-                className={`block p-4 border-2 rounded-lg cursor-pointer transition-colors ${
+                className={`block cursor-pointer rounded-lg border-2 p-4 transition-colors ${
                   selectedMethod === method.code
-                    ? 'border-blue-600 bg-blue-50'
-                    : 'border-gray-200 hover:border-gray-300'
+                    ? 'border-primary bg-primary/10'
+                    : 'border-border hover:border-input'
                 }`}
               >
                 <div className="flex items-center">
@@ -100,9 +101,9 @@ export function PaymentStep({ onNext, onBack }: PaymentStepProps) {
                     value={method.code}
                     checked={selectedMethod === method.code}
                     onChange={(e) => setSelectedMethod(e.target.value)}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500"
+                    className="h-4 w-4 text-primary focus:ring-ring"
                   />
-                  <span className="ml-3 font-medium text-gray-900">{method.name}</span>
+                  <span className="ml-3 font-medium text-foreground">{method.name}</span>
                 </div>
               </label>
             ))}
@@ -111,10 +112,10 @@ export function PaymentStep({ onNext, onBack }: PaymentStepProps) {
       </div>
 
       <div>
-        <h2 className="text-2xl font-semibold mb-4">Contact Information</h2>
+        <h2 className="mb-4 text-2xl font-semibold text-foreground">Contact Information</h2>
         <div className="space-y-4">
           <div>
-            <label htmlFor="customer-email" className="block text-sm font-medium mb-1">
+            <label htmlFor="customer-email" className={storefrontUi.labelMb}>
               Email Address *
             </label>
             <input
@@ -123,11 +124,11 @@ export function PaymentStep({ onNext, onBack }: PaymentStepProps) {
               required
               value={customerEmail}
               onChange={(e) => setCustomerEmail(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={storefrontUi.input}
             />
           </div>
           <div>
-            <label htmlFor="customer-name" className="block text-sm font-medium mb-1">
+            <label htmlFor="customer-name" className={storefrontUi.labelMb}>
               Full Name (optional)
             </label>
             <input
@@ -135,11 +136,11 @@ export function PaymentStep({ onNext, onBack }: PaymentStepProps) {
               type="text"
               value={customerName}
               onChange={(e) => setCustomerName(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={storefrontUi.input}
             />
           </div>
           <div>
-            <label htmlFor="notes" className="block text-sm font-medium mb-1">
+            <label htmlFor="notes" className={storefrontUi.labelMb}>
               Order Notes (optional)
             </label>
             <textarea
@@ -147,7 +148,7 @@ export function PaymentStep({ onNext, onBack }: PaymentStepProps) {
               rows={3}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={storefrontUi.input}
               placeholder="Special delivery instructions, etc."
             />
           </div>
@@ -155,7 +156,7 @@ export function PaymentStep({ onNext, onBack }: PaymentStepProps) {
       </div>
 
       {(error || formError) && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+        <div className={storefrontUi.alertError}>
           {error || formError}
         </div>
       )}
@@ -164,14 +165,14 @@ export function PaymentStep({ onNext, onBack }: PaymentStepProps) {
         <button
           type="button"
           onClick={onBack}
-          className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+          className="rounded-md border border-border bg-card px-6 py-2 text-foreground transition-colors hover:bg-muted"
         >
           Back
         </button>
         <button
           type="submit"
           disabled={isLoading}
-          className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="rounded-md bg-primary px-6 py-2 text-primary-foreground shadow-sm transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isLoading ? 'Processing...' : 'Review Order'}
         </button>

@@ -16,6 +16,7 @@ Create a `.env.local` in the frontend root (or copy from `.env.example` if prese
 | `NEXT_PUBLIC_API_URL` | Yes | Backend API base URL (e.g. `http://localhost:3000`) |
 | `NEXT_PUBLIC_APP_URL` | No | App URL for links (default `http://localhost:3001`) |
 | `NEXT_PUBLIC_CURRENCY` | No | Display currency (e.g. `USD`, `PKR`) |
+| `NEXT_PUBLIC_STORE_THEME` | No | Storefront skin: `default`, `ocean`, or `ember` (see `styles/store-themes.css`) |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | For Stripe | Stripe publishable key when using card payments |
 
 ### Run the development server

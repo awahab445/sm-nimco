@@ -57,8 +57,8 @@ export default function CartPage() {
     return (
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center justify-center py-24">
-          <div className="h-10 w-10 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600 dark:border-zinc-600 dark:border-t-blue-400" aria-hidden />
-          <p className="mt-4 text-gray-500 dark:text-zinc-400">Loading cart…</p>
+          <div className="h-10 w-10 animate-spin rounded-full border-2 border-muted border-t-primary" aria-hidden />
+          <p className="mt-4 text-muted-foreground">Loading cart…</p>
         </div>
       </div>
     );
@@ -66,22 +66,22 @@ export default function CartPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-zinc-50">
+      <h1 className="text-2xl font-bold tracking-tight text-foreground">
         Your cart
       </h1>
 
       {error && (
-        <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-4 text-red-800 dark:border-red-800 dark:bg-red-900/20 dark:text-red-200">
+        <div className="mt-4 rounded-lg border border-destructive/25 bg-destructive/10 p-4 text-destructive">
           {error}
         </div>
       )}
 
       {items.length === 0 && !isLoading ? (
-        <div className="mt-8 rounded-lg border border-gray-200 bg-gray-50 py-16 text-center dark:border-zinc-700 dark:bg-zinc-800">
-          <p className="text-gray-600 dark:text-zinc-400">Your cart is empty.</p>
+        <div className="mt-8 rounded-lg border border-border bg-muted/50 py-16 text-center">
+          <p className="text-muted-foreground">Your cart is empty.</p>
           <Link
             href="/products"
-            className="mt-4 inline-block rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+            className="mt-4 inline-block rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-opacity hover:opacity-90"
           >
             Continue shopping
           </Link>
@@ -89,14 +89,14 @@ export default function CartPage() {
       ) : (
         <div className="mt-8 lg:grid lg:grid-cols-3 lg:gap-8">
           <div className="lg:col-span-2">
-            <ul className="divide-y divide-gray-200 dark:divide-zinc-700">
+            <ul className="divide-y divide-border">
               {items.map((item) => {
                 const rowTotal = item.price * item.quantity;
                 const attrLines = formatVariantAttributes(item.variantAttributes ?? item.attributes);
                 return (
                 <li key={item.variantId} className="flex flex-wrap items-center gap-4 py-4">
                   {item.productImage && (
-                    <div className="flex-shrink-0 w-14 h-14 rounded-md bg-gray-100 dark:bg-zinc-700 overflow-hidden">
+                    <div className="flex-shrink-0 w-14 h-14 rounded-md bg-muted overflow-hidden">
                       <img
                         src={item.productImage}
                         alt={item.productName || 'Product'}
@@ -105,17 +105,17 @@ export default function CartPage() {
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-gray-900 dark:text-zinc-50">
+                    <p className="font-medium text-foreground">
                       {item.productName ?? 'Product'}
                     </p>
                     {attrLines.length > 0 ? (
-                      <p className="text-sm text-gray-500 dark:text-zinc-400">
+                      <p className="text-sm text-muted-foreground">
                         {attrLines.join(' · ')}
                       </p>
                     ) : item.variantName ? (
-                      <p className="text-sm text-gray-500 dark:text-zinc-400">{item.variantName}</p>
+                      <p className="text-sm text-muted-foreground">{item.variantName}</p>
                     ) : null}
-                    <p className="text-sm text-gray-500 dark:text-zinc-400 mt-0.5">
+                    <p className="text-sm text-muted-foreground mt-0.5">
                       {formatPrice(item.price, DEFAULT_CURRENCY)} × {item.quantity} = {formatPrice(rowTotal, DEFAULT_CURRENCY)}
                     </p>
                   </div>
@@ -129,12 +129,12 @@ export default function CartPage() {
                         setLocalQty((prev) => ({ ...prev, [item.variantId]: q }));
                       }}
                       onBlur={() => handleQtyBlur(item.variantId)}
-                      className="w-16 rounded border border-gray-300 px-2 py-1 text-center dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50"
+                      className="w-16 rounded border border-input bg-card px-2 py-1 text-center text-foreground"
                     />
                     <button
                       type="button"
                       onClick={() => removeItem(item.variantId)}
-                      className="text-sm text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                      className="text-sm text-destructive transition-colors hover:opacity-80"
                     >
                       Remove
                     </button>
@@ -146,23 +146,23 @@ export default function CartPage() {
             <button
               type="button"
               onClick={() => clearCart()}
-              className="mt-4 text-sm text-gray-600 hover:text-gray-900 dark:text-zinc-400 dark:hover:text-zinc-50"
+              className="mt-4 text-sm text-muted-foreground transition-colors hover:text-foreground"
             >
               Clear cart
             </button>
           </div>
 
           <div className="mt-8 lg:mt-0">
-            <div className="rounded-lg border border-gray-200 bg-gray-50 p-6 dark:border-zinc-700 dark:bg-zinc-800">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-zinc-50">
+            <div className="rounded-lg border border-border bg-muted/40 p-6">
+              <h2 className="text-lg font-semibold text-foreground">
                 Summary
               </h2>
-              <p className="mt-2 text-gray-600 dark:text-zinc-400">
+              <p className="mt-2 text-muted-foreground">
                 Subtotal: {formatPrice(subtotal, DEFAULT_CURRENCY)}
               </p>
               <Link
                 href={cartId ? `/checkout?cartId=${cartId}` : '/cart'}
-                className="mt-4 block w-full rounded-md bg-gray-900 py-2.5 text-center text-sm font-medium text-white hover:bg-gray-800 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+                className="mt-4 block w-full rounded-md bg-primary py-2.5 text-center text-sm font-medium text-primary-foreground shadow-sm transition-opacity hover:opacity-90"
               >
                 Proceed to checkout
               </Link>
