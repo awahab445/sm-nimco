@@ -8,6 +8,7 @@ import {
   IsEnum,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { ProductStatus } from './create-product.dto';
 
 export class ProductQueryDto {
   @IsString()
@@ -33,6 +34,10 @@ export class ProductQueryDto {
   @IsString()
   @IsOptional()
   search?: string;
+
+  @IsEnum(ProductStatus)
+  @IsOptional()
+  status?: ProductStatus;
 
   @IsNumber()
   @IsOptional()

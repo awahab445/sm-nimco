@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Patch,
   Body,
   Param,
   Query,
@@ -13,6 +14,7 @@ import {
 import { PromotionsService } from '../services/promotions.service';
 import { CreatePromotionDto } from '../dto/create-promotion.dto';
 import { ValidatePromotionDto } from '../dto/validate-promotion.dto';
+import { PatchPromotionDto } from '../dto/patch-promotion.dto';
 
 @Controller('promotions')
 export class PromotionsController {
@@ -36,6 +38,20 @@ export class PromotionsController {
   @Get(':id')
   async getPromotion(@Param('id') id: string) {
     return await this.promotionsService.getPromotion(id);
+  }
+
+  /**
+   * PATCH /promotions/:id
+   * Update promotion (e.g. lifecycle status for admin)
+   */
+  @Patch(':id')
+  @HttpCode(HttpStatus.OK)
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+  async patchPromotion(
+    @Param('id') id: string,
+    @Body() dto: PatchPromotionDto,
+  ) {
+    return await this.promotionsService.patchPromotion(id, dto);
   }
 
   /**

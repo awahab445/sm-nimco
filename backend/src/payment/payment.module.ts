@@ -10,9 +10,10 @@ import { HblProvider } from './providers/bank/hbl.provider';
 import { UblProvider } from './providers/bank/ubl.provider';
 import { OfflineCODProvider } from './providers/offline-cod.provider';
 import { CatalogModule } from '../catalog/catalog.module';
+import { AdminModule } from '../admin/admin.module';
 
 @Module({
-  imports: [CatalogModule], // For PrismaService
+  imports: [CatalogModule, AdminModule], // For PrismaService and RBAC dependencies
   controllers: [PaymentController],
   providers: [
     PaymentService,

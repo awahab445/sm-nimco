@@ -199,7 +199,9 @@ export function ProductsList() {
                         {row.status}
                       </span>
                     </td>
-                    <td className="px-3 py-2 text-zinc-600 dark:text-zinc-400">{row._count.variants}</td>
+                    <td className="px-3 py-2 text-zinc-600 dark:text-zinc-400">
+                      {row._count?.variants ?? 0}
+                    </td>
                     <td className="px-3 py-2 text-right">
                       <Link
                         href={`/products/${row.id}`}

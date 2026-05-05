@@ -64,6 +64,118 @@ export class ProductQuery {
     return where;
   }
 
+  /**
+   * Admin product grid: all non-deleted products; optional status filter from query.
+   */
+  static buildAdminWhereClause(query: ProductQueryDto) {
+    const where: any = {
+      deletedAt: null,
+    };
+
+    if (query.status) {
+      where.status = query.status;
+    }
+
+    if (query.category) {
+      where.categories = {
+        some: {
+          categoryId: query.category,
+        },
+      };
+    }
+
+    if (query.minPrice !== undefined || query.maxPrice !== undefined) {
+      where.basePrice = {};
+      if (query.minPrice !== undefined) {
+        where.basePrice.gte = query.minPrice;
+      }
+      if (query.maxPrice !== undefined) {
+        where.basePrice.lte = query.maxPrice;
+      }
+    }
+
+    if (query.attributes && Object.keys(query.attributes).length > 0) {
+      const attributeFilters = Object.entries(query.attributes).map(([key, value]) => ({
+        attributes: {
+          path: [key],
+          equals: value,
+        },
+      }));
+
+      if (attributeFilters.length === 1) {
+        where.attributes = attributeFilters[0].attributes;
+      } else if (attributeFilters.length > 1) {
+        where.AND = attributeFilters.map((filter) => ({ attributes: filter.attributes }));
+      }
+    }
+
+    const searchTerm = typeof query.search === 'string' ? query.search.trim() : '';
+    if (searchTerm.length >= 2) {
+      where.OR = [
+        { name: { contains: searchTerm, mode: 'insensitive' } },
+        { sku: { contains: searchTerm, mode: 'insensitive' } },
+        { slug: { contains: searchTerm, mode: 'insensitive' } },
+        {
+          categories: {
+            some: {
+              category: {
+                name: { contains: searchTerm, mode: 'insensitive' },
+              },
+            },
+          },
+        },
+      ];
+    }
+
+    return where;
+  }
+
+  static buildAdminListInclude(): {
+    images: { take: number; orderBy: ({ isPrimary: 'desc' } | { position: 'asc' })[] };
+    categories: {
+      orderBy: { position: 'asc' };
+      include: { category: { select: { id: true; name: true; slug: true } } };
+    };
+    _count: { select: { variants: true } };
+  } {
+    return {
+      images: {
+        take: 1,
+        orderBy: [{ isPrimary: 'desc' }, { position: 'asc' }],
+      },
+      categories: {
+        orderBy: { position: 'asc' },
+        include: { category: { select: { id: true, name: true, slug: true } } },
+      },
+      _count: {
+        select: { variants: true },
+      },
+    };
+  }
+
+  /** Admin product detail / mutations: full variants, images, categories with nested category row. */
+  static buildAdminProductDetailInclude(): {
+    variants: { orderBy: { position: 'asc' } };
+    images: { orderBy: ({ isPrimary: 'desc' } | { position: 'asc' })[] };
+    categories: {
+      orderBy: { position: 'asc' };
+      include: { category: { select: { id: true; name: true; slug: true } } };
+    };
+  } {
+    return {
+      variants: {
+        orderBy: { position: 'asc' },
+      },
+      images: {
+        orderBy: [{ isPrimary: 'desc' }, { position: 'asc' }],
+      },
+      categories: {
+        orderBy: { position: 'asc' },
+        include: { category: { select: { id: true, name: true, slug: true } } },
+      },
+    };
+  }
+
   static buildIncludeClause(): {
     variants: { where: { isActive: boolean }; orderBy: { position: 'asc' } };
     images: { orderBy: ({ isPrimary: 'desc' } | { position: 'asc' })[] };

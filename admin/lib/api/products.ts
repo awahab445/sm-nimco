@@ -75,7 +75,7 @@ export type AdminProductListRow = {
     isPrimary: boolean;
   }[];
   categories: ProductCategoryLink[];
-  _count: { variants: number };
+  _count?: { variants: number };
 };
 
 export async function fetchAdminProducts(params: {

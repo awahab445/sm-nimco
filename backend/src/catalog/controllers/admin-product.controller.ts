@@ -30,7 +30,7 @@ import { UpdateVariantDto } from '../dto/update-variant.dto';
 import { CreateImageDto } from '../dto/create-image.dto';
 import { UpdateImageDto } from '../dto/update-image.dto';
 import { AssignCategoryDto } from '../dto/assign-category.dto';
-import { AdminProductListQueryDto } from '../dto/admin-product-list-query.dto';
+import { ProductQueryDto } from '../dto/product-query.dto';
 import { AdminJwtAuthGuard } from '../../admin/guards/admin-jwt-auth.guard';
 import { AdminPermissionsGuard } from '../../admin/guards/admin-permissions.guard';
 import { RequirePermissions } from '../../admin/decorators/require-permissions.decorator';
@@ -48,7 +48,7 @@ export class AdminProductController {
   @Get()
   @RequirePermissions('catalog.read')
   @HttpCode(HttpStatus.OK)
-  async list(@Query() query: AdminProductListQueryDto) {
+  async list(@Query() query: ProductQueryDto) {
     return this.productService.findAllAdmin(query);
   }
 

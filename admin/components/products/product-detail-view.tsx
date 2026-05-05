@@ -675,14 +675,20 @@ function CategoriesPanel({
             ) : (
               product.categories.map((pc) => (
                 <tr key={pc.categoryId}>
-                  <td className="px-3 py-2 font-medium">{pc.category.name}</td>
-                  <td className="px-3 py-2 text-zinc-600">{pc.category.slug}</td>
+                  <td className="px-3 py-2 font-medium">
+                    {pc.category?.name ?? '—'}
+                  </td>
+                  <td className="px-3 py-2 text-zinc-600">
+                    {pc.category?.slug ?? '—'}
+                  </td>
                   <td className="px-3 py-2">{pc.position}</td>
                   <td className="px-3 py-2 text-right">
                     <button
                       type="button"
                       className="text-red-700 underline dark:text-red-400"
-                      onClick={() => void remove(pc.categoryId, pc.category.name)}
+                      onClick={() =>
+                        void remove(pc.categoryId, pc.category?.name ?? 'category')
+                      }
                     >
                       Remove
                     </button>

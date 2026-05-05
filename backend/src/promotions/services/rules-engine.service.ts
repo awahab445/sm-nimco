@@ -118,6 +118,10 @@ export class RulesEngineService {
     subtotal: number,
     applicableAmount: number = subtotal,
   ): number {
+    if (promotion.type === 'free_shipping') {
+      return 0;
+    }
+
     if (!promotion.discountValue || !promotion.discountType) {
       return 0;
     }
@@ -135,11 +139,6 @@ export class RulesEngineService {
         if (promotion.discountType === 'fixed_amount') {
           discount = Math.min(promotion.discountValue, applicableAmount);
         }
-        break;
-
-      case 'free_shipping':
-        // Free shipping is handled separately in shipping calculation
-        discount = 0;
         break;
 
       case 'buy_x_get_y':

@@ -43,13 +43,15 @@ export class CheckoutTotalsService {
     subtotal: number,
     items: CheckoutSession['items'],
     checkout: CheckoutSession,
-  ): Promise<number> {
+    options?: { recordPromotionRedemptions?: boolean },
+  ): Promise<{ discountTotal: number; freeShippingApplied: boolean }> {
     if (items.length === 0) {
-      return 0;
+      return { discountTotal: 0, freeShippingApplied: false };
     }
 
     let promotionDiscount = 0;
     let groupDiscount = 0;
+    let freeShippingApplied = false;
 
     try {
       // Convert checkout items to promotion format with category IDs
@@ -90,10 +92,12 @@ export class CheckoutTotalsService {
         },
         promotionItems,
         subtotal,
+        { recordRedemption: options?.recordPromotionRedemptions === true },
       );
 
       // Calculate promotion discount
       promotionDiscount = appliedPromotions.reduce((sum, p) => sum + p.discountAmount, 0);
+      freeShippingApplied = appliedPromotions.some((p) => p.promotion.type === 'free_shipping');
 
       // Apply customer group discount (if any) to subtotal after promotions
       if (checkout.customerGroupId) {
@@ -113,10 +117,13 @@ export class CheckoutTotalsService {
       }
 
       // Total discount = promotion discount + group discount
-      return promotionDiscount + groupDiscount;
+      return {
+        discountTotal: promotionDiscount + groupDiscount,
+        freeShippingApplied,
+      };
     } catch (error) {
       this.logger.error('Failed to calculate discount total:', error);
-      return 0;
+      return { discountTotal: 0, freeShippingApplied: false };
     }
   }
 
@@ -231,14 +238,20 @@ export class CheckoutTotalsService {
   /**
    * Calculate all totals for checkout session
    */
-  async calculateTotals(checkout: CheckoutSession): Promise<TotalsCalculation> {
+  async calculateTotals(
+    checkout: CheckoutSession,
+    options?: { recordPromotionRedemptions?: boolean },
+  ): Promise<TotalsCalculation> {
     const subtotal = this.calculateSubtotal(checkout.items);
-    const discountTotal = await this.calculateDiscountTotal(
+    const { discountTotal, freeShippingApplied } = await this.calculateDiscountTotal(
       subtotal,
       checkout.items,
       checkout,
+      options,
     );
-    const shippingTotal = this.calculateShippingTotal(checkout.shippingMethod);
+    const shippingTotal = freeShippingApplied
+      ? 0
+      : this.calculateShippingTotal(checkout.shippingMethod);
     const taxTotal = await this.calculateTaxTotal(
       checkout.items,
       subtotal,
@@ -262,8 +275,11 @@ export class CheckoutTotalsService {
   /**
    * Recalculate totals and update checkout session
    */
-  async recalculateAndUpdate(checkout: CheckoutSession): Promise<CheckoutSession> {
-    const totals = await this.calculateTotals(checkout);
+  async recalculateAndUpdate(
+    checkout: CheckoutSession,
+    options?: { recordPromotionRedemptions?: boolean },
+  ): Promise<CheckoutSession> {
+    const totals = await this.calculateTotals(checkout, options);
     
     return {
       ...checkout,

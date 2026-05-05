@@ -13,6 +13,7 @@ import {
   AppliedPromotion,
 } from '../entities/promotion.entity';
 import { CreatePromotionDto } from '../dto/create-promotion.dto';
+import { PatchPromotionDto } from '../dto/patch-promotion.dto';
 import { ApplyPromotionDto } from '../dto/apply-promotion.dto';
 import { CartItem } from '../dto/validate-promotion.dto';
 import { ValidatePromotionDto } from '../dto/validate-promotion.dto';
@@ -209,11 +210,45 @@ export class PromotionsService {
   }
 
   /**
+   * Partial update (admin): lifecycle status only for now.
+   */
+  async patchPromotion(id: string, dto: PatchPromotionDto): Promise<Promotion> {
+    const existing = await this.prisma.promotion.findUnique({
+      where: { id },
+      select: { id: true, status: true },
+    });
+
+    if (!existing) {
+      throw new NotFoundException(`Promotion ${id} not found`);
+    }
+
+    if (existing.status === 'expired') {
+      throw new BadRequestException(
+        'Expired promotions cannot be changed; create a new promotion or adjust dates first.',
+      );
+    }
+
+    await this.prisma.promotion.update({
+      where: { id },
+      data: { status: dto.status },
+    });
+
+    return this.getPromotion(id);
+  }
+
+  /**
    * Get promotion by code
    */
   async getPromotionByCode(code: string): Promise<Promotion | null> {
-    const promotion = await this.prisma.promotion.findUnique({
-      where: { code },
+    const trimmed = (code || '').trim();
+    if (!trimmed) {
+      return null;
+    }
+
+    const promotion = await this.prisma.promotion.findFirst({
+      where: {
+        code: { equals: trimmed, mode: 'insensitive' },
+      },
       include: {
         promotionProducts: true,
         promotionCustomerGroups: true,
@@ -261,8 +296,16 @@ export class PromotionsService {
 
   /**
    * Apply promotions to cart/checkout
+   * @param recordRedemption When true, persist usage, logs, and events (e.g. order confirmed).
+   *                        Must be false for checkout/cart total previews so limits are not consumed on each recalculation.
    */
-  async applyPromotions(dto: ApplyPromotionDto, items: CartItem[], subtotal: number): Promise<AppliedPromotion[]> {
+  async applyPromotions(
+    dto: ApplyPromotionDto,
+    items: CartItem[],
+    subtotal: number,
+    options?: { recordRedemption?: boolean },
+  ): Promise<AppliedPromotion[]> {
+    const recordRedemption = options?.recordRedemption === true;
     const appliedPromotions: AppliedPromotion[] = [];
     const activePromotions = await this.getActivePromotions();
 
@@ -338,14 +381,16 @@ export class PromotionsService {
         continue;
       }
 
-      // Calculate discount
-      const discountAmount = this.rulesEngine.calculateDiscount(
+      // Calculate discount (free_shipping waives shipping in checkout totals, not as a cart discount)
+      const discountAmountRaw = this.rulesEngine.calculateDiscount(
         promotion,
         remainingSubtotal,
         applicableAmount,
       );
+      const isFreeShipping = promotion.type === 'free_shipping';
+      const discountAmount = isFreeShipping ? 0 : discountAmountRaw;
 
-      if (discountAmount <= 0) {
+      if (!isFreeShipping && discountAmount <= 0) {
         continue;
       }
 
@@ -360,8 +405,10 @@ export class PromotionsService {
         }
       }
 
-      // Apply discount
-      remainingSubtotal = Math.max(0, remainingSubtotal - discountAmount);
+      // Apply discount (free shipping does not reduce merchandise subtotal)
+      if (!isFreeShipping) {
+        remainingSubtotal = Math.max(0, remainingSubtotal - discountAmount);
+      }
 
       appliedPromotions.push({
         promotionId: promotion.id,
@@ -370,56 +417,58 @@ export class PromotionsService {
         promotion,
       });
 
-      // Log promotion application
-      await this.logPromotionApplication({
-        promotionId: promotion.id,
-        cartId: dto.cartId,
-        checkoutId: dto.checkoutId,
-        customerId: dto.customerId,
-        couponCode: promotion.code,
-        discountAmount,
-        subtotalBefore: subtotal,
-        subtotalAfter: subtotal - appliedPromotions.reduce((sum, p) => sum + p.discountAmount, 0),
-        status: 'applied',
-      });
-
-      // Increment usage count
-      await this.prisma.promotion.update({
-        where: { id: promotion.id },
-        data: {
-          currentUsage: { increment: 1 },
-        },
-      });
-
-      // Emit events
-      this.eventEmitter.emit(
-        'promotion.applied',
-        new PromotionAppliedEvent(
-          promotion.id,
-          promotion.code,
+      if (recordRedemption) {
+        // Log promotion application
+        await this.logPromotionApplication({
+          promotionId: promotion.id,
+          cartId: dto.cartId,
+          checkoutId: dto.checkoutId,
+          customerId: dto.customerId,
+          couponCode: promotion.code,
           discountAmount,
-          subtotal,
-          remainingSubtotal,
-          dto.cartId,
-          dto.checkoutId,
-          undefined,
-          dto.customerId,
-        ),
-      );
+          subtotalBefore: subtotal,
+          subtotalAfter: subtotal - appliedPromotions.reduce((sum, p) => sum + p.discountAmount, 0),
+          status: 'applied',
+        });
 
-      if (promotion.code) {
+        // Increment usage count
+        await this.prisma.promotion.update({
+          where: { id: promotion.id },
+          data: {
+            currentUsage: { increment: 1 },
+          },
+        });
+
+        // Emit events
         this.eventEmitter.emit(
-          'coupon.used',
-          new CouponUsedEvent(
+          'promotion.applied',
+          new PromotionAppliedEvent(
             promotion.id,
             promotion.code,
             discountAmount,
+            subtotal,
+            remainingSubtotal,
             dto.cartId,
             dto.checkoutId,
             undefined,
             dto.customerId,
           ),
         );
+
+        if (promotion.code) {
+          this.eventEmitter.emit(
+            'coupon.used',
+            new CouponUsedEvent(
+              promotion.id,
+              promotion.code,
+              discountAmount,
+              dto.cartId,
+              dto.checkoutId,
+              undefined,
+              dto.customerId,
+            ),
+          );
+        }
       }
 
       // If exclusive, stop applying more promotions

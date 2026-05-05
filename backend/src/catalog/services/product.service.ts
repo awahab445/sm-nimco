@@ -84,11 +84,7 @@ export class ProductService {
         attributes: createProductDto.attributes || {},
         metaData: createProductDto.metaData || {},
       },
-      include: {
-        variants: true,
-        images: true,
-        categories: true,
-      },
+      include: ProductQuery.buildAdminProductDetailInclude(),
     });
 
     return product;
@@ -97,6 +93,33 @@ export class ProductService {
   async findAll(query: ProductQueryDto) {
     const where = ProductQuery.buildWhereClause(query);
     const include = ProductQuery.buildIncludeClause();
+    const { skip, take, page } = ProductQuery.buildPaginationParams(query);
+
+    const [products, total] = await Promise.all([
+      this.prisma.product.findMany({
+        where,
+        include,
+        skip,
+        take,
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.product.count({ where }),
+    ]);
+
+    return {
+      data: products,
+      meta: {
+        total,
+        page,
+        limit: take,
+        totalPages: Math.ceil(total / take),
+      },
+    };
+  }
+
+  async findAllAdmin(query: ProductQueryDto) {
+    const where = ProductQuery.buildAdminWhereClause(query);
+    const include = ProductQuery.buildAdminListInclude();
     const { skip, take, page } = ProductQuery.buildPaginationParams(query);
 
     const [products, total] = await Promise.all([
@@ -176,17 +199,7 @@ export class ProductService {
 
     const product = await this.prisma.product.findFirst({
       where,
-      include: {
-        variants: {
-          orderBy: { position: 'asc' },
-        },
-        images: {
-          orderBy: [{ isPrimary: 'desc' }, { position: 'asc' }],
-        },
-        categories: {
-          orderBy: { position: 'asc' },
-        },
-      },
+      include: ProductQuery.buildAdminProductDetailInclude(),
     });
 
     if (!product) {
@@ -267,11 +280,7 @@ export class ProductService {
     const product = await this.prisma.product.update({
       where: { id },
       data: updateData,
-      include: {
-        variants: true,
-        images: true,
-        categories: true,
-      },
+      include: ProductQuery.buildAdminProductDetailInclude(),
     });
 
     return product;
@@ -311,6 +320,35 @@ export class ProductService {
     });
 
     return productCategory;
+  }
+
+  async removeCategoryFromProduct(productId: string, categoryId: string) {
+    await this.findOneById(productId);
+
+    const relation = await this.prisma.productCategory.findUnique({
+      where: {
+        productId_categoryId: {
+          productId,
+          categoryId,
+        },
+      },
+      select: { productId: true },
+    });
+
+    if (!relation) {
+      throw new NotFoundException(
+        `Category ${categoryId} is not assigned to product ${productId}`,
+      );
+    }
+
+    await this.prisma.productCategory.delete({
+      where: {
+        productId_categoryId: {
+          productId,
+          categoryId,
+        },
+      },
+    });
   }
 }
 

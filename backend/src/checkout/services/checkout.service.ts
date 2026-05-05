@@ -362,7 +362,8 @@ export class CheckoutService {
     await this.checkoutRedis.updateCheckout(updated);
     this.eventEmitter.emit('checkout.updated', new CheckoutUpdatedEvent(checkoutId));
     this.logger.log(`Coupon ${checkoutId}: ${updated.couponCode ? `applied "${updated.couponCode}"` : 'cleared'}`);
-    return updated;
+    // Return same enriched payload as GET /checkout (totals read back from store).
+    return this.getCheckout(checkoutId);
   }
 
   /**
@@ -468,7 +469,9 @@ export class CheckoutService {
     checkout.customerGroupId = customerGroupId;
 
     // Recalculate totals with final customer group (may affect discounts, pricing, tax)
-    const updated = await this.checkoutTotals.recalculateAndUpdate(checkout);
+    const updated = await this.checkoutTotals.recalculateAndUpdate(checkout, {
+      recordPromotionRedemptions: true,
+    });
     await this.checkoutRedis.updateCheckout(updated);
 
     // Comprehensive validation
