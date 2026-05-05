@@ -96,7 +96,7 @@ export default function OrderDetailPage() {
       setLoading(true);
       setError(null);
       const orderData = await orderApi.getOrder(orderId);
-      setOrder(orderData as Order);
+      setOrder(orderData as unknown as Order);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to load order');
     } finally {

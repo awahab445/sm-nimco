@@ -46,7 +46,7 @@ export function ProductCard({ product, showViewOnly = false, availableQuantity }
   const variant = getVariantForCart(product);
   const inStock = availableQuantity === undefined ? true : availableQuantity > 0;
   const canAddToCart = variant && !showViewOnly && inStock;
-  const image = product.images?.[0] ?? product.images?.find((i) => i.isPrimary);
+  const image = product.images?.find((i) => i.isPrimary) ?? product.images?.[0];
   const imageUrl = image?.url;
 
   const handleAddToCart = async (e: React.MouseEvent) => {

@@ -1,5 +1,8 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import * as express from 'express';
+import { join } from 'path';
+import { existsSync, mkdirSync } from 'fs';
 import { AppModule } from './app.module';
 
 /** Comma-separated in CORS_ORIGIN, e.g. storefront + admin: http://localhost:3001,http://localhost:3002 */
@@ -17,7 +20,20 @@ function corsOriginsFromEnv(): string | string[] {
 }
 
 async function bootstrap() {
+  if (
+    process.env.NODE_ENV === 'production' &&
+    (!process.env.JWT_SECRET || process.env.JWT_SECRET === 'change-me-in-production')
+  ) {
+    throw new Error('JWT_SECRET must be set in production.');
+  }
+
   const app = await NestFactory.create(AppModule);
+  const uploadsRoot = join(process.cwd(), 'uploads');
+  const productUploadsDir = join(uploadsRoot, 'products');
+  if (!existsSync(productUploadsDir)) {
+    mkdirSync(productUploadsDir, { recursive: true });
+  }
+  app.use('/uploads', express.static(uploadsRoot));
 
   app.enableCors({
     origin: corsOriginsFromEnv(),

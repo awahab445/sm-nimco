@@ -438,13 +438,28 @@ export const paymentApi = {
       gatewayTransactionId?: string | null;
       paymentMethod?: { code: string; name: string; provider: string };
     }>>(`/payments/order/${encodeURIComponent(orderId)}`),
+  trackPayments: (orderNumber: string, email: string) =>
+    fetchApi<Array<{
+      id: string;
+      orderId: string;
+      status: string;
+      amount: number | string;
+      currency: string;
+      gatewayTransactionId?: string | null;
+      paymentMethod?: { code: string; name: string; provider: string };
+    }>>(`/payments/track?orderNumber=${encodeURIComponent(orderNumber)}&email=${encodeURIComponent(email)}`),
 };
 
 // Order API
 export const orderApi = {
-  getOrder: (orderId: string) => fetchApi(`/orders/${orderId}`),
-  getOrderByNumber: (orderNumber: string) =>
+  getOrder: (orderId: string): Promise<{ id: string; [key: string]: unknown }> =>
+    fetchApi(`/orders/${orderId}`),
+  getOrderByNumber: (orderNumber: string): Promise<{ id: string; [key: string]: unknown }> =>
     fetchApi(`/orders/number/${orderNumber}`),
+  trackOrder: (orderNumber: string, email: string) =>
+    fetchApi<{ id: string; [key: string]: unknown }>(
+      `/orders/track?orderNumber=${encodeURIComponent(orderNumber)}&email=${encodeURIComponent(email)}`,
+    ),
   getMyOrders: (params?: {
     page?: number;
     limit?: number;
@@ -495,56 +510,6 @@ export const orderApi = {
         totalPages: number;
       };
     }>(`/orders/my${query ? `?${query}` : ''}`);
-  },
-  getOrders: (params?: {
-    page?: number;
-    limit?: number;
-    status?: string;
-    paymentStatus?: string;
-    customerEmail?: string;
-    sortBy?: string;
-    sortOrder?: 'asc' | 'desc';
-  }) => {
-    const queryParams = new URLSearchParams();
-    if (params) {
-      Object.entries(params).forEach(([key, value]) => {
-        if (value !== undefined) {
-          queryParams.append(key, String(value));
-        }
-      });
-    }
-    const query = queryParams.toString();
-    return fetchApi<{
-      data: Array<{
-        id: string;
-        orderNumber: string;
-        status: string;
-        paymentStatus: string;
-        fulfillmentStatus: string;
-        customerEmail: string;
-        customerName?: string;
-        currency: string;
-        subtotal: number;
-        discountTotal: number;
-        shippingTotal: number;
-        taxTotal: number;
-        grandTotal: number;
-        createdAt: string;
-        items: Array<{
-          id: string;
-          name: string;
-          quantity: number;
-          unitPrice: number;
-          rowTotal: number;
-        }>;
-      }>;
-      meta: {
-        total: number;
-        page: number;
-        limit: number;
-        totalPages: number;
-      };
-    }>(`/orders${query ? `?${query}` : ''}`);
   },
 };
 
@@ -634,7 +599,7 @@ export const addressApi = {
       body: JSON.stringify(addressUpdateBody({ ...data })),
     }),
   deleteAddress: (id: string) =>
-    fetchApi(`/addresses/${id}`, {
+    fetchApi<void>(`/addresses/${id}`, {
       method: 'DELETE',
     }),
   setDefaultBilling: (id: string) =>

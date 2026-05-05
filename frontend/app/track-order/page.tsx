@@ -40,23 +40,8 @@ export default function TrackOrderPage() {
 
     setLoading(true);
     try {
-      const response = await orderApi.getOrders({
-        customerEmail: trimmedEmail,
-        limit: 200,
-        sortBy: 'createdAt',
-        sortOrder: 'desc',
-      });
-
-      const match = response.data.find(
-        (order) => order.orderNumber.trim().toUpperCase() === trimmedOrderNumber.trim().toUpperCase(),
-      );
-
-      if (match) {
-        router.push(`/orders/${match.id}`);
-        return;
-      }
-
-      setError('No order found for this email and order number. Please check and try again.');
+      const match = await orderApi.trackOrder(trimmedOrderNumber, trimmedEmail);
+      router.push(`/orders/${match.id}`);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to look up order. Please try again.');
     } finally {

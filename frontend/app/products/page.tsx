@@ -1,12 +1,13 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { productApi, inventoryApi, type ProductListResponse } from '@/lib/api-client';
 import { ProductCard, getVariantForCart } from '@/components/product/product-card';
 import { CategorySidebar } from '@/components/products/category-sidebar';
 
-export default function ProductsPage() {
+function ProductsContent() {
   const searchParams = useSearchParams();
   const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
   const search = searchParams.get('search') || undefined;
@@ -127,5 +128,13 @@ export default function ProductsPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ProductsPage() {
+  return (
+    <Suspense fallback={<div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8" />}>
+      <ProductsContent />
+    </Suspense>
   );
 }

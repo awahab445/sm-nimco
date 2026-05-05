@@ -3,6 +3,8 @@ import {
   Logger,
   NotFoundException,
   BadRequestException,
+  ConflictException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../../catalog/services/prisma.service';
@@ -16,6 +18,8 @@ import {
 } from '../types/payment.types';
 import { PaymentCapturedEvent, PaymentFailedEvent } from '../../order/events/order.events';
 import { randomUUID } from 'crypto';
+import { CreateAdminPaymentMethodDto } from '../dto/create-admin-payment-method.dto';
+import { UpdateAdminPaymentMethodDto } from '../dto/update-admin-payment-method.dto';
 
 @Injectable()
 export class PaymentService {
@@ -269,6 +273,27 @@ export class PaymentService {
     return payment;
   }
 
+  async getPaymentAuthorized(
+    paymentId: string,
+    actor?: { typ: 'admin' | 'customer'; customerId?: string },
+  ) {
+    const payment = await this.getPayment(paymentId);
+    if (!actor) {
+      throw new ForbiddenException('Authentication required');
+    }
+    if (actor.typ === 'admin') {
+      return payment;
+    }
+    const order = await this.prisma.order.findUnique({
+      where: { id: payment.orderId },
+      select: { customerId: true },
+    });
+    if (!order || order.customerId !== actor.customerId) {
+      throw new ForbiddenException('You do not have access to this payment');
+    }
+    return payment;
+  }
+
   /**
    * Get payments for an order
    */
@@ -280,6 +305,45 @@ export class PaymentService {
       },
       orderBy: { createdAt: 'desc' },
     });
+  }
+
+  async getPaymentsByOrderAuthorized(
+    orderId: string,
+    actor?: { typ: 'admin' | 'customer'; customerId?: string },
+  ) {
+    if (!actor) {
+      throw new ForbiddenException('Authentication required');
+    }
+    if (actor.typ === 'admin') {
+      return this.getPaymentsByOrder(orderId);
+    }
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      select: { customerId: true },
+    });
+    if (!order || order.customerId !== actor.customerId) {
+      throw new ForbiddenException('You do not have access to these payments');
+    }
+    return this.getPaymentsByOrder(orderId);
+  }
+
+  async getPaymentsForTracking(orderNumber: string, email: string) {
+    const normalizedOrderNumber = (orderNumber || '').trim();
+    const normalizedEmail = (email || '').trim().toLowerCase();
+    if (!normalizedOrderNumber || !normalizedEmail) {
+      throw new BadRequestException('orderNumber and email are required');
+    }
+    const order = await this.prisma.order.findUnique({
+      where: { orderNumber: normalizedOrderNumber },
+      select: { id: true, customerEmail: true },
+    });
+    if (!order) {
+      throw new NotFoundException(`Order ${normalizedOrderNumber} not found`);
+    }
+    if ((order.customerEmail || '').trim().toLowerCase() !== normalizedEmail) {
+      throw new ForbiddenException('You do not have access to this order');
+    }
+    return this.getPaymentsByOrder(order.id);
   }
 
   /**
@@ -560,6 +624,132 @@ export class PaymentService {
       OFFLINE: 'offline',
     };
     return mapping[flowType] || flowType.toLowerCase();
+  }
+
+  private assertProviderFlowMatch(
+    providerCode: string,
+    flowType: string,
+  ): void {
+    const provider = this.paymentFactory.getProvider(providerCode);
+    const expected = provider.getFlowType();
+    if (expected !== flowType) {
+      throw new BadRequestException(
+        `flowType must be ${expected} for provider '${providerCode}'`,
+      );
+    }
+  }
+
+  /**
+   * Admin: list payment methods (includes inactive when requested)
+   */
+  async listPaymentMethodsAdmin(includeInactive: boolean) {
+    return this.prisma.paymentMethod.findMany({
+      where: includeInactive ? {} : { isActive: true },
+      orderBy: [{ provider: 'asc' }, { name: 'asc' }],
+    });
+  }
+
+  /**
+   * Admin: get one payment method by id
+   */
+  async getPaymentMethodAdmin(id: string) {
+    const method = await this.prisma.paymentMethod.findUnique({
+      where: { id },
+    });
+    if (!method) {
+      throw new NotFoundException(`Payment method ${id} not found`);
+    }
+    return method;
+  }
+
+  /**
+   * Admin: create payment method row (checkout uses `code` as paymentMethodCode)
+   */
+  async createPaymentMethodAdmin(dto: CreateAdminPaymentMethodDto) {
+    const code = dto.code.toLowerCase().trim();
+    this.assertProviderFlowMatch(dto.provider, dto.flowType);
+    try {
+      return await this.prisma.paymentMethod.create({
+        data: {
+          code,
+          name: dto.name.trim(),
+          provider: dto.provider.toLowerCase(),
+          flowType: dto.flowType,
+          isActive: dto.isActive ?? true,
+          config: (dto.config ?? {}) as object,
+          metadata: (dto.metadata ?? {}) as object,
+        },
+      });
+    } catch (e: any) {
+      if (e?.code === 'P2002') {
+        throw new ConflictException('Payment method code already exists');
+      }
+      throw e;
+    }
+  }
+
+  /**
+   * Admin: update payment method
+   */
+  async updatePaymentMethodAdmin(
+    id: string,
+    dto: UpdateAdminPaymentMethodDto,
+  ) {
+    const existing = await this.prisma.paymentMethod.findUnique({
+      where: { id },
+    });
+    if (!existing) {
+      throw new NotFoundException(`Payment method ${id} not found`);
+    }
+
+    const provider = dto.provider ?? existing.provider;
+    const flowType = dto.flowType ?? existing.flowType;
+    if (dto.provider !== undefined || dto.flowType !== undefined) {
+      this.assertProviderFlowMatch(provider, flowType);
+    }
+
+    const code =
+      dto.code !== undefined ? dto.code.toLowerCase().trim() : undefined;
+
+    try {
+      return await this.prisma.paymentMethod.update({
+        where: { id },
+        data: {
+          ...(code !== undefined && { code }),
+          ...(dto.name !== undefined && { name: dto.name.trim() }),
+          ...(dto.provider !== undefined && {
+            provider: dto.provider.toLowerCase(),
+          }),
+          ...(dto.flowType !== undefined && { flowType: dto.flowType }),
+          ...(dto.isActive !== undefined && { isActive: dto.isActive }),
+          ...(dto.config !== undefined && { config: dto.config as object }),
+          ...(dto.metadata !== undefined && {
+            metadata: dto.metadata as object,
+          }),
+        },
+      });
+    } catch (e: any) {
+      if (e?.code === 'P2002') {
+        throw new ConflictException('Payment method code already exists');
+      }
+      throw e;
+    }
+  }
+
+  /**
+   * Admin: delete payment method (blocked when payments exist)
+   */
+  async deletePaymentMethodAdmin(id: string): Promise<void> {
+    await this.getPaymentMethodAdmin(id);
+    const count = await this.prisma.payment.count({
+      where: { paymentMethodId: id },
+    });
+    if (count > 0) {
+      throw new ConflictException(
+        'Cannot delete payment method: existing payments reference it',
+      );
+    }
+    await this.prisma.paymentMethod.delete({ where: { id } });
   }
 
   /**

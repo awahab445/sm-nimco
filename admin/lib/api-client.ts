@@ -1,6 +1,7 @@
 import { getToken, clearToken } from './auth-token';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+const DEFAULT_TIMEOUT_MS = 15000;
 
 export class ApiError extends Error {
   constructor(
@@ -40,10 +41,20 @@ export async function fetchApi<T>(
     if (token) headers.set('Authorization', `Bearer ${token}`);
   }
 
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);
   const response = await fetch(url, {
     ...init,
     credentials: 'include',
     headers,
+    signal: init.signal ?? controller.signal,
+  }).catch((err: unknown) => {
+    if (err instanceof DOMException && err.name === 'AbortError') {
+      throw new ApiError('Request timed out. Please try again.', 408);
+    }
+    throw err;
+  }).finally(() => {
+    clearTimeout(timeoutId);
   });
 
   if (response.status === 401 && withAuth) {

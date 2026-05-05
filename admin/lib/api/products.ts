@@ -1,4 +1,5 @@
 import { fetchApi } from '../api-client';
+import { getToken } from '../auth-token';
 
 export type ProductType = 'simple' | 'configurable' | 'bundle' | 'virtual';
 export type ProductStatus = 'draft' | 'active' | 'disabled';
@@ -191,6 +192,36 @@ export async function updateProductImage(imageId: string, body: Partial<CreateIm
 
 export async function deleteProductImage(imageId: string) {
   return fetchApi(`/admin/products/images/${imageId}`, { method: 'DELETE' });
+}
+
+export async function uploadProductImage(file: File): Promise<{ url: string; filename: string }> {
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+  const formData = new FormData();
+  formData.append('file', file);
+  const headers = new Headers();
+  const token = getToken();
+  if (token) {
+    headers.set('Authorization', `Bearer ${token}`);
+  }
+  const response = await fetch(`${baseUrl}/admin/products/images/upload`, {
+    method: 'POST',
+    body: formData,
+    credentials: 'include',
+    headers,
+  });
+  if (!response.ok) {
+    let message = `Image upload failed (${response.status})`;
+    try {
+      const errorData = (await response.json()) as { message?: string };
+      if (errorData?.message) {
+        message = errorData.message;
+      }
+    } catch {
+      // Keep fallback message when response is not JSON.
+    }
+    throw new Error(message);
+  }
+  return response.json() as Promise<{ url: string; filename: string }>;
 }
 
 export async function assignProductCategory(

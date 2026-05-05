@@ -160,6 +160,28 @@ export class OrderService {
   }
 
   /**
+   * Public-safe order tracking by order number + customer email.
+   */
+  async trackByOrderNumberAndEmail(orderNumber: string, email: string) {
+    const normalizedOrderNumber = (orderNumber || '').trim();
+    const normalizedEmail = (email || '').trim().toLowerCase();
+    if (!normalizedOrderNumber || !normalizedEmail) {
+      throw new BadRequestException('orderNumber and email are required');
+    }
+    const order = await this.prisma.order.findUnique({
+      where: { orderNumber: normalizedOrderNumber },
+      include: { items: true },
+    });
+    if (!order) {
+      throw new NotFoundException(`Order ${normalizedOrderNumber} not found`);
+    }
+    if ((order.customerEmail || '').trim().toLowerCase() !== normalizedEmail) {
+      throw new ForbiddenException('You do not have access to this order');
+    }
+    return order;
+  }
+
+  /**
    * List orders (admin or user-scoped)
    */
   async findAll(query: OrderQueryDto & { customerEmail?: string }, customerId?: string) {

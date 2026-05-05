@@ -26,7 +26,12 @@ export function ReviewStep({ onBack }: ReviewStepProps) {
         return;
       }
       await clearCart();
-      router.push(`/checkout/success?orderId=${orderId}`);
+      const sp = new URLSearchParams({
+        orderId,
+        ...(orderNumber ? { orderNumber } : {}),
+        ...(checkout.customerEmail ? { email: checkout.customerEmail } : {}),
+      });
+      router.push(`/checkout/success?${sp.toString()}`);
       return;
     }
 
@@ -46,7 +51,12 @@ export function ReviewStep({ onBack }: ReviewStepProps) {
 
       // For client-side payments (Stripe) or COD, clear cart and redirect to success page
       await clearCart();
-      router.push(`/checkout/success?orderId=${result.orderId}`);
+      const sp = new URLSearchParams({
+        orderId: result.orderId,
+        orderNumber: result.orderNumber,
+        ...(checkout.customerEmail ? { email: checkout.customerEmail } : {}),
+      });
+      router.push(`/checkout/success?${sp.toString()}`);
     } catch (err) {
       // Error is handled by context
     }

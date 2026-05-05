@@ -8,6 +8,9 @@ import { VariantService } from './services/variant.service';
 import { ImageService } from './services/image.service';
 import { CategoryService } from './services/category.service';
 import { PrismaService } from './services/prisma.service';
+import { AdminJwtAuthGuard } from '../admin/guards/admin-jwt-auth.guard';
+import { AdminPermissionsGuard } from '../admin/guards/admin-permissions.guard';
+import { AdminRbacService } from '../admin/services/admin-rbac.service';
 
 @Module({
   controllers: [
@@ -22,6 +25,9 @@ import { PrismaService } from './services/prisma.service';
     VariantService,
     ImageService,
     CategoryService,
+    AdminRbacService,
+    AdminJwtAuthGuard,
+    AdminPermissionsGuard,
   ],
   exports: [
     ProductService,

@@ -8,28 +8,36 @@ import {
   Delete,
   HttpCode,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
 import { CategoryService } from '../services/category.service';
 import { CreateCategoryDto } from '../dto/create-category.dto';
 import { UpdateCategoryDto } from '../dto/update-category.dto';
+import { AdminJwtAuthGuard } from '../../admin/guards/admin-jwt-auth.guard';
+import { AdminPermissionsGuard } from '../../admin/guards/admin-permissions.guard';
+import { RequirePermissions } from '../../admin/decorators/require-permissions.decorator';
 
 @Controller('admin/categories')
+@UseGuards(AdminJwtAuthGuard, AdminPermissionsGuard)
 export class AdminCategoryController {
   constructor(private readonly categoryService: CategoryService) {}
 
   @Get()
+  @RequirePermissions('catalog.read')
   @HttpCode(HttpStatus.OK)
   async findAll() {
     return this.categoryService.findAll({ includeInactive: true });
   }
 
   @Get(':id')
+  @RequirePermissions('catalog.read')
   @HttpCode(HttpStatus.OK)
   async findOne(@Param('id') id: string) {
     return this.categoryService.findById(id);
   }
 
   @Post()
+  @RequirePermissions('catalog.manage')
   @HttpCode(HttpStatus.CREATED)
   async create(@Body() dto: CreateCategoryDto) {
     return this.categoryService.create({
@@ -42,6 +50,7 @@ export class AdminCategoryController {
   }
 
   @Patch(':id')
+  @RequirePermissions('catalog.manage')
   @HttpCode(HttpStatus.OK)
   async update(@Param('id') id: string, @Body() dto: UpdateCategoryDto) {
     return this.categoryService.update(id, {
@@ -55,6 +64,7 @@ export class AdminCategoryController {
   }
 
   @Delete(':id')
+  @RequirePermissions('catalog.manage')
   @HttpCode(HttpStatus.OK)
   async remove(@Param('id') id: string) {
     return this.categoryService.remove(id);

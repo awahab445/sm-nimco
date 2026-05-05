@@ -9,6 +9,7 @@ import {
   Query,
   HttpCode,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
 import { ShippingService } from '../services/shipping.service';
 import { CreateZoneDto, UpdateZoneDto } from '../dto/create-zone.dto';
@@ -19,6 +20,9 @@ import {
   AssignCustomerGroupDto,
   UpdateCustomerGroupPricingDto,
 } from '../dto/customer-group.dto';
+import { AdminJwtAuthGuard } from '../../admin/guards/admin-jwt-auth.guard';
+import { AdminPermissionsGuard } from '../../admin/guards/admin-permissions.guard';
+import { RequirePermissions } from '../../admin/decorators/require-permissions.decorator';
 
 @Controller('shipping')
 export class ShippingController {
@@ -48,6 +52,7 @@ export class ShippingController {
  * Admin controller for shipping management
  */
 @Controller('admin/shipping')
+@UseGuards(AdminJwtAuthGuard, AdminPermissionsGuard)
 export class AdminShippingController {
   constructor(private readonly shippingService: ShippingService) {}
 
@@ -60,6 +65,7 @@ export class AdminShippingController {
    * POST /admin/shipping/zones
    */
   @Post('zones')
+  @RequirePermissions('shipping.manage')
   @HttpCode(HttpStatus.CREATED)
   async createZone(@Body() dto: CreateZoneDto) {
     return this.shippingService.createZone(dto);
@@ -70,6 +76,7 @@ export class AdminShippingController {
    * GET /admin/shipping/zones
    */
   @Get('zones')
+  @RequirePermissions('shipping.manage')
   async getAllZones(@Query('includeInactive') includeInactive?: string) {
     return this.shippingService.getAllZones(includeInactive === 'true');
   }
@@ -79,6 +86,7 @@ export class AdminShippingController {
    * GET /admin/shipping/zones/:id
    */
   @Get('zones/:id')
+  @RequirePermissions('shipping.manage')
   async getZoneById(@Param('id') id: string) {
     return this.shippingService.getZoneById(id);
   }
@@ -88,6 +96,7 @@ export class AdminShippingController {
    * PUT /admin/shipping/zones/:id
    */
   @Put('zones/:id')
+  @RequirePermissions('shipping.manage')
   @HttpCode(HttpStatus.OK)
   async updateZone(
     @Param('id') id: string,
@@ -101,6 +110,7 @@ export class AdminShippingController {
    * DELETE /admin/shipping/zones/:id
    */
   @Delete('zones/:id')
+  @RequirePermissions('shipping.manage')
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteZone(@Param('id') id: string) {
     await this.shippingService.deleteZone(id);
@@ -115,6 +125,7 @@ export class AdminShippingController {
    * POST /admin/shipping/methods
    */
   @Post('methods')
+  @RequirePermissions('shipping.manage')
   @HttpCode(HttpStatus.CREATED)
   async createMethod(@Body() dto: CreateMethodDto) {
     return this.shippingService.createMethod(dto);
@@ -125,6 +136,7 @@ export class AdminShippingController {
    * GET /admin/shipping/zones/:zoneId/methods
    */
   @Get('zones/:zoneId/methods')
+  @RequirePermissions('shipping.manage')
   async getMethodsByZone(
     @Param('zoneId') zoneId: string,
     @Query('includeInactive') includeInactive?: string,
@@ -137,6 +149,7 @@ export class AdminShippingController {
    * GET /admin/shipping/methods/:id
    */
   @Get('methods/:id')
+  @RequirePermissions('shipping.manage')
   async getMethodById(@Param('id') id: string) {
     return this.shippingService.getMethodById(id);
   }
@@ -146,6 +159,7 @@ export class AdminShippingController {
    * PUT /admin/shipping/methods/:id
    */
   @Put('methods/:id')
+  @RequirePermissions('shipping.manage')
   @HttpCode(HttpStatus.OK)
   async updateMethod(
     @Param('id') id: string,
@@ -159,6 +173,7 @@ export class AdminShippingController {
    * DELETE /admin/shipping/methods/:id
    */
   @Delete('methods/:id')
+  @RequirePermissions('shipping.manage')
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteMethod(@Param('id') id: string) {
     await this.shippingService.deleteMethod(id);
@@ -173,6 +188,7 @@ export class AdminShippingController {
    * POST /admin/shipping/orders/:orderId/assign
    */
   @Post('orders/:orderId/assign')
+  @RequirePermissions('shipping.manage')
   @HttpCode(HttpStatus.CREATED)
   async assignShipping(
     @Param('orderId') orderId: string,
@@ -186,6 +202,7 @@ export class AdminShippingController {
    * PUT /admin/shipping/orders/:orderId/status
    */
   @Put('orders/:orderId/status')
+  @RequirePermissions('shipping.manage')
   @HttpCode(HttpStatus.OK)
   async updateShippingStatus(
     @Param('orderId') orderId: string,
@@ -208,6 +225,7 @@ export class AdminShippingController {
    * POST /admin/shipping/methods/:methodId/customer-groups
    */
   @Post('methods/:methodId/customer-groups')
+  @RequirePermissions('shipping.manage')
   @HttpCode(HttpStatus.CREATED)
   async assignCustomerGroup(
     @Param('methodId') methodId: string,
@@ -228,6 +246,7 @@ export class AdminShippingController {
    * GET /admin/shipping/methods/:methodId/customer-groups
    */
   @Get('methods/:methodId/customer-groups')
+  @RequirePermissions('shipping.manage')
   async getMethodCustomerGroups(@Param('methodId') methodId: string) {
     return this.shippingService.getMethodCustomerGroups(methodId);
   }
@@ -237,6 +256,7 @@ export class AdminShippingController {
    * PUT /admin/shipping/methods/:methodId/customer-groups/:customerGroupId
    */
   @Put('methods/:methodId/customer-groups/:customerGroupId')
+  @RequirePermissions('shipping.manage')
   @HttpCode(HttpStatus.OK)
   async updateCustomerGroupPricing(
     @Param('methodId') methodId: string,
@@ -258,6 +278,7 @@ export class AdminShippingController {
    * DELETE /admin/shipping/methods/:methodId/customer-groups/:customerGroupId
    */
   @Delete('methods/:methodId/customer-groups/:customerGroupId')
+  @RequirePermissions('shipping.manage')
   @HttpCode(HttpStatus.NO_CONTENT)
   async removeCustomerGroup(
     @Param('methodId') methodId: string,

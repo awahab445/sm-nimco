@@ -3,7 +3,9 @@
 import { useEffect, useState } from 'react';
 import {
   createAdminProduct,
+  createProductImage,
   updateAdminProduct,
+  uploadProductImage,
   type CreateProductBody,
   type ProductDetail,
   type ProductStatus,
@@ -50,6 +52,7 @@ export function ProductForm({ mode, initial, productId, onCancel, onSaved }: Pro
   const [taxClassId, setTaxClassId] = useState('');
   const [attributesJson, setAttributesJson] = useState('{}');
   const [metaDataJson, setMetaDataJson] = useState('{}');
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -80,6 +83,16 @@ export function ProductForm({ mode, initial, productId, onCancel, onSaved }: Pro
       setError('Base price must be a valid non-negative number');
       return;
     }
+    const parsedCost = cost.trim() ? parseFloat(cost) : undefined;
+    if (parsedCost !== undefined && (!Number.isFinite(parsedCost) || parsedCost < 0)) {
+      setError('Cost must be a valid non-negative number');
+      return;
+    }
+    const parsedWeight = weight.trim() ? parseFloat(weight) : undefined;
+    if (parsedWeight !== undefined && (!Number.isFinite(parsedWeight) || parsedWeight < 0)) {
+      setError('Weight must be a valid non-negative number');
+      return;
+    }
     let attributes: Record<string, unknown> | undefined;
     let metaData: Record<string, unknown> | undefined;
     try {
@@ -100,8 +113,8 @@ export function ProductForm({ mode, initial, productId, onCancel, onSaved }: Pro
       ...(slug.trim() ? { slug: slug.trim() } : {}),
       ...(description.trim() ? { description: description.trim() } : {}),
       ...(shortDescription.trim() ? { shortDescription: shortDescription.trim() } : {}),
-      ...(cost.trim() ? { cost: parseFloat(cost) } : {}),
-      ...(weight.trim() ? { weight: parseFloat(weight) } : {}),
+      ...(parsedCost !== undefined ? { cost: parsedCost } : {}),
+      ...(parsedWeight !== undefined ? { weight: parsedWeight } : {}),
       ...(taxClassId.trim() ? { taxClassId: taxClassId.trim() } : {}),
       ...(attributes !== undefined ? { attributes } : {}),
       ...(metaData !== undefined ? { metaData } : {}),
@@ -116,6 +129,15 @@ export function ProductForm({ mode, initial, productId, onCancel, onSaved }: Pro
     try {
       if (mode === 'create') {
         const created = await createAdminProduct(body);
+        if (imageFile) {
+          const uploaded = await uploadProductImage(imageFile);
+          await createProductImage(created.id, {
+            url: uploaded.url,
+            altText: name.trim() || undefined,
+            isPrimary: true,
+            position: 0,
+          });
+        }
         onSaved?.(created);
       } else if (productId && initial) {
         const slugOut = slug.trim() || initial.slug;
@@ -123,6 +145,15 @@ export function ProductForm({ mode, initial, productId, onCancel, onSaved }: Pro
           ...body,
           slug: slugOut,
         });
+        if (imageFile) {
+          const uploaded = await uploadProductImage(imageFile);
+          await createProductImage(productId, {
+            url: uploaded.url,
+            altText: name.trim() || undefined,
+            isPrimary: true,
+            position: 0,
+          });
+        }
         onSaved?.(updated);
       }
     } catch (err) {
@@ -285,6 +316,31 @@ export function ProductForm({ mode, initial, productId, onCancel, onSaved }: Pro
           rows={4}
           className="mt-1 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-50"
         />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+          Product image
+        </label>
+        {mode === 'edit' && initial?.images?.[0]?.url ? (
+          <div className="mt-2">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={initial.images[0].url}
+              alt={initial.images[0].altText ?? initial.name}
+              className="h-20 w-20 rounded-lg border border-zinc-200 object-cover dark:border-zinc-800"
+            />
+          </div>
+        ) : null}
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
+          className="mt-2 block w-full text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-zinc-100 file:px-3 file:py-2 file:text-sm file:font-medium dark:file:bg-zinc-800 dark:file:text-zinc-100"
+        />
+        <p className="mt-1 text-xs text-zinc-500">
+          Optional. Uploading a file sets it as the product primary image.
+        </p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">

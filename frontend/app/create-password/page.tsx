@@ -1,12 +1,13 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/lib/auth.store';
 import Link from 'next/link';
 import { storefrontUi } from '@/lib/storefront-ui';
 
-export default function CreatePasswordPage() {
+function CreatePasswordContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
@@ -154,5 +155,13 @@ export default function CreatePasswordPage() {
         </form>
       </div>
     </div>
+  );
+}
+
+export default function CreatePasswordPage() {
+  return (
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center bg-muted/30 px-4 py-12" />}>
+      <CreatePasswordContent />
+    </Suspense>
   );
 }

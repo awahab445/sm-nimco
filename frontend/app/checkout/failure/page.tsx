@@ -1,9 +1,10 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { storefrontUi } from '@/lib/storefront-ui';
 
-export default function CheckoutFailurePage() {
+function CheckoutFailureContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const orderId = searchParams.get('orderId');
@@ -55,5 +56,13 @@ export default function CheckoutFailurePage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function CheckoutFailurePage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-muted/30 py-8" />}>
+      <CheckoutFailureContent />
+    </Suspense>
   );
 }

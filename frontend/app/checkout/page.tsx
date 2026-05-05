@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { CheckoutProvider, useCheckout } from '@/lib/checkout-context';
@@ -94,7 +95,9 @@ function CheckoutContent() {
 export default function CheckoutPage() {
   return (
     <CheckoutProvider>
-      <CheckoutContent />
+      <Suspense fallback={<div className="min-h-screen bg-muted/30 py-8" />}>
+        <CheckoutContent />
+      </Suspense>
     </CheckoutProvider>
   );
 }

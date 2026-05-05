@@ -6,9 +6,20 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
   HttpCode,
   HttpStatus,
+  Req,
+  UploadedFile,
+  UseInterceptors,
+  ParseFilePipeBuilder,
+  BadRequestException,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
+import { randomUUID } from 'crypto';
+import type { Request } from 'express';
 import { ProductService } from '../services/product.service';
 import { VariantService } from '../services/variant.service';
 import { ImageService } from '../services/image.service';
@@ -19,8 +30,14 @@ import { UpdateVariantDto } from '../dto/update-variant.dto';
 import { CreateImageDto } from '../dto/create-image.dto';
 import { UpdateImageDto } from '../dto/update-image.dto';
 import { AssignCategoryDto } from '../dto/assign-category.dto';
+import { AdminProductListQueryDto } from '../dto/admin-product-list-query.dto';
+import { AdminJwtAuthGuard } from '../../admin/guards/admin-jwt-auth.guard';
+import { AdminPermissionsGuard } from '../../admin/guards/admin-permissions.guard';
+import { RequirePermissions } from '../../admin/decorators/require-permissions.decorator';
+import { UseGuards } from '@nestjs/common';
 
 @Controller('admin/products')
+@UseGuards(AdminJwtAuthGuard, AdminPermissionsGuard)
 export class AdminProductController {
   constructor(
     private readonly productService: ProductService,
@@ -28,19 +45,29 @@ export class AdminProductController {
     private readonly imageService: ImageService,
   ) {}
 
+  @Get()
+  @RequirePermissions('catalog.read')
+  @HttpCode(HttpStatus.OK)
+  async list(@Query() query: AdminProductListQueryDto) {
+    return this.productService.findAllAdmin(query);
+  }
+
   @Post()
+  @RequirePermissions('catalog.manage')
   @HttpCode(HttpStatus.CREATED)
   async create(@Body() createProductDto: CreateProductDto) {
     return this.productService.create(createProductDto);
   }
 
   @Get(':id')
+  @RequirePermissions('catalog.read')
   @HttpCode(HttpStatus.OK)
   async findOne(@Param('id') id: string) {
     return this.productService.findOneById(id, true);
   }
 
   @Patch(':id')
+  @RequirePermissions('catalog.manage')
   @HttpCode(HttpStatus.OK)
   async update(
     @Param('id') id: string,
@@ -50,12 +77,14 @@ export class AdminProductController {
   }
 
   @Delete(':id')
+  @RequirePermissions('catalog.manage')
   @HttpCode(HttpStatus.OK)
   async remove(@Param('id') id: string) {
     return this.productService.remove(id);
   }
 
   @Post(':id/variants')
+  @RequirePermissions('catalog.manage')
   @HttpCode(HttpStatus.CREATED)
   async createVariant(
     @Param('id') productId: string,
@@ -65,6 +94,7 @@ export class AdminProductController {
   }
 
   @Patch('variants/:id')
+  @RequirePermissions('catalog.manage')
   @HttpCode(HttpStatus.OK)
   async updateVariant(
     @Param('id') id: string,
@@ -74,12 +104,14 @@ export class AdminProductController {
   }
 
   @Delete('variants/:id')
+  @RequirePermissions('catalog.manage')
   @HttpCode(HttpStatus.OK)
   async removeVariant(@Param('id') id: string) {
     return this.variantService.remove(id);
   }
 
   @Post(':id/images')
+  @RequirePermissions('catalog.manage')
   @HttpCode(HttpStatus.CREATED)
   async createImage(
     @Param('id') productId: string,
@@ -88,7 +120,60 @@ export class AdminProductController {
     return this.imageService.create(productId, createImageDto);
   }
 
+  @Post('images/upload')
+  @RequirePermissions('catalog.manage')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      fileFilter: (_req, file, cb) => {
+        const allowedMime = /^image\/(jpeg|png|webp|gif)$/i.test(file.mimetype || '');
+        const allowedExt = /\.(jpe?g|png|webp|gif)$/i.test(file.originalname || '');
+        if (allowedMime && allowedExt) {
+          cb(null, true);
+          return;
+        }
+        cb(
+          new BadRequestException(
+            'Only PNG, JPEG, WEBP, and GIF image files are allowed',
+          ) as any,
+          false,
+        );
+      },
+      storage: diskStorage({
+        destination: 'uploads/products',
+        filename: (_req, file, cb) => {
+          const extension = extname(file.originalname || '').toLowerCase();
+          cb(null, `${randomUUID()}${extension}`);
+        },
+      }),
+    }),
+  )
+  @HttpCode(HttpStatus.CREATED)
+  async uploadImage(
+    @UploadedFile(
+      new ParseFilePipeBuilder()
+        .addMaxSizeValidator({ maxSize: 5 * 1024 * 1024 })
+        .build({ fileIsRequired: true }),
+    )
+    file: any,
+    @Req() req: Request,
+  ) {
+    const publicBaseUrl = process.env.PUBLIC_BASE_URL?.trim();
+    const protoRaw = (req.headers['x-forwarded-proto'] as string | undefined) || req.protocol;
+    const proto = protoRaw === 'https' ? 'https' : 'http';
+    const host = req.get('host')?.trim() || 'localhost:3000';
+    const normalizedPath = file.path.replace(/\\/g, '/');
+    const publicPath = normalizedPath.startsWith('uploads/')
+      ? `/${normalizedPath}`
+      : `/uploads/products/${file.filename}`;
+    const baseUrl = publicBaseUrl || `${proto}://${host}`;
+    return {
+      url: `${baseUrl}${publicPath}`,
+      filename: file.filename,
+    };
+  }
+
   @Patch('images/:id')
+  @RequirePermissions('catalog.manage')
   @HttpCode(HttpStatus.OK)
   async updateImage(
     @Param('id') id: string,
@@ -98,12 +183,14 @@ export class AdminProductController {
   }
 
   @Delete('images/:id')
+  @RequirePermissions('catalog.manage')
   @HttpCode(HttpStatus.OK)
   async removeImage(@Param('id') id: string) {
     return this.imageService.remove(id);
   }
 
   @Post(':id/categories')
+  @RequirePermissions('catalog.manage')
   @HttpCode(HttpStatus.CREATED)
   async assignCategory(
     @Param('id') productId: string,
@@ -114,6 +201,16 @@ export class AdminProductController {
       assignCategoryDto.categoryId,
       assignCategoryDto.position,
     );
+  }
+
+  @Delete(':id/categories/:categoryId')
+  @RequirePermissions('catalog.manage')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async removeCategory(
+    @Param('id') productId: string,
+    @Param('categoryId') categoryId: string,
+  ) {
+    await this.productService.removeCategoryFromProduct(productId, categoryId);
   }
 }
 

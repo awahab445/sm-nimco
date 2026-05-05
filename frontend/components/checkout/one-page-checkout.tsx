@@ -451,7 +451,12 @@ export function OnePageCheckout() {
         return;
       }
       await clearCart();
-      router.push(`/checkout/success?orderId=${result.orderId}`);
+      const sp = new URLSearchParams({
+        orderId: result.orderId,
+        orderNumber: result.orderNumber,
+        email: customerEmail.trim(),
+      });
+      router.push(`/checkout/success?${sp.toString()}`);
     } catch {
       // Error shown by context
     }

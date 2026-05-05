@@ -82,6 +82,10 @@ function normalizeProduct(raw: Record<string, unknown>): Product {
   };
 }
 
+function toUnknownRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === 'object' ? (value as Record<string, unknown>) : {};
+}
+
 export default function ProductDetailPage() {
   const params = useParams();
   const slug = typeof params.slug === 'string' ? params.slug : '';
@@ -104,7 +108,7 @@ export default function ProductDetailPage() {
       .getProductBySlug(slug)
       .then((p) => {
         if (!cancelled) {
-          const normalized = normalizeProduct(p as Record<string, unknown>);
+          const normalized = normalizeProduct(toUnknownRecord(p));
           setProduct(normalized);
           const first = normalized.variants?.[0] ?? null;
           setSelectedVariant(first);
@@ -135,7 +139,7 @@ export default function ProductDetailPage() {
   const currentVariantId = currentVariant?.id;
   const availableQty = currentVariantId !== undefined ? availability[currentVariantId] : undefined;
   const inStock = availableQty === undefined ? true : availableQty > 0;
-  const image = product?.images?.[0] ?? product?.images?.find((i) => i.isPrimary);
+  const image = product?.images?.find((i) => i.isPrimary) ?? product?.images?.[0];
   const imageUrl = image?.url;
 
   const handleAddToCart = async () => {

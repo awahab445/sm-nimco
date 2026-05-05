@@ -8,9 +8,14 @@ import {
   HttpCode,
   HttpStatus,
   Req,
+  UseGuards,
 } from '@nestjs/common';
 import { PaymentService } from '../services/payment.service';
 import { CreatePaymentIntentDto } from '../dto/create-payment-intent.dto';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { AdminJwtAuthGuard } from '../../admin/guards/admin-jwt-auth.guard';
+import { AdminPermissionsGuard } from '../../admin/guards/admin-permissions.guard';
+import { RequirePermissions } from '../../admin/decorators/require-permissions.decorator';
 
 @Controller('payments')
 export class PaymentController {
@@ -65,21 +70,35 @@ export class PaymentController {
   }
 
   /**
-   * Get payment by ID
+   * Get payment by ID (customer/admin JWT required)
    * GET /payments/:id
    */
   @Get(':id')
-  async getPayment(@Param('id') id: string) {
-    return this.paymentService.getPayment(id);
+  @UseGuards(JwtAuthGuard)
+  async getPayment(@Param('id') id: string, @Req() request: any) {
+    return this.paymentService.getPaymentAuthorized(id, request.user);
   }
 
   /**
-   * Get payments for an order
+   * Get payments for an order (customer/admin JWT required)
    * GET /payments/order/:orderId
    */
   @Get('order/:orderId')
-  async getPaymentsByOrder(@Param('orderId') orderId: string) {
-    return this.paymentService.getPaymentsByOrder(orderId);
+  @UseGuards(JwtAuthGuard)
+  async getPaymentsByOrder(@Param('orderId') orderId: string, @Req() request: any) {
+    return this.paymentService.getPaymentsByOrderAuthorized(orderId, request.user);
+  }
+
+  /**
+   * Track payments via order number + customer email (public-safe lookup)
+   * GET /payments/track?orderNumber=...&email=...
+   */
+  @Get('track')
+  async trackPayments(
+    @Query('orderNumber') orderNumber: string,
+    @Query('email') email: string,
+  ) {
+    return this.paymentService.getPaymentsForTracking(orderNumber, email);
   }
 
   /**
@@ -87,6 +106,8 @@ export class PaymentController {
    * GET /payments/cod/pending
    */
   @Get('cod/pending')
+  @UseGuards(AdminJwtAuthGuard, AdminPermissionsGuard)
+  @RequirePermissions('payments.manage')
   async getPendingCODPayments() {
     return this.paymentService.getPendingCODPayments();
   }
@@ -96,6 +117,8 @@ export class PaymentController {
    * POST /payments/cod/:paymentId/collect
    */
   @Post('cod/:paymentId/collect')
+  @UseGuards(AdminJwtAuthGuard, AdminPermissionsGuard)
+  @RequirePermissions('payments.manage')
   @HttpCode(HttpStatus.OK)
   async markCODAsCollected(@Param('paymentId') paymentId: string) {
     await this.paymentService.markCODAsCollected(paymentId);
@@ -110,6 +133,8 @@ export class PaymentController {
    * POST /payments/cod/:paymentId/fail
    */
   @Post('cod/:paymentId/fail')
+  @UseGuards(AdminJwtAuthGuard, AdminPermissionsGuard)
+  @RequirePermissions('payments.manage')
   @HttpCode(HttpStatus.OK)
   async markCODAsFailed(
     @Param('paymentId') paymentId: string,

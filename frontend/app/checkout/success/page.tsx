@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { orderApi, paymentApi } from '@/lib/api-client';
@@ -25,11 +26,12 @@ interface Order {
   payments?: OrderPayment[];
 }
 
-export default function CheckoutSuccessPage() {
+function CheckoutSuccessContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const orderId = searchParams.get('orderId');
   const orderNumber = searchParams.get('orderNumber');
+  const email = searchParams.get('email');
 
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
@@ -57,16 +59,26 @@ export default function CheckoutSuccessPage() {
 
       try {
         setLoading(true);
-        const orderData = orderId
-          ? await orderApi.getOrder(orderId)
-          : await orderApi.getOrderByNumber(orderNumber!);
-        const resolvedOrderId = orderData.id;
-
+        let orderData: any;
         let payments: Awaited<ReturnType<typeof paymentApi.getPaymentsByOrder>> = [];
-        try {
-          payments = await paymentApi.getPaymentsByOrder(resolvedOrderId);
-        } catch {
-          // Order may exist before payments are created; continue without payments
+        if (email && orderNumber) {
+          orderData = await orderApi.trackOrder(orderNumber, email);
+          try {
+            payments = await paymentApi.trackPayments(orderNumber, email);
+          } catch {
+            // Order may exist before payments are created; continue without payments
+          }
+        } else if (orderId) {
+          orderData = await orderApi.getOrder(orderId);
+          try {
+            payments = await paymentApi.getPaymentsByOrder(orderData.id);
+          } catch {
+            // Order may exist before payments are created; continue without payments
+          }
+        } else {
+          setError('Order tracking link is incomplete. Please use order number + email.');
+          setLoading(false);
+          return;
         }
 
         setOrder({
@@ -87,7 +99,7 @@ export default function CheckoutSuccessPage() {
     };
 
     fetchOrderAndPayments();
-  }, [orderId, orderNumber]);
+  }, [orderId, orderNumber, email]);
 
   // Poll for payment status updates (only for online/redirect gateways; not for COD)
   useEffect(() => {
@@ -331,6 +343,14 @@ export default function CheckoutSuccessPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function CheckoutSuccessPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-muted/30 py-8" />}>
+      <CheckoutSuccessContent />
+    </Suspense>
   );
 }
 

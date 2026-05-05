@@ -1,8 +1,12 @@
-import { Controller, Post, Get, Body, Query, HttpCode, HttpStatus, BadRequestException } from '@nestjs/common';
+import { Controller, Post, Get, Body, Query, HttpCode, HttpStatus, BadRequestException, UseGuards } from '@nestjs/common';
 import { InventoryService } from '../services/inventory.service';
 import { AdjustStockDto, DEFAULT_WAREHOUSE_ID } from '../dto/adjust-stock.dto';
+import { AdminJwtAuthGuard } from '../../admin/guards/admin-jwt-auth.guard';
+import { AdminPermissionsGuard } from '../../admin/guards/admin-permissions.guard';
+import { RequirePermissions } from '../../admin/decorators/require-permissions.decorator';
 
 @Controller('admin/inventory')
+@UseGuards(AdminJwtAuthGuard, AdminPermissionsGuard)
 export class AdminInventoryController {
   constructor(private readonly inventoryService: InventoryService) {}
 
@@ -11,6 +15,7 @@ export class AdminInventoryController {
    * Use this to verify stock. Storefront uses warehouseId "default-warehouse".
    */
   @Get('status')
+  @RequirePermissions('inventory.read')
   @HttpCode(HttpStatus.OK)
   async getStatus(
     @Query('variantId') variantId: string,
@@ -25,6 +30,7 @@ export class AdminInventoryController {
   }
 
   @Post('adjust')
+  @RequirePermissions('inventory.manage')
   @HttpCode(HttpStatus.OK)
   async adjustStock(@Body() adjustStockDto: AdjustStockDto) {
     const inventoryItem = await this.inventoryService.adjustStock(adjustStockDto);

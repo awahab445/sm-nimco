@@ -512,12 +512,25 @@ export class CheckoutService {
       },
     );
 
+    const enrichReturnUrl = (rawUrl?: string): string | undefined => {
+      if (!rawUrl) return undefined;
+      try {
+        const u = new URL(rawUrl);
+        u.searchParams.set('orderId', order.id);
+        u.searchParams.set('orderNumber', order.orderNumber);
+        u.searchParams.set('email', customerEmail);
+        return u.toString();
+      } catch {
+        return rawUrl;
+      }
+    };
+
     // Create payment intent using PaymentService
     const paymentIntent = await this.paymentService.createIntent(
       order.id,
       confirmCheckoutDto.paymentMethodCode,
-      confirmCheckoutDto.returnUrl,
-      confirmCheckoutDto.cancelUrl,
+      enrichReturnUrl(confirmCheckoutDto.returnUrl),
+      enrichReturnUrl(confirmCheckoutDto.cancelUrl),
     );
 
     // Emit payment intent created event
