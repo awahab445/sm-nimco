@@ -19,14 +19,22 @@ function normalizeSections(raw: unknown): HomeSection[] | null {
  * When the backend exposes a real endpoint, return JSON: `{ "sections": [ ... ] }` using the types in `home-page-types.ts`.
  */
 export async function getHomePageSections(): Promise<HomeSection[]> {
-  const path = process.env.NEXT_PUBLIC_STOREFRONT_HOME_LAYOUT_PATH?.trim();
-  if (!path) {
-    return HOME_PAGE_DEFAULT_SECTIONS;
-  }
+  const path =
+    process.env.NEXT_PUBLIC_STOREFRONT_HOME_LAYOUT_PATH?.trim() ||
+    '/cms/blocks/home-page-layout';
 
   try {
-    const data = await fetchApi<HomePageLayoutResponse | { data?: HomePageLayoutResponse }>(path);
-    const payload = 'data' in data && data.data ? data.data : (data as HomePageLayoutResponse);
+    const data = await fetchApi<
+      | HomePageLayoutResponse
+      | { data?: HomePageLayoutResponse }
+      | { contentJson?: { sections?: HomeSection[] } }
+    >(path);
+    const payload =
+      'contentJson' in data && data.contentJson
+        ? { sections: data.contentJson.sections ?? [] }
+        : 'data' in data && data.data
+          ? data.data
+          : (data as HomePageLayoutResponse);
     const sections = normalizeSections(payload);
     if (sections) return sections;
   } catch {

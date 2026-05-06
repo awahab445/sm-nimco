@@ -60,6 +60,12 @@ export function Header() {
             Track order
           </Link>
           <Link
+            href="/pages/feedback"
+            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Feedback
+          </Link>
+          <Link
             href="/cart"
             className="relative flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
           >

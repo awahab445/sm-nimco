@@ -55,6 +55,7 @@ export class CategoryService {
         description: true,
         parentId: true,
         position: true,
+        isActive: true,
       },
     });
 
@@ -74,7 +75,16 @@ export class CategoryService {
   }
 
   private buildTree(
-    flat: Array<{ id: string; name: string; slug: string; description: string | null; parentId: string | null; position: number; productCount: number }>,
+    flat: Array<{
+      id: string;
+      name: string;
+      slug: string;
+      description: string | null;
+      parentId: string | null;
+      position: number;
+      isActive: boolean;
+      productCount: number;
+    }>,
     parentId: string | null,
   ): any[] {
     return flat
@@ -129,7 +139,17 @@ export class CategoryService {
     });
   }
 
-  async update(id: string, data: { name?: string; slug?: string; description?: string; parentId?: string; position?: number; isActive?: boolean }) {
+  async update(
+    id: string,
+    data: {
+      name?: string;
+      slug?: string;
+      description?: string;
+      parentId?: string | null;
+      position?: number;
+      isActive?: boolean;
+    },
+  ) {
     await this.findById(id);
     const updateData: any = {};
     if (data.name !== undefined) updateData.name = data.name;

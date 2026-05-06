@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Ecommerce Platform API",
-    "description": "API collection for the ecommerce platform backend. Use to verify all endpoints before building the frontend.\n\n**Setup:** Set `baseUrl` to your API root (default: http://localhost:3000).\n\n**Staff admin:** Apply migration `20260502120000_admin_rbac`, then **Admin (staff) → Bootstrap — first super-admin** (or **Admin login**). If roles were never seeded, the API creates permissions/roles on first bootstrap. `npm run seed` still recommended for shipping/COD defaults. Collection vars `admin_access_token` / `admin_role_id` are set by Tests where noted. Customer JWT: `access_token`.",
+    "description": "API collection for the ecommerce platform backend. Use to verify all endpoints before building the frontend.\n\n**Setup:** Set `baseUrl` to your API root (default: http://localhost:3000).\n\n**Staff admin:** Apply migration `20260502120000_admin_rbac`, then **Admin (staff) → Bootstrap — first super-admin** (or **Admin login**). If roles were never seeded, the API creates permissions/roles on first bootstrap. `npm run seed` still recommended for shipping/COD defaults. Collection vars `admin_access_token` / `admin_role_id` are set by Tests where noted. Customer JWT: `access_token`. **Admin - Payment methods** requires `payments.manage` (manager or super-admin); set `paymentMethodId` after create or from DB.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -39,6 +39,10 @@
     },
     {
       "key": "paymentId",
+      "value": ""
+    },
+    {
+      "key": "paymentMethodId",
       "value": ""
     },
     {
@@ -1019,6 +1023,98 @@
               "raw": "{\n  \"reason\": \"Customer refused delivery\"\n}"
             },
             "url": "{{baseUrl}}/payments/cod/:paymentId/fail"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Payment methods",
+      "description": "Staff JWT (`admin_access_token`) with `payments.manage` (manager + super-admin). CRUD for `payment_methods` (COD, JazzCash, EasyPaisa, banks, Stripe). `provider` must match backend PaymentFactory; `flowType` must match that provider.",
+      "item": [
+        {
+          "name": "List payment methods (admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_access_token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/admin/payment-methods?includeInactive=true",
+            "description": "Omit query or use includeInactive=false to list only active methods."
+          }
+        },
+        {
+          "name": "Get payment method by ID (admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_access_token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/admin/payment-methods/{{paymentMethodId}}",
+            "description": "Returns full row including config JSON (gateway credentials)."
+          }
+        },
+        {
+          "name": "Create payment method (admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"jazzcash_main\",\n  \"name\": \"JazzCash\",\n  \"provider\": \"jazzcash\",\n  \"flowType\": \"REDIRECT\",\n  \"isActive\": true,\n  \"config\": {},\n  \"metadata\": { \"sortOrder\": 10 }\n}"
+            },
+            "url": "{{baseUrl}}/admin/payment-methods",
+            "description": "provider: cod | stripe | easypaisa | jazzcash | ubl | hbl. flowType: OFFLINE (cod), CLIENT_SECRET (stripe), REDIRECT (jazzcash/easypaisa), HOSTED_PAGE (ubl/hbl)."
+          }
+        },
+        {
+          "name": "Update payment method (admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"JazzCash (updated)\",\n  \"isActive\": true,\n  \"config\": {},\n  \"metadata\": { \"sortOrder\": 5 }\n}"
+            },
+            "url": "{{baseUrl}}/admin/payment-methods/{{paymentMethodId}}",
+            "description": "Partial update. Sending config replaces the whole JSON object."
+          }
+        },
+        {
+          "name": "Delete payment method (admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_access_token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/admin/payment-methods/{{paymentMethodId}}",
+            "description": "204 when deleted. 409 if any payments reference this method."
           }
         }
       ]

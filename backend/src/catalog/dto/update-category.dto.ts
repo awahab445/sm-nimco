@@ -1,4 +1,12 @@
-import { IsString, IsOptional, IsNumber, IsBoolean, IsUUID, Min } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsNumber,
+  IsBoolean,
+  IsUUID,
+  Min,
+  ValidateIf,
+} from 'class-validator';
 
 export class UpdateCategoryDto {
   @IsString()
@@ -13,9 +21,11 @@ export class UpdateCategoryDto {
   @IsOptional()
   description?: string;
 
-  @IsUUID()
+  /** Omit to leave unchanged; send `null` to clear parent */
   @IsOptional()
-  parentId?: string;
+  @ValidateIf((_, v) => v != null)
+  @IsUUID()
+  parentId?: string | null;
 
   @IsNumber()
   @IsOptional()

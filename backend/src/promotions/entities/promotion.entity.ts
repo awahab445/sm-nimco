@@ -22,6 +22,8 @@ export interface Promotion {
   metadata: Record<string, any>;
   createdAt: Date;
   updatedAt: Date;
+  promotionProducts?: PromotionProduct[];
+  promotionCustomerGroups?: PromotionCustomerGroup[];
 }
 
 export interface PromotionProduct {

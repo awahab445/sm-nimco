@@ -13,8 +13,8 @@ import {
 } from '@nestjs/common';
 import { PromotionsService } from '../services/promotions.service';
 import { CreatePromotionDto } from '../dto/create-promotion.dto';
-import { ValidatePromotionDto } from '../dto/validate-promotion.dto';
 import { PatchPromotionDto } from '../dto/patch-promotion.dto';
+import { ValidatePromotionDto } from '../dto/validate-promotion.dto';
 
 @Controller('promotions')
 export class PromotionsController {
@@ -29,6 +29,16 @@ export class PromotionsController {
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
   async createPromotion(@Body() createPromotionDto: CreatePromotionDto) {
     return await this.promotionsService.createPromotion(createPromotionDto);
+  }
+
+  /**
+   * GET /promotions
+   * Active, in-window promotions (default). Pass allStatuses=true for admin list (all records).
+   */
+  @Get()
+  async getPromotions(@Query('allStatuses') allStatuses?: string) {
+    const all = allStatuses === 'true' || allStatuses === '1';
+    return await this.promotionsService.listPromotions(all);
   }
 
   /**
@@ -52,15 +62,6 @@ export class PromotionsController {
     @Body() dto: PatchPromotionDto,
   ) {
     return await this.promotionsService.patchPromotion(id, dto);
-  }
-
-  /**
-   * GET /promotions
-   * Get all active promotions
-   */
-  @Get()
-  async getActivePromotions() {
-    return await this.promotionsService.getActivePromotions();
   }
 
   /**

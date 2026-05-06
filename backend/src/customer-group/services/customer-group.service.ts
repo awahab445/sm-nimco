@@ -60,6 +60,9 @@ export class CustomerGroupService {
     const groups = await this.prisma.customerGroup.findMany({
       where,
       orderBy: { createdAt: 'desc' },
+      include: {
+        _count: { select: { customers: true } },
+      },
     });
 
     return groups.map((g) => this.mapToResponse(g));

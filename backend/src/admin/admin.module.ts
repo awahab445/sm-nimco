@@ -26,6 +26,11 @@ import { AdminPermissionsGuard } from './guards/admin-permissions.guard';
     AdminJwtAuthGuard,
     AdminPermissionsGuard,
   ],
-  exports: [AdminRbacService, AdminUserService],
+  exports: [
+    AdminRbacService,
+    AdminUserService,
+    AdminJwtAuthGuard,
+    AdminPermissionsGuard,
+  ],
 })
 export class AdminModule {}

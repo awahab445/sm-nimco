@@ -16,6 +16,7 @@ import { CustomerGroupModule } from './customer-group/customer-group.module';
 import { AuthModule } from './auth/auth.module';
 import { AddressModule } from './address/address.module';
 import { AdminModule } from './admin/admin.module';
+import { CmsModule } from './cms/cms.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { AdminModule } from './admin/admin.module';
     CustomerModule,
     CustomerGroupModule,
     AddressModule,
+    CmsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

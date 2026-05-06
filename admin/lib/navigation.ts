@@ -105,6 +105,12 @@ export const adminNavGroups: NavGroup[] = [
         description: 'Payment methods and operations',
         phase: 'L',
       },
+      {
+        href: '/cms',
+        label: 'CMS',
+        description: 'Pages, blocks, sliders',
+        phase: 'M',
+      },
     ],
   },
 ];

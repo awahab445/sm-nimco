@@ -9,6 +9,7 @@ import { CreateProductDto, ProductStatus } from '../dto/create-product.dto';
 import { UpdateProductDto } from '../dto/update-product.dto';
 import { ProductQuery } from '../queries/product.query';
 import { ProductQueryDto } from '../dto/product-query.dto';
+import { AdminProductListQueryDto } from '../dto/admin-product-list-query.dto';
 
 @Injectable()
 export class ProductService {
@@ -117,10 +118,10 @@ export class ProductService {
     };
   }
 
-  async findAllAdmin(query: ProductQueryDto) {
+  async findAllAdmin(query: AdminProductListQueryDto) {
     const where = ProductQuery.buildAdminWhereClause(query);
     const include = ProductQuery.buildAdminListInclude();
-    const { skip, take, page } = ProductQuery.buildPaginationParams(query);
+    const { skip, take, page } = ProductQuery.buildPaginationParams(query as ProductQueryDto);
 
     const [products, total] = await Promise.all([
       this.prisma.product.findMany({

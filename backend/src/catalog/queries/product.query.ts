@@ -1,4 +1,5 @@
 import { ProductQueryDto } from '../dto/product-query.dto';
+import { AdminProductListQueryDto } from '../dto/admin-product-list-query.dto';
 
 export class ProductQuery {
   static buildWhereClause(query: ProductQueryDto) {
@@ -64,11 +65,9 @@ export class ProductQuery {
     return where;
   }
 
-  /**
-   * Admin product grid: all non-deleted products; optional status filter from query.
-   */
-  static buildAdminWhereClause(query: ProductQueryDto) {
-    const where: any = {
+  /** Admin catalog list: non-deleted only; optional status and filters */
+  static buildAdminWhereClause(query: AdminProductListQueryDto | ProductQueryDto) {
+    const where: Record<string, unknown> = {
       deletedAt: null,
     };
 
@@ -84,17 +83,19 @@ export class ProductQuery {
       };
     }
 
-    if (query.minPrice !== undefined || query.maxPrice !== undefined) {
-      where.basePrice = {};
+    const hasPriceAndAttributesFilters = 'minPrice' in query || 'maxPrice' in query || 'attributes' in query;
+    if (hasPriceAndAttributesFilters && (query.minPrice !== undefined || query.maxPrice !== undefined)) {
+      const priceFilter: Record<string, number> = {};
       if (query.minPrice !== undefined) {
-        where.basePrice.gte = query.minPrice;
+        priceFilter.gte = query.minPrice;
       }
       if (query.maxPrice !== undefined) {
-        where.basePrice.lte = query.maxPrice;
+        priceFilter.lte = query.maxPrice;
       }
+      where.basePrice = priceFilter;
     }
 
-    if (query.attributes && Object.keys(query.attributes).length > 0) {
+    if (hasPriceAndAttributesFilters && query.attributes && Object.keys(query.attributes).length > 0) {
       const attributeFilters = Object.entries(query.attributes).map(([key, value]) => ({
         attributes: {
           path: [key],
@@ -108,7 +109,6 @@ export class ProductQuery {
         where.AND = attributeFilters.map((filter) => ({ attributes: filter.attributes }));
       }
     }
-
     const searchTerm = typeof query.search === 'string' ? query.search.trim() : '';
     if (searchTerm.length >= 2) {
       where.OR = [
@@ -175,7 +175,6 @@ export class ProductQuery {
       },
     };
   }
-
   static buildIncludeClause(): {
     variants: { where: { isActive: boolean }; orderBy: { position: 'asc' } };
     images: { orderBy: ({ isPrimary: 'desc' } | { position: 'asc' })[] };

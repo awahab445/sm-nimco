@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
+import { AdminModule } from '../admin/admin.module';
 import { PaymentController } from './controllers/payment.controller';
+import { AdminPaymentMethodController } from './controllers/admin-payment-method.controller';
 import { PaymentService } from './services/payment.service';
 import { PaymentFactory } from './services/payment.factory';
 import { PaymentEventHandlers } from './events/payment.handlers';
@@ -10,11 +12,10 @@ import { HblProvider } from './providers/bank/hbl.provider';
 import { UblProvider } from './providers/bank/ubl.provider';
 import { OfflineCODProvider } from './providers/offline-cod.provider';
 import { CatalogModule } from '../catalog/catalog.module';
-import { AdminModule } from '../admin/admin.module';
 
 @Module({
-  imports: [CatalogModule, AdminModule], // For PrismaService and RBAC dependencies
-  controllers: [PaymentController],
+  imports: [CatalogModule, AdminModule],
+  controllers: [PaymentController, AdminPaymentMethodController],
   providers: [
     PaymentService,
     PaymentFactory,

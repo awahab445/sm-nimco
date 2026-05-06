@@ -1,4 +1,4 @@
-import { IsString, IsInt, IsNotEmpty, IsOptional, Min } from 'class-validator';
+import { IsString, IsInt, IsNotEmpty, IsOptional } from 'class-validator';
 
 export const DEFAULT_WAREHOUSE_ID = 'default-warehouse';
 
@@ -12,8 +12,8 @@ export class AdjustStockDto {
   @IsOptional()
   warehouseId?: string;
 
+  /** Delta added to on-hand quantity (negative to decrease). */
   @IsInt()
-  @Min(0)
   quantity: number;
 
   @IsString()

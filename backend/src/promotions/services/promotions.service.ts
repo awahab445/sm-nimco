@@ -263,6 +263,26 @@ export class PromotionsService {
   }
 
   /**
+   * List promotions. When allStatuses is false, returns the same set as storefront (active + in date range).
+   * When true, returns every promotion for admin (newest first).
+   */
+  async listPromotions(allStatuses: boolean): Promise<Promotion[]> {
+    if (!allStatuses) {
+      return this.getActivePromotions();
+    }
+
+    const promotions = await this.prisma.promotion.findMany({
+      orderBy: { updatedAt: 'desc' },
+      include: {
+        promotionProducts: true,
+        promotionCustomerGroups: true,
+      },
+    });
+
+    return promotions.map((p) => this.mapToPromotionEntity(p));
+  }
+
+  /**
    * Get all active promotions
    */
   async getActivePromotions(): Promise<Promotion[]> {
@@ -649,7 +669,7 @@ export class PromotionsService {
    * Map Prisma promotion to entity
    */
   private mapToPromotionEntity(promotion: any): Promotion {
-    return {
+    const base: Promotion = {
       id: promotion.id,
       code: promotion.code,
       name: promotion.name,
@@ -672,6 +692,27 @@ export class PromotionsService {
       createdAt: promotion.createdAt,
       updatedAt: promotion.updatedAt,
     };
+
+    if (Array.isArray(promotion.promotionProducts)) {
+      base.promotionProducts = promotion.promotionProducts.map((pp: any) => ({
+        id: pp.id,
+        promotionId: pp.promotionId,
+        productId: pp.productId,
+        variantId: pp.variantId,
+        categoryId: pp.categoryId,
+      }));
+    }
+
+    if (Array.isArray(promotion.promotionCustomerGroups)) {
+      base.promotionCustomerGroups = promotion.promotionCustomerGroups.map((cg: any) => ({
+        id: cg.id,
+        promotionId: cg.promotionId,
+        customerGroupId: cg.customerGroupId,
+        isExcluded: cg.isExcluded,
+      }));
+    }
+
+    return base;
   }
 
   /**
