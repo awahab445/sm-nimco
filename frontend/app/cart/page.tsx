@@ -3,7 +3,9 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useCartStore } from '@/lib/cart.store';
+import { productApi } from '@/lib/api-client';
 import { DEFAULT_CURRENCY } from '@/lib/config';
+import { resolveImageUrl } from '@/lib/resolve-image-url';
 
 function formatPrice(value: number, currency = DEFAULT_CURRENCY): string {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(value);
@@ -24,6 +26,7 @@ export default function CartPage() {
   const { cart, isLoading, error, refreshCart, updateItem, removeItem, clearCart } =
     useCartStore();
   const [localQty, setLocalQty] = useState<Record<string, number>>({});
+  const [fallbackProductImages, setFallbackProductImages] = useState<Record<string, string>>({});
 
   useEffect(() => {
     document.title = 'Your cart | E-commerce';
@@ -42,6 +45,44 @@ export default function CartPage() {
     });
     setLocalQty(next);
   }, [cart?.items]);
+
+  useEffect(() => {
+    const items = cart?.items ?? [];
+    const missingProductIds = Array.from(
+      new Set(
+        items
+          .filter((item) => !item.productImage && !!item.productId && !fallbackProductImages[item.productId])
+          .map((item) => item.productId),
+      ),
+    );
+    if (missingProductIds.length === 0) return;
+
+    let cancelled = false;
+    Promise.all(
+      missingProductIds.map(async (productId) => {
+        try {
+          const product = await productApi.getProductById(productId);
+          const primary = product.images?.find((img) => img.isPrimary) ?? product.images?.[0];
+          return { productId, image: primary?.url ?? '' };
+        } catch {
+          return { productId, image: '' };
+        }
+      }),
+    ).then((results) => {
+      if (cancelled) return;
+      setFallbackProductImages((prev) => {
+        const next = { ...prev };
+        for (const r of results) {
+          next[r.productId] = r.image;
+        }
+        return next;
+      });
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [cart?.items, fallbackProductImages]);
 
   const items = cart?.items ?? [];
   const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
@@ -93,17 +134,22 @@ export default function CartPage() {
               {items.map((item) => {
                 const rowTotal = item.price * item.quantity;
                 const attrLines = formatVariantAttributes(item.variantAttributes ?? item.attributes);
+                const imageUrl = resolveImageUrl(item.productImage) ?? resolveImageUrl(fallbackProductImages[item.productId]);
                 return (
                 <li key={item.variantId} className="flex flex-wrap items-center gap-4 py-4">
-                  {item.productImage && (
-                    <div className="flex-shrink-0 w-14 h-14 rounded-md bg-muted overflow-hidden">
+                  <div className="flex-shrink-0 w-14 h-14 rounded-md bg-muted overflow-hidden">
+                    {imageUrl ? (
                       <img
-                        src={item.productImage}
+                        src={imageUrl}
                         alt={item.productName || 'Product'}
                         className="w-full h-full object-cover"
                       />
-                    </div>
-                  )}
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-[10px] text-muted-foreground">
+                        No image
+                      </div>
+                    )}
+                  </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-foreground">
                       {item.productName ?? 'Product'}

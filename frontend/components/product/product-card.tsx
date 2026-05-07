@@ -2,9 +2,11 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import type { Product } from '@/lib/api-client';
 import { useCartStore } from '@/lib/cart.store';
 import { DEFAULT_CURRENCY } from '@/lib/config';
+import { resolveImageUrl } from '@/lib/resolve-image-url';
 
 function formatPrice(value: string | number, currency = DEFAULT_CURRENCY): string {
   const n = typeof value === 'string' ? parseFloat(value) : value;
@@ -39,6 +41,7 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, showViewOnly = false, availableQuantity }: ProductCardProps) {
+  const router = useRouter();
   const [adding, setAdding] = useState(false);
   const [added, setAdded] = useState(false);
   const addToCart = useCartStore((s) => s.addToCart);
@@ -47,7 +50,7 @@ export function ProductCard({ product, showViewOnly = false, availableQuantity }
   const inStock = availableQuantity === undefined ? true : availableQuantity > 0;
   const canAddToCart = variant && !showViewOnly && inStock;
   const image = product.images?.find((i) => i.isPrimary) ?? product.images?.[0];
-  const imageUrl = image?.url;
+  const imageUrl = resolveImageUrl(image?.url);
 
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -57,6 +60,7 @@ export function ProductCard({ product, showViewOnly = false, availableQuantity }
       await addToCart(product.id, variant.id, 1);
       setAdded(true);
       setTimeout(() => setAdded(false), 2000);
+      router.push('/cart');
     } catch {
       // Error shown in store / could add toast
     } finally {

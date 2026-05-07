@@ -1,12 +1,24 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { productApi, inventoryApi, type Product, type ProductVariant } from '@/lib/api-client';
 import { useCartStore } from '@/lib/cart.store';
 import { DEFAULT_CURRENCY } from '@/lib/config';
 import { storefrontUi } from '@/lib/storefront-ui';
+import { resolveImageUrl } from '@/lib/resolve-image-url';
+
+type VariantOptionKey = 'weight' | 'packType' | 'flavor' | 'quantityPack';
+
+const OPTION_LABELS: Record<VariantOptionKey, string> = {
+  weight: 'Weight',
+  packType: 'Pack Type',
+  flavor: 'Flavor',
+  quantityPack: 'Quantity Packs',
+};
+
+const OPTION_ORDER: VariantOptionKey[] = ['weight', 'packType', 'flavor', 'quantityPack'];
 
 function formatPrice(value: string | number, currency = DEFAULT_CURRENCY): string {
   const n = typeof value === 'string' ? parseFloat(value) : value;
@@ -86,13 +98,37 @@ function toUnknownRecord(value: unknown): Record<string, unknown> {
   return value && typeof value === 'object' ? (value as Record<string, unknown>) : {};
 }
 
+function toText(v: unknown): string | undefined {
+  if (typeof v === 'string') {
+    const t = v.trim();
+    return t ? t : undefined;
+  }
+  return undefined;
+}
+
+function extractVariantOptions(attrs: Record<string, unknown> | undefined): Partial<Record<VariantOptionKey, string>> {
+  if (!attrs) return {};
+  const weight = toText(attrs.weight);
+  const packType = toText(attrs.packType) ?? toText(attrs.pack_type) ?? toText(attrs.packtype);
+  const flavor = toText(attrs.flavor);
+  const quantityPack =
+    toText(attrs.quantityPack) ??
+    toText(attrs.quantity_pack) ??
+    toText(attrs.quantityPacks) ??
+    toText(attrs.quantity_packs);
+  return { weight, packType, flavor, quantityPack };
+}
+
 export default function ProductDetailPage() {
+  const router = useRouter();
   const params = useParams();
   const slug = typeof params.slug === 'string' ? params.slug : '';
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
+  const [selectedOptions, setSelectedOptions] = useState<Partial<Record<VariantOptionKey, string>>>({});
+  const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [adding, setAdding] = useState(false);
   const [added, setAdded] = useState(false);
@@ -112,6 +148,7 @@ export default function ProductDetailPage() {
           setProduct(normalized);
           const first = normalized.variants?.[0] ?? null;
           setSelectedVariant(first);
+          setSelectedOptions(extractVariantOptions(first?.attributes as Record<string, unknown> | undefined));
           const variantIds = (normalized.variants ?? []).map((v) => v.id).filter(Boolean);
           if (variantIds.length > 0) {
             inventoryApi.getAvailability(variantIds).then((r) => {
@@ -136,11 +173,81 @@ export default function ProductDetailPage() {
   const variants = product?.variants ?? [];
   const hasVariant = variants.length > 0;
   const currentVariant = selectedVariant ?? variants[0] ?? null;
+  const activeVariants = variants.filter((v) => v);
+  const optionsByKey = OPTION_ORDER.reduce((acc, key) => {
+    const values = Array.from(
+      new Set(
+        activeVariants
+          .map((v) => extractVariantOptions(v.attributes as Record<string, unknown> | undefined)[key])
+          .filter((v): v is string => !!v),
+      ),
+    );
+    acc[key] = values;
+    return acc;
+  }, {} as Record<VariantOptionKey, string[]>);
+
+  useEffect(() => {
+    if (!currentVariant) return;
+    const opts = extractVariantOptions(currentVariant.attributes as Record<string, unknown> | undefined);
+    setSelectedOptions((prev) => ({ ...prev, ...opts }));
+  }, [currentVariant?.id]);
+
+  const matchesSelectedOptions = (variant: ProductVariant, options: Partial<Record<VariantOptionKey, string>>) => {
+    const variantOptions = extractVariantOptions(variant.attributes as Record<string, unknown> | undefined);
+    for (const key of OPTION_ORDER) {
+      const selected = options[key];
+      if (!selected) continue;
+      if (variantOptions[key] !== selected) return false;
+    }
+    return true;
+  };
+
+  const handleOptionSelect = (key: VariantOptionKey, value: string) => {
+    const nextOptions = { ...selectedOptions, [key]: value };
+    setSelectedOptions(nextOptions);
+    const exact = variants.find((v) => matchesSelectedOptions(v, nextOptions));
+    if (exact) {
+      setSelectedVariant(exact);
+      return;
+    }
+    const fallback = variants.find((v) => {
+      const vo = extractVariantOptions(v.attributes as Record<string, unknown> | undefined);
+      return vo[key] === value;
+    });
+    if (fallback) setSelectedVariant(fallback);
+  };
   const currentVariantId = currentVariant?.id;
   const availableQty = currentVariantId !== undefined ? availability[currentVariantId] : undefined;
   const inStock = availableQty === undefined ? true : availableQty > 0;
-  const image = product?.images?.find((i) => i.isPrimary) ?? product?.images?.[0];
-  const imageUrl = image?.url;
+  const allImages = product?.images ?? [];
+  const variantImages = currentVariantId
+    ? allImages.filter((img) => (img as { variantId?: string | null }).variantId === currentVariantId)
+    : [];
+  const productLevelImages = allImages.filter(
+    (img) => !(img as { variantId?: string | null }).variantId,
+  );
+  const orderedGalleryImages = [...(variantImages.length > 0 ? variantImages : productLevelImages), ...productLevelImages]
+    .filter((img, idx, arr) => arr.findIndex((x) => x.id === img.id) === idx)
+    .sort((a, b) => {
+      const primaryDelta = Number(Boolean((b as { isPrimary?: boolean }).isPrimary)) - Number(Boolean((a as { isPrimary?: boolean }).isPrimary));
+      if (primaryDelta !== 0) return primaryDelta;
+      return Number((a as { position?: number }).position ?? 0) - Number((b as { position?: number }).position ?? 0);
+    });
+
+  useEffect(() => {
+    if (orderedGalleryImages.length === 0) {
+      setSelectedImageId(null);
+      return;
+    }
+    if (!selectedImageId || !orderedGalleryImages.some((img) => img.id === selectedImageId)) {
+      setSelectedImageId(orderedGalleryImages[0].id);
+    }
+  }, [currentVariantId, product?.id, orderedGalleryImages.length]);
+
+  const activeImage =
+    orderedGalleryImages.find((img) => img.id === selectedImageId) ??
+    orderedGalleryImages[0];
+  const imageUrl = resolveImageUrl(activeImage?.url);
 
   const handleAddToCart = async () => {
     const v = selectedVariant ?? variants[0];
@@ -150,6 +257,7 @@ export default function ProductDetailPage() {
       await addToCart(product.id, v.id, quantity);
       setAdded(true);
       setTimeout(() => setAdded(false), 2500);
+      router.push('/cart');
     } catch {
       // Error in store
     } finally {
@@ -201,16 +309,49 @@ export default function ProductDetailPage() {
       </Link>
 
       <div className="lg:grid lg:grid-cols-2 lg:gap-12">
-        <div className="aspect-square overflow-hidden rounded-lg border border-border bg-muted">
+        <div>
+          <div className="group aspect-[4/5] overflow-hidden rounded-lg border border-border bg-muted sm:aspect-square">
           {imageUrl ? (
             <img
               src={imageUrl}
-              alt={image?.alt ?? product.name}
-              className="h-full w-full object-cover"
+              alt={activeImage?.alt ?? product.name}
+              className="h-full w-full object-cover object-center transition-transform duration-500 ease-out group-hover:scale-110"
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center text-muted-foreground">
               No image
+            </div>
+          )}
+          </div>
+          {orderedGalleryImages.length > 1 && (
+            <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+              {orderedGalleryImages.map((img) => {
+                const thumbUrl = resolveImageUrl(img.url);
+                const active = img.id === activeImage?.id;
+                return (
+                  <button
+                    key={img.id}
+                    type="button"
+                    onClick={() => setSelectedImageId(img.id)}
+                    className={`h-16 w-16 shrink-0 overflow-hidden rounded-md border transition-colors ${
+                      active ? 'border-primary ring-2 ring-primary/30' : 'border-border hover:border-primary/60'
+                    }`}
+                    aria-label={`View image ${img.id}`}
+                  >
+                    {thumbUrl ? (
+                      <img
+                        src={thumbUrl}
+                        alt={img.alt ?? product.name}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-[10px] text-muted-foreground">
+                        No image
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           )}
         </div>
@@ -238,23 +379,49 @@ export default function ProductDetailPage() {
 
           {variants.length > 1 && (
             <div className="mt-6">
-              <label className="block text-sm font-medium text-foreground/90">
-                Variant
-              </label>
-              <select
-                value={currentVariant?.id ?? ''}
-                onChange={(e) => {
-                  const v = variants.find((x) => x.id === e.target.value);
-                  setSelectedVariant(v ?? null);
-                }}
-                className={`mt-1 block w-full max-w-xs py-2 pl-3 pr-10 text-base ${storefrontUi.select}`}
-              >
-                {variants.map((v) => (
-                  <option key={v.id} value={v.id}>
-                    {v.name || v.sku} — {formatPrice(v.price)}
-                  </option>
+              <div className="space-y-4">
+                {OPTION_ORDER.filter((k) => optionsByKey[k].length > 0).map((key) => (
+                  <div key={key}>
+                    <p className="block text-sm font-medium text-foreground/90">{OPTION_LABELS[key]}</p>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {optionsByKey[key].map((value) => {
+                        const active = selectedOptions[key] === value;
+                        return (
+                          <button
+                            key={`${key}-${value}`}
+                            type="button"
+                            onClick={() => handleOptionSelect(key, value)}
+                            className={`rounded-md border px-3 py-1.5 text-sm transition-colors ${
+                              active
+                                ? 'border-primary bg-primary text-primary-foreground'
+                                : 'border-input bg-card text-foreground hover:border-primary/60'
+                            }`}
+                          >
+                            {value}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
                 ))}
-              </select>
+                <div>
+                  <label className="block text-xs font-medium text-muted-foreground">Variant</label>
+                  <select
+                    value={currentVariant?.id ?? ''}
+                    onChange={(e) => {
+                      const v = variants.find((x) => x.id === e.target.value);
+                      setSelectedVariant(v ?? null);
+                    }}
+                    className={`mt-1 block w-full max-w-xs py-2 pl-3 pr-10 text-base ${storefrontUi.select}`}
+                  >
+                    {variants.map((v) => (
+                      <option key={v.id} value={v.id}>
+                        {v.name || v.sku} — {formatPrice(v.price)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
             </div>
           )}
 

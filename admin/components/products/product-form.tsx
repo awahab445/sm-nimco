@@ -52,7 +52,7 @@ export function ProductForm({ mode, initial, productId, onCancel, onSaved }: Pro
   const [taxClassId, setTaxClassId] = useState('');
   const [attributesJson, setAttributesJson] = useState('{}');
   const [metaDataJson, setMetaDataJson] = useState('{}');
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -129,14 +129,16 @@ export function ProductForm({ mode, initial, productId, onCancel, onSaved }: Pro
     try {
       if (mode === 'create') {
         const created = await createAdminProduct(body);
-        if (imageFile) {
-          const uploaded = await uploadProductImage(imageFile);
-          await createProductImage(created.id, {
-            url: uploaded.url,
-            altText: name.trim() || undefined,
-            isPrimary: true,
-            position: 0,
-          });
+        if (imageFiles.length > 0) {
+          for (let i = 0; i < imageFiles.length; i++) {
+            const uploaded = await uploadProductImage(imageFiles[i]);
+            await createProductImage(created.id, {
+              url: uploaded.url,
+              altText: name.trim() || undefined,
+              isPrimary: i === 0,
+              position: i,
+            });
+          }
         }
         onSaved?.(created);
       } else if (productId && initial) {
@@ -145,14 +147,17 @@ export function ProductForm({ mode, initial, productId, onCancel, onSaved }: Pro
           ...body,
           slug: slugOut,
         });
-        if (imageFile) {
-          const uploaded = await uploadProductImage(imageFile);
-          await createProductImage(productId, {
-            url: uploaded.url,
-            altText: name.trim() || undefined,
-            isPrimary: true,
-            position: 0,
-          });
+        if (imageFiles.length > 0) {
+          const hasExistingImages = (initial.images?.length ?? 0) > 0;
+          for (let i = 0; i < imageFiles.length; i++) {
+            const uploaded = await uploadProductImage(imageFiles[i]);
+            await createProductImage(productId, {
+              url: uploaded.url,
+              altText: name.trim() || undefined,
+              isPrimary: !hasExistingImages && i === 0,
+              position: (initial.images?.length ?? 0) + i,
+            });
+          }
         }
         onSaved?.(updated);
       }
@@ -335,12 +340,18 @@ export function ProductForm({ mode, initial, productId, onCancel, onSaved }: Pro
         <input
           type="file"
           accept="image/*"
-          onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
+          multiple
+          onChange={(e) => setImageFiles(Array.from(e.target.files ?? []))}
           className="mt-2 block w-full text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-zinc-100 file:px-3 file:py-2 file:text-sm file:font-medium dark:file:bg-zinc-800 dark:file:text-zinc-100"
         />
         <p className="mt-1 text-xs text-zinc-500">
-          Optional. Uploading a file sets it as the product primary image.
+          Optional. You can select multiple files. On new product, first image is primary.
         </p>
+        {imageFiles.length > 0 ? (
+          <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
+            Selected: {imageFiles.length} file{imageFiles.length === 1 ? '' : 's'}
+          </p>
+        ) : null}
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">

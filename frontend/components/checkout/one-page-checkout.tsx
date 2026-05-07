@@ -7,7 +7,8 @@ import { useAuthStore } from '@/lib/auth.store';
 import { useCartStore } from '@/lib/cart.store';
 import { DEFAULT_CURRENCY } from '@/lib/config';
 import { storefrontUi } from '@/lib/storefront-ui';
-import { Address, AddressWithId, addressApi, shippingApi, paymentApi, promotionApi, ValidatePromotionItem } from '@/lib/api-client';
+import { Address, AddressWithId, addressApi, shippingApi, paymentApi, productApi, promotionApi, ValidatePromotionItem } from '@/lib/api-client';
+import { resolveImageUrl } from '@/lib/resolve-image-url';
 
 const emptyAddress: Address = {
   firstName: '',
@@ -86,9 +87,11 @@ export function OnePageCheckout() {
     clearError,
   } = useCheckout();
   const clearCart = useCartStore((s) => s.clearCart);
+  const cartItems = useCartStore((s) => s.cart?.items ?? []);
 
   const [localQty, setLocalQty] = useState<Record<string, number>>({});
   const [updatingVariantId, setUpdatingVariantId] = useState<string | null>(null);
+  const [fallbackProductImages, setFallbackProductImages] = useState<Record<string, string>>({});
 
   const [useSameAddress, setUseSameAddress] = useState(true);
   const [billingAddress, setBillingAddress] = useState<Address>(
@@ -224,6 +227,44 @@ export function OnePageCheckout() {
     });
     setLocalQty(next);
   }, [checkout?.items]);
+
+  useEffect(() => {
+    const items = checkout?.items ?? [];
+    const missingProductIds = Array.from(
+      new Set(
+        items
+          .filter((item) => !item.productImage && !!item.productId && !fallbackProductImages[item.productId])
+          .map((item) => item.productId),
+      ),
+    );
+    if (missingProductIds.length === 0) return;
+
+    let cancelled = false;
+    Promise.all(
+      missingProductIds.map(async (productId) => {
+        try {
+          const product = await productApi.getProductById(productId);
+          const primary = product.images?.find((img) => img.isPrimary) ?? product.images?.[0];
+          return { productId, image: primary?.url ?? '' };
+        } catch {
+          return { productId, image: '' };
+        }
+      }),
+    ).then((results) => {
+      if (cancelled) return;
+      setFallbackProductImages((prev) => {
+        const next = { ...prev };
+        for (const r of results) {
+          next[r.productId] = r.image;
+        }
+        return next;
+      });
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [checkout?.items, fallbackProductImages]);
 
   // Load payment methods on mount
   useEffect(() => {
@@ -1041,10 +1082,18 @@ export function OnePageCheckout() {
                   <li key={item.variantId + idx} className="py-4 first:pt-0">
                     <div className="flex gap-3">
                       {/* Item image */}
+                      {(() => {
+                        const fallbackCartImage = cartItems.find((c) => c.variantId === item.variantId)?.productImage;
+                        const fallbackProductImage = fallbackProductImages[item.productId];
+                        const imageUrl =
+                          resolveImageUrl(item.productImage) ??
+                          resolveImageUrl(fallbackCartImage) ??
+                          resolveImageUrl(fallbackProductImage);
+                        return (
                       <div className="h-14 w-14 flex-shrink-0 overflow-hidden rounded-md bg-muted">
-                        {item.productImage ? (
+                        {imageUrl ? (
                           <img
-                            src={item.productImage}
+                            src={imageUrl}
                             alt={item.productName || 'Product'}
                             className="w-full h-full object-cover"
                           />
@@ -1054,6 +1103,8 @@ export function OnePageCheckout() {
                           </div>
                         )}
                       </div>
+                        );
+                      })()}
                       {/* Name, variant attributes, price and quantity */}
                       <div className="flex-1 min-w-0">
                         <div className="flex justify-between gap-2">

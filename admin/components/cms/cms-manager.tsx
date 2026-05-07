@@ -76,6 +76,24 @@ const emptySlider: SliderDraft = {
   ],
 };
 
+const homeHeroSliderPreset: SliderDraft = {
+  name: 'Homepage Hero',
+  identifier: 'home-hero',
+  isActive: true,
+  autoplayMs: 6500,
+  slides: [
+    {
+      title: 'Homepage banner',
+      subtitle: 'Update this slide in CMS to change storefront hero instantly.',
+      imageUrl: '/themes/mehfil-shereen/banner1.jpeg',
+      ctaLabel: 'Shop now',
+      ctaHref: '/products',
+      sortOrder: 0,
+      isActive: true,
+    },
+  ],
+};
+
 export function CmsManager() {
   const [tab, setTab] = useState<TabKey>('pages');
   const [loading, setLoading] = useState(true);
@@ -362,6 +380,21 @@ export function CmsManager() {
             <h2 className="text-lg font-medium text-zinc-900 dark:text-zinc-100">
               {editingSliderId ? 'Edit slider' : 'Create slider'}
             </h2>
+            <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/40 dark:text-amber-200">
+              <p className="font-medium">Homepage main banner setup</p>
+              <p className="mt-1">
+                Use <span className="font-mono">identifier: home-hero</span>. The storefront homepage reads this slider for the main banner.
+              </p>
+              {!editingSliderId && (
+                <button
+                  type="button"
+                  onClick={() => setSliderForm(homeHeroSliderPreset)}
+                  className="mt-2 rounded-md border border-amber-300 bg-white px-2 py-1 text-xs font-medium text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200"
+                >
+                  Prefill homepage hero slider
+                </button>
+              )}
+            </div>
             <Input label="Name" value={sliderForm.name} onChange={(v) => setSliderForm((s) => ({ ...s, name: v }))} required />
             <Input label="Identifier" value={sliderForm.identifier} onChange={(v) => setSliderForm((s) => ({ ...s, identifier: v }))} required />
             <Input
@@ -431,6 +464,9 @@ export function CmsManager() {
             <h3 className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
               {sliders.length} slider{sliders.length === 1 ? '' : 's'}
             </h3>
+            <p className="mt-1 text-xs text-zinc-500">
+              Edit slider with identifier <span className="font-mono">home-hero</span> to update homepage main banner.
+            </p>
             <div className="mt-3 space-y-2">
               {sliders.map((s) => (
                 <RowCard
