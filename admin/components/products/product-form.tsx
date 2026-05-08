@@ -15,7 +15,6 @@ import {
 } from '@/lib/api/products';
 import { formatApiError } from '@/lib/api/error-message';
 
-const TYPES: ProductType[] = ['simple', 'configurable', 'bundle', 'virtual'];
 const STATUSES: ProductStatus[] = ['draft', 'active', 'disabled'];
 const VIS: ProductVisibility[] = ['catalog', 'search', 'both', 'none'];
 
@@ -41,7 +40,7 @@ export function ProductForm({ mode, initial, productId, onCancel, onSaved }: Pro
   const [sku, setSku] = useState('');
   const [name, setName] = useState('');
   const [slug, setSlug] = useState('');
-  const [type, setType] = useState<ProductType>('simple');
+  const [type, setType] = useState<ProductType>('configurable');
   const [description, setDescription] = useState('');
   const [shortDescription, setShortDescription] = useState('');
   const [basePrice, setBasePrice] = useState('0');
@@ -61,7 +60,7 @@ export function ProductForm({ mode, initial, productId, onCancel, onSaved }: Pro
       setSku(initial.sku);
       setName(initial.name);
       setSlug(initial.slug);
-      setType(initial.type as ProductType);
+      setType('configurable');
       setDescription(initial.description ?? '');
       setShortDescription(initial.shortDescription ?? '');
       setBasePrice(String(moneyToNumber(initial.basePrice)));
@@ -106,7 +105,7 @@ export function ProductForm({ mode, initial, productId, onCancel, onSaved }: Pro
     const body: CreateProductBody = {
       sku: sku.trim(),
       name: name.trim(),
-      type,
+      type: 'configurable',
       basePrice: price,
       status,
       visibility,
@@ -213,17 +212,12 @@ export function ProductForm({ mode, initial, productId, onCancel, onSaved }: Pro
       <div className="grid gap-4 sm:grid-cols-3">
         <div>
           <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">Type</label>
-          <select
+          <input
             value={type}
-            onChange={(e) => setType(e.target.value as ProductType)}
-            className="mt-1 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-50"
-          >
-            {TYPES.map((t) => (
-              <option key={t} value={t}>
-                {t}
-              </option>
-            ))}
-          </select>
+            disabled
+            className="mt-1 w-full rounded-lg border border-zinc-300 bg-zinc-50 px-3 py-2 text-sm disabled:opacity-100 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-50"
+          />
+          <p className="mt-1 text-xs text-zinc-500">Variants-based catalog uses configurable products.</p>
         </div>
         <div>
           <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">Status</label>

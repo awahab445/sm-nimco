@@ -31,10 +31,12 @@ import { CreateImageDto } from '../dto/create-image.dto';
 import { UpdateImageDto } from '../dto/update-image.dto';
 import { AssignCategoryDto } from '../dto/assign-category.dto';
 import { ProductQueryDto } from '../dto/product-query.dto';
+import { UpsertProductOptionsDto } from '../dto/upsert-product-options.dto';
 import { AdminJwtAuthGuard } from '../../admin/guards/admin-jwt-auth.guard';
 import { AdminPermissionsGuard } from '../../admin/guards/admin-permissions.guard';
 import { RequirePermissions } from '../../admin/decorators/require-permissions.decorator';
 import { UseGuards } from '@nestjs/common';
+import { ProductOptionsService } from '../services/product-options.service';
 
 @Controller('admin/products')
 @UseGuards(AdminJwtAuthGuard, AdminPermissionsGuard)
@@ -43,6 +45,7 @@ export class AdminProductController {
     private readonly productService: ProductService,
     private readonly variantService: VariantService,
     private readonly imageService: ImageService,
+    private readonly productOptionsService: ProductOptionsService,
   ) {}
 
   @Get()
@@ -83,6 +86,23 @@ export class AdminProductController {
     return this.productService.remove(id);
   }
 
+  @Get(':id/options')
+  @RequirePermissions('catalog.read')
+  @HttpCode(HttpStatus.OK)
+  async getProductOptions(@Param('id') productId: string) {
+    return this.productOptionsService.getProductOptions(productId);
+  }
+
+  @Patch(':id/options')
+  @RequirePermissions('catalog.manage')
+  @HttpCode(HttpStatus.OK)
+  async upsertProductOptions(
+    @Param('id') productId: string,
+    @Body() dto: UpsertProductOptionsDto,
+  ) {
+    return this.productOptionsService.upsertProductOptions(productId, dto);
+  }
+
   @Post(':id/variants')
   @RequirePermissions('catalog.manage')
   @HttpCode(HttpStatus.CREATED)
@@ -91,6 +111,13 @@ export class AdminProductController {
     @Body() createVariantDto: CreateVariantDto,
   ) {
     return this.variantService.create(productId, createVariantDto);
+  }
+
+  @Post(':id/variants/create-combinations')
+  @RequirePermissions('catalog.manage')
+  @HttpCode(HttpStatus.OK)
+  async createVariantCombinations(@Param('id') productId: string) {
+    return this.variantService.createCombinationsFromProductOptions(productId);
   }
 
   @Patch('variants/:id')

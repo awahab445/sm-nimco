@@ -9,6 +9,7 @@ import {
   ShippingMethod,
   ApiError,
 } from './api-client';
+import { useCartStore } from './cart.store';
 
 export interface PaymentInfo {
   paymentMethodCode: string;
@@ -46,6 +47,24 @@ interface CheckoutContextType extends CheckoutState {
 
 const CheckoutContext = createContext<CheckoutContextType | undefined>(undefined);
 
+function mergeCheckoutWithCartImages(checkout: CheckoutSession): CheckoutSession {
+  const cartItems = useCartStore.getState().cart?.items ?? [];
+  if (!checkout.items?.length || !cartItems.length) return checkout;
+
+  const imageByVariantId = new Map<string, string>();
+  for (const item of cartItems) {
+    if (item.productImage) imageByVariantId.set(item.variantId, item.productImage);
+  }
+
+  return {
+    ...checkout,
+    items: checkout.items.map((item) => ({
+      ...item,
+      productImage: item.productImage || imageByVariantId.get(item.variantId),
+    })),
+  };
+}
+
 export function CheckoutProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<CheckoutState>({
     checkoutId: null,
@@ -64,7 +83,8 @@ export function CheckoutProvider({ children }: { children: React.ReactNode }) {
 
     try {
       setState((prev) => ({ ...prev, isLoading: true, error: null }));
-      const checkout = await checkoutApi.getCheckout(state.checkoutId);
+      const checkoutRaw = await checkoutApi.getCheckout(state.checkoutId);
+      const checkout = mergeCheckoutWithCartImages(checkoutRaw);
       setState((prev) => ({
         ...prev,
         checkout,
@@ -85,7 +105,8 @@ export function CheckoutProvider({ children }: { children: React.ReactNode }) {
       try {
         setState((prev) => ({ ...prev, isLoading: true, error: null }));
         const { checkoutId } = await checkoutApi.startCheckout(cartId, options);
-        const checkout = await checkoutApi.getCheckout(checkoutId);
+        const checkoutRaw = await checkoutApi.getCheckout(checkoutId);
+        const checkout = mergeCheckoutWithCartImages(checkoutRaw);
       
       setState((prev) => ({
         ...prev,
@@ -112,7 +133,8 @@ export function CheckoutProvider({ children }: { children: React.ReactNode }) {
 
       try {
         setState((prev) => ({ ...prev, isLoading: true, error: null }));
-        const checkout = await checkoutApi.updateAddress(state.checkoutId, addresses);
+        const checkoutRaw = await checkoutApi.updateAddress(state.checkoutId, addresses);
+        const checkout = mergeCheckoutWithCartImages(checkoutRaw);
         
         setState((prev) => ({
           ...prev,
@@ -138,7 +160,8 @@ export function CheckoutProvider({ children }: { children: React.ReactNode }) {
 
       try {
         setState((prev) => ({ ...prev, isLoading: true, error: null }));
-        const checkout = await checkoutApi.updateShipping(state.checkoutId, shipping);
+        const checkoutRaw = await checkoutApi.updateShipping(state.checkoutId, shipping);
+        const checkout = mergeCheckoutWithCartImages(checkoutRaw);
         
         setState((prev) => ({
           ...prev,
@@ -228,11 +251,12 @@ export function CheckoutProvider({ children }: { children: React.ReactNode }) {
 
       try {
         setState((prev) => ({ ...prev, error: null }));
-        const checkout = await checkoutApi.updateItemQuantity(
+        const checkoutRaw = await checkoutApi.updateItemQuantity(
           state.checkoutId,
           variantId,
           quantity,
         );
+        const checkout = mergeCheckoutWithCartImages(checkoutRaw);
         setState((prev) => ({ ...prev, checkout }));
       } catch (error) {
         const message = error instanceof ApiError ? error.message : 'Failed to update quantity';
@@ -247,7 +271,8 @@ export function CheckoutProvider({ children }: { children: React.ReactNode }) {
       if (!state.checkoutId) throw new Error('No checkout session');
       try {
         setState((prev) => ({ ...prev, isLoading: true, error: null }));
-        const checkout = await checkoutApi.setGuestCustomer(state.checkoutId, customerEmail);
+        const checkoutRaw = await checkoutApi.setGuestCustomer(state.checkoutId, customerEmail);
+        const checkout = mergeCheckoutWithCartImages(checkoutRaw);
         setState((prev) => ({ ...prev, checkout, isLoading: false }));
       } catch (error) {
         const message = error instanceof ApiError ? error.message : 'Failed to set guest customer';
@@ -263,7 +288,8 @@ export function CheckoutProvider({ children }: { children: React.ReactNode }) {
       if (!state.checkoutId) throw new Error('No checkout session');
       try {
         setState((prev) => ({ ...prev, error: null }));
-        const checkout = await checkoutApi.applyCoupon(state.checkoutId, couponCode);
+        const checkoutRaw = await checkoutApi.applyCoupon(state.checkoutId, couponCode);
+        const checkout = mergeCheckoutWithCartImages(checkoutRaw);
         setState((prev) => ({ ...prev, checkout }));
       } catch (error) {
         const message = error instanceof ApiError ? error.message : 'Failed to apply coupon';

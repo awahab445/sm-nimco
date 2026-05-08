@@ -1,6 +1,7 @@
 import { Controller, Post, Get, Body, Query, HttpCode, HttpStatus, BadRequestException, UseGuards } from '@nestjs/common';
 import { InventoryService } from '../services/inventory.service';
 import { AdjustStockDto, DEFAULT_WAREHOUSE_ID } from '../dto/adjust-stock.dto';
+import { SetProductInventoryDto } from '../dto/set-product-inventory.dto';
 import { AdminJwtAuthGuard } from '../../admin/guards/admin-jwt-auth.guard';
 import { AdminPermissionsGuard } from '../../admin/guards/admin-permissions.guard';
 import { RequirePermissions } from '../../admin/decorators/require-permissions.decorator';
@@ -29,6 +30,21 @@ export class AdminInventoryController {
     return { success: true, data: status };
   }
 
+  @Get('product-matrix')
+  @RequirePermissions('inventory.read')
+  @HttpCode(HttpStatus.OK)
+  async getProductMatrix(
+    @Query('productId') productId: string,
+    @Query('warehouseId') warehouseId?: string,
+  ) {
+    if (!productId || typeof productId !== 'string' || !productId.trim()) {
+      throw new BadRequestException('Query parameter productId is required');
+    }
+    const wh = (warehouseId && warehouseId.trim()) ? warehouseId.trim() : DEFAULT_WAREHOUSE_ID;
+    const matrix = await this.inventoryService.getProductInventoryMatrix(productId.trim(), wh);
+    return { success: true, data: matrix };
+  }
+
   @Post('adjust')
   @RequirePermissions('inventory.manage')
   @HttpCode(HttpStatus.OK)
@@ -46,6 +62,27 @@ export class AdminInventoryController {
         reservedQuantity: inventoryItem.reservedQuantity,
       },
     };
+  }
+
+  @Post('set-product-quantities')
+  @RequirePermissions('inventory.manage')
+  @HttpCode(HttpStatus.OK)
+  async setProductQuantities(
+    @Query('productId') productId: string,
+    @Body() dto: SetProductInventoryDto,
+  ) {
+    if (!productId || typeof productId !== 'string' || !productId.trim()) {
+      throw new BadRequestException('Query parameter productId is required');
+    }
+    const wh = (dto.warehouseId && dto.warehouseId.trim())
+      ? dto.warehouseId.trim()
+      : DEFAULT_WAREHOUSE_ID;
+    const result = await this.inventoryService.setProductInventoryQuantities(
+      productId.trim(),
+      wh,
+      dto.items,
+    );
+    return { success: true, data: result };
   }
 }
 

@@ -247,8 +247,63 @@ async function main() {
     ],
   });
 
+  // 7. Subscription starter plans
+  const plans = [
+    {
+      name: 'Basic',
+      description: 'Starter subscription plan',
+      price: 9.99,
+      billingCycle: 'MONTHLY',
+      features: ['Up to 5 projects', 'Email support'],
+    },
+    {
+      name: 'Pro',
+      description: 'Professional subscription plan',
+      price: 29.99,
+      billingCycle: 'MONTHLY',
+      features: ['Up to 50 projects', 'Priority support', 'Advanced analytics'],
+    },
+    {
+      name: 'Enterprise',
+      description: 'Enterprise yearly subscription plan',
+      price: 299.0,
+      billingCycle: 'YEARLY',
+      features: ['Unlimited projects', 'Dedicated support', 'SLA and onboarding'],
+    },
+  ] as const;
+
+  for (const plan of plans) {
+    const existing = await prisma.subscriptionPlan.findFirst({
+      where: { name: plan.name, billingCycle: plan.billingCycle },
+      select: { id: true },
+    });
+    if (existing) {
+      await prisma.subscriptionPlan.update({
+        where: { id: existing.id },
+        data: {
+          description: plan.description,
+          price: plan.price,
+          features: plan.features,
+          isActive: true,
+        },
+      });
+      continue;
+    }
+
+    await prisma.subscriptionPlan.create({
+      data: {
+        name: plan.name,
+        description: plan.description,
+        price: plan.price,
+        billingCycle: plan.billingCycle,
+        features: plan.features,
+        isActive: true,
+      },
+    });
+  }
+
   console.log(
-    'Seed completed: shipping/payment defaults + CMS starter data (about-us page, home-page-layout block, home-hero slider).',
+    'Seed completed: shipping/payment defaults + CMS starter data + subscription starter plans.',
   );
 }
 

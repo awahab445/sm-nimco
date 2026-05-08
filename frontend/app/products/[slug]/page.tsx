@@ -9,16 +9,7 @@ import { DEFAULT_CURRENCY } from '@/lib/config';
 import { storefrontUi } from '@/lib/storefront-ui';
 import { resolveImageUrl } from '@/lib/resolve-image-url';
 
-type VariantOptionKey = 'weight' | 'packType' | 'flavor' | 'quantityPack';
-
-const OPTION_LABELS: Record<VariantOptionKey, string> = {
-  weight: 'Weight',
-  packType: 'Pack Type',
-  flavor: 'Flavor',
-  quantityPack: 'Quantity Packs',
-};
-
-const OPTION_ORDER: VariantOptionKey[] = ['weight', 'packType', 'flavor', 'quantityPack'];
+type OptionDefinition = { code: string; label: string; values: string[] };
 
 function formatPrice(value: string | number, currency = DEFAULT_CURRENCY): string {
   const n = typeof value === 'string' ? parseFloat(value) : value;
@@ -106,17 +97,22 @@ function toText(v: unknown): string | undefined {
   return undefined;
 }
 
-function extractVariantOptions(attrs: Record<string, unknown> | undefined): Partial<Record<VariantOptionKey, string>> {
-  if (!attrs) return {};
-  const weight = toText(attrs.weight);
-  const packType = toText(attrs.packType) ?? toText(attrs.pack_type) ?? toText(attrs.packtype);
-  const flavor = toText(attrs.flavor);
-  const quantityPack =
-    toText(attrs.quantityPack) ??
-    toText(attrs.quantity_pack) ??
-    toText(attrs.quantityPacks) ??
-    toText(attrs.quantity_packs);
-  return { weight, packType, flavor, quantityPack };
+function extractVariantOptions(variant: ProductVariant): Record<string, string> {
+  if (variant.optionValues && variant.optionValues.length > 0) {
+    const map: Record<string, string> = {};
+    for (const ov of variant.optionValues) {
+      map[ov.option.code] = ov.value.value;
+    }
+    return map;
+  }
+  const attrs = (variant.attributes as Record<string, unknown> | undefined) ?? {};
+  const legacy = (attrs.optionValues as Record<string, unknown> | undefined) ?? {};
+  const map: Record<string, string> = {};
+  for (const [key, val] of Object.entries(legacy)) {
+    const txt = toText(val);
+    if (txt) map[key] = txt;
+  }
+  return map;
 }
 
 export default function ProductDetailPage() {
@@ -127,7 +123,7 @@ export default function ProductDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
-  const [selectedOptions, setSelectedOptions] = useState<Partial<Record<VariantOptionKey, string>>>({});
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
   const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [adding, setAdding] = useState(false);
@@ -148,7 +144,7 @@ export default function ProductDetailPage() {
           setProduct(normalized);
           const first = normalized.variants?.[0] ?? null;
           setSelectedVariant(first);
-          setSelectedOptions(extractVariantOptions(first?.attributes as Record<string, unknown> | undefined));
+          setSelectedOptions(first ? extractVariantOptions(first) : {});
           const variantIds = (normalized.variants ?? []).map((v) => v.id).filter(Boolean);
           if (variantIds.length > 0) {
             inventoryApi.getAvailability(variantIds).then((r) => {
@@ -174,35 +170,48 @@ export default function ProductDetailPage() {
   const hasVariant = variants.length > 0;
   const currentVariant = selectedVariant ?? variants[0] ?? null;
   const activeVariants = variants.filter((v) => v);
-  const optionsByKey = OPTION_ORDER.reduce((acc, key) => {
-    const values = Array.from(
-      new Set(
-        activeVariants
-          .map((v) => extractVariantOptions(v.attributes as Record<string, unknown> | undefined)[key])
-          .filter((v): v is string => !!v),
-      ),
-    );
-    acc[key] = values;
-    return acc;
-  }, {} as Record<VariantOptionKey, string[]>);
+  const optionDefinitions: OptionDefinition[] = (() => {
+    if (product?.options && product.options.length > 0) {
+      return product.options.map((po) => ({
+        code: po.option.code,
+        label: po.option.name,
+        values: po.values
+          .map((x) => x.value.value)
+          .filter((v, i, arr) => !!v && arr.indexOf(v) === i),
+      }));
+    }
+    const map = new Map<string, Set<string>>();
+    for (const v of activeVariants) {
+      const opts = extractVariantOptions(v);
+      for (const [code, value] of Object.entries(opts)) {
+        if (!map.has(code)) map.set(code, new Set<string>());
+        map.get(code)?.add(value);
+      }
+    }
+    return Array.from(map.entries()).map(([code, set]) => ({
+      code,
+      label: code.replace(/[_-]/g, ' ').replace(/\b\w/g, (s) => s.toUpperCase()),
+      values: Array.from(set),
+    }));
+  })();
 
   useEffect(() => {
     if (!currentVariant) return;
-    const opts = extractVariantOptions(currentVariant.attributes as Record<string, unknown> | undefined);
+    const opts = extractVariantOptions(currentVariant);
     setSelectedOptions((prev) => ({ ...prev, ...opts }));
   }, [currentVariant?.id]);
 
-  const matchesSelectedOptions = (variant: ProductVariant, options: Partial<Record<VariantOptionKey, string>>) => {
-    const variantOptions = extractVariantOptions(variant.attributes as Record<string, unknown> | undefined);
-    for (const key of OPTION_ORDER) {
-      const selected = options[key];
+  const matchesSelectedOptions = (variant: ProductVariant, options: Record<string, string>) => {
+    const variantOptions = extractVariantOptions(variant);
+    for (const def of optionDefinitions) {
+      const selected = options[def.code];
       if (!selected) continue;
-      if (variantOptions[key] !== selected) return false;
+      if (variantOptions[def.code] !== selected) return false;
     }
     return true;
   };
 
-  const handleOptionSelect = (key: VariantOptionKey, value: string) => {
+  const handleOptionSelect = (key: string, value: string) => {
     const nextOptions = { ...selectedOptions, [key]: value };
     setSelectedOptions(nextOptions);
     const exact = variants.find((v) => matchesSelectedOptions(v, nextOptions));
@@ -211,7 +220,7 @@ export default function ProductDetailPage() {
       return;
     }
     const fallback = variants.find((v) => {
-      const vo = extractVariantOptions(v.attributes as Record<string, unknown> | undefined);
+      const vo = extractVariantOptions(v);
       return vo[key] === value;
     });
     if (fallback) setSelectedVariant(fallback);
@@ -380,17 +389,19 @@ export default function ProductDetailPage() {
           {variants.length > 1 && (
             <div className="mt-6">
               <div className="space-y-4">
-                {OPTION_ORDER.filter((k) => optionsByKey[k].length > 0).map((key) => (
-                  <div key={key}>
-                    <p className="block text-sm font-medium text-foreground/90">{OPTION_LABELS[key]}</p>
+                {optionDefinitions
+                  .filter((def) => def.values.length > 0)
+                  .map((def) => (
+                  <div key={def.code}>
+                    <p className="block text-sm font-medium text-foreground/90">{def.label}</p>
                     <div className="mt-2 flex flex-wrap gap-2">
-                      {optionsByKey[key].map((value) => {
-                        const active = selectedOptions[key] === value;
+                      {def.values.map((value) => {
+                        const active = selectedOptions[def.code] === value;
                         return (
                           <button
-                            key={`${key}-${value}`}
+                            key={`${def.code}-${value}`}
                             type="button"
-                            onClick={() => handleOptionSelect(key, value)}
+                            onClick={() => handleOptionSelect(def.code, value)}
                             className={`rounded-md border px-3 py-1.5 text-sm transition-colors ${
                               active
                                 ? 'border-primary bg-primary text-primary-foreground'
@@ -404,23 +415,6 @@ export default function ProductDetailPage() {
                     </div>
                   </div>
                 ))}
-                <div>
-                  <label className="block text-xs font-medium text-muted-foreground">Variant</label>
-                  <select
-                    value={currentVariant?.id ?? ''}
-                    onChange={(e) => {
-                      const v = variants.find((x) => x.id === e.target.value);
-                      setSelectedVariant(v ?? null);
-                    }}
-                    className={`mt-1 block w-full max-w-xs py-2 pl-3 pr-10 text-base ${storefrontUi.select}`}
-                  >
-                    {variants.map((v) => (
-                      <option key={v.id} value={v.id}>
-                        {v.name || v.sku} — {formatPrice(v.price)}
-                      </option>
-                    ))}
-                  </select>
-                </div>
               </div>
             </div>
           )}

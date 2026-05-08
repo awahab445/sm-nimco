@@ -37,9 +37,16 @@ export class VariantService {
   }
 
   async create(productId: string, createVariantDto: CreateVariantDto) {
-    await this.productService.findOneById(productId);
+    const product = await this.productService.findOneById(productId);
 
     await this.validateSkuUniqueness(createVariantDto.sku);
+
+    if (product.type !== 'configurable') {
+      await this.prisma.product.update({
+        where: { id: productId },
+        data: { type: 'configurable' },
+      });
+    }
 
     const variant = await this.prisma.productVariant.create({
       data: {
@@ -189,6 +196,201 @@ export class VariantService {
     });
 
     return { message: 'Variant deleted successfully' };
+  }
+
+  private skuToken(v: string): string {
+    return v
+      .trim()
+      .toUpperCase()
+      .replace(/[^A-Z0-9]+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '');
+  }
+
+  private buildSignature(pairs: Array<{ optionId: string; valueId: string }>): string {
+    return pairs
+      .slice()
+      .sort((a, b) => a.optionId.localeCompare(b.optionId))
+      .map((p) => `${p.optionId}:${p.valueId}`)
+      .join('|');
+  }
+
+  /**
+   * Generate variants for a product based on the option/value selections saved on the product.
+   * Existing variants with the same option-value signature are skipped.
+   */
+  async createCombinationsFromProductOptions(productId: string) {
+    const product = await this.prisma.product.findFirst({
+      where: { id: productId, deletedAt: null },
+      select: {
+        id: true,
+        sku: true,
+        name: true,
+        type: true,
+        basePrice: true,
+      },
+    });
+    if (!product) {
+      throw new NotFoundException(`Product with id ${productId} not found`);
+    }
+
+    if (product.type !== 'configurable') {
+      await this.prisma.product.update({
+        where: { id: productId },
+        data: { type: 'configurable' },
+      });
+    }
+
+    const productOptions = await this.prisma.productOptionOnProduct.findMany({
+      where: { productId },
+      orderBy: [{ position: 'asc' }],
+      include: {
+        option: true,
+        values: { include: { value: true } },
+      },
+    });
+
+    const usable = productOptions
+      .map((po) => ({
+        optionId: po.optionId,
+        optionCode: po.option.code,
+        optionName: po.option.name,
+        isRequired: po.isRequired,
+        position: po.position,
+        values: po.values
+          .map((v) => v.value)
+          .filter((v) => v.isActive)
+          .sort((a, b) => (a.sortOrder - b.sortOrder) || a.value.localeCompare(b.value)),
+      }))
+      .filter((o) => {
+        if (o.isRequired && o.values.length === 0) return true;
+        return o.values.length > 0;
+      });
+
+    for (const o of usable) {
+      if (o.isRequired && o.values.length === 0) {
+        throw new BadRequestException(
+          `Required option "${o.optionName}" must have at least one selected value`,
+        );
+      }
+    }
+
+    const optionsForCombos = usable.filter((o) => o.values.length > 0);
+    if (optionsForCombos.length === 0) {
+      throw new BadRequestException('Select at least one option value before creating combinations');
+    }
+
+    // Cartesian product of option values (ordered by product option position)
+    type ComboPick = { optionId: string; optionCode: string; optionName: string; valueId: string; value: string; valueCode?: string | null };
+    const combos: ComboPick[][] = [];
+    const build = (idx: number, acc: ComboPick[]) => {
+      if (idx >= optionsForCombos.length) {
+        combos.push(acc.slice());
+        return;
+      }
+      const opt = optionsForCombos[idx];
+      for (const val of opt.values) {
+        build(idx + 1, acc.concat([{
+          optionId: opt.optionId,
+          optionCode: opt.optionCode,
+          optionName: opt.optionName,
+          valueId: val.id,
+          value: val.value,
+          valueCode: val.code,
+        }]));
+      }
+    };
+    build(0, []);
+
+    const existingVariants = await this.prisma.productVariant.findMany({
+      where: { productId },
+      select: {
+        id: true,
+        sku: true,
+        optionValues: { select: { optionId: true, valueId: true } },
+      },
+    });
+
+    const existingSignatures = new Set(
+      existingVariants.map((v) =>
+        this.buildSignature(v.optionValues.map((p) => ({ optionId: p.optionId, valueId: p.valueId }))),
+      ),
+    );
+    const existingSkus = new Set(existingVariants.map((v) => v.sku.toUpperCase()));
+
+    let created = 0;
+    let skipped = 0;
+
+    for (const picks of combos) {
+      const signature = this.buildSignature(picks.map((p) => ({ optionId: p.optionId, valueId: p.valueId })));
+      if (existingSignatures.has(signature)) {
+        skipped += 1;
+        continue;
+      }
+
+      const skuBase = [
+        product.sku,
+        ...picks.map((p) => this.skuToken(p.valueCode?.trim() || p.value)),
+      ]
+        .filter((t) => !!t)
+        .join('-');
+
+      let skuCandidate = skuBase;
+      let suffix = 1;
+      while (existingSkus.has(skuCandidate.toUpperCase())) {
+        suffix += 1;
+        skuCandidate = `${skuBase}-${suffix}`;
+      }
+
+      // Defensive uniqueness check across products + variants.
+      await this.validateSkuUniqueness(skuCandidate);
+
+      const name = picks.map((p) => `${p.optionName}: ${p.value}`).join(' • ');
+      const optionValuesMap: Record<string, string> = {};
+      const optionValueIdsMap: Record<string, string> = {};
+      for (const p of picks) {
+        optionValuesMap[p.optionCode] = p.value;
+        optionValueIdsMap[p.optionCode] = p.valueId;
+      }
+
+      await this.prisma.$transaction(async (tx) => {
+        const createdVariant = await tx.productVariant.create({
+          data: {
+            productId,
+            sku: skuCandidate,
+            name,
+            price: product.basePrice,
+            position: existingVariants.length + created,
+            isActive: true,
+            attributes: {
+              optionValues: optionValuesMap,
+              optionValueIds: optionValueIdsMap,
+            },
+          },
+          select: { id: true },
+        });
+
+        for (const p of picks) {
+          await tx.variantOptionValue.create({
+            data: {
+              variantId: createdVariant.id,
+              optionId: p.optionId,
+              valueId: p.valueId,
+            },
+          });
+        }
+      });
+
+      existingSkus.add(skuCandidate.toUpperCase());
+      existingSignatures.add(signature);
+      created += 1;
+    }
+
+    return {
+      created,
+      skipped,
+      totalRequested: combos.length,
+    };
   }
 }
 

@@ -47,7 +47,11 @@ export async function fetchApi<T>(
   }
 
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
+    const errorText = await response.text().catch(() => '');
+    const errorData =
+      errorText && errorText.trim().length > 0
+        ? (JSON.parse(errorText) as unknown)
+        : {};
     throw new ApiError(
       (errorData as { message?: string })?.message || `API Error: ${response.statusText}`,
       response.status,
@@ -59,7 +63,11 @@ export async function fetchApi<T>(
     return undefined as T;
   }
 
-  return response.json();
+  const text = await response.text().catch(() => '');
+  if (!text || text.trim().length === 0) {
+    return undefined as T;
+  }
+  return JSON.parse(text) as T;
 }
 
 // Product types (match backend catalog response)
@@ -71,6 +79,12 @@ export interface ProductVariant {
   price: string | number;
   attributes?: Record<string, unknown>;
   position?: number;
+  optionValues?: Array<{
+    optionId: string;
+    valueId: string;
+    option: { id: string; name: string; code: string };
+    value: { id: string; value: string; code?: string | null };
+  }>;
 }
 
 export interface ProductImage {
@@ -93,6 +107,34 @@ export interface Product {
   status: string;
   visibility?: string;
   variants?: ProductVariant[];
+  options?: Array<{
+    productId: string;
+    optionId: string;
+    isRequired: boolean;
+    position: number;
+    option: {
+      id: string;
+      name: string;
+      code: string;
+      values: Array<{
+        id: string;
+        value: string;
+        code?: string | null;
+        isActive: boolean;
+        sortOrder: number;
+      }>;
+    };
+    values: Array<{
+      valueId: string;
+      value: {
+        id: string;
+        value: string;
+        code?: string | null;
+        isActive: boolean;
+        sortOrder: number;
+      };
+    }>;
+  }>;
   images?: ProductImage[];
   categories?: Array<{ id: string; name?: string }>;
   createdAt?: string;
@@ -392,6 +434,47 @@ export const promotionApi = {
         body: JSON.stringify(data),
       },
     ),
+};
+
+// Subscription API
+export type SubscriptionPlan = {
+  id: string;
+  name: string;
+  description?: string | null;
+  price: string | number;
+  billingCycle: 'MONTHLY' | 'YEARLY';
+  features: unknown;
+  isActive: boolean;
+};
+
+export const subscriptionApi = {
+  listPlans: () => fetchApi<SubscriptionPlan[]>('/subscription/plans'),
+  mySubscription: () => fetchApi('/subscription/my-subscription'),
+  subscribe: (data: {
+    planId: string;
+    autoRenew?: boolean;
+    paymentMethod?: string;
+    transactionRef?: string;
+  }) =>
+    fetchApi('/subscription/subscribe', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  cancel: (reason?: string) =>
+    fetchApi('/subscription/cancel', {
+      method: 'POST',
+      body: JSON.stringify(reason ? { reason } : {}),
+    }),
+  renew: (data?: { paymentMethod?: string; transactionRef?: string }) =>
+    fetchApi('/subscription/renew', {
+      method: 'POST',
+      body: JSON.stringify(data ?? {}),
+    }),
+  changePlan: (data: { planId: string; paymentMethod?: string; transactionRef?: string }) =>
+    fetchApi('/subscription/change-plan', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
 };
 
 // Payment API

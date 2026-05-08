@@ -43,6 +43,12 @@ export const adminNavGroups: NavGroup[] = [
         phase: 'D',
       },
       {
+        href: '/product-options',
+        label: 'Product options',
+        description: 'Options and values catalog',
+        phase: 'D',
+      },
+      {
         href: '/inventory',
         label: 'Inventory',
         description: 'Stock levels and adjustments',
@@ -110,6 +116,12 @@ export const adminNavGroups: NavGroup[] = [
         label: 'CMS',
         description: 'Pages, blocks, sliders',
         phase: 'M',
+      },
+      {
+        href: '/subscriptions',
+        label: 'Subscriptions',
+        description: 'Plans and billing cycles',
+        phase: 'N',
       },
     ],
   },

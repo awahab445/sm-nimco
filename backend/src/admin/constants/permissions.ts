@@ -27,6 +27,7 @@ export const ADMIN_PERMISSION_SEED: { key: string; description: string }[] = [
   { key: 'tax.manage', description: 'Manage tax classes and rates' },
   { key: 'payments.manage', description: 'Manage payment configuration' },
   { key: 'cms.manage', description: 'Manage CMS pages, blocks, and sliders' },
+  { key: 'subscriptions.manage', description: 'Manage subscription plans and lifecycle' },
   { key: 'reports.read', description: 'Access reports and exports' },
   { key: 'settings.manage', description: 'Platform settings' },
 ];
@@ -52,6 +53,7 @@ export const MANAGER_PERMISSION_KEYS: string[] = [
   'tax.manage',
   'payments.manage',
   'cms.manage',
+  'subscriptions.manage',
   'reports.read',
 ];
 

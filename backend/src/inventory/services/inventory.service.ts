@@ -3,6 +3,7 @@ import { PrismaService } from '../../catalog/services/prisma.service';
 import { AdjustStockDto, DEFAULT_WAREHOUSE_ID } from '../dto/adjust-stock.dto';
 import { StockAdjustedEvent } from '../events/inventory.events';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { SetProductInventoryItemDto } from '../dto/set-product-inventory.dto';
 
 @Injectable()
 export class InventoryService {
@@ -204,6 +205,143 @@ export class InventoryService {
       isLowStock,
       isInStock: inventoryItem.availableQuantity > 0,
     };
+  }
+
+  /**
+   * Product-level inventory matrix:
+   * - configurable product: one row per variant
+   * - simple product: one row for product itself (targetId = productId)
+   */
+  async getProductInventoryMatrix(productId: string, warehouseId: string) {
+    const product = await this.prisma.product.findFirst({
+      where: { id: productId, deletedAt: null },
+      include: {
+        variants: {
+          orderBy: { position: 'asc' },
+          select: { id: true, sku: true, name: true, isActive: true },
+        },
+      },
+    });
+    if (!product) {
+      throw new NotFoundException(`Product with id ${productId} not found`);
+    }
+
+    const targets =
+      product.variants.length > 0
+        ? product.variants.map((v) => ({
+            targetId: v.id,
+            type: 'variant' as const,
+            sku: v.sku,
+            name: v.name,
+            isActive: v.isActive,
+          }))
+        : [
+            {
+              targetId: product.id,
+              type: 'product' as const,
+              sku: product.sku,
+              name: product.name,
+              isActive: true,
+            },
+          ];
+
+    const rows = await Promise.all(
+      targets.map(async (t) => {
+        const status = await this.getInventoryStatus(t.targetId, warehouseId);
+        return {
+          ...t,
+          quantity: status.quantity,
+          reservedQuantity: status.reservedQuantity,
+          availableQuantity: status.availableQuantity,
+          lowStockThreshold: status.lowStockThreshold,
+        };
+      }),
+    );
+
+    return {
+      productId: product.id,
+      productName: product.name,
+      productType: product.type,
+      warehouseId,
+      rows,
+    };
+  }
+
+  async setProductInventoryQuantities(
+    productId: string,
+    warehouseId: string,
+    items: SetProductInventoryItemDto[],
+  ) {
+    const product = await this.prisma.product.findFirst({
+      where: { id: productId, deletedAt: null },
+      select: { id: true },
+    });
+    if (!product) {
+      throw new NotFoundException(`Product with id ${productId} not found`);
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      const results: Array<{
+        targetId: string;
+        previousQuantity: number;
+        newQuantity: number;
+        availableQuantity: number;
+        reservedQuantity: number;
+      }> = [];
+
+      for (const item of items) {
+        const resolved = await this.resolveVariantOrSimpleProduct(item.targetId);
+        if (resolved.productId !== productId) {
+          throw new BadRequestException(
+            `Target ${item.targetId} does not belong to product ${productId}`,
+          );
+        }
+
+        let inventoryItem = await tx.inventoryItem.findFirst({
+          where: {
+            productId: resolved.productId,
+            variantId: resolved.variantId,
+            warehouseId,
+          },
+        });
+
+        if (!inventoryItem) {
+          inventoryItem = await tx.inventoryItem.create({
+            data: {
+              productId: resolved.productId,
+              variantId: resolved.variantId,
+              warehouseId,
+              quantity: 0,
+              reservedQuantity: 0,
+              availableQuantity: 0,
+              lowStockThreshold: 10,
+            },
+          });
+        }
+
+        const updated = await tx.inventoryItem.update({
+          where: { id: inventoryItem.id },
+          data: {
+            quantity: item.quantity,
+            availableQuantity: item.quantity - inventoryItem.reservedQuantity,
+          },
+        });
+
+        results.push({
+          targetId: item.targetId,
+          previousQuantity: inventoryItem.quantity,
+          newQuantity: updated.quantity,
+          availableQuantity: updated.availableQuantity,
+          reservedQuantity: updated.reservedQuantity,
+        });
+      }
+
+      return {
+        productId,
+        warehouseId,
+        updated: results,
+      };
+    });
   }
 }
 

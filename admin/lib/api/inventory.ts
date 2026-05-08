@@ -51,3 +51,60 @@ export async function adjustInventoryStock(body: AdjustStockBody) {
     body: JSON.stringify(body),
   });
 }
+
+export type ProductInventoryMatrixResponse = {
+  success: boolean;
+  data: {
+    productId: string;
+    productName: string;
+    productType: string;
+    warehouseId: string;
+    rows: Array<{
+      targetId: string;
+      type: 'product' | 'variant';
+      sku: string;
+      name: string;
+      isActive: boolean;
+      quantity: number;
+      reservedQuantity: number;
+      availableQuantity: number;
+      lowStockThreshold: number;
+    }>;
+  };
+};
+
+export async function fetchProductInventoryMatrix(productId: string, warehouseId?: string) {
+  const sp = new URLSearchParams({ productId: productId.trim() });
+  const wh = warehouseId?.trim();
+  if (wh) sp.set('warehouseId', wh);
+  return fetchApi<ProductInventoryMatrixResponse>(`/admin/inventory/product-matrix?${sp.toString()}`);
+}
+
+export type SetProductInventoryQuantitiesResponse = {
+  success: boolean;
+  data: {
+    productId: string;
+    warehouseId: string;
+    updated: Array<{
+      targetId: string;
+      previousQuantity: number;
+      newQuantity: number;
+      availableQuantity: number;
+      reservedQuantity: number;
+    }>;
+  };
+};
+
+export async function setProductInventoryQuantities(
+  productId: string,
+  body: { warehouseId?: string; items: Array<{ targetId: string; quantity: number }> },
+) {
+  const sp = new URLSearchParams({ productId: productId.trim() });
+  return fetchApi<SetProductInventoryQuantitiesResponse>(
+    `/admin/inventory/set-product-quantities?${sp.toString()}`,
+    {
+      method: 'POST',
+      body: JSON.stringify(body),
+    },
+  );
+}

@@ -9,9 +9,16 @@ import {
   type InventoryStatusData,
 } from '@/lib/api/inventory';
 import { formatApiError } from '@/lib/api/error-message';
+import { fetchAdminProduct, fetchAdminProducts } from '@/lib/api/products';
 
 export function InventoryManager() {
   const [variantId, setVariantId] = useState('');
+  const [productSearch, setProductSearch] = useState('');
+  const [loadingProducts, setLoadingProducts] = useState(false);
+  const [products, setProducts] = useState<Array<{ id: string; sku: string; name: string }>>([]);
+  const [selectedProductId, setSelectedProductId] = useState('');
+  const [variantsForProduct, setVariantsForProduct] = useState<Array<{ id: string; sku: string; name: string }>>([]);
+  const [variantChoice, setVariantChoice] = useState('');
   const [warehouseId, setWarehouseId] = useState(DEFAULT_WAREHOUSE_ID);
   const [status, setStatus] = useState<InventoryStatusData | null>(null);
   const [loadingStatus, setLoadingStatus] = useState(false);
@@ -22,6 +29,53 @@ export function InventoryManager() {
   const [adjusting, setAdjusting] = useState(false);
   const [adjustError, setAdjustError] = useState<string | null>(null);
   const [adjustSuccess, setAdjustSuccess] = useState<string | null>(null);
+
+  async function searchProducts() {
+    setLoadingProducts(true);
+    setStatusError(null);
+    try {
+      const res = await fetchAdminProducts({
+        page: 1,
+        limit: 50,
+        ...(productSearch.trim() ? { search: productSearch.trim() } : {}),
+      });
+      setProducts(res.data.map((p) => ({ id: p.id, sku: p.sku, name: p.name })));
+    } catch (e) {
+      setStatusError(formatApiError(e));
+      setProducts([]);
+    } finally {
+      setLoadingProducts(false);
+    }
+  }
+
+  async function loadProductVariants(productId: string) {
+    setStatusError(null);
+    setVariantsForProduct([]);
+    setVariantChoice('');
+    setVariantId('');
+    if (!productId) return;
+    try {
+      const p = await fetchAdminProduct(productId);
+      const vars = (p.variants ?? []).map((v) => ({ id: v.id, sku: v.sku, name: v.name }));
+      setVariantsForProduct(vars);
+      if (vars.length === 0) {
+        // simple inventory target uses product id
+        setVariantChoice('__product__');
+        setVariantId(productId);
+      }
+    } catch (e) {
+      setStatusError(formatApiError(e));
+    }
+  }
+
+  function applyVariantChoice(choice: string, productId: string) {
+    setVariantChoice(choice);
+    if (choice === '__product__') {
+      setVariantId(productId);
+      return;
+    }
+    setVariantId(choice);
+  }
 
   async function loadStatus() {
     setStatusError(null);
@@ -95,6 +149,71 @@ export function InventoryManager() {
       <section className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950 sm:p-6">
         <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">Lookup</h2>
         <div className="mt-4 space-y-3">
+          <div className="rounded-lg border border-zinc-200 p-3 dark:border-zinc-800">
+            <label className="text-xs font-medium text-zinc-600 dark:text-zinc-400">Find product</label>
+            <div className="mt-1 flex gap-2">
+              <input
+                value={productSearch}
+                onChange={(e) => setProductSearch(e.target.value)}
+                placeholder="Search by name or SKU"
+                className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-50"
+              />
+              <button
+                type="button"
+                onClick={() => void searchProducts()}
+                disabled={loadingProducts}
+                className="rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700"
+              >
+                {loadingProducts ? 'Searching…' : 'Search'}
+              </button>
+            </div>
+            {products.length > 0 ? (
+              <div className="mt-2">
+                <label className="text-xs font-medium text-zinc-600 dark:text-zinc-400">Product</label>
+                <select
+                  value={selectedProductId}
+                  onChange={(e) => {
+                    const pid = e.target.value;
+                    setSelectedProductId(pid);
+                    void loadProductVariants(pid);
+                  }}
+                  className="mt-1 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-50"
+                >
+                  <option value="">Select product</option>
+                  {products.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.sku} — {p.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ) : null}
+            {selectedProductId ? (
+              <div className="mt-2">
+                <label className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                  Variant (or simple product stock)
+                </label>
+                <select
+                  value={variantChoice}
+                  onChange={(e) => applyVariantChoice(e.target.value, selectedProductId)}
+                  className="mt-1 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-50"
+                >
+                  {variantsForProduct.length === 0 ? (
+                    <option value="__product__">Simple product stock</option>
+                  ) : (
+                    <>
+                      <option value="">Select variant</option>
+                      {variantsForProduct.map((v) => (
+                        <option key={v.id} value={v.id}>
+                          {v.sku} — {v.name}
+                        </option>
+                      ))}
+                    </>
+                  )}
+                </select>
+              </div>
+            ) : null}
+          </div>
           <div>
             <label className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
               Variant or product ID

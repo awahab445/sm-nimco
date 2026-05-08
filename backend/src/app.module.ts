@@ -17,6 +17,7 @@ import { AuthModule } from './auth/auth.module';
 import { AddressModule } from './address/address.module';
 import { AdminModule } from './admin/admin.module';
 import { CmsModule } from './cms/cms.module';
+import { SubscriptionModule } from './subscription/subscription.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { CmsModule } from './cms/cms.module';
     CustomerGroupModule,
     AddressModule,
     CmsModule,
+    SubscriptionModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -155,16 +155,31 @@ export class ProductQuery {
 
   /** Admin product detail / mutations: full variants, images, categories with nested category row. */
   static buildAdminProductDetailInclude(): {
-    variants: { orderBy: { position: 'asc' } };
+    variants: {
+      orderBy: { position: 'asc' };
+      include: {
+        optionValues: { include: { option: true; value: true } };
+      };
+    };
     images: { orderBy: ({ isPrimary: 'desc' } | { position: 'asc' })[] };
     categories: {
       orderBy: { position: 'asc' };
       include: { category: { select: { id: true; name: true; slug: true } } };
     };
+    options: {
+      orderBy: { position: 'asc' };
+      include: {
+        option: { include: { values: { orderBy: ({ sortOrder: 'asc' } | { value: 'asc' })[] } } };
+        values: { include: { value: true } };
+      };
+    };
   } {
     return {
       variants: {
         orderBy: { position: 'asc' },
+        include: {
+          optionValues: { include: { option: true, value: true } },
+        },
       },
       images: {
         orderBy: [{ isPrimary: 'desc' }, { position: 'asc' }],
@@ -173,20 +188,47 @@ export class ProductQuery {
         orderBy: { position: 'asc' },
         include: { category: { select: { id: true, name: true, slug: true } } },
       },
+      options: {
+        orderBy: { position: 'asc' },
+        include: {
+          option: {
+            include: {
+              values: { orderBy: [{ sortOrder: 'asc' }, { value: 'asc' }] },
+            },
+          },
+          values: { include: { value: true } },
+        },
+      },
     };
   }
   static buildIncludeClause(): {
-    variants: { where: { isActive: boolean }; orderBy: { position: 'asc' } };
+    variants: {
+      where: { isActive: boolean };
+      orderBy: { position: 'asc' };
+      include: {
+        optionValues: { include: { option: true; value: true } };
+      };
+    };
     images: { orderBy: ({ isPrimary: 'desc' } | { position: 'asc' })[] };
     categories: {
       orderBy: { position: 'asc' };
       include: { category: { select: { id: true; name: true; slug: true } } };
+    };
+    options: {
+      orderBy: { position: 'asc' };
+      include: {
+        option: { include: { values: { orderBy: ({ sortOrder: 'asc' } | { value: 'asc' })[] } } };
+        values: { include: { value: true } };
+      };
     };
   } {
     return {
       variants: {
         where: { isActive: true },
         orderBy: { position: 'asc' },
+        include: {
+          optionValues: { include: { option: true, value: true } },
+        },
       },
       images: {
         orderBy: [{ isPrimary: 'desc' }, { position: 'asc' }],
@@ -194,6 +236,17 @@ export class ProductQuery {
       categories: {
         orderBy: { position: 'asc' },
         include: { category: { select: { id: true, name: true, slug: true } } },
+      },
+      options: {
+        orderBy: { position: 'asc' },
+        include: {
+          option: {
+            include: {
+              values: { orderBy: [{ sortOrder: 'asc' }, { value: 'asc' }] },
+            },
+          },
+          values: { include: { value: true } },
+        },
       },
     };
   }

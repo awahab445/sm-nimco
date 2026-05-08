@@ -16,6 +16,43 @@ export type ProductVariant = {
   attributes: Record<string, unknown>;
   position: number;
   isActive: boolean;
+  optionValues?: Array<{
+    optionId: string;
+    valueId: string;
+    option: { id: string; name: string; code: string };
+    value: { id: string; value: string; code?: string | null };
+  }>;
+};
+
+export type ProductOptionValue = {
+  id: string;
+  optionId: string;
+  value: string;
+  code?: string | null;
+  sortOrder: number;
+  isActive: boolean;
+};
+
+export type ProductOption = {
+  id: string;
+  name: string;
+  code: string;
+  isActive: boolean;
+  values: ProductOptionValue[];
+};
+
+export type ProductOptionOnProduct = {
+  productId: string;
+  optionId: string;
+  isRequired: boolean;
+  position: number;
+  option: ProductOption;
+  values: Array<{
+    productId: string;
+    optionId: string;
+    valueId: string;
+    value: ProductOptionValue;
+  }>;
 };
 
 export type ProductImage = {
@@ -57,6 +94,7 @@ export type ProductDetail = {
   variants: ProductVariant[];
   images: ProductImage[];
   categories: ProductCategoryLink[];
+  options?: ProductOptionOnProduct[];
 };
 
 export type AdminProductListRow = {
@@ -100,6 +138,33 @@ export async function fetchAdminProducts(params: {
 
 export async function fetchAdminProduct(id: string): Promise<ProductDetail> {
   return fetchApi<ProductDetail>(`/admin/products/${id}`);
+}
+
+export async function fetchProductOptionsCatalog(): Promise<ProductOption[]> {
+  return fetchApi<ProductOption[]>('/admin/product-options');
+}
+
+export async function fetchProductOptionsForProduct(productId: string): Promise<ProductOptionOnProduct[]> {
+  return fetchApi<ProductOptionOnProduct[]>(`/admin/products/${productId}/options`);
+}
+
+export async function saveProductOptionsForProduct(productId: string, body: {
+  options: Array<{ optionId: string; isRequired?: boolean; position?: number; valueIds: string[] }>;
+}): Promise<ProductOptionOnProduct[]> {
+  return fetchApi<ProductOptionOnProduct[]>(`/admin/products/${productId}/options`, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  });
+}
+
+export async function createVariantCombinations(productId: string): Promise<{
+  created: number;
+  skipped: number;
+  totalRequested: number;
+}> {
+  return fetchApi(`/admin/products/${productId}/variants/create-combinations`, {
+    method: 'POST',
+  });
 }
 
 export type CreateProductBody = {
