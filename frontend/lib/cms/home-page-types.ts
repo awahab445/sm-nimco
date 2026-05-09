@@ -67,6 +67,23 @@ export type HomeSection =
       type: 'newsletter_cta';
       title: string;
       subtitle?: string;
+    }
+  /**
+   * Embed another CMS block by its `identifier` (Admin → CMS → Blocks).
+   * Stored in the `home-page-layout` block JSON; resolved server-side before render.
+   */
+  | {
+      id: string;
+      type: 'cms_block_ref';
+      blockIdentifier: string;
+    }
+  /** Resolved from `cms_block_ref` after loading `/cms/blocks/:identifier`. */
+  | {
+      id: string;
+      type: 'cms_block';
+      blockIdentifier: string;
+      contentHtml?: string | null;
+      contentJson?: unknown;
     };
 
 export interface HomePageLayoutResponse {

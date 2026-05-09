@@ -9,18 +9,63 @@ function normalizeSections(raw: unknown): HomeSection[] | null {
   return sections as HomeSection[];
 }
 
+type CmsBlockApiRow = {
+  identifier?: string;
+  contentHtml?: string | null;
+  contentJson?: unknown;
+};
+
+async function resolveCmsBlockRefs(sections: HomeSection[]): Promise<HomeSection[]> {
+  const resolved: HomeSection[] = [];
+
+  for (const section of sections) {
+    if (section.type !== 'cms_block_ref') {
+      resolved.push(section);
+      continue;
+    }
+
+    const { id, blockIdentifier } = section;
+    try {
+      const block = await fetchApi<CmsBlockApiRow>(
+        `/cms/blocks/${encodeURIComponent(blockIdentifier)}`,
+        { cache: 'no-store' },
+      );
+      const html = block.contentHtml?.trim();
+      if (!html) continue;
+      resolved.push({
+        id,
+        type: 'cms_block',
+        blockIdentifier,
+        contentHtml: html,
+        contentJson: block.contentJson,
+      });
+    } catch {
+      /* inactive, missing, or network error — omit slot */
+    }
+  }
+
+  return resolved;
+}
+
 /**
  * Load homepage block layout.
  *
- * Priority:
- * 1. `NEXT_PUBLIC_STOREFRONT_HOME_LAYOUT_PATH` — relative to `NEXT_PUBLIC_API_URL`, e.g. `/storefront/home-layout`
- * 2. Fallback: static defaults (editable in `home-page-defaults.ts`)
+ * Which CMS block is loaded (all paths are relative to `NEXT_PUBLIC_API_URL`):
+ * 1. `NEXT_PUBLIC_STOREFRONT_HOME_LAYOUT_PATH` — e.g. `/cms/blocks/my-layout`
+ * 2. Else `NEXT_PUBLIC_STOREFRONT_HOME_LAYOUT_IDENTIFIER` — block slug only, e.g. `my-layout` → `/cms/blocks/my-layout`
+ * 3. Else `/cms/blocks/home-page-layout` (seed default)
  *
- * When the backend exposes a real endpoint, return JSON: `{ "sections": [ ... ] }` using the types in `home-page-types.ts`.
+ * If the fetch fails or `contentJson.sections` is missing/empty, the storefront falls back to `home-page-defaults.ts`.
+ *
+ * Reusable CMS blocks: include `{ "type": "cms_block_ref", "id": "…", "blockIdentifier": "my-block" }` in `sections`.
+ * Each ref is resolved via `GET /cms/blocks/:identifier` and rendered as HTML (see Admin → CMS → Blocks).
  */
 export async function getHomePageSections(): Promise<HomeSection[]> {
+  const layoutPath = process.env.NEXT_PUBLIC_STOREFRONT_HOME_LAYOUT_PATH?.trim();
+  const layoutId = process.env.NEXT_PUBLIC_STOREFRONT_HOME_LAYOUT_IDENTIFIER?.trim();
   const path =
-    process.env.NEXT_PUBLIC_STOREFRONT_HOME_LAYOUT_PATH?.trim() ||
+    layoutPath ||
+    (layoutId ? `/cms/blocks/${encodeURIComponent(layoutId)}` : '') ||
     '/cms/blocks/home-page-layout';
   const sliderPath =
     process.env.NEXT_PUBLIC_STOREFRONT_HERO_SLIDER_PATH?.trim() ||
@@ -83,10 +128,14 @@ export async function getHomePageSections(): Promise<HomeSection[]> {
           ? data.data
           : (data as HomePageLayoutResponse);
     const sections = normalizeSections(payload);
-    if (sections) return withLiveHeroSlides(sections);
+    if (sections) {
+      const withBlocks = await resolveCmsBlockRefs(sections);
+      return withLiveHeroSlides(withBlocks);
+    }
   } catch {
     // Network or 404 — use defaults in dev / when CMS not deployed
   }
 
-  return withLiveHeroSlides(HOME_PAGE_DEFAULT_SECTIONS);
+  const defaultsResolved = await resolveCmsBlockRefs(HOME_PAGE_DEFAULT_SECTIONS);
+  return withLiveHeroSlides(defaultsResolved);
 }

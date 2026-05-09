@@ -30,8 +30,12 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const uploadsRoot = join(process.cwd(), 'uploads');
   const productUploadsDir = join(uploadsRoot, 'products');
+  const cmsSlideUploadsDir = join(uploadsRoot, 'cms-slides');
   if (!existsSync(productUploadsDir)) {
     mkdirSync(productUploadsDir, { recursive: true });
+  }
+  if (!existsSync(cmsSlideUploadsDir)) {
+    mkdirSync(cmsSlideUploadsDir, { recursive: true });
   }
   app.use('/uploads', express.static(uploadsRoot));
 

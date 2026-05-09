@@ -7,7 +7,7 @@ import { productApi, inventoryApi, type Product, type ProductVariant } from '@/l
 import { useCartStore } from '@/lib/cart.store';
 import { DEFAULT_CURRENCY } from '@/lib/config';
 import { storefrontUi } from '@/lib/storefront-ui';
-import { resolveImageUrl } from '@/lib/resolve-image-url';
+import { ProductImageGallery } from '@/components/product/product-image-gallery';
 
 type OptionDefinition = { code: string; label: string; values: string[] };
 
@@ -253,11 +253,6 @@ export default function ProductDetailPage() {
     }
   }, [currentVariantId, product?.id, orderedGalleryImages.length]);
 
-  const activeImage =
-    orderedGalleryImages.find((img) => img.id === selectedImageId) ??
-    orderedGalleryImages[0];
-  const imageUrl = resolveImageUrl(activeImage?.url);
-
   const handleAddToCart = async () => {
     const v = selectedVariant ?? variants[0];
     if (!product || !v || adding) return;
@@ -319,50 +314,12 @@ export default function ProductDetailPage() {
 
       <div className="lg:grid lg:grid-cols-2 lg:gap-12">
         <div>
-          <div className="group aspect-[4/5] overflow-hidden rounded-lg border border-border bg-muted sm:aspect-square">
-          {imageUrl ? (
-            <img
-              src={imageUrl}
-              alt={activeImage?.alt ?? product.name}
-              className="h-full w-full object-cover object-center transition-transform duration-500 ease-out group-hover:scale-110"
-            />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-              No image
-            </div>
-          )}
-          </div>
-          {orderedGalleryImages.length > 1 && (
-            <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
-              {orderedGalleryImages.map((img) => {
-                const thumbUrl = resolveImageUrl(img.url);
-                const active = img.id === activeImage?.id;
-                return (
-                  <button
-                    key={img.id}
-                    type="button"
-                    onClick={() => setSelectedImageId(img.id)}
-                    className={`h-16 w-16 shrink-0 overflow-hidden rounded-md border transition-colors ${
-                      active ? 'border-primary ring-2 ring-primary/30' : 'border-border hover:border-primary/60'
-                    }`}
-                    aria-label={`View image ${img.id}`}
-                  >
-                    {thumbUrl ? (
-                      <img
-                        src={thumbUrl}
-                        alt={img.alt ?? product.name}
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center text-[10px] text-muted-foreground">
-                        No image
-                      </div>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          )}
+          <ProductImageGallery
+            images={orderedGalleryImages}
+            productName={product.name}
+            selectedId={selectedImageId}
+            onSelect={setSelectedImageId}
+          />
         </div>
 
         <div>

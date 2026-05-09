@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   cmsApi,
   type CmsBlock,
@@ -42,7 +42,7 @@ type SliderDraft = {
 const emptyPage: PageDraft = {
   title: '',
   slug: '',
-  status: 'draft',
+  status: 'published',
   excerpt: '',
   metaTitle: '',
   metaDescription: '',
@@ -143,8 +143,14 @@ export function CmsManager() {
     e.preventDefault();
     setError(null);
     try {
+      const slug = pageForm.slug.trim();
+      if (!slug) {
+        setError('Slug is required (e.g. complaints). It becomes the storefront URL.');
+        return;
+      }
       const payload = {
         ...pageForm,
+        slug,
         excerpt: pageForm.excerpt || undefined,
         metaTitle: pageForm.metaTitle || undefined,
         metaDescription: pageForm.metaDescription || undefined,
@@ -189,6 +195,11 @@ export function CmsManager() {
     e.preventDefault();
     setError(null);
     try {
+      const missingImageIdx = sliderForm.slides.findIndex((s) => !s.imageUrl?.trim());
+      if (missingImageIdx >= 0) {
+        setError(`Slide ${missingImageIdx + 1}: add an image URL or upload a file.`);
+        return;
+      }
       const payload = {
         name: sliderForm.name,
         identifier: sliderForm.identifier,
@@ -197,7 +208,7 @@ export function CmsManager() {
         slides: sliderForm.slides.map((s) => ({
           title: s.title,
           subtitle: s.subtitle || undefined,
-          imageUrl: s.imageUrl,
+          imageUrl: s.imageUrl.trim(),
           ctaLabel: s.ctaLabel || undefined,
           ctaHref: s.ctaHref || undefined,
           sortOrder: Number(s.sortOrder) || 0,
@@ -258,6 +269,10 @@ export function CmsManager() {
             </h2>
             <Input label="Title" value={pageForm.title} onChange={(v) => setPageForm((s) => ({ ...s, title: v }))} required />
             <Input label="Slug" value={pageForm.slug} onChange={(v) => setPageForm((s) => ({ ...s, slug: v }))} required />
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+              Storefront URL: <span className="font-mono text-zinc-700 dark:text-zinc-300">/{'{slug}'}</span> — only{' '}
+              <strong>published</strong> pages load on the site. Draft stays admin-only.
+            </p>
             <label className="block">
               <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">Status</span>
               <select
@@ -265,8 +280,8 @@ export function CmsManager() {
                 onChange={(e) => setPageForm((s) => ({ ...s, status: e.target.value as 'draft' | 'published' }))}
                 className="mt-1 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
               >
-                <option value="draft">draft</option>
-                <option value="published">published</option>
+                <option value="draft">draft (hidden on storefront)</option>
+                <option value="published">published (live at /slug)</option>
               </select>
             </label>
             <TextArea label="Excerpt" value={pageForm.excerpt} onChange={(v) => setPageForm((s) => ({ ...s, excerpt: v }))} />
@@ -288,6 +303,11 @@ export function CmsManager() {
                   key={p.id}
                   title={p.title}
                   subtitle={`/${p.slug} • ${p.status}`}
+                  hint={
+                    p.status === 'published'
+                      ? `Storefront path is exactly /${p.slug} (same spelling as the slug field).`
+                      : 'Publish this page for it to load on the storefront.'
+                  }
                   onEdit={() => {
                     setEditingPageId(p.id);
                     setPageForm({
@@ -317,6 +337,32 @@ export function CmsManager() {
             <h2 className="text-lg font-medium text-zinc-900 dark:text-zinc-100">
               {editingBlockId ? 'Edit block' : 'Create block'}
             </h2>
+            <div className="space-y-2">
+              <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-950 dark:border-amber-900/40 dark:bg-amber-950/40 dark:text-amber-100">
+                <p className="font-medium">Which block is the homepage layout?</p>
+                <p className="mt-1">
+                  The storefront loads <strong>one</strong> CMS block for section JSON: by default the block whose{' '}
+                  <span className="font-mono">identifier</span> is <span className="font-mono">home-page-layout</span>.
+                  If you use a different identifier (e.g. <span className="font-mono">home-page-layout-1</span>), set{' '}
+                  <span className="font-mono">NEXT_PUBLIC_STOREFRONT_HOME_LAYOUT_IDENTIFIER</span> on the{' '}
+                  <strong>storefront</strong> app (or the full path in <span className="font-mono">NEXT_PUBLIC_STOREFRONT_HOME_LAYOUT_PATH</span>), then restart Next.js.
+                </p>
+                <p className="mt-1">
+                  That block&apos;s <span className="font-mono">Block JSON</span> must be{' '}
+                  <span className="font-mono">{`{ "sections": [ /* non-empty */ ] }`}</span> — if <span className="font-mono">sections</span> is missing or empty, the site falls back to built-in defaults.
+                </p>
+              </div>
+              <div className="rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-xs text-sky-950 dark:border-sky-900/40 dark:bg-sky-950/40 dark:text-sky-100">
+                <p className="font-medium">Embed another block inside the layout</p>
+                <p className="mt-1">
+                  In the layout block&apos;s JSON <span className="font-mono">sections</span>, add{' '}
+                  <span className="font-mono">
+                    {`{ "id": "…", "type": "cms_block_ref", "blockIdentifier": "your-block-id" }`}
+                  </span>
+                  . The storefront fetches that block and renders its HTML.
+                </p>
+              </div>
+            </div>
             <Input label="Name" value={blockForm.name} onChange={(v) => setBlockForm((s) => ({ ...s, name: v }))} required />
             <Input label="Identifier" value={blockForm.identifier} onChange={(v) => setBlockForm((s) => ({ ...s, identifier: v }))} required />
             <TextArea label="Description" value={blockForm.description} onChange={(v) => setBlockForm((s) => ({ ...s, description: v }))} />
@@ -352,6 +398,11 @@ export function CmsManager() {
                   key={b.id}
                   title={b.name}
                   subtitle={`${b.identifier} • ${b.isActive ? 'active' : 'inactive'}`}
+                  hint={
+                    b.identifier === 'home-page-layout'
+                      ? 'Storefront uses this layout by default (no .env needed).'
+                      : `To use as homepage layout, set in storefront .env: NEXT_PUBLIC_STOREFRONT_HOME_LAYOUT_IDENTIFIER=${b.identifier}`
+                  }
                   onEdit={() => {
                     setEditingBlockId(b.id);
                     setBlockForm({
@@ -383,7 +434,8 @@ export function CmsManager() {
             <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/40 dark:text-amber-200">
               <p className="font-medium">Homepage main banner setup</p>
               <p className="mt-1">
-                Use <span className="font-mono">identifier: home-hero</span>. The storefront homepage reads this slider for the main banner.
+                Use <span className="font-mono">identifier: home-hero</span>. The storefront homepage reads this slider for the main banner. You can{' '}
+                <strong>upload</strong> an image or paste an <strong>image URL</strong> per slide.
               </p>
               {!editingSliderId && (
                 <button
@@ -559,19 +611,24 @@ function TextArea({
 function RowCard({
   title,
   subtitle,
+  hint,
   onEdit,
   onDelete,
 }: {
   title: string;
   subtitle: string;
+  hint?: string;
   onEdit: () => void;
   onDelete: () => Promise<void>;
 }) {
   return (
     <div className="flex items-center justify-between rounded-lg border border-zinc-200 px-3 py-2 dark:border-zinc-800">
-      <div>
+      <div className="min-w-0 pr-2">
         <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{title}</p>
         <p className="text-xs text-zinc-500">{subtitle}</p>
+        {hint ? (
+          <p className="mt-1 break-all text-[11px] leading-snug text-zinc-600 dark:text-zinc-400">{hint}</p>
+        ) : null}
       </div>
       <div className="flex gap-2">
         <button type="button" onClick={onEdit} className="rounded-md border border-zinc-300 px-2 py-1 text-xs dark:border-zinc-700">
@@ -618,10 +675,66 @@ function SlideFields({
   onChange: (next: SliderDraft['slides'][number]) => void;
   onRemove: () => void;
 }) {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [uploadBusy, setUploadBusy] = useState(false);
+  const [uploadErr, setUploadErr] = useState<string | null>(null);
+
+  const onFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    setUploadErr(null);
+    setUploadBusy(true);
+    try {
+      const { url } = await cmsApi.uploadSliderSlideImage(file);
+      onChange({ ...slide, imageUrl: url });
+    } catch (err) {
+      setUploadErr(formatApiError(err));
+    } finally {
+      setUploadBusy(false);
+    }
+  };
+
   return (
     <div className="space-y-2 rounded-lg border border-zinc-200 p-3 dark:border-zinc-800">
       <Input label="Title" value={slide.title} onChange={(v) => onChange({ ...slide, title: v })} required />
-      <Input label="Image URL" value={slide.imageUrl} onChange={(v) => onChange({ ...slide, imageUrl: v })} required />
+      <input
+        ref={fileRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp,image/gif,image/avif,.jpg,.jpeg,.png,.webp,.gif,.avif"
+        className="hidden"
+        onChange={(e) => void onFileSelected(e)}
+      />
+      <div className="space-y-1">
+        <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">Banner image</span>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            disabled={uploadBusy}
+            onClick={() => fileRef.current?.click()}
+            className="rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-xs font-medium text-zinc-800 disabled:opacity-50 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
+          >
+            {uploadBusy ? 'Uploading…' : 'Upload file'}
+          </button>
+          <span className="text-xs text-zinc-500">JPEG, PNG, WebP, GIF, AVIF · max 8MB</span>
+        </div>
+        {uploadErr ? <p className="text-xs text-red-600 dark:text-red-400">{uploadErr}</p> : null}
+      </div>
+      <Input
+        label="Image URL (optional if you uploaded)"
+        value={slide.imageUrl}
+        onChange={(v) => onChange({ ...slide, imageUrl: v })}
+      />
+      {slide.imageUrl?.trim() ? (
+        <div className="overflow-hidden rounded-md border border-zinc-200 dark:border-zinc-700">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={slide.imageUrl}
+            alt=""
+            className="h-28 w-full object-contain object-center bg-zinc-100 dark:bg-zinc-900"
+          />
+        </div>
+      ) : null}
       <Input label="Subtitle" value={slide.subtitle} onChange={(v) => onChange({ ...slide, subtitle: v })} />
       <div className="grid gap-2 sm:grid-cols-2">
         <Input label="CTA label" value={slide.ctaLabel} onChange={(v) => onChange({ ...slide, ctaLabel: v })} />

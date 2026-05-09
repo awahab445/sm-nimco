@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -6,10 +7,19 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  ParseFilePipeBuilder,
   Patch,
   Post,
+  Req,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
+import { randomUUID } from 'crypto';
+import type { Request } from 'express';
 import { AdminJwtAuthGuard } from '../../admin/guards/admin-jwt-auth.guard';
 import { AdminPermissionsGuard } from '../../admin/guards/admin-permissions.guard';
 import { RequirePermissions } from '../../admin/decorators/require-permissions.decorator';
@@ -85,6 +95,58 @@ export class AdminCmsController {
   @RequirePermissions('cms.manage')
   async deleteBlock(@Param('id') id: string) {
     await this.cmsService.deleteBlock(id);
+  }
+
+  @Post('slides/upload')
+  @RequirePermissions('cms.manage')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      fileFilter: (_req, file, cb) => {
+        const allowedMime = /^image\/(jpeg|png|webp|gif|avif)$/i.test(file.mimetype || '');
+        const allowedExt = /\.(jpe?g|png|webp|gif|avif)$/i.test(file.originalname || '');
+        if (allowedMime && allowedExt) {
+          cb(null, true);
+          return;
+        }
+        cb(
+          new BadRequestException(
+            'Only PNG, JPEG, WEBP, GIF, and AVIF image files are allowed',
+          ) as any,
+          false,
+        );
+      },
+      storage: diskStorage({
+        destination: 'uploads/cms-slides',
+        filename: (_req, file, cb) => {
+          const extension = extname(file.originalname || '').toLowerCase();
+          cb(null, `${randomUUID()}${extension}`);
+        },
+      }),
+    }),
+  )
+  @HttpCode(HttpStatus.CREATED)
+  uploadSlideImage(
+    @UploadedFile(
+      new ParseFilePipeBuilder()
+        .addMaxSizeValidator({ maxSize: 8 * 1024 * 1024 })
+        .build({ fileIsRequired: true }),
+    )
+    file: any,
+    @Req() req: Request,
+  ) {
+    const publicBaseUrl = process.env.PUBLIC_BASE_URL?.trim();
+    const protoRaw = (req.headers['x-forwarded-proto'] as string | undefined) || req.protocol;
+    const proto = protoRaw === 'https' ? 'https' : 'http';
+    const host = req.get('host')?.trim() || 'localhost:3000';
+    const normalizedPath = file.path.replace(/\\/g, '/');
+    const publicPath = normalizedPath.startsWith('uploads/')
+      ? `/${normalizedPath}`
+      : `/uploads/cms-slides/${file.filename}`;
+    const baseUrl = publicBaseUrl || `${proto}://${host}`;
+    return {
+      url: `${baseUrl}${publicPath}`,
+      filename: file.filename,
+    };
   }
 
   @Get('sliders')

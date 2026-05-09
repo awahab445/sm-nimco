@@ -1,4 +1,5 @@
 import { fetchApi } from '../api-client';
+import { getToken } from '../auth-token';
 
 export type CmsPageStatus = 'draft' | 'published';
 
@@ -114,4 +115,33 @@ export const cmsApi = {
     }),
   deleteSlider: (id: string) =>
     fetchApi<void>(`/admin/cms/sliders/${id}`, { method: 'DELETE' }),
+
+  /** Upload a banner image; returns absolute `url` suitable for slide `imageUrl`. */
+  uploadSliderSlideImage: (file: File) => uploadCmsSlideFile(file),
 };
+
+async function uploadCmsSlideFile(file: File): Promise<{ url: string; filename: string }> {
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+  const formData = new FormData();
+  formData.append('file', file);
+  const headers = new Headers();
+  const token = getToken();
+  if (token) headers.set('Authorization', `Bearer ${token}`);
+  const response = await fetch(`${baseUrl}/admin/cms/slides/upload`, {
+    method: 'POST',
+    body: formData,
+    credentials: 'include',
+    headers,
+  });
+  if (!response.ok) {
+    let message = `Upload failed (${response.status})`;
+    try {
+      const errorData = (await response.json()) as { message?: string };
+      if (errorData?.message) message = errorData.message;
+    } catch {
+      /* ignore */
+    }
+    throw new Error(message);
+  }
+  return response.json() as Promise<{ url: string; filename: string }>;
+}

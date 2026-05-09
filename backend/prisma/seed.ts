@@ -94,6 +94,28 @@ async function main() {
     },
   });
 
+  // 4b. CMS: reusable HTML block placed on the home layout via `cms_block_ref`
+  await prisma.cmsBlock.upsert({
+    where: { identifier: 'home-inline-teaser' },
+    update: {
+      name: 'Home inline teaser',
+      description: 'Example block embedded in homepage layout by identifier',
+      isActive: true,
+      contentHtml:
+        '<div class="rounded-2xl border border-border bg-card px-6 py-5 shadow-sm"><h2 class="text-lg font-semibold text-foreground">Managed as its own block</h2><p class="mt-2 text-sm text-muted-foreground">This copy lives in the <strong>home-inline-teaser</strong> CMS block. The home layout references it by identifier so you can edit it separately from the layout JSON.</p></div>',
+      contentJson: {},
+    },
+    create: {
+      name: 'Home inline teaser',
+      identifier: 'home-inline-teaser',
+      description: 'Example block embedded in homepage layout by identifier',
+      isActive: true,
+      contentHtml:
+        '<div class="rounded-2xl border border-border bg-card px-6 py-5 shadow-sm"><h2 class="text-lg font-semibold text-foreground">Managed as its own block</h2><p class="mt-2 text-sm text-muted-foreground">This copy lives in the <strong>home-inline-teaser</strong> CMS block. The home layout references it by identifier so you can edit it separately from the layout JSON.</p></div>',
+      contentJson: {},
+    },
+  });
+
   // 5. CMS: starter home layout block consumed by frontend/lib/cms/home-page.service.ts
   await prisma.cmsBlock.upsert({
     where: { identifier: 'home-page-layout' },
@@ -135,6 +157,11 @@ async function main() {
             subtitle: 'Create your account for exclusive offers.',
             ctaLabel: 'Create account',
             ctaHref: '/register',
+          },
+          {
+            id: 'inline-teaser',
+            type: 'cms_block_ref',
+            blockIdentifier: 'home-inline-teaser',
           },
           {
             id: 'shelf-featured',
@@ -186,6 +213,11 @@ async function main() {
             subtitle: 'Create your account for exclusive offers.',
             ctaLabel: 'Create account',
             ctaHref: '/register',
+          },
+          {
+            id: 'inline-teaser',
+            type: 'cms_block_ref',
+            blockIdentifier: 'home-inline-teaser',
           },
           {
             id: 'shelf-featured',

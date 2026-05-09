@@ -60,10 +60,10 @@ export function Header() {
             Track order
           </Link>
           <Link
-            href="/pages/feedback"
+            href="/complain"
             className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
-            Feedback
+            Complaints
           </Link>
           <Link
             href="/cart"
