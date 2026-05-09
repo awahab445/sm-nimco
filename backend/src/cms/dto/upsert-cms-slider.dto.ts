@@ -5,7 +5,9 @@ import {
   IsInt,
   IsOptional,
   IsString,
+  Max,
   MaxLength,
+  Min,
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
@@ -57,6 +59,20 @@ export class UpsertCmsSliderDto {
   @IsOptional()
   @IsInt()
   autoplayMs?: number;
+
+  /** Pixel width applied to all slides in this slider (storefront + upload guidance). */
+  @IsOptional()
+  @IsInt()
+  @Min(64)
+  @Max(8192)
+  slideWidthPx?: number | null;
+
+  /** Pixel height applied to all slides (with width, fixes aspect on storefront). */
+  @IsOptional()
+  @IsInt()
+  @Min(64)
+  @Max(8192)
+  slideHeightPx?: number | null;
 
   @IsArray()
   @ArrayMinSize(1)

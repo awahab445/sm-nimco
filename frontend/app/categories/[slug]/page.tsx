@@ -58,11 +58,11 @@ export default function CategoryPage() {
   }, [category?.name]);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <div className="flex gap-8">
+    <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+      <div className="flex w-full min-w-0 flex-col gap-6 lg:flex-row lg:items-start lg:gap-8">
         <CategorySidebar />
 
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 w-full flex-1">
           <div className="mb-6">
             <Link
               href="/products"

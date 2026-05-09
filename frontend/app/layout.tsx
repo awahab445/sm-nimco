@@ -29,16 +29,21 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const storeTheme = getStoreThemeId();
+
   return (
     <html lang="en" data-store-theme={storeTheme}>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <AuthProvider>
           <CartProvider>
-            <div className="flex min-h-screen flex-col">
+            <div
+              className={
+                storeTheme === "mehfil_shereen"
+                  ? "mehfil-store-shell flex min-h-screen min-w-0 max-w-full flex-col"
+                  : "flex min-h-screen min-w-0 max-w-full flex-col"
+              }
+            >
               <Header />
-              <main className="flex-1">{children}</main>
+              <main className="min-w-0 flex-1 max-w-full">{children}</main>
               <Footer />
             </div>
           </CartProvider>

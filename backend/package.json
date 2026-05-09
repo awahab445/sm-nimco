@@ -17,6 +17,7 @@
     "start:prod": "node dist/main",
     "prisma:migrate:reset": "prisma migrate reset",
     "prisma:generate": "prisma generate",
+    "prisma:push": "prisma db push",
     "prisma:seed": "prisma db seed",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",

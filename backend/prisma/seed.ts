@@ -239,12 +239,16 @@ async function main() {
       name: 'Home Hero Slider',
       isActive: true,
       autoplayMs: 5000,
+      slideWidthPx: 1920,
+      slideHeightPx: 800,
     },
     create: {
       name: 'Home Hero Slider',
       identifier: 'home-hero',
       isActive: true,
       autoplayMs: 5000,
+      slideWidthPx: 1920,
+      slideHeightPx: 800,
     },
   });
 

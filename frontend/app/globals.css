@@ -1,6 +1,10 @@
 @import "tailwindcss";
 @import "../styles/store-themes.css";
 
+html {
+  overflow-x: clip;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -33,42 +37,63 @@
 }
 
 body {
+  max-width: 100%;
+  overflow-x: clip;
   background-color: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
 }
 
 /*
- * Mehfil-e-Shereen: velvet texture + stacked gradients (maroon / rosé → readable cream).
- * First listed layer paints on top; texture sits deepest so folds show through softly.
+ * Mehfil-e-Shereen: logo grid only in side gutters; centered column stays solid for readability
+ * (matches main content max-w-7xl / 80rem; wider patterned side gutters).
  */
+html[data-store-theme="mehfil_shereen"] {
+  min-height: 100%;
+  background-color: var(--background);
+}
+
 html[data-store-theme="mehfil_shereen"] body {
-  background-color: #4a1f2c;
-  background-image:
-    linear-gradient(
-      180deg,
-      rgba(62, 16, 28, 0.72) 0%,
-      rgba(95, 32, 48, 0.38) 22%,
-      rgba(180, 80, 92, 0.14) 48%,
-      rgba(255, 248, 246, 0.91) 88%,
-      rgba(252, 245, 240, 0.96) 100%
-    ),
-    linear-gradient(
-      125deg,
-      rgba(139, 36, 52, 0.22) 0%,
-      transparent 42%,
-      rgba(160, 48, 58, 0.1) 78%
-    ),
-    radial-gradient(
-      120% 80% at 50% -10%,
-      rgba(120, 28, 45, 0.35) 0%,
-      transparent 55%
-    ),
-    url("/themes/mehfil-shereen/texture.png");
-  background-size: auto, auto, auto, cover;
-  background-position: center, center, center top, center center;
-  background-attachment: scroll, scroll, scroll, fixed;
-  background-repeat: no-repeat, no-repeat, no-repeat, no-repeat;
+  position: relative;
+  min-height: 100%;
+  background-color: transparent;
+  background-image: none;
+}
+
+.mehfil-store-shell {
+  position: relative;
+  isolation: isolate;
+  flex: 1 1 auto;
+  background-color: var(--background);
+  background-image: url("/themes/mehfil-shereen/logo-grid-pattern.svg");
+  background-size: 224px 224px;
+  background-repeat: repeat;
+  background-position: center top;
+}
+
+/* Solid band over the main content width; pattern remains visible in left/right margins */
+.mehfil-store-shell::before {
+  content: "";
+  position: fixed;
+  z-index: 0;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  /* 100% avoids horizontal scrollbar gutter issues from 100vw on some mobile browsers */
+  width: min(100%, 80rem);
+  translate: -50% 0;
+  background: var(--background);
+  pointer-events: none;
+}
+
+.mehfil-store-shell > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Keep chrome above page content; mobile menu (portaled) also relies on header stacking */
+.mehfil-store-shell > header {
+  z-index: 50;
 }
 
 /* Header: maroon / reddish bar — light nav copy + light search field for contrast */
@@ -94,6 +119,17 @@ html[data-store-theme="mehfil_shereen"] header nav a:hover {
 
 html[data-store-theme="mehfil_shereen"] header > div > a:first-of-type {
   color: rgba(255, 248, 250, 0.96);
+}
+
+/* Mobile menu control: readable on maroon bar */
+html[data-store-theme="mehfil_shereen"] header button[aria-controls="mobile-main-nav"] {
+  border-color: rgba(255, 210, 200, 0.45);
+  background-color: rgba(255, 252, 251, 0.96);
+  color: #2a1218;
+}
+
+html[data-store-theme="mehfil_shereen"] header button[aria-controls="mobile-main-nav"]:hover {
+  background-color: #fffefc;
 }
 
 html[data-store-theme="mehfil_shereen"] header input[type='search'] {
@@ -212,9 +248,14 @@ html[data-store-theme="mehfil_shereen"] .hero-slider-mehfil-shell .bg-background
 }
 
 @media (prefers-color-scheme: dark) {
-  html[data-store-theme="mehfil_shereen"] body {
+  html[data-store-theme="mehfil_shereen"] {
+    background-color: #2a1218;
+  }
+
+  html[data-store-theme="mehfil_shereen"] .mehfil-store-shell {
     background-color: #2a1218;
     background-image:
+      url("/themes/mehfil-shereen/logo-grid-pattern.svg"),
       linear-gradient(
         180deg,
         rgba(45, 14, 22, 0.88) 0%,
@@ -227,10 +268,10 @@ html[data-store-theme="mehfil_shereen"] .hero-slider-mehfil-shell .bg-background
         transparent 45%
       ),
       url("/themes/mehfil-shereen/texture.png");
-    background-size: auto, auto, cover;
-    background-position: center, center, center center;
-    background-attachment: scroll, scroll, fixed;
-    background-repeat: no-repeat, no-repeat, no-repeat;
+    background-size: 224px 224px, auto, auto, cover;
+    background-position: center top, center, center, center center;
+    background-attachment: scroll, scroll, scroll, fixed;
+    background-repeat: repeat, no-repeat, no-repeat, no-repeat;
   }
 
   html[data-store-theme="mehfil_shereen"] header {

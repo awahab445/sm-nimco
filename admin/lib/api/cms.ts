@@ -47,6 +47,10 @@ export type CmsSlider = {
   identifier: string;
   isActive: boolean;
   autoplayMs?: number | null;
+  /** Same width (px) for every slide in this slider; optional. */
+  slideWidthPx?: number | null;
+  /** Same height (px) for every slide; optional (with width sets banner aspect). */
+  slideHeightPx?: number | null;
   slides: CmsSlide[];
   createdAt: string;
   updatedAt: string;
@@ -67,6 +71,8 @@ export type CmsSliderInput = {
   identifier: string;
   isActive?: boolean;
   autoplayMs?: number;
+  slideWidthPx?: number | null;
+  slideHeightPx?: number | null;
   slides: CmsSlideInput[];
 };
 

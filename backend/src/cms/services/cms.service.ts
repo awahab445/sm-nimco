@@ -130,6 +130,8 @@ export class CmsService {
         identifier: dto.identifier,
         isActive: dto.isActive ?? true,
         autoplayMs: dto.autoplayMs,
+        slideWidthPx: dto.slideWidthPx,
+        slideHeightPx: dto.slideHeightPx,
         slides: {
           create: dto.slides.map((slide, index) => ({
             ...slide,
@@ -155,6 +157,8 @@ export class CmsService {
           identifier: dto.identifier,
           isActive: dto.isActive,
           autoplayMs: dto.autoplayMs,
+          slideWidthPx: dto.slideWidthPx,
+          slideHeightPx: dto.slideHeightPx,
           slides: dto.slides
             ? {
                 create: dto.slides.map((slide, index) => ({

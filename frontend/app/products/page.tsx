@@ -59,10 +59,10 @@ function ProductsContent() {
   };
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <div className="flex gap-8">
-        <CategorySidebar />
-        <div className="min-w-0 flex-1">
+    <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+      <div className="flex w-full min-w-0 flex-col gap-6 lg:flex-row lg:items-start lg:gap-8">
+        <CategorySidebar filterCategoryId={categoryId} />
+        <div className="min-w-0 w-full flex-1">
           <div className="mb-8">
             <h1 className="text-3xl font-bold tracking-tight text-foreground">
               Products
@@ -133,7 +133,13 @@ function ProductsContent() {
 
 export default function ProductsPage() {
   return (
-    <Suspense fallback={<div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8" />}>
+    <Suspense
+      fallback={
+        <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+          <div className="h-10 w-48 animate-pulse rounded-md bg-muted" />
+        </div>
+      }
+    >
       <ProductsContent />
     </Suspense>
   );

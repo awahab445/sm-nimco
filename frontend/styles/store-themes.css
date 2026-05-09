@@ -173,29 +173,25 @@
   }
 }
 
-/* ——— mehfil_shereen: logo ladder — wine blush canvas, gold CTAs, navy anchors ——— */
+/* ——— mehfil_shereen: white/neutral canvas + logo pattern; gold CTAs, navy anchors ——— */
 [data-store-theme="mehfil_shereen"] {
   --radius-card: 0.5rem;
   /*
-   * Design intent (light): main UI reads as “festive confectionery” not generic beige.
-   * - Page: blush-linen (burgundy undertone, still bright enough for long reading).
-   * - Cards: near-white so mithai photography stays the hero.
-   * - Primary/secondary: gold + navy from the crest (trust + celebration).
-   * - Accents: dusty rose surfaces tie back to the maroon ring without painting the whole viewport.
+   * Light: solid readable column (80rem / max-w-7xl); pattern only in side gutters (.mehfil-store-shell).
    */
-  --background: #ead6da;
+  --background: #ffffff;
   --foreground: #2a1218;
-  --muted: #dcc8cf;
-  --muted-foreground: #7a3d4a;
-  --card: #fff9f8;
+  --muted: #f4f4f5;
+  --muted-foreground: #57534e;
+  --card: #ffffff;
   --card-foreground: #2a1218;
-  --border: rgba(110, 42, 58, 0.2);
-  --input: rgba(110, 42, 58, 0.18);
+  --border: rgba(42, 18, 24, 0.12);
+  --input: rgba(42, 18, 24, 0.1);
   --primary: #b8944a;
   --primary-foreground: #161015;
   --secondary: #141c2c;
   --secondary-foreground: #f2ebe0;
-  --accent: #d4b4bc;
+  --accent: #e7e5e4;
   --accent-foreground: #4a1f2c;
   --destructive: #b8324a;
   --destructive-foreground: #ffffff;
@@ -204,7 +200,7 @@
   --warning: #b8860b;
   --warning-foreground: #1a1410;
   --ring: #c4a052;
-  --popover: #fff9f8;
+  --popover: #ffffff;
   --popover-foreground: #2a1218;
 }
 

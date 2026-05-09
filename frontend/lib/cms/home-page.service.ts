@@ -75,6 +75,8 @@ export async function getHomePageSections(): Promise<HomeSection[]> {
     try {
       const slider = await fetchApi<{
         autoplayMs?: number | null;
+        slideWidthPx?: number | null;
+        slideHeightPx?: number | null;
         slides?: Array<{
           id: string;
           title: string;
@@ -99,10 +101,19 @@ export async function getHomePageSections(): Promise<HomeSection[]> {
       if (slides.length === 0) return sections;
 
       const heroIndex = sections.findIndex((section) => section.type === 'hero_slider');
+      const prevHero = heroIndex >= 0 && sections[heroIndex].type === 'hero_slider' ? sections[heroIndex] : null;
       const heroSection: HomeSection = {
         id: heroIndex >= 0 ? sections[heroIndex].id : 'hero-main',
         type: 'hero_slider',
-        autoplayMs: slider.autoplayMs ?? (heroIndex >= 0 && sections[heroIndex].type === 'hero_slider' ? sections[heroIndex].autoplayMs : undefined),
+        autoplayMs: slider.autoplayMs ?? prevHero?.autoplayMs,
+        slideWidthPx:
+          slider.slideWidthPx != null && slider.slideWidthPx > 0
+            ? slider.slideWidthPx
+            : prevHero?.slideWidthPx,
+        slideHeightPx:
+          slider.slideHeightPx != null && slider.slideHeightPx > 0
+            ? slider.slideHeightPx
+            : prevHero?.slideHeightPx,
         slides,
       };
 

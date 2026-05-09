@@ -947,14 +947,18 @@ model CmsBlock {
 }
 
 model CmsBannerSlider {
-  id          String           @id @default(uuid())
-  name        String           @db.VarChar(255)
-  identifier  String           @unique @db.VarChar(255)
-  isActive    Boolean          @default(true) @map("is_active")
-  autoplayMs  Int?             @map("autoplay_ms")
-  createdAt   DateTime         @default(now()) @map("created_at")
-  updatedAt   DateTime         @updatedAt @map("updated_at")
-  slides      CmsBannerSlide[]
+  id            String           @id @default(uuid())
+  name          String           @db.VarChar(255)
+  identifier    String           @unique @db.VarChar(255)
+  isActive      Boolean          @default(true) @map("is_active")
+  autoplayMs    Int?             @map("autoplay_ms")
+  /** Design / layout width in px — same for every slide in this slider (optional). */
+  slideWidthPx   Int?             @map("slide_width_px")
+  /** Design / layout height in px — same for every slide; optional (use with width for fixed aspect). */
+  slideHeightPx  Int?             @map("slide_height_px")
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt     DateTime         @updatedAt @map("updated_at")
+  slides        CmsBannerSlide[]
 
   @@index([identifier, isActive])
   @@map("cms_banner_sliders")

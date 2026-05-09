@@ -23,6 +23,8 @@ export function HomeSectionRenderer({
         <HeroSlider
           slides={section.slides}
           autoplayMs={section.autoplayMs}
+          slideWidthPx={section.slideWidthPx}
+          slideHeightPx={section.slideHeightPx}
           layout={heroLayout}
         />
       );

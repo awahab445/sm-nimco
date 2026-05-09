@@ -13,11 +13,21 @@ const IS_MEHFIL_THEME =
 interface HeroSliderProps {
   slides: HeroSlide[];
   autoplayMs?: number;
+  /** CMS slider setting: same max width in px for every slide; unset = full container width */
+  slideWidthPx?: number;
+  /** CMS slider: same height in px; with width fixes aspect ratio for all slides */
+  slideHeightPx?: number;
   /** `immersive` = edge-to-edge, tall viewport banner (homepage lead). `card` = inset rounded block. */
   layout?: HeroSliderLayout;
 }
 
-export function HeroSlider({ slides, autoplayMs = 0, layout = 'card' }: HeroSliderProps) {
+export function HeroSlider({
+  slides,
+  autoplayMs = 0,
+  slideWidthPx,
+  slideHeightPx,
+  layout = 'card',
+}: HeroSliderProps) {
   const [index, setIndex] = useState(0);
   const n = slides.length;
   const safeIndex = n === 0 ? 0 : index % n;
@@ -88,18 +98,54 @@ export function HeroSlider({ slides, autoplayMs = 0, layout = 'card' }: HeroSlid
       ? 'absolute top-1/2 hidden -translate-y-1/2 rounded-full border border-border/60 bg-background/90 p-3 text-2xl leading-none text-foreground shadow-lg backdrop-blur-md transition-colors hover:bg-background md:block md:p-3.5'
       : 'absolute top-1/2 hidden -translate-y-1/2 rounded-full border border-border bg-background/80 p-2 text-foreground shadow-sm backdrop-blur transition-colors hover:bg-background md:block';
 
+  const dimW = slideWidthPx && slideWidthPx > 0 ? slideWidthPx : 0;
+  const dimH = slideHeightPx && slideHeightPx > 0 ? slideHeightPx : 0;
+  const imgWidth = dimW > 0 ? dimW : dimH > 0 ? Math.round(dimH * (2400 / 1000)) : 2400;
+  const imgHeight = dimH > 0 ? dimH : dimW > 0 ? Math.round(dimW * (1000 / 2400)) : 1000;
+  const sizesAttr = dimW > 0 ? `(max-width: ${dimW}px) 100vw, ${dimW}px` : '100vw';
+
+  const imgFillBox = dimW > 0 && dimH > 0;
+
   const bannerImg = slide.imageUrl ? (
     <img
       src={slide.imageUrl}
       alt={slide.title || 'Promotional banner'}
-      width={2400}
-      height={1000}
-      className="block h-auto w-full object-contain object-center"
+      width={imgWidth}
+      height={imgHeight}
+      className={
+        imgFillBox
+          ? 'block h-full w-full object-contain object-center'
+          : dimW > 0
+            ? 'block h-auto w-full max-w-full object-contain object-center'
+            : dimH > 0
+              ? 'mx-auto block h-auto max-h-full w-full max-w-full object-contain object-center'
+              : 'block h-auto w-full object-contain object-center'
+      }
       loading={safeIndex === 0 ? 'eager' : 'lazy'}
       decoding="async"
-      sizes="100vw"
+      sizes={sizesAttr}
     />
   ) : null;
+
+  const imageStage =
+    dimW > 0 && dimH > 0 ? (
+      <div
+        className="mx-auto w-full overflow-hidden"
+        style={{ maxWidth: `${dimW}px`, aspectRatio: `${dimW} / ${dimH}` }}
+      >
+        {bannerImg}
+      </div>
+    ) : dimW > 0 ? (
+      <div className="mx-auto w-full" style={{ maxWidth: `${dimW}px` }}>
+        {bannerImg}
+      </div>
+    ) : dimH > 0 ? (
+      <div className="mx-auto w-full overflow-hidden" style={{ maxHeight: `${dimH}px` }}>
+        {bannerImg}
+      </div>
+    ) : (
+      bannerImg
+    );
 
   const linkedBanner =
     slide.imageUrl && slide.ctaHref ? (
@@ -108,10 +154,10 @@ export function HeroSlider({ slides, autoplayMs = 0, layout = 'card' }: HeroSlid
         className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         aria-label={slide.ctaLabel || slide.title || 'View offer'}
       >
-        {bannerImg}
+        {imageStage}
       </Link>
     ) : (
-      bannerImg
+      imageStage
     );
 
   return (

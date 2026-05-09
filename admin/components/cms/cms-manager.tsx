@@ -28,6 +28,10 @@ type SliderDraft = {
   identifier: string;
   isActive: boolean;
   autoplayMs: number | '';
+  /** Same width (px) for every slide; empty = full width on storefront */
+  slideWidthPx: number | '';
+  /** Same height (px) for every slide; empty = auto / unconstrained */
+  slideHeightPx: number | '';
   slides: Array<{
     title: string;
     subtitle: string;
@@ -63,6 +67,8 @@ const emptySlider: SliderDraft = {
   identifier: '',
   isActive: true,
   autoplayMs: '',
+  slideWidthPx: '',
+  slideHeightPx: '',
   slides: [
     {
       title: '',
@@ -81,6 +87,8 @@ const homeHeroSliderPreset: SliderDraft = {
   identifier: 'home-hero',
   isActive: true,
   autoplayMs: 6500,
+  slideWidthPx: 1920,
+  slideHeightPx: 800,
   slides: [
     {
       title: 'Homepage banner',
@@ -200,11 +208,31 @@ export function CmsManager() {
         setError(`Slide ${missingImageIdx + 1}: add an image URL or upload a file.`);
         return;
       }
+      let slideWidthPx: number | null = null;
+      if (sliderForm.slideWidthPx !== '') {
+        const w = Math.round(Number(sliderForm.slideWidthPx));
+        if (!Number.isFinite(w) || w < 64 || w > 8192) {
+          setError('Slide width must be between 64 and 8192 px, or leave empty.');
+          return;
+        }
+        slideWidthPx = w;
+      }
+      let slideHeightPx: number | null = null;
+      if (sliderForm.slideHeightPx !== '') {
+        const h = Math.round(Number(sliderForm.slideHeightPx));
+        if (!Number.isFinite(h) || h < 64 || h > 8192) {
+          setError('Slide height must be between 64 and 8192 px, or leave empty.');
+          return;
+        }
+        slideHeightPx = h;
+      }
       const payload = {
         name: sliderForm.name,
         identifier: sliderForm.identifier,
         isActive: sliderForm.isActive,
         autoplayMs: sliderForm.autoplayMs === '' ? undefined : Number(sliderForm.autoplayMs),
+        slideWidthPx,
+        slideHeightPx,
         slides: sliderForm.slides.map((s) => ({
           title: s.title,
           subtitle: s.subtitle || undefined,
@@ -455,6 +483,37 @@ export function CmsManager() {
               onChange={(v) => setSliderForm((s) => ({ ...s, autoplayMs: v ? Number(v) : '' }))}
               type="number"
             />
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <Input
+                  label="Slide width (px)"
+                  value={sliderForm.slideWidthPx === '' ? '' : String(sliderForm.slideWidthPx)}
+                  onChange={(v) =>
+                    setSliderForm((s) => ({
+                      ...s,
+                      slideWidthPx: v.trim() === '' ? '' : Number(v) || '',
+                    }))
+                  }
+                  type="number"
+                />
+              </div>
+              <div>
+                <Input
+                  label="Slide height (px)"
+                  value={sliderForm.slideHeightPx === '' ? '' : String(sliderForm.slideHeightPx)}
+                  onChange={(v) =>
+                    setSliderForm((s) => ({
+                      ...s,
+                      slideHeightPx: v.trim() === '' ? '' : Number(v) || '',
+                    }))
+                  }
+                  type="number"
+                />
+              </div>
+            </div>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+              Same <strong>width and height</strong> for every slide in this slider. Set both to lock aspect ratio on the storefront; either field can be left empty (64–8192 when set). Use these as the target size when exporting banner images.
+            </p>
             <label className="flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-200">
               <input
                 type="checkbox"
@@ -494,6 +553,8 @@ export function CmsManager() {
                 <SlideFields
                   key={`${idx}-${slide.title}`}
                   slide={slide}
+                  sliderSlideWidthPx={sliderForm.slideWidthPx === '' ? undefined : sliderForm.slideWidthPx}
+                  sliderSlideHeightPx={sliderForm.slideHeightPx === '' ? undefined : sliderForm.slideHeightPx}
                   onChange={(next) =>
                     setSliderForm((s) => ({
                       ...s,
@@ -532,6 +593,8 @@ export function CmsManager() {
                       identifier: s.identifier,
                       isActive: s.isActive,
                       autoplayMs: s.autoplayMs ?? '',
+                      slideWidthPx: s.slideWidthPx != null ? s.slideWidthPx : '',
+                      slideHeightPx: s.slideHeightPx != null ? s.slideHeightPx : '',
                       slides: s.slides.map((slide) => ({
                         title: slide.title,
                         subtitle: slide.subtitle ?? '',
@@ -668,16 +731,28 @@ function ActionRow({ onReset }: { onReset: () => void }) {
 
 function SlideFields({
   slide,
+  sliderSlideWidthPx,
+  sliderSlideHeightPx,
   onChange,
   onRemove,
 }: {
   slide: SliderDraft['slides'][number];
+  /** Slider-level width (px) for preview consistency */
+  sliderSlideWidthPx?: number;
+  /** Slider-level height (px) for preview / aspect */
+  sliderSlideHeightPx?: number;
   onChange: (next: SliderDraft['slides'][number]) => void;
   onRemove: () => void;
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [uploadBusy, setUploadBusy] = useState(false);
   const [uploadErr, setUploadErr] = useState<string | null>(null);
+
+  const previewAspectLocked =
+    sliderSlideWidthPx &&
+    sliderSlideHeightPx &&
+    sliderSlideWidthPx > 0 &&
+    sliderSlideHeightPx > 0;
 
   const onFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -726,12 +801,30 @@ function SlideFields({
         onChange={(v) => onChange({ ...slide, imageUrl: v })}
       />
       {slide.imageUrl?.trim() ? (
-        <div className="overflow-hidden rounded-md border border-zinc-200 dark:border-zinc-700">
+        <div
+          className="overflow-hidden rounded-md border border-zinc-200 dark:border-zinc-700"
+          style={
+            previewAspectLocked
+              ? {
+                  maxWidth: Math.min(sliderSlideWidthPx!, 560),
+                  aspectRatio: `${sliderSlideWidthPx} / ${sliderSlideHeightPx}`,
+                }
+              : sliderSlideWidthPx && sliderSlideWidthPx > 0
+                ? { maxWidth: Math.min(sliderSlideWidthPx, 560) }
+                : sliderSlideHeightPx && sliderSlideHeightPx > 0
+                  ? { maxHeight: Math.min(sliderSlideHeightPx, 220) }
+                  : undefined
+          }
+        >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={slide.imageUrl}
             alt=""
-            className="h-28 w-full object-contain object-center bg-zinc-100 dark:bg-zinc-900"
+            className={
+              previewAspectLocked
+                ? 'h-full w-full object-contain object-center bg-zinc-100 dark:bg-zinc-900'
+                : 'h-28 w-full object-contain object-center bg-zinc-100 dark:bg-zinc-900'
+            }
           />
         </div>
       ) : null}

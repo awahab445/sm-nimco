@@ -30,6 +30,10 @@ export type HomeSection =
       slides: HeroSlide[];
       /** Auto-advance; omit or 0 to disable */
       autoplayMs?: number;
+      /** Pixel width for all slides (from CMS slider); optional, full width if omitted */
+      slideWidthPx?: number;
+      /** Pixel height for all slides; optional (with width fixes hero aspect) */
+      slideHeightPx?: number;
     }
   | {
       id: string;

@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { createPortal } from 'react-dom';
 import { categoryApi, type Category } from '@/lib/api-client';
 
 function flattenCategories(cats: { data?: Category[] } | Category[]): Category[] {
@@ -10,10 +11,28 @@ function flattenCategories(cats: { data?: Category[] } | Category[]): Category[]
   return cats.data ?? [];
 }
 
-export function CategorySidebar() {
+export type CategorySidebarProps = {
+  /** Highlights a row when `/products?category=<id>` is active */
+  filterCategoryId?: string | null;
+};
+
+function categorySlugFromPath(pathname: string): string | null {
+  const m = pathname.match(/^\/categories\/([^/]+)/);
+  return m?.[1] ?? null;
+}
+
+export function CategorySidebar({ filterCategoryId = null }: CategorySidebarProps) {
   const pathname = usePathname() ?? '';
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const sheetTitleId = useId();
+  const sheetId = useId();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -28,63 +47,208 @@ export function CategorySidebar() {
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
+
+  useEffect(() => {
+    if (!sheetOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setSheetOpen(false);
+    };
+    document.addEventListener('keydown', onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [sheetOpen]);
+
+  const slug = categorySlugFromPath(pathname);
+
+  const currentCategoryLabel = useMemo(() => {
+    if (slug) {
+      const c = categories.find((x) => x.slug === slug);
+      if (c) return c.name;
+    }
+    if (filterCategoryId) {
+      const c = categories.find((x) => x.id === filterCategoryId);
+      if (c) return c.name;
+    }
+    if (pathname === '/products') return 'All products';
+    return 'All products';
+  }, [categories, filterCategoryId, pathname, slug]);
+
+  const linkClassDesktop = (active: boolean) =>
+    `block rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+      active ? 'bg-primary/10 text-primary' : 'text-foreground/90 hover:bg-muted'
+    }`;
+
+  const linkClassSheet = (active: boolean) =>
+    `flex w-full items-center justify-between rounded-lg px-4 py-3.5 text-base font-medium transition-colors sm:text-[15px] ${
+      active ? 'bg-primary/10 text-primary' : 'text-foreground hover:bg-muted'
+    }`;
+
+  const closeSheet = () => setSheetOpen(false);
+
+  const sheet =
+    sheetOpen && mounted ? (
+      <div
+        className="fixed inset-0 isolate z-[240] lg:hidden"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={sheetTitleId}
+        id={sheetId}
+      >
+        {/* absolute layers: avoids flex + fixed stacking bugs on mobile (sheet hidden behind backdrop) */}
+        <button
+          type="button"
+          className="absolute inset-0 z-0 cursor-pointer bg-black/50"
+          aria-label="Close category menu"
+          onClick={closeSheet}
+        />
+        <div
+          className="absolute inset-x-0 bottom-0 z-10 flex max-h-[min(88dvh,560px)] min-h-[12rem] flex-col rounded-t-2xl border-t border-border bg-background text-foreground shadow-[0_-8px_32px_rgba(0,0,0,0.15)]"
+          style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom, 0px))' }}
+        >
+          <div className="flex shrink-0 flex-col items-center border-b border-border/80 pt-2 pb-1">
+            <div className="h-1 w-10 rounded-full bg-muted-foreground/25" aria-hidden />
+            <div className="flex w-full items-center justify-between px-4 pb-2 pt-3">
+              <h2 id={sheetTitleId} className="text-base font-semibold text-foreground">
+                Shop by category
+              </h2>
+              <button
+                type="button"
+                className="rounded-full p-2 text-muted-foreground hover:bg-muted hover:text-foreground"
+                aria-label="Close"
+                onClick={closeSheet}
+              >
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          <nav className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-2 py-2" aria-label="Categories">
+            <ul className="space-y-0.5">
+              <li>
+                <Link
+                  href="/products"
+                  className={linkClassSheet(pathname === '/products' && !filterCategoryId)}
+                  onClick={closeSheet}
+                >
+                  All products
+                </Link>
+              </li>
+              {categories.map((cat) => {
+                const onCategoryPage = pathname === `/categories/${cat.slug}`;
+                const filteredHere = pathname === '/products' && filterCategoryId === cat.id;
+                const isActive = onCategoryPage || filteredHere;
+                return (
+                  <li key={cat.id}>
+                    <Link
+                      href={`/categories/${cat.slug}`}
+                      className={linkClassSheet(isActive)}
+                      onClick={closeSheet}
+                    >
+                      <span>
+                        {cat.name}
+                        {cat.productCount != null && (
+                          <span className="ml-2 font-normal text-muted-foreground">({cat.productCount})</span>
+                        )}
+                      </span>
+                      {isActive ? (
+                        <svg className="h-5 w-5 shrink-0 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      ) : null}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </nav>
+        </div>
+      </div>
+    ) : null;
 
   if (loading) {
     return (
-      <aside className="w-56 shrink-0">
-        <div className="h-6 w-32 animate-pulse rounded bg-muted" />
-        <ul className="mt-4 space-y-1">
-          {[1, 2, 3].map((i) => (
-            <li key={i} className="h-8 animate-pulse rounded bg-muted/70" />
-          ))}
-        </ul>
-      </aside>
+      <>
+        <div className="w-full shrink-0 lg:hidden" aria-busy="true">
+          <div className="h-12 w-full animate-pulse rounded-xl bg-muted/80" />
+        </div>
+        <aside className="hidden w-56 shrink-0 lg:block" aria-busy="true" aria-label="Categories">
+          <div className="h-6 w-32 animate-pulse rounded bg-muted" />
+          <ul className="mt-4 space-y-1">
+            {[1, 2, 3].map((i) => (
+              <li key={i} className="h-9 animate-pulse rounded-md bg-muted/70" />
+            ))}
+          </ul>
+        </aside>
+      </>
     );
   }
 
   return (
-    <aside className="w-56 shrink-0">
-      <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-        Categories
-      </h2>
-      <ul className="mt-3 space-y-0.5">
-        <li>
-          <Link
-            href="/products"
-            className={`block rounded-md px-3 py-2 text-sm font-medium ${
-              pathname === '/products'
-                ? 'bg-primary/10 text-primary'
-                : 'text-foreground/90 hover:bg-muted'
-            }`}
+    <>
+      {/* Mobile: trigger + bottom sheet (common e-commerce pattern) */}
+      <div className="w-full shrink-0 lg:hidden">
+        <button
+          type="button"
+          className="flex w-full items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3 text-left shadow-sm transition-colors hover:bg-muted/40 active:bg-muted/60"
+          aria-expanded={sheetOpen}
+          aria-controls={sheetId}
+          onClick={() => setSheetOpen(true)}
+        >
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Category</p>
+            <p className="mt-0.5 truncate text-sm font-semibold text-foreground">{currentCategoryLabel}</p>
+          </div>
+          <svg
+            className="h-5 w-5 shrink-0 text-muted-foreground"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden
           >
-            All products
-          </Link>
-        </li>
-        {categories.map((cat) => {
-          const isActive = pathname === `/categories/${cat.slug}`;
-          return (
-            <li key={cat.id}>
-              <Link
-                href={`/categories/${cat.slug}`}
-                className={`block rounded-md px-3 py-2 text-sm font-medium ${
-                  isActive
-                    ? 'bg-primary/10 text-primary'
-                    : 'text-foreground/90 hover:bg-muted'
-                }`}
-              >
-                {cat.name}
-                {cat.productCount != null && (
-                  <span className="ml-1.5 text-muted-foreground">
-                    ({cat.productCount})
-                  </span>
-                )}
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
-    </aside>
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        {mounted && sheet ? createPortal(sheet, document.body) : null}
+      </div>
+
+      {/* Desktop: sidebar */}
+      <aside className="hidden w-56 shrink-0 lg:block" aria-label="Product categories">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Categories</h2>
+        <ul className="mt-3 space-y-0.5" role="list">
+          <li>
+            <Link
+              href="/products"
+              className={linkClassDesktop(pathname === '/products' && !filterCategoryId)}
+            >
+              All products
+            </Link>
+          </li>
+          {categories.map((cat) => {
+            const onCategoryPage = pathname === `/categories/${cat.slug}`;
+            const filteredHere = pathname === '/products' && filterCategoryId === cat.id;
+            const isActive = onCategoryPage || filteredHere;
+            return (
+              <li key={cat.id}>
+                <Link href={`/categories/${cat.slug}`} className={linkClassDesktop(isActive)}>
+                  {cat.name}
+                  {cat.productCount != null && (
+                    <span className="ml-1.5 text-muted-foreground">({cat.productCount})</span>
+                  )}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </aside>
+    </>
   );
 }
