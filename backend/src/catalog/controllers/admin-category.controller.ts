@@ -23,21 +23,21 @@ export class AdminCategoryController {
   constructor(private readonly categoryService: CategoryService) {}
 
   @Get()
-  @RequirePermissions('catalog.read')
+  @RequirePermissions('products.read')
   @HttpCode(HttpStatus.OK)
   async findAll() {
     return this.categoryService.findAll({ includeInactive: true });
   }
 
   @Get(':id')
-  @RequirePermissions('catalog.read')
+  @RequirePermissions('products.read')
   @HttpCode(HttpStatus.OK)
   async findOne(@Param('id') id: string) {
     return this.categoryService.findById(id);
   }
 
   @Post()
-  @RequirePermissions('catalog.manage')
+  @RequirePermissions('products.manage')
   @HttpCode(HttpStatus.CREATED)
   async create(@Body() dto: CreateCategoryDto) {
     return this.categoryService.create({
@@ -50,7 +50,7 @@ export class AdminCategoryController {
   }
 
   @Patch(':id')
-  @RequirePermissions('catalog.manage')
+  @RequirePermissions('products.manage')
   @HttpCode(HttpStatus.OK)
   async update(@Param('id') id: string, @Body() dto: UpdateCategoryDto) {
     return this.categoryService.update(id, {
@@ -64,7 +64,7 @@ export class AdminCategoryController {
   }
 
   @Delete(':id')
-  @RequirePermissions('catalog.manage')
+  @RequirePermissions('products.manage')
   @HttpCode(HttpStatus.OK)
   async remove(@Param('id') id: string) {
     return this.categoryService.remove(id);

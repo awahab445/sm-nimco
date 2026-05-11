@@ -3,10 +3,12 @@ import {
   ConflictException,
   NotFoundException,
   BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../catalog/services/prisma.service';
 import { CreateAdminUserDto } from '../dto/create-admin-user.dto';
+import { UpdateAdminUserDto } from '../dto/update-admin-user.dto';
 import { FirstAdminBootstrapDto } from '../dto/first-admin-bootstrap.dto';
 import { SUPER_ADMIN_ROLE_SLUG } from '../constants/permissions';
 import { ensureAdminRbacSeeded } from '../seed/ensure-admin-rbac';
@@ -89,6 +91,106 @@ export class AdminUserService {
       throw new NotFoundException('Admin user not found');
     }
     return user;
+  }
+
+  async listAll() {
+    const users = await this.prisma.adminUser.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: {
+        roles: { include: { role: { select: { id: true, slug: true, name: true } } } },
+      },
+    });
+    return users.map((u) => this.serializeUser(u));
+  }
+
+  /**
+   * Update an admin user. Supports partial changes to names, active flag,
+   * password reset, and full role-set replacement. Enforces self-lock guards.
+   */
+  async update(id: string, dto: UpdateAdminUserDto, actorId: string) {
+    const user = await this.prisma.adminUser.findUnique({
+      where: { id },
+      include: { roles: { include: { role: { select: { slug: true } } } } },
+    });
+    if (!user) {
+      throw new NotFoundException('Admin user not found');
+    }
+
+    const isSelf = actorId === id;
+
+    if (isSelf && dto.isActive === false) {
+      throw new ForbiddenException('You cannot deactivate your own account.');
+    }
+
+    if (dto.roleIds) {
+      const roles = await this.prisma.adminRole.findMany({
+        where: { id: { in: dto.roleIds } },
+        select: { id: true, slug: true },
+      });
+      if (roles.length !== dto.roleIds.length) {
+        throw new BadRequestException('One or more role IDs are invalid');
+      }
+
+      if (isSelf) {
+        const userIsSuper = user.roles.some(
+          (r) => r.role.slug === SUPER_ADMIN_ROLE_SLUG,
+        );
+        const stillSuper = roles.some((r) => r.slug === SUPER_ADMIN_ROLE_SLUG);
+        if (userIsSuper && !stillSuper) {
+          throw new ForbiddenException(
+            'You cannot remove your own super-admin role.',
+          );
+        }
+      }
+    }
+
+    const data: {
+      firstName?: string | null;
+      lastName?: string | null;
+      isActive?: boolean;
+      passwordHash?: string;
+    } = {};
+    if (dto.firstName !== undefined) data.firstName = dto.firstName || null;
+    if (dto.lastName !== undefined) data.lastName = dto.lastName || null;
+    if (dto.isActive !== undefined) data.isActive = dto.isActive;
+    if (dto.password) {
+      data.passwordHash = await bcrypt.hash(dto.password, this.SALT_ROUNDS);
+    }
+
+    const updated = await this.prisma.$transaction(async (tx) => {
+      if (Object.keys(data).length > 0) {
+        await tx.adminUser.update({ where: { id }, data });
+      }
+      if (dto.roleIds) {
+        await tx.adminUserRole.deleteMany({ where: { userId: id } });
+        await tx.adminUserRole.createMany({
+          data: dto.roleIds.map((roleId) => ({ userId: id, roleId })),
+        });
+      }
+      return tx.adminUser.findUniqueOrThrow({
+        where: { id },
+        include: {
+          roles: { include: { role: { select: { id: true, slug: true, name: true } } } },
+        },
+      });
+    });
+
+    return this.serializeUser(updated);
+  }
+
+  async remove(id: string, actorId: string) {
+    if (id === actorId) {
+      throw new BadRequestException('You cannot delete your own account.');
+    }
+    const user = await this.prisma.adminUser.findUnique({
+      where: { id },
+      select: { id: true },
+    });
+    if (!user) {
+      throw new NotFoundException('Admin user not found');
+    }
+    await this.prisma.adminUser.delete({ where: { id } });
+    return { id, deleted: true };
   }
 
   serializeUser(user: {

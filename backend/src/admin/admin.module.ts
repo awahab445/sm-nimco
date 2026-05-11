@@ -7,7 +7,9 @@ import { AdminUsersController } from './controllers/admin-users.controller';
 import { AdminRolesController } from './controllers/admin-roles.controller';
 import { AdminAuthService } from './services/admin-auth.service';
 import { AdminUserService } from './services/admin-user.service';
+import { AdminRoleService } from './services/admin-role.service';
 import { AdminRbacService } from './services/admin-rbac.service';
+import { AdminRbacBootstrapService } from './services/admin-rbac-bootstrap.service';
 import { AdminJwtAuthGuard } from './guards/admin-jwt-auth.guard';
 import { AdminPermissionsGuard } from './guards/admin-permissions.guard';
 
@@ -22,13 +24,18 @@ import { AdminPermissionsGuard } from './guards/admin-permissions.guard';
   providers: [
     AdminAuthService,
     AdminUserService,
+    AdminRoleService,
     AdminRbacService,
+    // Runs `ensureAdminRbacSeeded` on boot (OnModuleInit) so newly-added
+    // permission keys land in the catalog without a manual `prisma db seed`.
+    AdminRbacBootstrapService,
     AdminJwtAuthGuard,
     AdminPermissionsGuard,
   ],
   exports: [
     AdminRbacService,
     AdminUserService,
+    AdminRoleService,
     AdminJwtAuthGuard,
     AdminPermissionsGuard,
   ],

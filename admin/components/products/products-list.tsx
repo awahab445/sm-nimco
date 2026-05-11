@@ -8,6 +8,7 @@ import {
 } from '@/lib/api/categories';
 import { fetchAdminProducts, moneyToNumber, type AdminProductListRow, type ProductStatus } from '@/lib/api/products';
 import { formatApiError } from '@/lib/api/error-message';
+import { PermissionGate } from '@/components/permission-gate';
 
 const STATUS_OPTIONS: { value: '' | ProductStatus; label: string }[] = [
   { value: '', label: 'All statuses' },
@@ -77,12 +78,14 @@ export function ProductsList() {
             Catalog SKUs, pricing, and merchandising. Search needs at least 2 characters.
           </p>
         </div>
-        <Link
-          href="/products/new"
-          className="shrink-0 rounded-lg bg-zinc-900 px-4 py-2 text-center text-sm font-medium text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
-        >
-          New product
-        </Link>
+        <PermissionGate anyOf={['products.create']}>
+          <Link
+            href="/products/new"
+            className="shrink-0 rounded-lg bg-zinc-900 px-4 py-2 text-center text-sm font-medium text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+          >
+            New product
+          </Link>
+        </PermissionGate>
       </div>
 
       <div className="mt-6 flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-end">

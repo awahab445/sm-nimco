@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { fetchPromotions, type Promotion, type PromotionLifecycleStatus } from '@/lib/api/promotions';
 import { formatApiError } from '@/lib/api/error-message';
+import { PermissionGate } from '@/components/permission-gate';
 
 function statusPill(status: PromotionLifecycleStatus) {
   const map: Record<PromotionLifecycleStatus, string> = {
@@ -60,12 +61,14 @@ export function PromotionsList() {
             drafts appear; storefront still receives active-only when the flag is omitted.
           </p>
         </div>
-        <Link
-          href="/promotions/new"
-          className="shrink-0 rounded-lg bg-zinc-900 px-4 py-2 text-center text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
-        >
-          New promotion
-        </Link>
+        <PermissionGate anyOf={['promotions.manage']}>
+          <Link
+            href="/promotions/new"
+            className="shrink-0 rounded-lg bg-zinc-900 px-4 py-2 text-center text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
+          >
+            New promotion
+          </Link>
+        </PermissionGate>
       </div>
 
       <div className="mt-6 flex flex-wrap items-end gap-3">

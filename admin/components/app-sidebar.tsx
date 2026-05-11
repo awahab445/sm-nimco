@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { adminNavGroups, isNavActive } from '@/lib/navigation';
+import { usePermissions } from '@/lib/use-permissions';
 
 type AppSidebarProps = {
   mobileOpen: boolean;
@@ -17,12 +18,32 @@ const appName =
 
 export function AppSidebar({ mobileOpen, onMobileClose }: AppSidebarProps) {
   const pathname = usePathname() ?? '';
+  const { ready, canAny } = usePermissions();
 
   useEffect(() => {
     if (mobileOpen) {
       onMobileClose();
     }
   }, [pathname, mobileOpen, onMobileClose]);
+
+  /**
+   * Hide nav items whose `requirePermission` is not satisfied. While the auth
+   * check is still in flight (`ready === false`), show items that have no
+   * permission requirement so the dashboard link doesn't flicker, but withhold
+   * gated items until we know what the user can do.
+   */
+  const visibleGroups = useMemo(() => {
+    return adminNavGroups
+      .map((group) => ({
+        ...group,
+        items: group.items.filter((item) => {
+          if (!item.requirePermission || item.requirePermission.length === 0) return true;
+          if (!ready) return false;
+          return canAny(item.requirePermission);
+        }),
+      }))
+      .filter((group) => group.items.length > 0);
+  }, [ready, canAny]);
 
   return (
     <>
@@ -51,7 +72,7 @@ export function AppSidebar({ mobileOpen, onMobileClose }: AppSidebarProps) {
         </div>
 
         <nav className="flex-1 overflow-y-auto px-2 py-3" aria-label="Main">
-          {adminNavGroups.map((group) => (
+          {visibleGroups.map((group) => (
             <div key={group.title} className="mb-4 last:mb-0">
               <p className="mb-1.5 px-2 text-[10px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
                 {group.title}

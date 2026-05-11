@@ -25,35 +25,35 @@ export class AdminProductOptionsController {
   constructor(private readonly optionsService: ProductOptionsService) {}
 
   @Get()
-  @RequirePermissions('catalog.read')
+  @RequirePermissions('products.read')
   @HttpCode(HttpStatus.OK)
   async list() {
     return this.optionsService.listOptionsAdmin();
   }
 
   @Post()
-  @RequirePermissions('catalog.manage')
+  @RequirePermissions('products.manage')
   @HttpCode(HttpStatus.CREATED)
   async create(@Body() dto: CreateProductOptionDto) {
     return this.optionsService.createOption(dto);
   }
 
   @Patch(':id')
-  @RequirePermissions('catalog.manage')
+  @RequirePermissions('products.manage')
   @HttpCode(HttpStatus.OK)
   async update(@Param('id') id: string, @Body() dto: UpdateProductOptionDto) {
     return this.optionsService.updateOption(id, dto);
   }
 
   @Delete(':id')
-  @RequirePermissions('catalog.manage')
+  @RequirePermissions('products.manage')
   @HttpCode(HttpStatus.OK)
   async remove(@Param('id') id: string) {
     return this.optionsService.deleteOption(id);
   }
 
   @Post(':id/values')
-  @RequirePermissions('catalog.manage')
+  @RequirePermissions('products.manage')
   @HttpCode(HttpStatus.CREATED)
   async createValue(
     @Param('id') optionId: string,
@@ -69,14 +69,14 @@ export class AdminProductOptionValuesController {
   constructor(private readonly optionsService: ProductOptionsService) {}
 
   @Patch(':id')
-  @RequirePermissions('catalog.manage')
+  @RequirePermissions('products.manage')
   @HttpCode(HttpStatus.OK)
   async update(@Param('id') id: string, @Body() dto: UpdateProductOptionValueDto) {
     return this.optionsService.updateOptionValue(id, dto);
   }
 
   @Delete(':id')
-  @RequirePermissions('catalog.manage')
+  @RequirePermissions('products.manage')
   @HttpCode(HttpStatus.OK)
   async remove(@Param('id') id: string) {
     return this.optionsService.deleteOptionValue(id);

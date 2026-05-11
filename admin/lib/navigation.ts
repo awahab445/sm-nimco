@@ -1,5 +1,8 @@
 /**
  * Main sidebar navigation — aligned with MASTER_PROMPT_ADMIN_NEXTJS module phases C–L.
+ *
+ * `requirePermission` lists permission keys; if the current user lacks **any** of
+ * the listed keys, the item is hidden from the sidebar (super-admin sees all).
  */
 
 export type NavItem = {
@@ -8,6 +11,8 @@ export type NavItem = {
   description: string;
   /** Master prompt phase id for stub pages */
   phase: string;
+  /** Permission keys required to see this item (OR-semantics). */
+  requirePermission?: string[];
 };
 
 export type NavGroup = {
@@ -28,31 +33,35 @@ export const adminNavGroups: NavGroup[] = [
     ],
   },
   {
-    title: 'Catalog',
+    title: 'Products',
     items: [
       {
         href: '/categories',
         label: 'Categories',
         description: 'Category tree and merchandising',
         phase: 'C',
+        requirePermission: ['products.read'],
       },
       {
         href: '/products',
         label: 'Products',
         description: 'Catalog, variants, images',
         phase: 'D',
+        requirePermission: ['products.read'],
       },
       {
         href: '/product-options',
         label: 'Product options',
         description: 'Options and values catalog',
         phase: 'D',
+        requirePermission: ['products.read'],
       },
       {
         href: '/inventory',
         label: 'Inventory',
         description: 'Stock levels and adjustments',
         phase: 'E',
+        requirePermission: ['inventory.read', 'inventory.manage'],
       },
     ],
   },
@@ -64,12 +73,14 @@ export const adminNavGroups: NavGroup[] = [
         label: 'Customer groups',
         description: 'Segments and default group',
         phase: 'F',
+        requirePermission: ['customers.read', 'customers.manage'],
       },
       {
         href: '/customers',
         label: 'Customers',
         description: 'Profiles and group assignment',
         phase: 'G',
+        requirePermission: ['customers.read', 'customers.manage'],
       },
     ],
   },
@@ -81,12 +92,14 @@ export const adminNavGroups: NavGroup[] = [
         label: 'Orders',
         description: 'Order list and fulfillment',
         phase: 'H',
+        requirePermission: ['orders.read', 'orders.manage'],
       },
       {
         href: '/promotions',
         label: 'Promotions',
         description: 'Coupons and campaigns',
         phase: 'I',
+        requirePermission: ['promotions.manage'],
       },
     ],
   },
@@ -98,30 +111,54 @@ export const adminNavGroups: NavGroup[] = [
         label: 'Shipping',
         description: 'Zones, methods, rates',
         phase: 'J',
+        requirePermission: ['shipping.manage'],
       },
       {
         href: '/tax',
         label: 'Tax',
         description: 'Tax classes and rates',
         phase: 'K',
+        requirePermission: ['tax.manage'],
       },
       {
         href: '/payments',
         label: 'Payments',
         description: 'Payment methods and operations',
         phase: 'L',
+        requirePermission: ['payments.manage'],
       },
       {
         href: '/cms',
         label: 'CMS',
         description: 'Pages, blocks, sliders',
         phase: 'M',
+        requirePermission: ['cms.manage'],
       },
       {
         href: '/subscriptions',
         label: 'Subscriptions',
         description: 'Plans and billing cycles',
         phase: 'N',
+        requirePermission: ['subscriptions.manage'],
+      },
+    ],
+  },
+  {
+    title: 'Staff',
+    items: [
+      {
+        href: '/staff/users',
+        label: 'Admin users',
+        description: 'Create staff and assign roles',
+        phase: 'A',
+        requirePermission: ['admin.users.read', 'admin.users.create'],
+      },
+      {
+        href: '/staff/roles',
+        label: 'Roles & permissions',
+        description: 'View roles and their permission keys',
+        phase: 'A',
+        requirePermission: ['admin.roles.read', 'admin.roles.manage'],
       },
     ],
   },

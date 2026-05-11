@@ -34,7 +34,7 @@ import { ProductQueryDto } from '../dto/product-query.dto';
 import { UpsertProductOptionsDto } from '../dto/upsert-product-options.dto';
 import { AdminJwtAuthGuard } from '../../admin/guards/admin-jwt-auth.guard';
 import { AdminPermissionsGuard } from '../../admin/guards/admin-permissions.guard';
-import { RequirePermissions } from '../../admin/decorators/require-permissions.decorator';
+import { CheckPermission } from '../../admin/decorators/check-permission.decorator';
 import { UseGuards } from '@nestjs/common';
 import { ProductOptionsService } from '../services/product-options.service';
 
@@ -49,28 +49,28 @@ export class AdminProductController {
   ) {}
 
   @Get()
-  @RequirePermissions('catalog.read')
+  @CheckPermission('products', 'read')
   @HttpCode(HttpStatus.OK)
   async list(@Query() query: ProductQueryDto) {
     return this.productService.findAllAdmin(query);
   }
 
   @Post()
-  @RequirePermissions('catalog.manage')
+  @CheckPermission('products', 'create')
   @HttpCode(HttpStatus.CREATED)
   async create(@Body() createProductDto: CreateProductDto) {
     return this.productService.create(createProductDto);
   }
 
   @Get(':id')
-  @RequirePermissions('catalog.read')
+  @CheckPermission('products', 'read')
   @HttpCode(HttpStatus.OK)
   async findOne(@Param('id') id: string) {
     return this.productService.findOneById(id, true);
   }
 
   @Patch(':id')
-  @RequirePermissions('catalog.manage')
+  @CheckPermission('products', 'update')
   @HttpCode(HttpStatus.OK)
   async update(
     @Param('id') id: string,
@@ -80,21 +80,21 @@ export class AdminProductController {
   }
 
   @Delete(':id')
-  @RequirePermissions('catalog.manage')
+  @CheckPermission('products', 'delete')
   @HttpCode(HttpStatus.OK)
   async remove(@Param('id') id: string) {
     return this.productService.remove(id);
   }
 
   @Get(':id/options')
-  @RequirePermissions('catalog.read')
+  @CheckPermission('products', 'read')
   @HttpCode(HttpStatus.OK)
   async getProductOptions(@Param('id') productId: string) {
     return this.productOptionsService.getProductOptions(productId);
   }
 
   @Patch(':id/options')
-  @RequirePermissions('catalog.manage')
+  @CheckPermission('products', 'update')
   @HttpCode(HttpStatus.OK)
   async upsertProductOptions(
     @Param('id') productId: string,
@@ -104,7 +104,7 @@ export class AdminProductController {
   }
 
   @Post(':id/variants')
-  @RequirePermissions('catalog.manage')
+  @CheckPermission('products', 'update')
   @HttpCode(HttpStatus.CREATED)
   async createVariant(
     @Param('id') productId: string,
@@ -114,14 +114,14 @@ export class AdminProductController {
   }
 
   @Post(':id/variants/create-combinations')
-  @RequirePermissions('catalog.manage')
+  @CheckPermission('products', 'update')
   @HttpCode(HttpStatus.OK)
   async createVariantCombinations(@Param('id') productId: string) {
     return this.variantService.createCombinationsFromProductOptions(productId);
   }
 
   @Patch('variants/:id')
-  @RequirePermissions('catalog.manage')
+  @CheckPermission('products', 'update')
   @HttpCode(HttpStatus.OK)
   async updateVariant(
     @Param('id') id: string,
@@ -131,14 +131,14 @@ export class AdminProductController {
   }
 
   @Delete('variants/:id')
-  @RequirePermissions('catalog.manage')
+  @CheckPermission('products', 'update')
   @HttpCode(HttpStatus.OK)
   async removeVariant(@Param('id') id: string) {
     return this.variantService.remove(id);
   }
 
   @Post(':id/images')
-  @RequirePermissions('catalog.manage')
+  @CheckPermission('products', 'update')
   @HttpCode(HttpStatus.CREATED)
   async createImage(
     @Param('id') productId: string,
@@ -148,7 +148,7 @@ export class AdminProductController {
   }
 
   @Post('images/upload')
-  @RequirePermissions('catalog.manage')
+  @CheckPermission('products', 'update')
   @UseInterceptors(
     FileInterceptor('file', {
       fileFilter: (_req, file, cb) => {
@@ -200,7 +200,7 @@ export class AdminProductController {
   }
 
   @Patch('images/:id')
-  @RequirePermissions('catalog.manage')
+  @CheckPermission('products', 'update')
   @HttpCode(HttpStatus.OK)
   async updateImage(
     @Param('id') id: string,
@@ -210,14 +210,14 @@ export class AdminProductController {
   }
 
   @Delete('images/:id')
-  @RequirePermissions('catalog.manage')
+  @CheckPermission('products', 'update')
   @HttpCode(HttpStatus.OK)
   async removeImage(@Param('id') id: string) {
     return this.imageService.remove(id);
   }
 
   @Post(':id/categories')
-  @RequirePermissions('catalog.manage')
+  @CheckPermission('products', 'update')
   @HttpCode(HttpStatus.CREATED)
   async assignCategory(
     @Param('id') productId: string,
@@ -231,7 +231,7 @@ export class AdminProductController {
   }
 
   @Delete(':id/categories/:categoryId')
-  @RequirePermissions('catalog.manage')
+  @CheckPermission('products', 'update')
   @HttpCode(HttpStatus.NO_CONTENT)
   async removeCategory(
     @Param('id') productId: string,

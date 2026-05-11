@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { fetchCustomerGroups, type CustomerGroup } from '@/lib/api/customer-groups';
 import { fetchAdminCustomers, type Customer } from '@/lib/api/customers';
 import { formatApiError } from '@/lib/api/error-message';
+import { PermissionGate } from '@/components/permission-gate';
 
 const PAGE_SIZE = 20;
 
@@ -77,12 +78,14 @@ export function CustomersList() {
             {PAGE_SIZE} per page).
           </p>
         </div>
-        <Link
-          href="/customers/new"
-          className="shrink-0 rounded-lg bg-zinc-900 px-4 py-2 text-center text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
-        >
-          New customer
-        </Link>
+        <PermissionGate anyOf={['customers.create', 'customers.manage']}>
+          <Link
+            href="/customers/new"
+            className="shrink-0 rounded-lg bg-zinc-900 px-4 py-2 text-center text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
+          >
+            New customer
+          </Link>
+        </PermissionGate>
       </div>
 
       <div className="mt-6 flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-end">
