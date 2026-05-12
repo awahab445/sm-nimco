@@ -1033,3 +1033,23 @@ model StorefrontFilterOption {
   @@index([filterId, isActive, sortOrder])
   @@map("storefront_filter_options")
 }
+
+// ============================================================================
+// STOREFRONT HEADER NAV (configurable main menu + mega trigger)
+// ============================================================================
+
+model StorefrontNavLink {
+  id             String   @id @default(uuid()) @db.Uuid
+  label          String   @db.VarChar(128)
+  secondaryLabel String?  @map("secondary_label") @db.VarChar(128)
+  href           String   @db.VarChar(512)
+  sortOrder      Int      @default(0) @map("sort_order")
+  isActive       Boolean  @default(true) @map("is_active")
+  /** LINK | MEGA_CATEGORIES — only one active row should use MEGA_CATEGORIES. */
+  kind           String   @default("LINK") @db.VarChar(32)
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@index([isActive, sortOrder])
+  @@map("storefront_nav_links")
+}

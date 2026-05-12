@@ -4,6 +4,8 @@ import { AdminProductController } from './controllers/admin-product.controller';
 import { CategoryController } from './controllers/category.controller';
 import { AdminCategoryController } from './controllers/admin-category.controller';
 import { AdminStorefrontFiltersController } from './controllers/admin-storefront-filters.controller';
+import { StorefrontNavController } from './controllers/storefront-nav.controller';
+import { AdminStorefrontNavController } from './controllers/admin-storefront-nav.controller';
 import {
   AdminProductOptionsController,
   AdminProductOptionValuesController,
@@ -15,6 +17,7 @@ import { CategoryService } from './services/category.service';
 import { PrismaService } from './services/prisma.service';
 import { ProductOptionsService } from './services/product-options.service';
 import { StorefrontFilterService } from './services/storefront-filter.service';
+import { StorefrontNavService } from './services/storefront-nav.service';
 import { AdminJwtAuthGuard } from '../admin/guards/admin-jwt-auth.guard';
 import { AdminPermissionsGuard } from '../admin/guards/admin-permissions.guard';
 import { AdminRbacService } from '../admin/services/admin-rbac.service';
@@ -28,6 +31,8 @@ import { AdminRbacService } from '../admin/services/admin-rbac.service';
     CategoryController,
     AdminCategoryController,
     AdminStorefrontFiltersController,
+    StorefrontNavController,
+    AdminStorefrontNavController,
   ],
   providers: [
     PrismaService,
@@ -37,6 +42,7 @@ import { AdminRbacService } from '../admin/services/admin-rbac.service';
     CategoryService,
     ProductOptionsService,
     StorefrontFilterService,
+    StorefrontNavService,
     AdminRbacService,
     AdminJwtAuthGuard,
     AdminPermissionsGuard,

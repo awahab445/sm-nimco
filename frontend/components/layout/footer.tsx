@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { STORE_NAME } from '@/lib/config';
 import { categoryApi, type CategoryTreeItem } from '@/lib/api-client';
+import { ShoppingBagIcon } from '@/components/icons/shopping-bag-icon';
 
 const IS_MEHFIL_THEME =
   typeof process !== 'undefined' &&
@@ -125,10 +126,11 @@ export function Footer() {
                   href="/cart"
                   className={
                     IS_MEHFIL_THEME
-                      ? 'text-sm text-secondary-foreground/80 transition-colors hover:text-secondary-foreground'
-                      : 'text-sm text-muted-foreground transition-colors hover:text-foreground'
+                      ? 'inline-flex items-center gap-2 text-sm text-secondary-foreground/80 transition-colors hover:text-secondary-foreground'
+                      : 'inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground'
                   }
                 >
+                  <ShoppingBagIcon className="h-4 w-4 shrink-0" strokeWidth={2} aria-hidden />
                   Shopping cart
                 </Link>
               </li>

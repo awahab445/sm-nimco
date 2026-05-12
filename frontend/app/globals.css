@@ -44,6 +44,29 @@ body {
   font-family: var(--font-sans);
 }
 
+@keyframes mega-menu-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-0.375rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.store-mega-menu-panel {
+  animation: mega-menu-enter 0.22s ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .store-mega-menu-panel {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
 /*
  * Mehfil-e-Shereen: logo grid only in side gutters; centered column stays solid for readability
  * (matches main content max-w-7xl / 80rem; wider patterned side gutters).
@@ -93,7 +116,7 @@ html[data-store-theme="mehfil_shereen"] body {
 
 /* Keep chrome above page content; mobile menu (portaled) also relies on header stacking */
 .mehfil-store-shell > header {
-  z-index: 50;
+  z-index: 60;
 }
 
 /* Header: maroon / reddish bar — light nav copy + light search field for contrast */
@@ -152,26 +175,23 @@ html[data-store-theme="mehfil_shereen"] header .pointer-events-none.text-muted-f
   color: #8b4a58;
 }
 
-/* Category strip: continues the wine band, slightly lighter */
-html[data-store-theme="mehfil_shereen"] nav[aria-label="Product categories"] {
+/* Mega menu dropdown (replaces former category strip) */
+html[data-store-theme="mehfil_shereen"] header .store-mega-menu-panel {
   background: linear-gradient(
     180deg,
-    color-mix(in srgb, #5c2433 52%, var(--card) 48%) 0%,
-    color-mix(in srgb, #4a1f2c 38%, var(--card) 62%) 100%
+    color-mix(in srgb, #5c2433 52%, #fffefc 48%) 0%,
+    color-mix(in srgb, #4a1f2c 28%, #fffefc 72%) 100%
   );
-  backdrop-filter: blur(14px);
   border-top-color: rgba(255, 200, 185, 0.12);
 }
 
-/* Top strip links only — dropdown flyout keeps normal popover colors */
-html[data-store-theme="mehfil_shereen"] nav[aria-label="Product categories"] > div > a,
-html[data-store-theme="mehfil_shereen"] nav[aria-label="Product categories"] > div > div > a {
-  color: rgba(255, 248, 250, 0.9) !important;
+html[data-store-theme="mehfil_shereen"] header .store-mega-menu-panel .mega-menu-nav-heading,
+html[data-store-theme="mehfil_shereen"] header .store-mega-menu-panel .mega-menu-nav-link {
+  color: #2a1218;
 }
 
-html[data-store-theme="mehfil_shereen"] nav[aria-label="Product categories"] > div > a:hover,
-html[data-store-theme="mehfil_shereen"] nav[aria-label="Product categories"] > div > div > a:hover {
-  color: #fffefc !important;
+html[data-store-theme="mehfil_shereen"] header .store-mega-menu-panel .mega-menu-nav-link:hover {
+  color: #7a1f2c;
 }
 
 /* Hero slider (Mehfil): maroon shell + tinted overlays */
@@ -278,12 +298,21 @@ html[data-store-theme="mehfil_shereen"] .hero-slider-mehfil-shell .bg-background
     background: linear-gradient(165deg, #2a0c14 0%, #3d1520 40%, #321018 100%);
   }
 
-  html[data-store-theme="mehfil_shereen"] nav[aria-label="Product categories"] {
+  html[data-store-theme="mehfil_shereen"] header .store-mega-menu-panel {
     background: linear-gradient(
       180deg,
       color-mix(in srgb, #4a1f2c 65%, var(--card) 35%) 0%,
       color-mix(in srgb, #3a1820 55%, var(--card) 45%) 100%
     );
+  }
+
+  html[data-store-theme="mehfil_shereen"] header .store-mega-menu-panel .mega-menu-nav-heading,
+  html[data-store-theme="mehfil_shereen"] header .store-mega-menu-panel .mega-menu-nav-link {
+    color: rgba(255, 248, 250, 0.95);
+  }
+
+  html[data-store-theme="mehfil_shereen"] header .store-mega-menu-panel .mega-menu-nav-link:hover {
+    color: #fffefc;
   }
 
   html[data-store-theme="mehfil_shereen"] .hero-slider-mehfil-shell {

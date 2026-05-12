@@ -7,20 +7,73 @@ import { createPortal } from 'react-dom';
 import { useAuthStore } from '@/lib/auth.store';
 import { useCartStore } from '@/lib/cart.store';
 import { STORE_NAME, getStoreLogoSrc } from '@/lib/config';
+import {
+  categoryApi,
+  storefrontNavApi,
+  STOREFRONT_NAV_FALLBACK,
+  type CategoryTreeItem,
+  type StorefrontNavItem,
+} from '@/lib/api-client';
+import { getMegaMenuCategoryRoots, parseCategoryTreeResponse } from '@/lib/mega-menu-config';
 import { SearchBar } from '@/components/search/search-bar';
-import { CategoryMegaNav } from '@/components/layout/category-mega-nav';
+import { DesktopShopMegaMenu, MobileCategoryAccordions } from '@/components/layout/store-mega-menu';
 import { ShoppingBagIcon } from '@/components/icons/shopping-bag-icon';
 
 const DESKTOP_NAV_MIN_WIDTH = 1024;
+
+function sortNavRoots<T extends { position?: number }>(items: T[]): T[] {
+  return [...items].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+}
+
+function isCartHref(href: string): boolean {
+  const h = href.trim().split('?')[0] ?? '';
+  return h === '/cart' || h.endsWith('/cart');
+}
 
 export function Header() {
   const { isAuthenticated } = useAuthStore();
   const cart = useCartStore((s) => s.cart);
   const cartItemCount = cart?.items?.reduce((sum, i) => sum + i.quantity, 0) ?? 0;
   const logoSrc = getStoreLogoSrc();
+  const [navTree, setNavTree] = useState<CategoryTreeItem[]>([]);
+  const [mainNav, setMainNav] = useState<StorefrontNavItem[]>(STOREFRONT_NAV_FALLBACK);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const mobileNavTitleId = useId();
+
+  useEffect(() => {
+    let cancelled = false;
+    categoryApi
+      .getCategories({ tree: true })
+      .then((res) => {
+        if (cancelled) return;
+        const tree = parseCategoryTreeResponse(res);
+        setNavTree(sortNavRoots(tree));
+      })
+      .catch(() => {
+        if (!cancelled) setNavTree([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    storefrontNavApi
+      .getNavigation()
+      .then((res) => {
+        if (cancelled) return;
+        const list = res.data ?? [];
+        setMainNav(list.length > 0 ? list : STOREFRONT_NAV_FALLBACK);
+      })
+      .catch(() => {
+        if (!cancelled) setMainNav(STOREFRONT_NAV_FALLBACK);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     setMounted(true);
@@ -51,6 +104,112 @@ export function Header() {
   }, []);
 
   const closeMobileNav = () => setMobileNavOpen(false);
+  const megaMenuRoots = getMegaMenuCategoryRoots(navTree);
+
+  function desktopNavItem(item: StorefrontNavItem) {
+    if (item.kind === 'MEGA_CATEGORIES') {
+      return (
+        <DesktopShopMegaMenu
+          key={item.id}
+          roots={megaMenuRoots}
+          primaryLabel={item.label}
+          secondaryLabel={item.secondaryLabel}
+          primaryHref={item.href}
+        />
+      );
+    }
+    if (isCartHref(item.href)) {
+      return (
+        <Link
+          key={item.id}
+          href={item.href}
+          className="relative inline-flex items-center justify-center text-foreground transition-opacity hover:opacity-80"
+          aria-label={
+            cartItemCount > 0
+              ? `${item.label}, ${cartItemCount} ${cartItemCount === 1 ? 'item' : 'items'}`
+              : item.label
+          }
+          title={item.label}
+        >
+          <span className="relative inline-flex h-6 w-6 items-center justify-center">
+            <ShoppingBagIcon className="h-6 w-6 text-foreground" strokeWidth={2} aria-hidden />
+            {cartItemCount > 0 ? (
+              <span
+                className="pointer-events-none absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-semibold leading-none text-white ring-2 ring-background"
+                aria-hidden
+              >
+                {cartItemCount > 99 ? '99+' : cartItemCount}
+              </span>
+            ) : null}
+          </span>
+        </Link>
+      );
+    }
+    return (
+      <Link
+        key={item.id}
+        href={item.href}
+        className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+      >
+        {item.label}
+      </Link>
+    );
+  }
+
+  function mobileNavItem(item: StorefrontNavItem) {
+    if (item.kind === 'MEGA_CATEGORIES') {
+      return (
+        <div key={item.id} className="space-y-1">
+          <Link
+            href={item.href}
+            className="block rounded-md px-3 py-3 text-base font-medium text-foreground active:bg-muted sm:py-2.5 sm:text-sm"
+            onClick={closeMobileNav}
+          >
+            {item.label}
+          </Link>
+          <MobileCategoryAccordions roots={megaMenuRoots} onNavigate={closeMobileNav} />
+        </div>
+      );
+    }
+    if (isCartHref(item.href)) {
+      return (
+        <Link
+          key={item.id}
+          href={item.href}
+          className="flex items-center gap-3 rounded-md px-3 py-3 text-base font-semibold text-foreground active:bg-muted sm:py-2.5 sm:text-sm"
+          aria-label={
+            cartItemCount > 0
+              ? `${item.label}, ${cartItemCount} ${cartItemCount === 1 ? 'item' : 'items'}`
+              : item.label
+          }
+          onClick={closeMobileNav}
+        >
+          <span className="relative inline-flex h-6 w-6 shrink-0 items-center justify-center text-foreground">
+            <ShoppingBagIcon className="h-6 w-6" strokeWidth={2} aria-hidden />
+            {cartItemCount > 0 ? (
+              <span
+                className="pointer-events-none absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-semibold leading-none text-white ring-2 ring-background"
+                aria-hidden
+              >
+                {cartItemCount > 99 ? '99+' : cartItemCount}
+              </span>
+            ) : null}
+          </span>
+          <span aria-hidden>{item.label}</span>
+        </Link>
+      );
+    }
+    return (
+      <Link
+        key={item.id}
+        href={item.href}
+        className="rounded-md px-3 py-3 text-base font-medium text-foreground active:bg-muted sm:py-2.5 sm:text-sm"
+        onClick={closeMobileNav}
+      >
+        {item.label}
+      </Link>
+    );
+  }
 
   const mobileMenu =
     mobileNavOpen && mounted ? (
@@ -90,49 +249,7 @@ export function Header() {
             className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto overscroll-contain p-3"
             aria-label="Mobile navigation"
           >
-            <Link
-              href="/"
-              className="rounded-md px-3 py-3 text-base font-medium text-foreground active:bg-muted sm:py-2.5 sm:text-sm"
-              onClick={closeMobileNav}
-            >
-              Home
-            </Link>
-            <Link
-              href="/products"
-              className="rounded-md px-3 py-3 text-base font-medium text-foreground active:bg-muted sm:py-2.5 sm:text-sm"
-              onClick={closeMobileNav}
-            >
-              Products
-            </Link>
-            <Link
-              href="/track-order"
-              className="rounded-md px-3 py-3 text-base font-medium text-foreground active:bg-muted sm:py-2.5 sm:text-sm"
-              onClick={closeMobileNav}
-            >
-              Track order
-            </Link>
-            <Link
-              href="/complain"
-              className="rounded-md px-3 py-3 text-base font-medium text-foreground active:bg-muted sm:py-2.5 sm:text-sm"
-              onClick={closeMobileNav}
-            >
-              Complaints
-            </Link>
-            <Link
-              href="/cart"
-              className="flex items-center justify-between rounded-md px-3 py-3 text-base font-semibold text-foreground active:bg-muted sm:py-2.5 sm:text-sm"
-              onClick={closeMobileNav}
-            >
-              <span className="inline-flex items-center gap-2">
-                <ShoppingBagIcon className="h-5 w-5 shrink-0 text-primary" aria-hidden />
-                <span className="sr-only">Cart</span>
-              </span>
-              {cartItemCount > 0 ? (
-                <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-medium text-primary-foreground">
-                  {cartItemCount > 99 ? '99+' : cartItemCount}
-                </span>
-              ) : null}
-            </Link>
+            {mainNav.map((item) => mobileNavItem(item))}
             {isAuthenticated ? (
               <Link
                 href="/account"
@@ -165,7 +282,7 @@ export function Header() {
     ) : null;
 
   return (
-    <header className="sticky top-0 z-50 w-full max-w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+    <header className="sticky top-0 z-[60] w-full max-w-full overflow-visible border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 relative">
       <div className="mx-auto flex min-h-14 w-full min-w-0 max-w-[100rem] items-center justify-between gap-2 py-1.5 px-4 sm:gap-3 sm:px-8 lg:gap-4 lg:px-12 xl:px-16">
         <Link
           href="/"
@@ -191,46 +308,10 @@ export function Header() {
         </div>
 
         <nav
-          className="hidden shrink-0 items-center gap-3 xl:gap-6 lg:flex"
+          className="hidden shrink-0 items-center gap-3 overflow-visible xl:gap-6 lg:flex"
           aria-label="Main navigation"
         >
-          <Link
-            href="/"
-            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-          >
-            Home
-          </Link>
-          <Link
-            href="/products"
-            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-          >
-            Products
-          </Link>
-          <Link
-            href="/track-order"
-            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-          >
-            Track order
-          </Link>
-          <Link
-            href="/complain"
-            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-          >
-            Complaints
-          </Link>
-          <Link
-            href="/cart"
-            className="relative flex items-center gap-1.5 text-sm font-semibold text-foreground transition-colors hover:text-primary"
-            aria-label="Cart"
-            title="Cart"
-          >
-            <ShoppingBagIcon className="h-5 w-5 shrink-0 text-primary" aria-hidden />
-            {cartItemCount > 0 && (
-              <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-medium text-primary-foreground">
-                {cartItemCount > 99 ? '99+' : cartItemCount}
-              </span>
-            )}
-          </Link>
+          {mainNav.map((item) => desktopNavItem(item))}
           {isAuthenticated ? (
             <Link
               href="/account"
@@ -278,8 +359,6 @@ export function Header() {
       </div>
 
       {mounted && mobileMenu ? createPortal(mobileMenu, document.body) : null}
-
-      <CategoryMegaNav />
     </header>
   );
 }

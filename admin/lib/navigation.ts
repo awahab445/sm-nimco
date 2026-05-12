@@ -135,6 +135,13 @@ export const adminNavGroups: NavGroup[] = [
         requirePermission: ['cms.manage'],
       },
       {
+        href: '/store-navigation',
+        label: 'Store navigation',
+        description: 'Storefront header menu links and mega menu',
+        phase: 'D',
+        requirePermission: ['products.read'],
+      },
+      {
         href: '/store-filters',
         label: 'Store filters',
         description: 'Product listing filters and option values',

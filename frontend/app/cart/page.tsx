@@ -8,6 +8,7 @@ import { productApi } from '@/lib/api-client';
 import { DEFAULT_CURRENCY } from '@/lib/config';
 import { resolveImageUrl } from '@/lib/resolve-image-url';
 import { CouponApplySection } from '@/components/coupon/coupon-apply-section';
+import { ShoppingBagIcon } from '@/components/icons/shopping-bag-icon';
 import {
   cartItemsToValidateItems,
   clearPendingCouponCode,
@@ -106,39 +107,64 @@ export default function CartPage() {
   const cartId = cart?.id ?? null;
 
   useEffect(() => {
+    const lineItems = cart?.items ?? [];
     const code = getPendingCouponCode();
+    const sub = lineItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
+
     if (!code) {
-      setCouponMeta({ code: null, discountAmount: 0, isFreeShipping: false });
+      setCouponMeta((prev) =>
+        prev.code === null && prev.discountAmount === 0 && prev.isFreeShipping === false
+          ? prev
+          : { code: null, discountAmount: 0, isFreeShipping: false },
+      );
       return;
     }
-    if (items.length === 0) {
-      setCouponMeta({ code, discountAmount: 0, isFreeShipping: false });
+    if (lineItems.length === 0) {
+      setCouponMeta((prev) =>
+        prev.code === code && prev.discountAmount === 0 && prev.isFreeShipping === false
+          ? prev
+          : { code, discountAmount: 0, isFreeShipping: false },
+      );
       return;
     }
     let cancelled = false;
     validateCouponCodeForCartLike({
       code,
-      subtotal,
-      items: cartItemsToValidateItems(items),
+      subtotal: sub,
+      items: cartItemsToValidateItems(lineItems),
       customerId,
       customerGroupId,
     }).then((v) => {
       if (cancelled) return;
       if (v.ok) {
-        setCouponMeta({
-          code: v.appliedCode,
-          discountAmount: v.discountAmount,
-          isFreeShipping: v.isFreeShipping,
+        setCouponMeta((prev) => {
+          const next = {
+            code: v.appliedCode,
+            discountAmount: v.discountAmount,
+            isFreeShipping: v.isFreeShipping,
+          };
+          if (
+            prev.code === next.code &&
+            prev.discountAmount === next.discountAmount &&
+            prev.isFreeShipping === next.isFreeShipping
+          ) {
+            return prev;
+          }
+          return next;
         });
       } else {
         clearPendingCouponCode();
-        setCouponMeta({ code: null, discountAmount: 0, isFreeShipping: false });
+        setCouponMeta((prev) =>
+          prev.code === null && prev.discountAmount === 0 && prev.isFreeShipping === false
+            ? prev
+            : { code: null, discountAmount: 0, isFreeShipping: false },
+        );
       }
     });
     return () => {
       cancelled = true;
     };
-  }, [items, subtotal, customerId, customerGroupId]);
+  }, [cart?.items, customerId, customerGroupId]);
 
   const handleQtyBlur = async (variantId: string) => {
     const q = Math.max(1, localQty[variantId] ?? 1);
@@ -159,7 +185,8 @@ export default function CartPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <h1 className="text-2xl font-bold tracking-tight text-foreground">
+      <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight text-foreground">
+        <ShoppingBagIcon className="h-7 w-7 shrink-0 text-foreground" strokeWidth={2} aria-hidden />
         Your cart
       </h1>
 

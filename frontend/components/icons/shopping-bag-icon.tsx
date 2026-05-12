@@ -1,22 +1,10 @@
-type ShoppingBagIconProps = {
-  className?: string;
-  'aria-hidden'?: boolean;
-};
+import { ShoppingBag } from 'lucide-react';
+import type { LucideProps } from 'lucide-react';
 
-export function ShoppingBagIcon({ className = 'h-4 w-4', ...rest }: ShoppingBagIconProps) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      {...rest}
-    >
-      <path d="M6 7h12l-1 13H7L6 7Z" />
-      <path d="M9 7a3 3 0 1 1 6 0" />
-    </svg>
-  );
+/**
+ * Store header cart: Lucide `ShoppingBag` (outlined bag, curved handle).
+ * Default stroke matches clear outline at h-6 w-6.
+ */
+export function ShoppingBagIcon({ strokeWidth = 2, ...rest }: LucideProps) {
+  return <ShoppingBag strokeWidth={strokeWidth} {...rest} />;
 }

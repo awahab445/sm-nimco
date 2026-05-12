@@ -219,6 +219,67 @@ export const categoryApi = {
     fetchApi<Category>(`/categories/slug/${encodeURIComponent(slug)}`),
 };
 
+/** Configurable storefront header links (managed in Admin → Store navigation). */
+export type StorefrontNavKind = 'LINK' | 'MEGA_CATEGORIES';
+
+export interface StorefrontNavItem {
+  id: string;
+  label: string;
+  secondaryLabel: string | null;
+  href: string;
+  sortOrder: number;
+  kind: StorefrontNavKind;
+}
+
+/** Used when the API is unreachable or returns no rows (matches default migration seed). */
+export const STOREFRONT_NAV_FALLBACK: StorefrontNavItem[] = [
+  {
+    id: '00000000-0000-0000-0000-00000000e001',
+    label: 'Home',
+    secondaryLabel: null,
+    href: '/',
+    sortOrder: 0,
+    kind: 'LINK',
+  },
+  {
+    id: '00000000-0000-0000-0000-00000000e002',
+    label: 'Products',
+    secondaryLabel: 'Categories',
+    href: '/products',
+    sortOrder: 10,
+    kind: 'MEGA_CATEGORIES',
+  },
+  {
+    id: '00000000-0000-0000-0000-00000000e003',
+    label: 'Track order',
+    secondaryLabel: null,
+    href: '/track-order',
+    sortOrder: 20,
+    kind: 'LINK',
+  },
+  {
+    id: '00000000-0000-0000-0000-00000000e004',
+    label: 'Complaints',
+    secondaryLabel: null,
+    href: '/complain',
+    sortOrder: 30,
+    kind: 'LINK',
+  },
+  {
+    id: '00000000-0000-0000-0000-00000000e005',
+    label: 'Cart',
+    secondaryLabel: null,
+    href: '/cart',
+    sortOrder: 40,
+    kind: 'LINK',
+  },
+];
+
+export const storefrontNavApi = {
+  getNavigation: (): Promise<{ data: StorefrontNavItem[] }> =>
+    fetchApi<{ data: StorefrontNavItem[] }>('/storefront/navigation'),
+};
+
 // Product API
 export const productApi = {
   listProducts: (query?: ProductListQuery): Promise<ProductListResponse> => {
