@@ -9,6 +9,7 @@ import { CreateProductDto, ProductStatus } from '../dto/create-product.dto';
 import { UpdateProductDto } from '../dto/update-product.dto';
 import { ProductQuery } from '../queries/product.query';
 import { ProductQueryDto } from '../dto/product-query.dto';
+import { ProductFacetAggregate } from '../queries/product-facet-aggregate';
 import { AdminProductListQueryDto } from '../dto/admin-product-list-query.dto';
 
 @Injectable()
@@ -92,7 +93,8 @@ export class ProductService {
   }
 
   async findAll(query: ProductQueryDto) {
-    const where = ProductQuery.buildWhereClause(query);
+    const q = ProductQuery.mergeEffectiveQuery(query);
+    const where = ProductQuery.buildWhereClause(q);
     const include = ProductQuery.buildIncludeClause();
     const { skip, take, page } = ProductQuery.buildPaginationParams(query);
 
@@ -116,6 +118,10 @@ export class ProductService {
         totalPages: Math.ceil(total / take),
       },
     };
+  }
+
+  async getFacets(query: ProductQueryDto) {
+    return ProductFacetAggregate.compute(this.prisma, query);
   }
 
   async findAllAdmin(query: AdminProductListQueryDto) {
@@ -154,7 +160,7 @@ export class ProductService {
     if (searchTerm.length < 2) {
       return { data: [], total: 0 };
     }
-    const where = ProductQuery.buildWhereClause({ search: searchTerm } as ProductQueryDto);
+    const where = ProductQuery.buildWhereClause(ProductQuery.mergeEffectiveQuery({ search: searchTerm } as ProductQueryDto));
     const products = await this.prisma.product.findMany({
       where,
       take,

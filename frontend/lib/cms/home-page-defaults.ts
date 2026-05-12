@@ -95,9 +95,9 @@ export const HOME_PAGE_DEFAULT_SECTIONS: HomeSection[] = [
     source: { kind: 'latest', limit: 4, page: 2 },
   },
   {
-    id: 'newsletter',
-    type: 'newsletter_cta',
+    id: 'subscription',
+    type: 'subscription_cta',
     title: 'Stay in the loop',
-    subtitle: 'Get product drops and offers. Hook this block to your marketing API when ready.',
+    subtitle: 'Get product drops and offers by email.',
   },
 ];

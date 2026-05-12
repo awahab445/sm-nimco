@@ -23,6 +23,7 @@ export class CheckoutTotalsService {
     private readonly promotionsService: PromotionsService,
     private readonly productService: ProductService,
     private readonly taxCalculationService: TaxCalculationService,
+    /** Used for tax-class fallback only — not for order discounts. */
     private readonly customerGroupService: CustomerGroupService,
     private readonly prisma: PrismaService,
   ) {}
@@ -37,7 +38,7 @@ export class CheckoutTotalsService {
   }
 
   /**
-   * Calculate discount total using promotions service and customer group discount
+   * Calculate discount total from promotions only (no customer-group % here — that is not a promotion rule).
    */
   async calculateDiscountTotal(
     subtotal: number,
@@ -50,7 +51,6 @@ export class CheckoutTotalsService {
     }
 
     let promotionDiscount = 0;
-    let groupDiscount = 0;
     let freeShippingApplied = false;
 
     try {
@@ -99,26 +99,8 @@ export class CheckoutTotalsService {
       promotionDiscount = appliedPromotions.reduce((sum, p) => sum + p.discountAmount, 0);
       freeShippingApplied = appliedPromotions.some((p) => p.promotion.type === 'free_shipping');
 
-      // Apply customer group discount (if any) to subtotal after promotions
-      if (checkout.customerGroupId) {
-        try {
-          const customerGroup = await this.customerGroupService.findOne(checkout.customerGroupId);
-          if (customerGroup.discountPercent && customerGroup.discountPercent > 0) {
-            // Group discount applies to subtotal after promotion discounts
-            const subtotalAfterPromotions = Math.max(0, subtotal - promotionDiscount);
-            groupDiscount = (subtotalAfterPromotions * customerGroup.discountPercent) / 100;
-            this.logger.log(
-              `Applied customer group discount: ${customerGroup.discountPercent}% = ${groupDiscount}`,
-            );
-          }
-        } catch (error) {
-          this.logger.warn(`Failed to apply customer group discount:`, error);
-        }
-      }
-
-      // Total discount = promotion discount + group discount
       return {
-        discountTotal: promotionDiscount + groupDiscount,
+        discountTotal: promotionDiscount,
         freeShippingApplied,
       };
     } catch (error) {

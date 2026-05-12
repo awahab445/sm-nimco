@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Patch,
+  Delete,
   Body,
   Param,
   Query,
@@ -10,11 +11,15 @@ import {
   HttpStatus,
   UsePipes,
   ValidationPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { PromotionsService } from '../services/promotions.service';
 import { CreatePromotionDto } from '../dto/create-promotion.dto';
 import { PatchPromotionDto } from '../dto/patch-promotion.dto';
 import { ValidatePromotionDto } from '../dto/validate-promotion.dto';
+import { AdminJwtAuthGuard } from '../../admin/guards/admin-jwt-auth.guard';
+import { AdminPermissionsGuard } from '../../admin/guards/admin-permissions.guard';
+import { RequirePermissions } from '../../admin/decorators/require-permissions.decorator';
 
 @Controller('promotions')
 export class PromotionsController {
@@ -42,47 +47,8 @@ export class PromotionsController {
   }
 
   /**
-   * GET /promotions/:id
-   * Get promotion by ID
-   */
-  @Get(':id')
-  async getPromotion(@Param('id') id: string) {
-    return await this.promotionsService.getPromotion(id);
-  }
-
-  /**
-   * PATCH /promotions/:id
-   * Update promotion (e.g. lifecycle status for admin)
-   */
-  @Patch(':id')
-  @HttpCode(HttpStatus.OK)
-  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
-  async patchPromotion(
-    @Param('id') id: string,
-    @Body() dto: PatchPromotionDto,
-  ) {
-    return await this.promotionsService.patchPromotion(id, dto);
-  }
-
-  /**
-   * POST /promotions/:id/validate
-   * Validate promotion eligibility
-   */
-  @Post(':id/validate')
-  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
-  async validatePromotion(
-    @Param('id') id: string,
-    @Body() validateDto: Omit<ValidatePromotionDto, 'promotionId'>,
-  ) {
-    return await this.promotionsService.validatePromotion({
-      ...validateDto,
-      promotionId: id,
-    });
-  }
-
-  /**
    * GET /promotions/:id/logs
-   * Get promotion logs
+   * Register before `:id` so `logs` is not captured as an id.
    */
   @Get(':id/logs')
   async getPromotionLogs(
@@ -97,6 +63,53 @@ export class PromotionsController {
       checkoutId,
       orderId,
     );
+  }
+
+  /**
+   * POST /promotions/:id/validate
+   */
+  @Post(':id/validate')
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+  async validatePromotion(
+    @Param('id') id: string,
+    @Body() validateDto: Omit<ValidatePromotionDto, 'promotionId'>,
+  ) {
+    return await this.promotionsService.validatePromotion({
+      ...validateDto,
+      promotionId: id,
+    });
+  }
+
+  /**
+   * GET /promotions/:id
+   */
+  @Get(':id')
+  async getPromotion(@Param('id') id: string) {
+    return await this.promotionsService.getPromotion(id);
+  }
+
+  /**
+   * PATCH /promotions/:id
+   */
+  @Patch(':id')
+  @HttpCode(HttpStatus.OK)
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+  async patchPromotion(
+    @Param('id') id: string,
+    @Body() dto: PatchPromotionDto,
+  ) {
+    return await this.promotionsService.patchPromotion(id, dto);
+  }
+
+  /**
+   * DELETE /promotions/:id — staff only; permanent delete.
+   */
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(AdminJwtAuthGuard, AdminPermissionsGuard)
+  @RequirePermissions('promotions.manage')
+  async deletePromotion(@Param('id') id: string) {
+    await this.promotionsService.deletePromotion(id);
   }
 }
 

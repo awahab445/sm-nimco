@@ -1,28 +1,124 @@
 'use client';
 
-import { Suspense } from 'react';
-import { useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { productApi, inventoryApi, type ProductListResponse } from '@/lib/api-client';
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+import Link from 'next/link';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import {
+  productApi,
+  inventoryApi,
+  categoryApi,
+  type ProductListResponse,
+  type ProductFacets,
+  type Category,
+} from '@/lib/api-client';
 import { ProductCard, getVariantForCart } from '@/components/product/product-card';
-import { CategorySidebar } from '@/components/products/category-sidebar';
+import {
+  parsePlpFilters,
+  serializePlpFilters,
+  plpStateToListQuery,
+  plpStateToFacetQuery,
+  clonePlpFilters,
+  type PlpFilterState,
+} from '@/lib/plp-url-state';
+import { PlpFilterAccordions } from '@/components/products/plp-filter-accordions';
+import { PlpActiveFilterChips } from '@/components/products/plp-active-filter-chips';
+import { PlpProductGridSkeleton } from '@/components/products/plp-product-grid-skeleton';
+
+function flattenCategories(res: { data?: Category[] } | CategoryTreeLike[]): Category[] {
+  if (Array.isArray(res)) {
+    const out: Category[] = [];
+    const walk = (nodes: CategoryTreeLike[]) => {
+      for (const n of nodes) {
+        out.push(n);
+        if (n.children?.length) walk(n.children);
+      }
+    };
+    walk(res as CategoryTreeLike[]);
+    return out;
+  }
+  return res.data ?? [];
+}
+
+type CategoryTreeLike = Category & { children?: CategoryTreeLike[] };
+
+function hasActiveFilters(f: PlpFilterState): boolean {
+  const attrActive = Object.values(f.facetAttr).some((arr) => arr.length > 0);
+  return (
+    f.categoryIds.length > 0 ||
+    attrActive ||
+    (f.minPrice != null && f.maxPrice != null)
+  );
+}
 
 function ProductsContent() {
+  const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
-  const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
-  const search = searchParams.get('search') || undefined;
-  const categoryId = searchParams.get('category') || undefined;
+  const spKey = searchParams.toString();
 
+  const applied = useMemo(() => parsePlpFilters(new URLSearchParams(spKey)), [spKey]);
+
+  const replaceFilters = useCallback(
+    (next: PlpFilterState) => {
+      const qs = serializePlpFilters(next);
+      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+    },
+    [router, pathname],
+  );
+
+  const [categoryNameById, setCategoryNameById] = useState<Map<string, string>>(() => new Map());
   const [data, setData] = useState<ProductListResponse | null>(null);
+  const [facets, setFacets] = useState<ProductFacets | null>(null);
   const [availability, setAvailability] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [draft, setDraft] = useState<PlpFilterState>(applied);
+  const [previewFacets, setPreviewFacets] = useState<ProductFacets | null>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  const listQuery = useMemo(() => plpStateToListQuery(applied), [applied]);
+  const listQueryKey = useMemo(() => JSON.stringify(listQuery), [listQuery]);
+  const facetQuery = useMemo(() => plpStateToFacetQuery(applied), [applied]);
+  const facetQueryKey = useMemo(() => JSON.stringify(facetQuery), [facetQuery]);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    categoryApi
+      .getCategories()
+      .then((res) => {
+        if (cancelled) return;
+        const list = flattenCategories(res as { data?: Category[] } | CategoryTreeLike[]);
+        const m = new Map<string, string>();
+        for (const c of list) m.set(c.id, c.name);
+        setCategoryNameById(m);
+      })
+      .catch(() => {
+        if (!cancelled) setCategoryNameById(new Map());
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!drawerOpen) return;
+    setDraft(clonePlpFilters(applied));
+  }, [drawerOpen, applied]);
+
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
+    setError(null);
     productApi
-      .listProducts({ page, limit: 12, search, category: categoryId })
+      .listProducts(listQuery)
       .then((res) => {
         if (!cancelled) setData(res);
         const variantIds = (res?.data ?? []).map((p) => getVariantForCart(p)?.id).filter(Boolean) as string[];
@@ -30,9 +126,7 @@ function ProductsContent() {
           inventoryApi.getAvailability(variantIds).then((r) => {
             if (!cancelled) setAvailability(r.data);
           });
-        } else {
-          setAvailability({});
-        }
+        } else if (!cancelled) setAvailability({});
       })
       .catch((err) => {
         if (!cancelled) setError(err instanceof Error ? err.message : 'Failed to load products');
@@ -43,90 +137,263 @@ function ProductsContent() {
     return () => {
       cancelled = true;
     };
-  }, [page, search, categoryId]);
+  }, [listQueryKey]);
+
+  useEffect(() => {
+    let cancelled = false;
+    productApi
+      .getFacets(facetQuery)
+      .then((f) => {
+        if (!cancelled) setFacets(f);
+      })
+      .catch(() => {
+        if (!cancelled) setFacets(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [facetQueryKey]);
+
+  const previewDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const previewGen = useRef(0);
+  useEffect(() => {
+    if (!drawerOpen) {
+      previewGen.current += 1;
+      setPreviewFacets(null);
+      setPreviewLoading(false);
+      return;
+    }
+    if (previewDebounce.current) clearTimeout(previewDebounce.current);
+    setPreviewFacets(null);
+    setPreviewLoading(true);
+    const gen = ++previewGen.current;
+    previewDebounce.current = setTimeout(() => {
+      const q = plpStateToFacetQuery(draft);
+      productApi
+        .getFacets(q)
+        .then((f) => {
+          if (previewGen.current === gen) setPreviewFacets(f);
+        })
+        .catch(() => {
+          if (previewGen.current === gen) setPreviewFacets(null);
+        })
+        .finally(() => {
+          if (previewGen.current === gen) setPreviewLoading(false);
+        });
+    }, 320);
+    return () => {
+      if (previewDebounce.current) clearTimeout(previewDebounce.current);
+    };
+  }, [drawerOpen, draft]);
 
   const products = data?.data ?? [];
   const meta = data?.meta;
   const totalPages = meta?.totalPages ?? 1;
+  const page = applied.page;
 
   const buildPageUrl = (p: number) => {
-    const params = new URLSearchParams();
-    if (p > 1) params.set('page', String(p));
-    if (search) params.set('search', search);
-    if (categoryId) params.set('category', categoryId);
-    const qs = params.toString();
+    const next: PlpFilterState = { ...applied, page: p };
+    const qs = serializePlpFilters(next);
     return qs ? `/products?${qs}` : '/products';
   };
 
+  const clearAllFilters = () => {
+    replaceFilters({
+      page: 1,
+      search: applied.search,
+      categoryIds: [],
+      facetAttr: {},
+      minPrice: undefined,
+      maxPrice: undefined,
+    });
+  };
+
+  const drawerShowLabel = previewLoading
+    ? 'Updating…'
+    : previewFacets != null
+      ? `Show ${previewFacets.matchingTotal} products`
+      : 'Show products';
+
+  const isInitialLoad = loading && data === null;
+  const isRefreshing = loading && data !== null;
+
+  const drawer =
+    drawerOpen && mounted ? (
+      <div className="fixed inset-0 z-[260] flex flex-col bg-background lg:hidden" role="dialog" aria-modal="true" aria-label="Filters">
+        <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top,0px))]">
+          <h2 className="text-base font-semibold text-foreground">Filters</h2>
+          <button
+            type="button"
+            className="rounded-full p-2 text-muted-foreground hover:bg-muted"
+            aria-label="Close filters"
+            onClick={() => setDrawerOpen(false)}
+          >
+            ×
+          </button>
+        </div>
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4">
+          <PlpFilterAccordions
+            filters={draft}
+            facets={facets}
+            categoryNameById={categoryNameById}
+            onFiltersChange={setDraft}
+          />
+        </div>
+        <div
+          className="shrink-0 border-t border-border bg-background px-4 py-3"
+          style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom, 0px))' }}
+        >
+          <button
+            type="button"
+            disabled={previewLoading}
+            onClick={() => {
+              replaceFilters({ ...draft, page: 1 });
+              setDrawerOpen(false);
+            }}
+            className="w-full rounded-md bg-primary py-3 text-sm font-semibold text-primary-foreground shadow-sm transition-opacity hover:opacity-90 disabled:opacity-50"
+          >
+            {drawerShowLabel}
+          </button>
+          <button
+            type="button"
+            onClick={clearAllFilters}
+            className="mt-2 w-full text-center text-sm font-medium text-muted-foreground underline-offset-2 hover:underline"
+          >
+            Clear all filters
+          </button>
+        </div>
+      </div>
+    ) : null;
+
   return (
-    <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+    <div className="mx-auto w-full max-w-7xl px-4 pb-24 pt-6 sm:px-6 sm:pt-8 sm:pb-8 lg:px-8 lg:pb-8">
       <div className="flex w-full min-w-0 flex-col gap-6 lg:flex-row lg:items-start lg:gap-8">
-        <CategorySidebar filterCategoryId={categoryId} />
+        <aside className="hidden w-72 shrink-0 lg:block" aria-label="Product filters">
+          <div className="sticky top-20 space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Refine</h2>
+              <button
+                type="button"
+                onClick={clearAllFilters}
+                disabled={!hasActiveFilters(applied)}
+                className="text-xs font-medium text-primary underline-offset-2 hover:underline disabled:opacity-40"
+              >
+                Clear all
+              </button>
+            </div>
+            <PlpFilterAccordions
+              filters={applied}
+              facets={facets}
+              categoryNameById={categoryNameById}
+              onFiltersChange={(next) => replaceFilters({ ...next, page: 1 })}
+            />
+          </div>
+        </aside>
+
         <div className="min-w-0 w-full flex-1">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">
-              Products
-            </h1>
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">Products</h1>
             <p className="mt-1 text-muted-foreground">
-              {search ? `Search results for "${search}"` : categoryId ? 'Filtered by category.' : 'Browse all products.'}
+              {applied.search
+                ? `Search results for "${applied.search}"`
+                : hasActiveFilters(applied)
+                  ? 'Filtered results.'
+                  : 'Browse all products.'}
             </p>
+            {!isInitialLoad && meta != null && (
+              <p className="mt-2 text-sm text-muted-foreground">
+                {meta.total} {meta.total === 1 ? 'product' : 'products'}
+                {totalPages > 1 ? ` · Page ${page} of ${totalPages}` : ''}
+              </p>
+            )}
           </div>
 
-      {loading ? (
-        <div className="flex justify-center py-24">
-          <div className="h-10 w-10 animate-spin rounded-full border-2 border-muted border-t-primary" />
-        </div>
-      ) : error ? (
-        <div className="rounded-lg border border-destructive/25 bg-destructive/10 p-4 text-destructive">
-          {error}
-        </div>
-      ) : products.length === 0 ? (
-        <div className="rounded-lg border border-border bg-muted/50 py-16 text-center">
-          <p className="text-muted-foreground">No products found.</p>
-        </div>
-      ) : (
-        <>
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {products.map((product) => {
-              const variant = getVariantForCart(product);
-              return (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  showViewOnly
-                  availableQuantity={variant ? availability[variant.id] : undefined}
+          <PlpActiveFilterChips filters={applied} categoryNameById={categoryNameById} onChange={replaceFilters} />
+
+          {error && (
+            <div className="mb-4 rounded-lg border border-destructive/25 bg-destructive/10 p-4 text-destructive">{error}</div>
+          )}
+
+          {isInitialLoad ? (
+            <PlpProductGridSkeleton />
+          ) : products.length === 0 ? (
+            <div className="rounded-lg border border-border bg-muted/50 py-16 text-center">
+              <p className="text-muted-foreground">No products match your filters.</p>
+            </div>
+          ) : (
+            <div className="relative">
+              {isRefreshing && (
+                <div
+                  className="pointer-events-none absolute inset-0 z-10 rounded-lg bg-background/55 backdrop-blur-[1px]"
+                  aria-hidden
                 />
-              );
-            })}
-          </div>
+              )}
+              <div className={isRefreshing ? 'opacity-60 transition-opacity' : 'transition-opacity'}>
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                  {products.map((product) => {
+                    const variant = getVariantForCart(product);
+                    return (
+                      <ProductCard
+                        key={product.id}
+                        product={product}
+                        showViewOnly
+                        availableQuantity={variant ? availability[variant.id] : undefined}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
 
-          {totalPages > 1 && (
+          {totalPages > 1 && !isInitialLoad && (
             <div className="mt-10 flex items-center justify-center gap-2">
               {page > 1 && (
-                <a
+                <Link
                   href={buildPageUrl(page - 1)}
                   className="rounded-md border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
                 >
                   Previous
-                </a>
+                </Link>
               )}
               <span className="px-4 py-2 text-sm text-muted-foreground">
                 Page {page} of {totalPages}
               </span>
               {page < totalPages && (
-                <a
+                <Link
                   href={buildPageUrl(page + 1)}
                   className="rounded-md border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
                 >
                   Next
-                </a>
+                </Link>
               )}
             </div>
           )}
-        </>
-      )}
         </div>
       </div>
+
+      {!drawerOpen && (
+        <div
+          className="fixed inset-x-0 bottom-0 z-[250] border-t border-border bg-background/95 px-4 py-3 backdrop-blur lg:hidden"
+          style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom, 0px))' }}
+        >
+          <button
+            type="button"
+            onClick={() => {
+              setDraft(clonePlpFilters(applied));
+              setDrawerOpen(true);
+            }}
+            className="flex w-full items-center justify-center gap-2 rounded-md bg-primary py-3 text-sm font-semibold text-primary-foreground shadow-sm"
+          >
+            Filter
+            {hasActiveFilters(applied) ? (
+              <span className="rounded-full bg-primary-foreground/15 px-2 py-0.5 text-xs">On</span>
+            ) : null}
+          </button>
+        </div>
+      )}
+
+      {mounted && drawer ? createPortal(drawer, document.body) : null}
     </div>
   );
 }
@@ -136,7 +403,7 @@ export default function ProductsPage() {
     <Suspense
       fallback={
         <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-          <div className="h-10 w-48 animate-pulse rounded-md bg-muted" />
+          <PlpProductGridSkeleton count={6} />
         </div>
       }
     >

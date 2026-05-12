@@ -68,7 +68,14 @@ export type HomeSection =
     }
   | {
       id: string;
+      /** @deprecated use `subscription_cta` */
       type: 'newsletter_cta';
+      title: string;
+      subtitle?: string;
+    }
+  | {
+      id: string;
+      type: 'subscription_cta';
       title: string;
       subtitle?: string;
     }

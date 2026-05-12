@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import * as api from '@/lib/api/promotions';
-import { expectLastFetch, installFetchMock, resJson } from '../../helpers/http';
+import { expectLastFetch, installFetchMock, res204, resJson } from '../../helpers/http';
 
 const promotion = {
   id: 'pr1',
@@ -92,6 +92,15 @@ describe('promotions API', () => {
     });
     expectLastFetch(fetchMock, {
       path: '/promotions/pr1/logs?cartId=cart&checkoutId=chk&orderId=ord',
+    });
+  });
+
+  it('deletePromotion DELETE', async () => {
+    fetchMock.mockResolvedValue(res204());
+    await api.deletePromotion('pr1');
+    expectLastFetch(fetchMock, {
+      path: '/promotions/pr1',
+      method: 'DELETE',
     });
   });
 });

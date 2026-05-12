@@ -5,6 +5,7 @@
 
 import { create } from 'zustand';
 import { cartApi, Cart } from './api-client';
+import { clearPendingCouponCode } from './coupon-sync';
 
 const CART_ID_KEY = 'cart-id';
 
@@ -172,6 +173,7 @@ export const useCartStore = create<CartState>((set, get) => ({
         throw err;
       }
     } finally {
+      clearPendingCouponCode();
       setStoredCartId(null);
       set({ cartId: null, cart: null, isLoading: false, error: null });
     }

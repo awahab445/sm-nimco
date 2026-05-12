@@ -11,6 +11,7 @@ import { Type } from 'class-transformer';
 import { ProductStatus } from './create-product.dto';
 
 export class ProductQueryDto {
+  /** Single category id or comma-separated ids (OR). */
   @IsString()
   @IsOptional()
   category?: string;
@@ -26,6 +27,26 @@ export class ProductQueryDto {
   @Type(() => Number)
   @Min(0)
   maxPrice?: number;
+
+  /** Shorthand `min-max` (e.g. `10-500`); used when min/max not both set. */
+  @IsString()
+  @IsOptional()
+  price?: string;
+
+  /** Comma-separated; matches `attributes.brand` (exact). */
+  @IsString()
+  @IsOptional()
+  brands?: string;
+
+  /** Comma-separated; matches `attributes.size` or `attributes.Size` (exact). */
+  @IsString()
+  @IsOptional()
+  sizes?: string;
+
+  /** JSON object: `{"brand":["a"],"color":["red"]}` — merged with legacy `brands` / `sizes` query params. */
+  @IsString()
+  @IsOptional()
+  attr?: string;
 
   @IsObject()
   @IsOptional()

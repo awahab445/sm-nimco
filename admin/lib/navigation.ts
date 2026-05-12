@@ -135,9 +135,16 @@ export const adminNavGroups: NavGroup[] = [
         requirePermission: ['cms.manage'],
       },
       {
+        href: '/store-filters',
+        label: 'Store filters',
+        description: 'Product listing filters and option values',
+        phase: 'D',
+        requirePermission: ['products.read'],
+      },
+      {
         href: '/subscriptions',
-        label: 'Subscriptions',
-        description: 'Plans and billing cycles',
+        label: 'Subscription',
+        description: 'Storefront email subscribers',
         phase: 'N',
         requirePermission: ['subscriptions.manage'],
       },

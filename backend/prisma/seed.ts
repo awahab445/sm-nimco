@@ -66,6 +66,28 @@ async function main() {
   await ensureAdminRbacSeeded(prisma);
   console.log('Seed: admin RBAC (permissions + super-admin, manager, support roles).');
 
+  // 3b. Storefront PLP filter slots (admin can rename, reorder, toggle, add options)
+  const defaultStoreFilters = [
+    { code: 'category', name: 'Category', kind: 'CATEGORY', sortOrder: 0 },
+    { code: 'price', name: 'Price', kind: 'PRICE', sortOrder: 1 },
+    { code: 'brand', name: 'Brand', kind: 'ATTRIBUTE', sortOrder: 2 },
+    { code: 'size', name: 'Size', kind: 'ATTRIBUTE', sortOrder: 3 },
+  ] as const;
+  for (const f of defaultStoreFilters) {
+    await prisma.storefrontFilter.upsert({
+      where: { code: f.code },
+      update: {},
+      create: {
+        code: f.code,
+        name: f.name,
+        kind: f.kind,
+        sortOrder: f.sortOrder,
+        isActive: true,
+      },
+    });
+  }
+  console.log('Seed: storefront filter slots (category, price, brand, size).');
+
   // 4. CMS: starter page
   await prisma.cmsPage.upsert({
     where: { slug: 'about-us' },
@@ -283,64 +305,7 @@ async function main() {
     ],
   });
 
-  // 7. Subscription starter plans
-  const plans = [
-    {
-      name: 'Basic',
-      description: 'Starter subscription plan',
-      price: 9.99,
-      billingCycle: 'MONTHLY',
-      features: ['Up to 5 projects', 'Email support'],
-    },
-    {
-      name: 'Pro',
-      description: 'Professional subscription plan',
-      price: 29.99,
-      billingCycle: 'MONTHLY',
-      features: ['Up to 50 projects', 'Priority support', 'Advanced analytics'],
-    },
-    {
-      name: 'Enterprise',
-      description: 'Enterprise yearly subscription plan',
-      price: 299.0,
-      billingCycle: 'YEARLY',
-      features: ['Unlimited projects', 'Dedicated support', 'SLA and onboarding'],
-    },
-  ] as const;
-
-  for (const plan of plans) {
-    const existing = await prisma.subscriptionPlan.findFirst({
-      where: { name: plan.name, billingCycle: plan.billingCycle },
-      select: { id: true },
-    });
-    if (existing) {
-      await prisma.subscriptionPlan.update({
-        where: { id: existing.id },
-        data: {
-          description: plan.description,
-          price: plan.price,
-          features: plan.features,
-          isActive: true,
-        },
-      });
-      continue;
-    }
-
-    await prisma.subscriptionPlan.create({
-      data: {
-        name: plan.name,
-        description: plan.description,
-        price: plan.price,
-        billingCycle: plan.billingCycle,
-        features: plan.features,
-        isActive: true,
-      },
-    });
-  }
-
-  console.log(
-    'Seed completed: shipping/payment defaults + CMS starter data + subscription starter plans.',
-  );
+  console.log('Seed completed: shipping/payment defaults + CMS starter data.');
 }
 
 main()

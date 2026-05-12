@@ -34,9 +34,9 @@ describe('authService', () => {
     });
   });
 
-  it('logout POST /admin/auth/logout then clears token', async () => {
+  it('logout POST /admin/auth/logout then clears token', () => {
     fetchMock.mockResolvedValue(resJson({ message: 'ok' }));
-    await authService.logout();
+    authService.logout();
     expectLastFetch(fetchMock, {
       path: '/admin/auth/logout',
       method: 'POST',
@@ -45,9 +45,9 @@ describe('authService', () => {
     expect(mockClearToken).toHaveBeenCalled();
   });
 
-  it('logout still clears token when fetch fails', async () => {
+  it('logout still clears token when fetch fails', () => {
     fetchMock.mockRejectedValue(new Error('network'));
-    await expect(authService.logout()).rejects.toThrow('network');
+    authService.logout();
     expect(mockClearToken).toHaveBeenCalled();
   });
 });

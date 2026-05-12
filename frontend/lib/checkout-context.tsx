@@ -10,6 +10,12 @@ import {
   ApiError,
 } from './api-client';
 import { useCartStore } from './cart.store';
+import {
+  getPendingCouponCode,
+  clearPendingCouponCode,
+  validateCouponCodeForCartLike,
+  checkoutItemsToValidateItems,
+} from './coupon-sync';
 
 export interface PaymentInfo {
   paymentMethodCode: string;
@@ -105,17 +111,40 @@ export function CheckoutProvider({ children }: { children: React.ReactNode }) {
       try {
         setState((prev) => ({ ...prev, isLoading: true, error: null }));
         const { checkoutId } = await checkoutApi.startCheckout(cartId, options);
-        const checkoutRaw = await checkoutApi.getCheckout(checkoutId);
+        let checkoutRaw = await checkoutApi.getCheckout(checkoutId);
+        const pending = getPendingCouponCode();
+        if (
+          pending &&
+          !checkoutRaw.couponCode &&
+          checkoutRaw.items?.length > 0
+        ) {
+          const validated = await validateCouponCodeForCartLike({
+            code: pending,
+            subtotal: checkoutRaw.subtotal,
+            items: checkoutItemsToValidateItems(checkoutRaw.items),
+            customerId: options?.customerId ?? checkoutRaw.customerId,
+            customerGroupId: checkoutRaw.customerGroupId,
+          });
+          if (validated.ok) {
+            try {
+              checkoutRaw = await checkoutApi.applyCoupon(checkoutId, pending);
+            } catch {
+              clearPendingCouponCode();
+            }
+          } else {
+            clearPendingCouponCode();
+          }
+        }
         const checkout = mergeCheckoutWithCartImages(checkoutRaw);
-      
-      setState((prev) => ({
-        ...prev,
-        checkoutId,
-        checkout,
-        currentStep: 1,
-        isLoading: false,
-        error: null,
-      }));
+
+        setState((prev) => ({
+          ...prev,
+          checkoutId,
+          checkout,
+          currentStep: 1,
+          isLoading: false,
+          error: null,
+        }));
     } catch (error) {
       const message = error instanceof ApiError ? error.message : 'Failed to start checkout';
       setState((prev) => ({

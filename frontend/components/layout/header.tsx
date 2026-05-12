@@ -9,6 +9,7 @@ import { useCartStore } from '@/lib/cart.store';
 import { STORE_NAME, getStoreLogoSrc } from '@/lib/config';
 import { SearchBar } from '@/components/search/search-bar';
 import { CategoryMegaNav } from '@/components/layout/category-mega-nav';
+import { ShoppingBagIcon } from '@/components/icons/shopping-bag-icon';
 
 const DESKTOP_NAV_MIN_WIDTH = 1024;
 
@@ -119,10 +120,13 @@ export function Header() {
             </Link>
             <Link
               href="/cart"
-              className="flex items-center justify-between rounded-md px-3 py-3 text-base font-medium text-foreground active:bg-muted sm:py-2.5 sm:text-sm"
+              className="flex items-center justify-between rounded-md px-3 py-3 text-base font-semibold text-foreground active:bg-muted sm:py-2.5 sm:text-sm"
               onClick={closeMobileNav}
             >
-              <span>Cart</span>
+              <span className="inline-flex items-center gap-2">
+                <ShoppingBagIcon className="h-5 w-5 shrink-0 text-primary" aria-hidden />
+                <span className="sr-only">Cart</span>
+              </span>
               {cartItemCount > 0 ? (
                 <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-medium text-primary-foreground">
                   {cartItemCount > 99 ? '99+' : cartItemCount}
@@ -216,9 +220,11 @@ export function Header() {
           </Link>
           <Link
             href="/cart"
-            className="relative flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+            className="relative flex items-center gap-1.5 text-sm font-semibold text-foreground transition-colors hover:text-primary"
+            aria-label="Cart"
+            title="Cart"
           >
-            Cart
+            <ShoppingBagIcon className="h-5 w-5 shrink-0 text-primary" aria-hidden />
             {cartItemCount > 0 && (
               <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-medium text-primary-foreground">
                 {cartItemCount > 99 ? '99+' : cartItemCount}

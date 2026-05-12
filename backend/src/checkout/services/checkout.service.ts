@@ -188,7 +188,8 @@ export class CheckoutService {
             item.variantId,
             item.productId,
           );
-          const primaryImage = variant.images?.find((img) => img.isPrimary) || variant.images?.[0];
+          const imgs = variant.images as { isPrimary?: boolean; url: string }[] | undefined;
+          const primaryImage = imgs?.find((img) => img.isPrimary) || imgs?.[0];
           const variantObj = variant as { product?: { name?: unknown }; name?: unknown };
           let productName: string | null = null;
           if (variantObj.product?.name != null) {

@@ -3,9 +3,18 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useCartStore } from '@/lib/cart.store';
+import { useAuthStore } from '@/lib/auth.store';
 import { productApi } from '@/lib/api-client';
 import { DEFAULT_CURRENCY } from '@/lib/config';
 import { resolveImageUrl } from '@/lib/resolve-image-url';
+import { CouponApplySection } from '@/components/coupon/coupon-apply-section';
+import {
+  cartItemsToValidateItems,
+  clearPendingCouponCode,
+  getPendingCouponCode,
+  setPendingCouponCode,
+  validateCouponCodeForCartLike,
+} from '@/lib/coupon-sync';
 
 function formatPrice(value: number, currency = DEFAULT_CURRENCY): string {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(value);
@@ -25,8 +34,16 @@ function formatVariantAttributes(attrs: Record<string, unknown> | undefined): st
 export default function CartPage() {
   const { cart, isLoading, error, refreshCart, updateItem, removeItem, clearCart } =
     useCartStore();
+  const { user, isAuthenticated } = useAuthStore();
+  const customerId = isAuthenticated ? user?.id : undefined;
+  const customerGroupId = isAuthenticated ? user?.customerGroupId : undefined;
   const [localQty, setLocalQty] = useState<Record<string, number>>({});
   const [fallbackProductImages, setFallbackProductImages] = useState<Record<string, string>>({});
+  const [couponMeta, setCouponMeta] = useState<{
+    code: string | null;
+    discountAmount: number;
+    isFreeShipping: boolean;
+  }>({ code: null, discountAmount: 0, isFreeShipping: false });
 
   useEffect(() => {
     document.title = 'Your cart | E-commerce';
@@ -87,6 +104,41 @@ export default function CartPage() {
   const items = cart?.items ?? [];
   const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
   const cartId = cart?.id ?? null;
+
+  useEffect(() => {
+    const code = getPendingCouponCode();
+    if (!code) {
+      setCouponMeta({ code: null, discountAmount: 0, isFreeShipping: false });
+      return;
+    }
+    if (items.length === 0) {
+      setCouponMeta({ code, discountAmount: 0, isFreeShipping: false });
+      return;
+    }
+    let cancelled = false;
+    validateCouponCodeForCartLike({
+      code,
+      subtotal,
+      items: cartItemsToValidateItems(items),
+      customerId,
+      customerGroupId,
+    }).then((v) => {
+      if (cancelled) return;
+      if (v.ok) {
+        setCouponMeta({
+          code: v.appliedCode,
+          discountAmount: v.discountAmount,
+          isFreeShipping: v.isFreeShipping,
+        });
+      } else {
+        clearPendingCouponCode();
+        setCouponMeta({ code: null, discountAmount: 0, isFreeShipping: false });
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [items, subtotal, customerId, customerGroupId]);
 
   const handleQtyBlur = async (variantId: string) => {
     const q = Math.max(1, localQty[variantId] ?? 1);
@@ -206,6 +258,44 @@ export default function CartPage() {
               <p className="mt-2 text-muted-foreground">
                 Subtotal: {formatPrice(subtotal, DEFAULT_CURRENCY)}
               </p>
+              {couponMeta.discountAmount > 0 && (
+                <p className="mt-1 text-sm font-medium text-emerald-700 dark:text-emerald-400">
+                  Discount applied: −{formatPrice(couponMeta.discountAmount, DEFAULT_CURRENCY)}
+                </p>
+              )}
+              {couponMeta.isFreeShipping && couponMeta.discountAmount <= 0 && couponMeta.code && (
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Free shipping coupon — savings shown at checkout.
+                </p>
+              )}
+              {(couponMeta.discountAmount > 0 || (couponMeta.isFreeShipping && couponMeta.code)) && (
+                <p className="mt-2 text-sm font-semibold text-foreground">
+                  Estimated total (before shipping):{' '}
+                  {formatPrice(Math.max(0, subtotal - couponMeta.discountAmount), DEFAULT_CURRENCY)}
+                </p>
+              )}
+              <div className="mt-4">
+                <CouponApplySection
+                  appliedCouponCode={couponMeta.code}
+                  subtotal={subtotal}
+                  items={cartItemsToValidateItems(items)}
+                  customerId={customerId}
+                  customerGroupId={customerGroupId}
+                  disabled={items.length === 0}
+                  onValidatedApply={async (code, meta) => {
+                    setPendingCouponCode(code);
+                    setCouponMeta({
+                      code,
+                      discountAmount: meta.discountAmount,
+                      isFreeShipping: meta.isFreeShipping,
+                    });
+                  }}
+                  onRemove={async () => {
+                    clearPendingCouponCode();
+                    setCouponMeta({ code: null, discountAmount: 0, isFreeShipping: false });
+                  }}
+                />
+              </div>
               <Link
                 href={cartId ? `/checkout?cartId=${cartId}` : '/cart'}
                 className="mt-4 block w-full rounded-md bg-primary py-2.5 text-center text-sm font-medium text-primary-foreground shadow-sm transition-opacity hover:opacity-90"

@@ -1,19 +1,12 @@
-import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsEmail, IsOptional, IsString, MaxLength } from 'class-validator';
 
 export class SubscribeDto {
-  @IsString()
-  @IsNotEmpty()
-  planId!: string;
-
-  @IsOptional()
-  @IsBoolean()
-  autoRenew?: boolean;
+  @IsEmail()
+  @MaxLength(255)
+  email!: string;
 
   @IsOptional()
   @IsString()
-  paymentMethod?: string;
-
-  @IsOptional()
-  @IsString()
-  transactionRef?: string;
+  @MaxLength(100)
+  source?: string;
 }

@@ -7,8 +7,14 @@ import { useAuthStore } from '@/lib/auth.store';
 import { useCartStore } from '@/lib/cart.store';
 import { DEFAULT_CURRENCY } from '@/lib/config';
 import { storefrontUi } from '@/lib/storefront-ui';
-import { Address, AddressWithId, addressApi, shippingApi, paymentApi, productApi, promotionApi, ValidatePromotionItem } from '@/lib/api-client';
+import { Address, AddressWithId, addressApi, shippingApi, paymentApi, productApi } from '@/lib/api-client';
 import { resolveImageUrl } from '@/lib/resolve-image-url';
+import { CouponApplySection } from '@/components/coupon/coupon-apply-section';
+import {
+  checkoutItemsToValidateItems,
+  clearPendingCouponCode,
+  setPendingCouponCode,
+} from '@/lib/coupon-sync';
 
 const emptyAddress: Address = {
   firstName: '',
@@ -103,9 +109,6 @@ export function OnePageCheckout() {
   const [customerEmail, setCustomerEmail] = useState(checkout?.customerEmail || '');
   const [customerName, setCustomerName] = useState(checkout?.customerName || '');
   const [notes, setNotes] = useState('');
-  const [couponInput, setCouponInput] = useState('');
-  const [couponError, setCouponError] = useState<string | null>(null);
-  const [couponLoading, setCouponLoading] = useState(false);
 
   const [paymentMethods, setPaymentMethods] = useState<Array<{
     code: string;
@@ -361,57 +364,6 @@ export function OnePageCheckout() {
   const displayDiscountTotal = checkout?.discountTotal ?? 0;
   const displayShippingTotal = checkout?.shippingTotal ?? selectedShipping?.cost ?? 0;
   const displayGrandTotal = checkout?.grandTotal ?? Math.max(0, displaySubtotal - displayDiscountTotal + displayShippingTotal);
-
-  const handleApplyCoupon = async () => {
-    const code = couponInput.trim();
-    if (!code || !checkoutId || !checkout) return;
-    setCouponError(null);
-    setCouponLoading(true);
-    try {
-      const promotions = await promotionApi.getActivePromotions();
-      const promotion = promotions.find(
-        (p) => p.code && p.code.toLowerCase() === code.toLowerCase()
-      );
-      if (!promotion) {
-        setCouponError('Invalid or expired coupon code.');
-        return;
-      }
-      const items: ValidatePromotionItem[] = checkout.items.map((item) => ({
-        productId: item.productId,
-        variantId: item.variantId,
-        quantity: item.quantity,
-        price: item.price,
-      }));
-      const result = await promotionApi.validatePromotion(promotion.id, {
-        subtotal: checkout.subtotal,
-        items,
-        customerId: checkout.customerId,
-        customerGroupId: checkout.customerGroupId,
-        couponCode: code,
-      });
-      if (!result.eligible) {
-        setCouponError(result.reason || 'This coupon is not applicable to your cart.');
-        return;
-      }
-      await applyCoupon(code);
-      setCouponInput('');
-    } catch (err) {
-      setCouponError('Failed to apply coupon. Please try again.');
-    } finally {
-      setCouponLoading(false);
-    }
-  };
-
-  const handleRemoveCoupon = async () => {
-    if (!checkoutId) return;
-    setCouponError(null);
-    try {
-      await applyCoupon('');
-      setCouponInput('');
-    } catch {
-      setCouponError('Failed to remove coupon.');
-    }
-  };
 
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1193,47 +1145,23 @@ export function OnePageCheckout() {
                 );
               })}
             </ul>
-            {/* Coupon */}
             <div className="mb-4">
-              {checkout.couponCode ? (
-                <div className="flex items-center justify-between gap-2 rounded-md border border-success/30 bg-success/10 px-3 py-2">
-                  <span className="text-sm font-medium text-success">
-                    Coupon: {checkout.couponCode}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={handleRemoveCoupon}
-                    className="text-sm text-success underline underline-offset-2 transition-opacity hover:opacity-80"
-                  >
-                    Remove
-                  </button>
-                </div>
-              ) : (
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={couponInput}
-                    onChange={(e) => {
-                      setCouponInput(e.target.value);
-                      setCouponError(null);
-                    }}
-                    placeholder="Coupon code"
-                    className="min-w-0 flex-1 rounded-md border border-input bg-card px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/25"
-                    disabled={couponLoading}
-                  />
-                  <button
-                    type="button"
-                    onClick={handleApplyCoupon}
-                    disabled={couponLoading || !couponInput.trim()}
-                    className="shrink-0 rounded-md bg-secondary px-3 py-2 text-sm font-medium text-secondary-foreground transition-colors hover:opacity-90 disabled:opacity-50"
-                  >
-                    {couponLoading ? '…' : 'Apply'}
-                  </button>
-                </div>
-              )}
-              {couponError && (
-                <p className="mt-1 text-xs text-destructive">{couponError}</p>
-              )}
+              <CouponApplySection
+                appliedCouponCode={checkout.couponCode ?? null}
+                subtotal={checkout.subtotal}
+                items={checkoutItemsToValidateItems(checkout.items)}
+                customerId={checkout.customerId}
+                customerGroupId={checkout.customerGroupId}
+                disabled={!checkoutId || !checkout.items.length}
+                onValidatedApply={async (code) => {
+                  await applyCoupon(code);
+                  setPendingCouponCode(code);
+                }}
+                onRemove={async () => {
+                  await applyCoupon('');
+                  clearPendingCouponCode();
+                }}
+              />
             </div>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
@@ -1242,7 +1170,7 @@ export function OnePageCheckout() {
               </div>
               {displayDiscountTotal > 0 && (
                 <div className="flex justify-between text-success">
-                  <span>Discount</span>
+                  <span>Discount applied</span>
                   <span>−{formatPrice(displayDiscountTotal, displayCurrency)}</span>
                 </div>
               )}

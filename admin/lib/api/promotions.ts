@@ -122,6 +122,12 @@ export async function patchPromotion(id: string, body: PatchPromotionBody) {
   });
 }
 
+export async function deletePromotion(id: string) {
+  return fetchApi<void>(`/promotions/${id}`, {
+    method: 'DELETE',
+  });
+}
+
 export type ValidateCartItem = {
   productId: string;
   variantId: string;

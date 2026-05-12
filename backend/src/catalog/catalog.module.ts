@@ -3,6 +3,7 @@ import { ProductController } from './controllers/product.controller';
 import { AdminProductController } from './controllers/admin-product.controller';
 import { CategoryController } from './controllers/category.controller';
 import { AdminCategoryController } from './controllers/admin-category.controller';
+import { AdminStorefrontFiltersController } from './controllers/admin-storefront-filters.controller';
 import {
   AdminProductOptionsController,
   AdminProductOptionValuesController,
@@ -13,6 +14,7 @@ import { ImageService } from './services/image.service';
 import { CategoryService } from './services/category.service';
 import { PrismaService } from './services/prisma.service';
 import { ProductOptionsService } from './services/product-options.service';
+import { StorefrontFilterService } from './services/storefront-filter.service';
 import { AdminJwtAuthGuard } from '../admin/guards/admin-jwt-auth.guard';
 import { AdminPermissionsGuard } from '../admin/guards/admin-permissions.guard';
 import { AdminRbacService } from '../admin/services/admin-rbac.service';
@@ -25,6 +27,7 @@ import { AdminRbacService } from '../admin/services/admin-rbac.service';
     AdminProductOptionValuesController,
     CategoryController,
     AdminCategoryController,
+    AdminStorefrontFiltersController,
   ],
   providers: [
     PrismaService,
@@ -33,6 +36,7 @@ import { AdminRbacService } from '../admin/services/admin-rbac.service';
     ImageService,
     CategoryService,
     ProductOptionsService,
+    StorefrontFilterService,
     AdminRbacService,
     AdminJwtAuthGuard,
     AdminPermissionsGuard,

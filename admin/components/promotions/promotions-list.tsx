@@ -2,7 +2,12 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { fetchPromotions, type Promotion, type PromotionLifecycleStatus } from '@/lib/api/promotions';
+import {
+  deletePromotion,
+  fetchPromotions,
+  type Promotion,
+  type PromotionLifecycleStatus,
+} from '@/lib/api/promotions';
 import { formatApiError } from '@/lib/api/error-message';
 import { PermissionGate } from '@/components/permission-gate';
 
@@ -25,6 +30,8 @@ export function PromotionsList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<PromotionLifecycleStatus | ''>('');
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ kind: 'success' | 'error'; message: string } | null>(null);
 
   const load = useCallback(async () => {
     setError(null);
@@ -44,6 +51,32 @@ export function PromotionsList() {
     void load();
   }, [load]);
 
+  useEffect(() => {
+    if (!toast) return;
+    const t = window.setTimeout(() => setToast(null), 4500);
+    return () => window.clearTimeout(t);
+  }, [toast]);
+
+  const onDelete = useCallback(async (p: Promotion) => {
+    if (
+      !window.confirm(
+        `Are you sure you want to delete this promotion?\n\n"${p.name}" will be permanently removed.`,
+      )
+    ) {
+      return;
+    }
+    setDeletingId(p.id);
+    try {
+      await deletePromotion(p.id);
+      setRows((prev) => prev.filter((r) => r.id !== p.id));
+      setToast({ kind: 'success', message: 'Promotion deleted successfully.' });
+    } catch (e) {
+      setToast({ kind: 'error', message: formatApiError(e) });
+    } finally {
+      setDeletingId(null);
+    }
+  }, []);
+
   const filtered = useMemo(() => {
     if (!statusFilter) return rows;
     return rows.filter((p) => p.status === statusFilter);
@@ -51,6 +84,19 @@ export function PromotionsList() {
 
   return (
     <div className="mx-auto max-w-6xl">
+      {toast ? (
+        <div
+          className={`fixed right-4 top-4 z-50 max-w-sm rounded-lg border px-4 py-3 text-sm shadow-lg ${
+            toast.kind === 'success'
+              ? 'border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/90 dark:text-emerald-100'
+              : 'border-red-200 bg-red-50 text-red-900 dark:border-red-900 dark:bg-red-950/90 dark:text-red-100'
+          }`}
+          role="status"
+        >
+          {toast.message}
+        </div>
+      ) : null}
+
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
@@ -109,8 +155,8 @@ export function PromotionsList() {
                 <th className="px-4 py-3 font-medium text-zinc-700 dark:text-zinc-300">Status</th>
                 <th className="px-4 py-3 font-medium text-zinc-700 dark:text-zinc-300">Discount</th>
                 <th className="px-4 py-3 font-medium text-zinc-700 dark:text-zinc-300">Usage</th>
-                <th className="px-4 py-3 font-medium text-zinc-700 dark:text-zinc-300 text-right">
-                  {' '}
+                <th className="px-4 py-3 text-right font-medium text-zinc-700 dark:text-zinc-300">
+                  Actions
                 </th>
               </tr>
             </thead>
@@ -137,12 +183,24 @@ export function PromotionsList() {
                     {p.usageLimit != null ? ` / ${p.usageLimit}` : ''}
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <Link
-                      href={`/promotions/${p.id}`}
-                      className="font-medium text-zinc-900 underline dark:text-zinc-100"
-                    >
-                      Open
-                    </Link>
+                    <div className="flex flex-wrap items-center justify-end gap-2">
+                      <Link
+                        href={`/promotions/${p.id}`}
+                        className="font-medium text-zinc-900 underline dark:text-zinc-100"
+                      >
+                        Open
+                      </Link>
+                      <PermissionGate anyOf={['promotions.manage']}>
+                        <button
+                          type="button"
+                          disabled={deletingId === p.id}
+                          onClick={() => void onDelete(p)}
+                          className="rounded-md border border-red-300 bg-white px-2.5 py-1 text-xs font-medium text-red-700 hover:bg-red-50 disabled:opacity-50 dark:border-red-800 dark:bg-zinc-900 dark:text-red-300 dark:hover:bg-red-950/40"
+                        >
+                          {deletingId === p.id ? 'Deleting…' : 'Delete'}
+                        </button>
+                      </PermissionGate>
+                    </div>
                   </td>
                 </tr>
               ))}

@@ -22,6 +22,7 @@ export async function ensureAdminRbacSeeded(prisma: PrismaClient): Promise<void>
   // permission rows. The function is idempotent: on second run the legacy
   // rows are already gone and the migration becomes a no-op.
   await migrateLegacyCatalogPermissions(prisma);
+  await migrateNewsletterManageToSubscriptionsManage(prisma);
 
   for (const p of ADMIN_PERMISSION_SEED) {
     await prisma.adminPermission.upsert({
@@ -100,6 +101,46 @@ export async function ensureAdminRbacSeeded(prisma: PrismaClient): Promise<void>
  * rows entirely. The link table's `onDelete: Cascade` on `permissionId`
  * removes the now-redundant grants automatically.
  */
+/**
+ * Renamed `newsletter.manage` → `subscriptions.manage` (email subscription list in admin).
+ * Preserves grants on custom roles before dropping the legacy permission row.
+ */
+async function migrateNewsletterManageToSubscriptionsManage(prisma: PrismaClient): Promise<void> {
+  const oldKey = 'newsletter.manage';
+  const newKey = 'subscriptions.manage';
+  const description = 'View storefront email subscriptions (subscriber list)';
+
+  const oldPerm = await prisma.adminPermission.findUnique({
+    where: { key: oldKey },
+    select: { id: true },
+  });
+  if (!oldPerm) return;
+
+  const newPerm = await prisma.adminPermission.upsert({
+    where: { key: newKey },
+    update: { description },
+    create: { key: newKey, description },
+    select: { id: true },
+  });
+
+  const rolesHoldingOld = await prisma.adminRolePermission.findMany({
+    where: { permissionId: oldPerm.id },
+    select: { roleId: true },
+  });
+
+  if (rolesHoldingOld.length > 0) {
+    await prisma.adminRolePermission.createMany({
+      data: rolesHoldingOld.map(({ roleId }) => ({
+        roleId,
+        permissionId: newPerm.id,
+      })),
+      skipDuplicates: true,
+    });
+  }
+
+  await prisma.adminPermission.delete({ where: { id: oldPerm.id } });
+}
+
 async function migrateLegacyCatalogPermissions(prisma: PrismaClient): Promise<void> {
   const renames: Array<{ oldKey: string; newKey: string; description: string }> = [
     {

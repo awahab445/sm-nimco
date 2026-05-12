@@ -186,6 +186,7 @@ export function ProductDetailView({ productId }: { productId: string }) {
             product={product}
             categories={categories}
             onChanged={() => void load()}
+            onGoToGeneral={() => setTab('general')}
           />
         ) : null}
       </div>
@@ -1435,10 +1436,12 @@ function CategoriesPanel({
   product,
   categories,
   onChanged,
+  onGoToGeneral,
 }: {
   product: ProductDetail;
   categories: AdminCategoryListItem[];
   onChanged: () => void;
+  onGoToGeneral?: () => void;
 }) {
   const [pick, setPick] = useState('');
   const [position, setPosition] = useState('0');
@@ -1485,6 +1488,24 @@ function CategoriesPanel({
           {err}
         </p>
       ) : null}
+
+      <div className="mb-6 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2.5 text-sm text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900/50 dark:text-zinc-300">
+        <p>
+          This tab only assigns which <strong>categories</strong> this product appears under. For{' '}
+          <strong>price</strong> and attribute-based filters on the shop listing, use the <strong>General</strong> tab
+          (base price and product attributes JSON). Configure filter panel names and option lists under{' '}
+          <strong>Configuration → Store filters</strong>.
+        </p>
+        {onGoToGeneral ? (
+          <button
+            type="button"
+            onClick={() => onGoToGeneral()}
+            className="mt-2 text-sm font-medium text-zinc-900 underline underline-offset-2 hover:text-zinc-700 dark:text-zinc-100 dark:hover:text-zinc-300"
+          >
+            Go to General
+          </button>
+        ) : null}
+      </div>
 
       <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end">
         <div className="flex-1">
@@ -1536,7 +1557,7 @@ function CategoriesPanel({
             {product.categories.length === 0 ? (
               <tr>
                 <td colSpan={4} className="px-3 py-6 text-center text-zinc-500">
-                  No categories yet. Assign categories from Module C.
+                  No categories yet. Choose a category above and click Assign.
                 </td>
               </tr>
             ) : (

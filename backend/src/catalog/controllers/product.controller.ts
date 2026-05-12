@@ -19,6 +19,12 @@ export class ProductController {
     return this.productService.findAll(query);
   }
 
+  @Get('facets')
+  @HttpCode(HttpStatus.OK)
+  async facets(@Query() query: ProductQueryDto) {
+    return this.productService.getFacets(query);
+  }
+
   @Get('search')
   @HttpCode(HttpStatus.OK)
   async search(

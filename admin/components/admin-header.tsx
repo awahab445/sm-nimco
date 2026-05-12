@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/auth.store';
 
 type AdminHeaderProps = {
@@ -8,7 +9,13 @@ type AdminHeaderProps = {
 };
 
 export function AdminHeader({ onMenuOpen }: AdminHeaderProps) {
+  const router = useRouter();
   const { user, logout, isLoading } = useAuthStore();
+
+  const handleLogout = () => {
+    logout();
+    router.replace('/login');
+  };
 
   return (
     <header className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-zinc-200 bg-white px-3 sm:px-4 dark:border-zinc-800 dark:bg-zinc-950">
@@ -38,7 +45,7 @@ export function AdminHeader({ onMenuOpen }: AdminHeaderProps) {
       </div>
       <button
         type="button"
-        onClick={() => logout()}
+        onClick={handleLogout}
         disabled={isLoading}
         className="shrink-0 rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm font-medium text-zinc-800 hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
       >

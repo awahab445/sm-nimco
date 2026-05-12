@@ -1,68 +1,178 @@
 import { ProductQueryDto } from '../dto/product-query.dto';
 import { AdminProductListQueryDto } from '../dto/admin-product-list-query.dto';
 
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+export type WhereOmit = 'categories' | 'price' | 'customAttributes' | `attr:${string}`;
+
+export type ProductQueryAttr = Record<string, string[]>;
+
+export type EffectiveProductQuery = Omit<ProductQueryDto, 'brands' | 'sizes' | 'attr'> & {
+  /** Merged from `attr` JSON query + legacy `brands` / `sizes` params. */
+  attr?: ProductQueryAttr;
+};
+
+export type BuildWhereOptions = {
+  omit?: Set<WhereOmit>;
+};
+
+export function splitCommaList(s?: string): string[] {
+  if (!s || typeof s !== 'string') return [];
+  return s
+    .split(',')
+    .map((x) => x.trim())
+    .filter(Boolean);
+}
+
+function parseCategoryIds(raw?: string): string[] {
+  return splitCommaList(raw).filter((id) => UUID_RE.test(id));
+}
+
+export function parsePriceRangeString(price?: string): { min: number; max: number } | null {
+  if (!price || typeof price !== 'string') return null;
+  const m = price.trim().match(/^(\d+(?:\.\d+)?)-(\d+(?:\.\d+)?)$/);
+  if (!m) return null;
+  const a = parseFloat(m[1]);
+  const b = parseFloat(m[2]);
+  if (!Number.isFinite(a) || !Number.isFinite(b)) return null;
+  return { min: Math.min(a, b), max: Math.max(a, b) };
+}
+
 export class ProductQuery {
-  static buildWhereClause(query: ProductQueryDto) {
-    const where: any = {
+  static mergeEffectiveQuery(query: ProductQueryDto): EffectiveProductQuery {
+    const attr: ProductQueryAttr = {};
+    if (query.attr?.trim()) {
+      try {
+        const o = JSON.parse(query.attr) as unknown;
+        if (o && typeof o === 'object' && !Array.isArray(o)) {
+          for (const [k, v] of Object.entries(o as Record<string, unknown>)) {
+            if (Array.isArray(v)) attr[k] = v.map(String).filter(Boolean);
+            else if (typeof v === 'string' && v.trim()) attr[k] = splitCommaList(v);
+          }
+        }
+      } catch {
+        /* ignore invalid JSON */
+      }
+    }
+    if (query.brands) {
+      const b = splitCommaList(query.brands);
+      if (b.length) attr.brand = [...new Set([...(attr.brand ?? []), ...b])];
+    }
+    if (query.sizes) {
+      const s = splitCommaList(query.sizes);
+      if (s.length) attr.size = [...new Set([...(attr.size ?? []), ...s])];
+    }
+    const { brands: _br, sizes: _sz, attr: _a, ...rest } = query;
+    void _br;
+    void _sz;
+    void _a;
+    return {
+      ...rest,
+      ...(Object.keys(attr).length ? { attr } : {}),
+    };
+  }
+
+  /**
+   * Storefront product list filters. Use `omit` when computing facet counts for one dimension.
+   */
+  static buildWhereClause(query: EffectiveProductQuery, options?: BuildWhereOptions): Record<string, unknown> {
+    const omit = options?.omit ?? new Set<WhereOmit>();
+    const and: Record<string, unknown>[] = [];
+
+    const base: Record<string, unknown> = {
       deletedAt: null,
       status: 'active',
     };
 
-    if (query.category) {
-      where.categories = {
-        some: {
-          categoryId: query.category,
-        },
-      };
-    }
-
-    if (query.minPrice !== undefined || query.maxPrice !== undefined) {
-      where.basePrice = {};
-      if (query.minPrice !== undefined) {
-        where.basePrice.gte = query.minPrice;
-      }
-      if (query.maxPrice !== undefined) {
-        where.basePrice.lte = query.maxPrice;
+    if (!omit.has('categories') && query.category) {
+      const categoryIds = parseCategoryIds(query.category);
+      if (categoryIds.length === 1) {
+        and.push({
+          categories: { some: { categoryId: categoryIds[0] } },
+        });
+      } else if (categoryIds.length > 1) {
+        and.push({
+          OR: categoryIds.map((id) => ({
+            categories: { some: { categoryId: id } },
+          })),
+        });
       }
     }
 
-    if (query.attributes && Object.keys(query.attributes).length > 0) {
-      // JSONB attribute filtering - checks if attributes contain the specified values
-      // For complex queries, consider using raw SQL or a more sophisticated approach
-      const attributeFilters = Object.entries(query.attributes).map(([key, value]) => ({
-        attributes: {
-          path: [key],
-          equals: value,
-        },
-      }));
-
-      if (attributeFilters.length === 1) {
-        where.attributes = attributeFilters[0].attributes;
-      } else if (attributeFilters.length > 1) {
-        where.AND = attributeFilters.map((filter) => ({ attributes: filter.attributes }));
+    if (!omit.has('price')) {
+      let minP = query.minPrice;
+      let maxP = query.maxPrice;
+      const range = parsePriceRangeString(query.price);
+      if (range) {
+        if (minP === undefined) minP = range.min;
+        if (maxP === undefined) maxP = range.max;
+      }
+      if (minP !== undefined || maxP !== undefined) {
+        const basePrice: Record<string, number> = {};
+        if (minP !== undefined) basePrice.gte = minP;
+        if (maxP !== undefined) basePrice.lte = maxP;
+        and.push({ basePrice });
       }
     }
 
-    // Search: product name, sku, slug, or category name (trimmed; min 2 chars to avoid heavy scans)
+    const attr = query.attr;
+    if (attr && Object.keys(attr).length > 0) {
+      for (const [key, values] of Object.entries(attr)) {
+        const vals = (Array.isArray(values) ? values : []).map((v) => String(v).trim()).filter(Boolean);
+        if (vals.length === 0) continue;
+        const omitKey = `attr:${key}` as WhereOmit;
+        if (omit.has(omitKey)) continue;
+        if (key === 'size') {
+          and.push({
+            OR: vals.flatMap((s) => [
+              { attributes: { path: ['size'], equals: s } },
+              { attributes: { path: ['Size'], equals: s } },
+            ]),
+          });
+        } else {
+          and.push({
+            OR: vals.map((v) => ({
+              attributes: { path: [key], equals: v },
+            })),
+          });
+        }
+      }
+    }
+
+    if (!omit.has('customAttributes') && query.attributes && Object.keys(query.attributes).length > 0) {
+      for (const [key, value] of Object.entries(query.attributes)) {
+        and.push({
+          attributes: { path: [key], equals: value },
+        });
+      }
+    }
+
     const searchTerm = typeof query.search === 'string' ? query.search.trim() : '';
     if (searchTerm.length >= 2) {
-      where.OR = [
-        { name: { contains: searchTerm, mode: 'insensitive' } },
-        { sku: { contains: searchTerm, mode: 'insensitive' } },
-        { slug: { contains: searchTerm, mode: 'insensitive' } },
-        {
-          categories: {
-            some: {
-              category: {
-                name: { contains: searchTerm, mode: 'insensitive' },
+      and.push({
+        OR: [
+          { name: { contains: searchTerm, mode: 'insensitive' } },
+          { sku: { contains: searchTerm, mode: 'insensitive' } },
+          { slug: { contains: searchTerm, mode: 'insensitive' } },
+          {
+            categories: {
+              some: {
+                category: {
+                  name: { contains: searchTerm, mode: 'insensitive' },
+                },
               },
             },
           },
-        },
-      ];
+        ],
+      });
     }
 
-    return where;
+    if (and.length > 0) {
+      base.AND = and;
+    }
+
+    return base;
   }
 
   /** Admin catalog list: non-deleted only; optional status and filters */

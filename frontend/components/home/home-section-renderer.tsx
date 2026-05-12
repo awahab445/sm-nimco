@@ -6,7 +6,7 @@ import { TrustBadgesSection } from './sections/trust-badges-section';
 import { CategoryTilesSection } from './sections/category-tiles-section';
 import { ProductShelfSection } from './sections/product-shelf-section';
 import { PromoBannerSection } from './sections/promo-banner-section';
-import { NewsletterSection } from './sections/newsletter-section';
+import { SubscriptionSection } from './sections/subscription-section';
 import { CmsBlockSection } from './sections/cms-block-section';
 
 export function HomeSectionRenderer({
@@ -59,7 +59,8 @@ export function HomeSectionRenderer({
         />
       );
     case 'newsletter_cta':
-      return <NewsletterSection title={section.title} subtitle={section.subtitle} />;
+    case 'subscription_cta':
+      return <SubscriptionSection title={section.title} subtitle={section.subtitle} />;
     case 'cms_block':
       return (
         <CmsBlockSection

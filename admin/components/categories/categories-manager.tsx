@@ -93,6 +93,15 @@ export function CategoriesManager() {
             Manage the catalog tree, visibility, and sort order. Inactive categories stay hidden on
             the storefront.
           </p>
+          <div className="mt-3 rounded-lg border border-sky-200 bg-sky-50 px-3 py-2.5 text-sm text-sky-950 dark:border-sky-900/60 dark:bg-sky-950/40 dark:text-sky-100">
+            <p className="font-medium text-sky-900 dark:text-sky-50">Price and listing filters are not set here</p>
+            <p className="mt-1 text-sky-900/90 dark:text-sky-100/90">
+              Open <strong>Products</strong>, choose a product, then use the <strong>General</strong> tab for{' '}
+              <strong>base price</strong> and product <strong>attributes</strong> (JSON). Use the{' '}
+              <strong>Categories</strong> tab on that product only to link it to categories. Configure storefront
+              listing filters under <strong>Configuration → Store filters</strong>.
+            </p>
+          </div>
         </div>
         <button
           type="button"

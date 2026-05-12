@@ -9,7 +9,7 @@ interface AuthState {
   error: string | null;
 
   login: (credentials: LoginCredentials) => Promise<void>;
-  logout: () => Promise<void>;
+  logout: () => void;
   checkAuth: () => Promise<void>;
   clearError: () => void;
 }
@@ -44,21 +44,14 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
   },
 
-  logout: async () => {
-    set({ isLoading: true });
-    try {
-      await authService.logout();
-    } catch (e) {
-      console.error('Logout error:', e);
-    } finally {
-      clearToken();
-      set({
-        user: null,
-        isAuthenticated: false,
-        isLoading: false,
-        error: null,
-      });
-    }
+  logout: () => {
+    authService.logout();
+    set({
+      user: null,
+      isAuthenticated: false,
+      isLoading: false,
+      error: null,
+    });
   },
 
   checkAuth: async () => {

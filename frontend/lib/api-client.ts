@@ -146,10 +146,42 @@ export interface ProductListQuery {
   category?: string;
   minPrice?: number;
   maxPrice?: number;
+  price?: string;
+  /** JSON string of `Record<string, string[]>`; merged server-side with legacy `brands` / `sizes`. */
+  attr?: string;
+  brands?: string;
+  sizes?: string;
   search?: string;
   page?: number;
   limit?: number;
   attributes?: Record<string, unknown>;
+}
+
+export type FacetPanelCategory = {
+  kind: 'category';
+  code: string;
+  name: string;
+  categories: Array<{ id: string; name: string; slug: string; count: number }>;
+};
+
+export type FacetPanelPrice = {
+  kind: 'price';
+  code: string;
+  name: string;
+  priceRange: { min: number; max: number };
+};
+
+export type FacetPanelAttribute = {
+  kind: 'attribute';
+  code: string;
+  name: string;
+  options: Array<{ value: string; label: string; count: number }>;
+};
+
+export interface ProductFacets {
+  matchingTotal: number;
+  filterPanels: Array<FacetPanelCategory | FacetPanelPrice | FacetPanelAttribute>;
+  countsApproximated?: boolean;
 }
 
 export interface ProductListResponse {
@@ -195,6 +227,10 @@ export const productApi = {
       if (query.category != null) params.set('category', query.category);
       if (query.minPrice != null) params.set('minPrice', String(query.minPrice));
       if (query.maxPrice != null) params.set('maxPrice', String(query.maxPrice));
+      if (query.price != null) params.set('price', query.price);
+      if (query.attr != null && query.attr !== '') params.set('attr', query.attr);
+      if (query.brands != null && query.brands !== '') params.set('brands', query.brands);
+      if (query.sizes != null && query.sizes !== '') params.set('sizes', query.sizes);
       if (query.search != null) params.set('search', query.search);
       if (query.page != null) params.set('page', String(query.page));
       if (query.limit != null) params.set('limit', String(query.limit));
@@ -202,6 +238,23 @@ export const productApi = {
     }
     const qs = params.toString();
     return fetchApi<ProductListResponse>(`/products${qs ? `?${qs}` : ''}`);
+  },
+
+  getFacets: (query?: ProductListQuery): Promise<ProductFacets> => {
+    const params = new URLSearchParams();
+    if (query) {
+      if (query.category != null) params.set('category', query.category);
+      if (query.minPrice != null) params.set('minPrice', String(query.minPrice));
+      if (query.maxPrice != null) params.set('maxPrice', String(query.maxPrice));
+      if (query.price != null) params.set('price', query.price);
+      if (query.attr != null && query.attr !== '') params.set('attr', query.attr);
+      if (query.brands != null && query.brands !== '') params.set('brands', query.brands);
+      if (query.sizes != null && query.sizes !== '') params.set('sizes', query.sizes);
+      if (query.search != null) params.set('search', query.search);
+      if (query.attributes != null) params.set('attributes', JSON.stringify(query.attributes));
+    }
+    const qs = params.toString();
+    return fetchApi<ProductFacets>(`/products/facets${qs ? `?${qs}` : ''}`);
   },
 
   getProductById: (id: string) => fetchApi<Product>(`/products/id/${encodeURIComponent(id)}`),
@@ -450,13 +503,9 @@ export type SubscriptionPlan = {
 export const subscriptionApi = {
   listPlans: () => fetchApi<SubscriptionPlan[]>('/subscription/plans'),
   mySubscription: () => fetchApi('/subscription/my-subscription'),
-  subscribe: (data: {
-    planId: string;
-    autoRenew?: boolean;
-    paymentMethod?: string;
-    transactionRef?: string;
-  }) =>
-    fetchApi('/subscription/subscribe', {
+  /** Public newsletter signup (email + optional source). */
+  subscribe: (data: { email: string; source?: string }) =>
+    fetchApi<{ message?: string }>('/subscription/subscribe', {
       method: 'POST',
       body: JSON.stringify(data),
     }),

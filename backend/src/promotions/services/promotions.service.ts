@@ -237,6 +237,15 @@ export class PromotionsService {
   }
 
   /**
+   * Permanently remove a promotion and related rows (cascade).
+   */
+  async deletePromotion(id: string): Promise<void> {
+    await this.getPromotion(id);
+    await this.prisma.promotion.delete({ where: { id } });
+    this.logger.log(`Deleted promotion ${id}`);
+  }
+
+  /**
    * Get promotion by code
    */
   async getPromotionByCode(code: string): Promise<Promotion | null> {
@@ -348,6 +357,12 @@ export class PromotionsService {
     let remainingSubtotal = subtotal;
 
     for (const promotion of promotionsToCheck) {
+      // Whole-cart discounts must use a coupon code so silent "10% off everything" rules cannot apply.
+      // Product/category-scoped rules may still be automatic when `code` is null.
+      if (promotion.scope === 'cart' && !promotion.code) {
+        continue;
+      }
+
       // Get promotion products for scope calculation
       const promotionProducts = await this.prisma.promotionProduct.findMany({
         where: { promotionId: promotion.id },

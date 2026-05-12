@@ -71,6 +71,8 @@ export function ProductForm({ mode, initial, productId, onCancel, onSaved }: Pro
       setTaxClassId(initial.taxClassId ?? '');
       setAttributesJson(JSON.stringify(initial.attributes ?? {}, null, 2));
       setMetaDataJson(JSON.stringify(initial.metaData ?? {}, null, 2));
+    } else if (mode === 'create') {
+      setAttributesJson('{}');
     }
   }, [mode, initial]);
 
@@ -351,6 +353,11 @@ export function ProductForm({ mode, initial, productId, onCancel, onSaved }: Pro
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">Attributes (JSON)</label>
+          <p className="mt-0.5 text-xs text-zinc-500">
+            Optional JSON on the product (e.g. <code className="rounded bg-zinc-100 px-1 dark:bg-zinc-800">brand</code>,{' '}
+            <code className="rounded bg-zinc-100 px-1 dark:bg-zinc-800">size</code>) must match filter option values configured under{' '}
+            <strong>Store filters</strong> in the admin.
+          </p>
           <textarea
             value={attributesJson}
             onChange={(e) => setAttributesJson(e.target.value)}
