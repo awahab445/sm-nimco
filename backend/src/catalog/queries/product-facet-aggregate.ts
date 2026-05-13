@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { ProductQueryDto } from '../dto/product-query.dto';
-import { ProductQuery, WhereOmit } from './product.query';
+import { ProductQuery, expandCategoryFilterWithDescendants, readAttributeValue, WhereOmit } from './product.query';
 import { PrismaService } from '../services/prisma.service';
 
 const FACET_SCAN_MAX = 8000;
@@ -39,18 +39,15 @@ function toNumber(v: Prisma.Decimal | null | undefined): number | null {
 }
 
 function readAttrKey(attrs: unknown, key: string): string | null {
-  if (!attrs || typeof attrs !== 'object') return null;
-  const a = attrs as Record<string, unknown>;
-  if (key === 'size') {
-    const s = a.size ?? a.Size;
-    return typeof s === 'string' && s.trim() ? s.trim() : null;
-  }
-  const v = a[key];
-  return typeof v === 'string' && v.trim() ? v.trim() : null;
+  return readAttributeValue(attrs, key);
 }
 
 const facetSelect = {
   attributes: true,
+  variants: {
+    where: { isActive: true },
+    select: { attributes: true },
+  },
   categories: {
     select: {
       categoryId: true,
@@ -64,7 +61,8 @@ type FacetRow = Prisma.ProductGetPayload<{ select: typeof facetSelect }>;
 
 export class ProductFacetAggregate {
   static async compute(prisma: PrismaService, query: ProductQueryDto): Promise<ProductFacetsResponse> {
-    const q = ProductQuery.mergeEffectiveQuery(query);
+    const merged = ProductQuery.mergeEffectiveQuery(query);
+    const q = await expandCategoryFilterWithDescendants(prisma, merged);
     type LayoutRow = {
       id: string;
       code: string;
@@ -139,11 +137,18 @@ export class ProductFacetAggregate {
       const m = new Map<string, { label: string; count: number }>();
       if (rows) {
         for (const row of rows) {
-          const v = readAttrKey(row.attributes, f.code);
-          if (!v) continue;
-          const prev = m.get(v);
-          if (prev) prev.count += 1;
-          else m.set(v, { label: v, count: 1 });
+          const seen = new Set<string>();
+          const bump = (v: string | null) => {
+            if (!v || seen.has(v)) return;
+            seen.add(v);
+            const prev = m.get(v);
+            if (prev) prev.count += 1;
+            else m.set(v, { label: v, count: 1 });
+          };
+          bump(readAttrKey(row.attributes, f.code));
+          for (const variant of row.variants) {
+            bump(readAttrKey(variant.attributes, f.code));
+          }
         }
       }
       attrMaps.set(f.code, m);

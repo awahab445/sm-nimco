@@ -50,7 +50,8 @@ function hasActiveFilters(f: PlpFilterState): boolean {
   return (
     f.categoryIds.length > 0 ||
     attrActive ||
-    (f.minPrice != null && f.maxPrice != null)
+    (f.minPrice != null && Number.isFinite(f.minPrice)) ||
+    (f.maxPrice != null && Number.isFinite(f.maxPrice))
   );
 }
 
@@ -71,6 +72,7 @@ function ProductsContent() {
   );
 
   const [categoryNameById, setCategoryNameById] = useState<Map<string, string>>(() => new Map());
+  const [categoryIdBySlug, setCategoryIdBySlug] = useState<Map<string, string>>(() => new Map());
   const [data, setData] = useState<ProductListResponse | null>(null);
   const [facets, setFacets] = useState<ProductFacets | null>(null);
   const [availability, setAvailability] = useState<Record<string, number>>({});
@@ -124,11 +126,19 @@ function ProductsContent() {
         if (cancelled) return;
         const list = flattenCategories(res as { data?: Category[] } | CategoryTreeLike[]);
         const m = new Map<string, string>();
-        for (const c of list) m.set(c.id, c.name);
+        const bySlug = new Map<string, string>();
+        for (const c of list) {
+          m.set(c.id, c.name);
+          if (c.slug) bySlug.set(c.slug, c.id);
+        }
         setCategoryNameById(m);
+        setCategoryIdBySlug(bySlug);
       })
       .catch(() => {
-        if (!cancelled) setCategoryNameById(new Map());
+        if (!cancelled) {
+          setCategoryNameById(new Map());
+          setCategoryIdBySlug(new Map());
+        }
       });
     return () => {
       cancelled = true;
@@ -248,13 +258,13 @@ function ProductsContent() {
 
   const pageTitle = useMemo(() => {
     if (applied.search) return `Search results`;
-    const fromTree = findBrowseNodeLabel(browseTree, selectedCategoryId);
+    const fromTree = findBrowseNodeLabel(browseTree, selectedCategoryId, categoryIdBySlug);
     if (fromTree) return fromTree;
     if (selectedCategoryId) {
       return categoryNameById.get(selectedCategoryId) ?? 'Products';
     }
     return 'Products';
-  }, [applied.search, browseTree, selectedCategoryId, categoryNameById]);
+  }, [applied.search, browseTree, selectedCategoryId, categoryNameById, categoryIdBySlug]);
 
   const pageSubtitle = useMemo(() => {
     if (applied.search) return `Results for "${applied.search}"`;
@@ -292,6 +302,7 @@ function ProductsContent() {
             tree={browseTree}
             selectedCategoryId={draft.categoryIds[0] ?? null}
             onSelectCategory={(id) => setDraft((d) => ({ ...d, categoryIds: id ? [id] : [], page: 1 }))}
+            categoryIdBySlug={categoryIdBySlug}
           />
           <PlpFilterAccordions
             filters={draft}
@@ -337,6 +348,7 @@ function ProductsContent() {
               tree={browseTree}
               selectedCategoryId={selectedCategoryId}
               onSelectCategory={selectBrowseCategory}
+              categoryIdBySlug={categoryIdBySlug}
             />
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Refine</h2>
@@ -366,12 +378,14 @@ function ProductsContent() {
               tree={browseTree}
               selectedCategoryId={selectedCategoryId}
               onSelectCategory={selectBrowseCategory}
+              categoryIdBySlug={categoryIdBySlug}
             />
           </div>
           <PlpBrowseBreadcrumbs
             tree={browseTree}
             selectedCategoryId={selectedCategoryId}
             onSelectCategory={selectBrowseCategory}
+            categoryIdBySlug={categoryIdBySlug}
           />
           <div className="mb-6">
             <h1 className="text-3xl font-bold tracking-tight text-foreground">{pageTitle}</h1>

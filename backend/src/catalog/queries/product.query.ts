@@ -29,6 +29,122 @@ function parseCategoryIds(raw?: string): string[] {
   return splitCommaList(raw).filter((id) => UUID_RE.test(id));
 }
 
+/** Read a storefront filter value from product/variant attributes JSON. */
+export function readAttributeValue(attrs: unknown, key: string): string | null {
+  if (!attrs || typeof attrs !== 'object' || Array.isArray(attrs)) return null;
+  const a = attrs as Record<string, unknown>;
+  const readScalar = (v: unknown): string | null => {
+    if (typeof v === 'string' && v.trim()) return v.trim();
+    if (typeof v === 'number' && Number.isFinite(v)) return String(v);
+    return null;
+  };
+
+  const optionValues = a.optionValues ?? a.option_values;
+  const nested =
+    optionValues && typeof optionValues === 'object' && !Array.isArray(optionValues)
+      ? (optionValues as Record<string, unknown>)
+      : null;
+
+  if (key === 'size') {
+    return (
+      readScalar(nested?.size) ??
+      readScalar(nested?.Size) ??
+      readScalar(a.size) ??
+      readScalar(a.Size)
+    );
+  }
+
+  return readScalar(nested?.[key]) ?? readScalar(a[key]);
+}
+
+function attributeJsonPaths(key: string): string[][] {
+  if (key === 'size') {
+    return [
+      ['size'],
+      ['Size'],
+      ['optionValues', 'size'],
+      ['optionValues', 'Size'],
+    ];
+  }
+  return [
+    [key],
+    ['optionValues', key],
+  ];
+}
+
+function buildAttributeValueMatch(key: string, value: string): Record<string, unknown>[] {
+  const paths = attributeJsonPaths(key);
+  const productMatches = paths.map((path) => ({
+    attributes: { path, equals: value },
+  }));
+  const variantMatches = paths.map((path) => ({
+    variants: {
+      some: {
+        isActive: true,
+        attributes: { path, equals: value },
+      },
+    },
+  }));
+  return [...productMatches, ...variantMatches];
+}
+
+function parseAttrQueryString(raw: string): ProductQueryAttr {
+  const attr: ProductQueryAttr = {};
+  const trimmed = raw.trim();
+  const candidates = [trimmed];
+  if (trimmed.includes('%')) {
+    try {
+      candidates.push(decodeURIComponent(trimmed));
+    } catch {
+      /* ignore */
+    }
+  }
+  for (const candidate of candidates) {
+    try {
+      const o = JSON.parse(candidate) as unknown;
+      if (!o || typeof o !== 'object' || Array.isArray(o)) continue;
+      for (const [k, v] of Object.entries(o as Record<string, unknown>)) {
+        if (Array.isArray(v)) attr[k] = v.map(String).map((x) => x.trim()).filter(Boolean);
+        else if (typeof v === 'string' && v.trim()) attr[k] = splitCommaList(v);
+      }
+      return attr;
+    } catch {
+      /* try next candidate */
+    }
+  }
+  return attr;
+}
+
+/** Include selected categories and all active descendants (PLP parent browse nodes). */
+export async function expandCategoryFilterWithDescendants(
+  prisma: { category: { findMany: (args: object) => Promise<Array<{ id: string; parentId: string | null }>> } },
+  query: EffectiveProductQuery,
+): Promise<EffectiveProductQuery> {
+  if (!query.category?.trim()) return query;
+  const roots = parseCategoryIds(query.category);
+  if (!roots.length) return query;
+
+  const all = await prisma.category.findMany({
+    where: { isActive: true },
+    select: { id: true, parentId: true },
+  });
+  const byParent = new Map<string | null, string[]>();
+  for (const c of all) {
+    const key = c.parentId;
+    if (!byParent.has(key)) byParent.set(key, []);
+    byParent.get(key)!.push(c.id);
+  }
+
+  const expanded = new Set<string>();
+  const walk = (id: string) => {
+    expanded.add(id);
+    for (const child of byParent.get(id) ?? []) walk(child);
+  };
+  for (const id of roots) walk(id);
+
+  return { ...query, category: [...expanded].join(',') };
+}
+
 export function parsePriceRangeString(price?: string): { min: number; max: number } | null {
   if (!price || typeof price !== 'string') return null;
   const m = price.trim().match(/^(\d+(?:\.\d+)?)-(\d+(?:\.\d+)?)$/);
@@ -43,17 +159,7 @@ export class ProductQuery {
   static mergeEffectiveQuery(query: ProductQueryDto): EffectiveProductQuery {
     const attr: ProductQueryAttr = {};
     if (query.attr?.trim()) {
-      try {
-        const o = JSON.parse(query.attr) as unknown;
-        if (o && typeof o === 'object' && !Array.isArray(o)) {
-          for (const [k, v] of Object.entries(o as Record<string, unknown>)) {
-            if (Array.isArray(v)) attr[k] = v.map(String).filter(Boolean);
-            else if (typeof v === 'string' && v.trim()) attr[k] = splitCommaList(v);
-          }
-        }
-      } catch {
-        /* ignore invalid JSON */
-      }
+      Object.assign(attr, parseAttrQueryString(query.attr));
     }
     if (query.brands) {
       const b = splitCommaList(query.brands);
@@ -123,20 +229,9 @@ export class ProductQuery {
         if (vals.length === 0) continue;
         const omitKey = `attr:${key}` as WhereOmit;
         if (omit.has(omitKey)) continue;
-        if (key === 'size') {
-          and.push({
-            OR: vals.flatMap((s) => [
-              { attributes: { path: ['size'], equals: s } },
-              { attributes: { path: ['Size'], equals: s } },
-            ]),
-          });
-        } else {
-          and.push({
-            OR: vals.map((v) => ({
-              attributes: { path: [key], equals: v },
-            })),
-          });
-        }
+        and.push({
+          OR: vals.flatMap((v) => buildAttributeValueMatch(key, v)),
+        });
       }
     }
 

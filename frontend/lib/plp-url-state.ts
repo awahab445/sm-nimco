@@ -84,7 +84,7 @@ export function serializePlpFilters(f: PlpFilterState): string {
   if (attrKeys.length > 0) {
     const slim: Record<string, string[]> = {};
     for (const k of attrKeys) slim[k] = f.facetAttr[k]!;
-    p.set('attr', encodeURIComponent(JSON.stringify(slim)));
+    p.set('attr', JSON.stringify(slim));
   }
   if (f.minPrice != null && Number.isFinite(f.minPrice)) p.set('minPrice', String(f.minPrice));
   if (f.maxPrice != null && Number.isFinite(f.maxPrice)) p.set('maxPrice', String(f.maxPrice));
@@ -104,12 +104,20 @@ export function plpStateToListQuery(f: PlpFilterState, limit = 12): ProductListQ
   if (attrKeys.length > 0) {
     const slim: Record<string, string[]> = {};
     for (const k of attrKeys) slim[k] = f.facetAttr[k]!;
-    q.attr = encodeURIComponent(JSON.stringify(slim));
+    q.attr = JSON.stringify(slim);
   }
 
-  if (f.minPrice != null && f.maxPrice != null && Number.isFinite(f.minPrice) && Number.isFinite(f.maxPrice)) {
-    q.minPrice = Math.min(f.minPrice, f.maxPrice);
-    q.maxPrice = Math.max(f.minPrice, f.maxPrice);
+  if (f.minPrice != null && Number.isFinite(f.minPrice)) {
+    q.minPrice = f.minPrice;
+  }
+  if (f.maxPrice != null && Number.isFinite(f.maxPrice)) {
+    q.maxPrice = f.maxPrice;
+  }
+  if (q.minPrice != null && q.maxPrice != null) {
+    const lo = Math.min(q.minPrice, q.maxPrice);
+    const hi = Math.max(q.minPrice, q.maxPrice);
+    q.minPrice = lo;
+    q.maxPrice = hi;
   }
   return q;
 }

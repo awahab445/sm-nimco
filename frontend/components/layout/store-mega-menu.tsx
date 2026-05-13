@@ -1,11 +1,16 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useCallback, useRef, useState } from 'react';
-import type { StorefrontNavMegaNode } from '@/lib/api-client';
-import { CATEGORY_NAV_BADGES, getMegaMenuPromo } from '@/lib/mega-menu-config';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { productApi, type StorefrontNavMegaNode } from '@/lib/api-client';
+import {
+  CATEGORY_NAV_BADGES,
+  getMegaMenuProductSlug,
+  getMegaMenuProductSpotlightFallback,
+  type MegaMenuProductSpotlight,
+} from '@/lib/mega-menu-config';
+import { resolveImageUrl } from '@/lib/resolve-image-url';
 
 function sortByOrder<T extends { sortOrder?: number }>(items: T[]): T[] {
   return [...items].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
@@ -141,7 +146,6 @@ export function DesktopShopMegaMenu({
 
   const columns = sortByOrder(roots).slice(0, 4);
   const colCount = Math.min(4, Math.max(1, columns.length));
-  const promo = getMegaMenuPromo();
 
   return (
     <div
@@ -176,13 +180,18 @@ export function DesktopShopMegaMenu({
 
       {open ? (
         <div
-          className="store-mega-menu-panel absolute left-1/2 top-full z-[999] w-screen max-w-[100vw] -translate-x-1/2"
+          className="store-mega-menu-panel absolute left-1/2 top-full z-[999] w-[min(calc(100vw-8rem),64rem)] max-w-5xl -translate-x-1/2"
           role="region"
           aria-label="Shop categories"
           onMouseEnter={openMenu}
         >
-          <div className="mx-auto max-w-[100rem] overflow-x-auto px-4 py-8 sm:px-8 lg:px-12 xl:px-16">
-            <MegaMenuGridInner columns={columns} promo={promo} colCount={colCount} pathname={pathname} />
+          <div className="px-5 py-6 sm:px-7">
+            <MegaMenuNavGrid
+              columns={columns}
+              colCount={colCount}
+              pathname={pathname}
+              loadSpotlight={open}
+            />
           </div>
         </div>
       ) : null}
@@ -214,22 +223,88 @@ function MegaMenuChildList({
   );
 }
 
-function MegaMenuGridInner({
+function useMegaMenuProductSpotlight(load: boolean): MegaMenuProductSpotlight {
+  const fallback = useMemo(() => getMegaMenuProductSpotlightFallback(), []);
+  const [spotlight, setSpotlight] = useState<MegaMenuProductSpotlight>(fallback);
+  const loadedRef = useRef(false);
+
+  useEffect(() => {
+    if (!load || loadedRef.current) return;
+    loadedRef.current = true;
+
+    const slug = getMegaMenuProductSlug();
+    let cancelled = false;
+
+    (async () => {
+      try {
+        let product;
+        if (slug) {
+          product = await productApi.getProductBySlug(slug);
+        } else {
+          const list = (await productApi.listProducts({ limit: 12, page: 1 })).data ?? [];
+          product = list.find((p) => (p.images?.length ?? 0) > 0) ?? list[0];
+        }
+
+        if (!product || cancelled) return;
+
+        const image = product.images?.find((i) => i.isPrimary) ?? product.images?.[0];
+        const imageSrc = resolveImageUrl(image?.url);
+        if (!imageSrc) return;
+
+        setSpotlight({
+          imageSrc,
+          href: `/products/${product.slug}`,
+          alt: image?.alt?.trim() || product.name,
+        });
+      } catch {
+        // Keep static fallback.
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [load, fallback]);
+
+  return spotlight;
+}
+
+function MegaMenuProductSpotlight({ spotlight }: { spotlight: MegaMenuProductSpotlight }) {
+  return (
+    <aside className="mega-menu-product-spotlight hidden min-w-0 self-start lg:block">
+      <Link href={spotlight.href} className="mega-menu-product-spotlight__link">
+        <div className="mega-menu-product-spotlight__media">
+          <img
+            src={spotlight.imageSrc}
+            alt={spotlight.alt}
+            className="mega-menu-product-spotlight__image"
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
+      </Link>
+    </aside>
+  );
+}
+
+function MegaMenuNavGrid({
   columns,
-  promo,
   colCount,
   pathname,
+  loadSpotlight,
 }: {
   columns: StorefrontNavMegaNode[];
-  promo: ReturnType<typeof getMegaMenuPromo>;
   colCount: number;
   pathname: string;
+  loadSpotlight: boolean;
 }) {
+  const spotlight = useMegaMenuProductSpotlight(loadSpotlight);
+
   return (
     <div
-      className="grid gap-x-10 gap-y-6"
+      className="grid gap-x-6 gap-y-5"
       style={{
-        gridTemplateColumns: `repeat(${colCount}, minmax(0, 1fr)) minmax(220px, 300px)`,
+        gridTemplateColumns: `repeat(${colCount}, minmax(0, 1fr)) minmax(220px, 280px)`,
       }}
     >
       {columns.map((root) => {
@@ -261,35 +336,7 @@ function MegaMenuGridInner({
           </div>
         );
       })}
-
-      <aside className="min-w-0 lg:max-w-[300px]">
-        <div className="mega-menu-promo-card flex h-full flex-col overflow-hidden rounded-xl">
-          <div className="relative aspect-[4/3] w-full shrink-0 bg-muted">
-            <Image
-              src={promo.imageSrc}
-              alt={promo.headline}
-              fill
-              className="object-cover"
-              sizes="(max-width: 1024px) 100vw, 300px"
-              unoptimized={promo.imageSrc.startsWith('http')}
-            />
-            <div
-              className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"
-              aria-hidden
-            />
-            <div className="absolute inset-x-0 bottom-0 p-4 text-white">
-              <p className="text-lg font-bold leading-tight drop-shadow-sm">{promo.headline}</p>
-              <p className="mt-1 text-sm text-white/90 drop-shadow-sm">{promo.subline}</p>
-              <Link
-                href={promo.ctaHref}
-                className="pointer-events-auto mt-3 inline-flex rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition-opacity hover:opacity-90"
-              >
-                {promo.ctaLabel}
-              </Link>
-            </div>
-          </div>
-        </div>
-      </aside>
+      <MegaMenuProductSpotlight spotlight={spotlight} />
     </div>
   );
 }

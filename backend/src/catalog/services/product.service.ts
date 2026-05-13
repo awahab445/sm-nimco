@@ -7,7 +7,7 @@ import {
 import { PrismaService } from './prisma.service';
 import { CreateProductDto, ProductStatus } from '../dto/create-product.dto';
 import { UpdateProductDto } from '../dto/update-product.dto';
-import { ProductQuery } from '../queries/product.query';
+import { ProductQuery, expandCategoryFilterWithDescendants } from '../queries/product.query';
 import { ProductQueryDto } from '../dto/product-query.dto';
 import { ProductFacetAggregate } from '../queries/product-facet-aggregate';
 import { AdminProductListQueryDto } from '../dto/admin-product-list-query.dto';
@@ -93,7 +93,8 @@ export class ProductService {
   }
 
   async findAll(query: ProductQueryDto) {
-    const q = ProductQuery.mergeEffectiveQuery(query);
+    const merged = ProductQuery.mergeEffectiveQuery(query);
+    const q = await expandCategoryFilterWithDescendants(this.prisma, merged);
     const where = ProductQuery.buildWhereClause(q);
     const include = ProductQuery.buildIncludeClause();
     const { skip, take, page } = ProductQuery.buildPaginationParams(query);

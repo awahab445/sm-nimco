@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict G5lCH5mhnYJ3QJLyqqzy38RCcECIIpkhAU8TahKZxbwRluM6lgXGkyzvX8qpxtc
+\restrict 7hi3KNpvbpZYJJAPBNNemJtjPZlw9AimlbLn4gh2RSHzf2Pc5CT0yUOrhaEUnsx
 
 -- Dumped from database version 18.3
 -- Dumped by pg_dump version 18.3
@@ -817,6 +817,24 @@ CREATE TABLE public.storefront_filter_options (
 ALTER TABLE public.storefront_filter_options OWNER TO postgres;
 
 --
+-- Name: storefront_filter_tree_nodes; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.storefront_filter_tree_nodes (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    filter_id uuid NOT NULL,
+    parent_id uuid,
+    nav_link_id uuid,
+    sort_order integer DEFAULT 0 NOT NULL,
+    is_active boolean DEFAULT true NOT NULL,
+    created_at timestamp(3) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at timestamp(3) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+ALTER TABLE public.storefront_filter_tree_nodes OWNER TO postgres;
+
+--
 -- Name: storefront_filters; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -842,12 +860,16 @@ CREATE TABLE public.storefront_nav_links (
     id uuid NOT NULL,
     label character varying(128) NOT NULL,
     secondary_label character varying(128),
-    href character varying(512) NOT NULL,
+    href character varying(512) DEFAULT ''::character varying NOT NULL,
     sort_order integer DEFAULT 0 NOT NULL,
     is_active boolean DEFAULT true NOT NULL,
     kind character varying(32) DEFAULT 'LINK'::character varying NOT NULL,
     created_at timestamp(3) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    updated_at timestamp(3) without time zone NOT NULL
+    updated_at timestamp(3) without time zone NOT NULL,
+    zone character varying(16) DEFAULT 'header'::character varying NOT NULL,
+    parent_id uuid,
+    category_id text,
+    open_mega_menu boolean DEFAULT false NOT NULL
 );
 
 
@@ -942,9 +964,26 @@ COPY public.account_creation_tokens (id, email, token, expires_at, created_at) F
 --
 
 COPY public.admin_permissions (id, key, description, created_at) FROM stdin;
+4ade7771-a344-4bcb-a7ee-4f079430104e	inventory.read	Read inventory	2026-05-04 07:22:01.056
+7a71bbd5-3e2e-4d9f-a0ac-43563e7fb583	inventory.manage	Manage inventory and stock	2026-05-04 07:22:01.057
+1dcba78f-a3d7-496f-a2ba-ed6585be6b73	orders.manage	Manage orders (implies all orders.* actions)	2026-05-04 07:22:01.06
+51062b59-ddd6-4ff8-ac4e-2f70f4cde409	customers.manage	Manage customers and groups (implies all customers.* actions)	2026-05-04 07:22:01.063
+8332b6b7-13cb-472f-a4b0-73cc50eea78e	promotions.manage	Manage promotions	2026-05-04 07:22:01.064
+55afa5c3-5076-4a94-a014-fa92c5fddb01	shipping.manage	Manage shipping zones and methods	2026-05-04 07:22:01.065
+1c9d2a05-1853-4ace-bc60-e4156437384b	tax.manage	Manage tax classes and rates	2026-05-04 07:22:01.069
+6a942717-6026-44e7-80e7-26858f8c3eb5	payments.manage	Manage payment configuration	2026-05-11 11:57:44.154
+107a5e7f-39d7-4f91-8d6e-c68a866de6c8	admin.access.full	Full administrative access (implies all permissions).	2026-05-04 07:22:01.029
+79710646-175d-4aae-bdd1-ba9bc8d2844f	admin.users.create	Create staff admin users	2026-05-04 07:22:01.042
+5bc3fe92-08d5-4857-b05b-c1b912418a6b	admin.users.read	View admin users	2026-05-04 07:22:01.043
+43ed1a83-e047-4c39-a3d5-effae8fa2470	admin.users.update	Update admin users	2026-05-04 07:22:01.044
+0ca45dcb-baa7-4d64-89fe-da7e0d3e0387	admin.users.delete	Deactivate or remove admin users	2026-05-04 07:22:01.045
 bd93314d-9f7e-4048-b578-e518247f01b0	admin.roles.read	View roles and permission assignments	2026-05-04 07:22:01.047
 05e177b9-9c57-40a1-92c5-fe6e61dde134	admin.roles.manage	Create or update roles and permissions	2026-05-04 07:22:01.049
 d8693266-66d8-4df3-964f-3b3c854155b9	products.create	Create products	2026-05-11 11:57:44.123
+a629f498-ffea-40d3-b191-bb736eb424cf	cms.manage	Manage CMS pages, blocks, and sliders	2026-05-06 11:10:43.51
+664eb436-11ef-46e0-975d-9b30e7f6a127	subscriptions.manage	View storefront email subscriptions (subscriber list)	2026-05-12 07:40:14.805
+ccaa881a-2690-41ec-aec9-c061f97c9b7d	reports.read	Access reports and exports	2026-05-04 07:22:01.072
+29f643ad-529b-4b68-9932-1828b89c8fa1	settings.manage	Platform settings	2026-05-04 07:22:01.074
 e0e19340-ce43-46a4-b5b7-fb8622c2fdcd	products.read	Read products	2026-05-11 11:57:44.048
 cf811019-a242-4070-851b-3fbb11e88898	products.update	Update products and their sub-resources (variants, images, categories)	2026-05-11 11:57:44.126
 669ddf50-cf30-4822-8de0-96a7b2192a72	products.delete	Delete products	2026-05-11 11:57:44.127
@@ -957,23 +996,6 @@ ea11fbc5-c6c8-43c6-b013-66cebc87beba	customers.read	Read customers	2026-05-04 07
 b6151fdf-2507-4841-a50e-24668be1ea79	customers.update	Update customers	2026-05-11 11:57:44.139
 1d702124-962e-4d24-9a83-cbfb33b21b93	customers.delete	Delete customers	2026-05-11 11:57:44.141
 0adebdc6-0b0d-4dda-b217-5de5f3b5ed26	products.manage	Manage products, categories, and product options (implies all products.* actions)	2026-05-11 11:57:44.1
-4ade7771-a344-4bcb-a7ee-4f079430104e	inventory.read	Read inventory	2026-05-04 07:22:01.056
-7a71bbd5-3e2e-4d9f-a0ac-43563e7fb583	inventory.manage	Manage inventory and stock	2026-05-04 07:22:01.057
-1dcba78f-a3d7-496f-a2ba-ed6585be6b73	orders.manage	Manage orders (implies all orders.* actions)	2026-05-04 07:22:01.06
-107a5e7f-39d7-4f91-8d6e-c68a866de6c8	admin.access.full	Full administrative access (implies all permissions).	2026-05-04 07:22:01.029
-79710646-175d-4aae-bdd1-ba9bc8d2844f	admin.users.create	Create staff admin users	2026-05-04 07:22:01.042
-5bc3fe92-08d5-4857-b05b-c1b912418a6b	admin.users.read	View admin users	2026-05-04 07:22:01.043
-43ed1a83-e047-4c39-a3d5-effae8fa2470	admin.users.update	Update admin users	2026-05-04 07:22:01.044
-0ca45dcb-baa7-4d64-89fe-da7e0d3e0387	admin.users.delete	Deactivate or remove admin users	2026-05-04 07:22:01.045
-51062b59-ddd6-4ff8-ac4e-2f70f4cde409	customers.manage	Manage customers and groups (implies all customers.* actions)	2026-05-04 07:22:01.063
-8332b6b7-13cb-472f-a4b0-73cc50eea78e	promotions.manage	Manage promotions	2026-05-04 07:22:01.064
-55afa5c3-5076-4a94-a014-fa92c5fddb01	shipping.manage	Manage shipping zones and methods	2026-05-04 07:22:01.065
-1c9d2a05-1853-4ace-bc60-e4156437384b	tax.manage	Manage tax classes and rates	2026-05-04 07:22:01.069
-6a942717-6026-44e7-80e7-26858f8c3eb5	payments.manage	Manage payment configuration	2026-05-11 11:57:44.154
-a629f498-ffea-40d3-b191-bb736eb424cf	cms.manage	Manage CMS pages, blocks, and sliders	2026-05-06 11:10:43.51
-664eb436-11ef-46e0-975d-9b30e7f6a127	subscriptions.manage	View storefront email subscriptions (subscriber list)	2026-05-12 07:40:14.805
-ccaa881a-2690-41ec-aec9-c061f97c9b7d	reports.read	Access reports and exports	2026-05-04 07:22:01.072
-29f643ad-529b-4b68-9932-1828b89c8fa1	settings.manage	Platform settings	2026-05-04 07:22:01.074
 \.
 
 
@@ -988,9 +1010,26 @@ COPY public.admin_role_permissions (role_id, permission_id) FROM stdin;
 36d65b9f-5927-487b-be37-943b03c16541	cf811019-a242-4070-851b-3fbb11e88898
 36d65b9f-5927-487b-be37-943b03c16541	669ddf50-cf30-4822-8de0-96a7b2192a72
 36d65b9f-5927-487b-be37-943b03c16541	0adebdc6-0b0d-4dda-b217-5de5f3b5ed26
+926550ee-84bb-414a-99f6-e11673f3da0e	4ade7771-a344-4bcb-a7ee-4f079430104e
+926550ee-84bb-414a-99f6-e11673f3da0e	7a71bbd5-3e2e-4d9f-a0ac-43563e7fb583
+926550ee-84bb-414a-99f6-e11673f3da0e	1dcba78f-a3d7-496f-a2ba-ed6585be6b73
+926550ee-84bb-414a-99f6-e11673f3da0e	51062b59-ddd6-4ff8-ac4e-2f70f4cde409
+926550ee-84bb-414a-99f6-e11673f3da0e	8332b6b7-13cb-472f-a4b0-73cc50eea78e
+926550ee-84bb-414a-99f6-e11673f3da0e	55afa5c3-5076-4a94-a014-fa92c5fddb01
+926550ee-84bb-414a-99f6-e11673f3da0e	1c9d2a05-1853-4ace-bc60-e4156437384b
+926550ee-84bb-414a-99f6-e11673f3da0e	6a942717-6026-44e7-80e7-26858f8c3eb5
+926550ee-84bb-414a-99f6-e11673f3da0e	107a5e7f-39d7-4f91-8d6e-c68a866de6c8
+926550ee-84bb-414a-99f6-e11673f3da0e	79710646-175d-4aae-bdd1-ba9bc8d2844f
+926550ee-84bb-414a-99f6-e11673f3da0e	5bc3fe92-08d5-4857-b05b-c1b912418a6b
+926550ee-84bb-414a-99f6-e11673f3da0e	43ed1a83-e047-4c39-a3d5-effae8fa2470
+926550ee-84bb-414a-99f6-e11673f3da0e	0ca45dcb-baa7-4d64-89fe-da7e0d3e0387
 926550ee-84bb-414a-99f6-e11673f3da0e	bd93314d-9f7e-4048-b578-e518247f01b0
 926550ee-84bb-414a-99f6-e11673f3da0e	05e177b9-9c57-40a1-92c5-fe6e61dde134
 926550ee-84bb-414a-99f6-e11673f3da0e	d8693266-66d8-4df3-964f-3b3c854155b9
+926550ee-84bb-414a-99f6-e11673f3da0e	a629f498-ffea-40d3-b191-bb736eb424cf
+926550ee-84bb-414a-99f6-e11673f3da0e	664eb436-11ef-46e0-975d-9b30e7f6a127
+926550ee-84bb-414a-99f6-e11673f3da0e	ccaa881a-2690-41ec-aec9-c061f97c9b7d
+926550ee-84bb-414a-99f6-e11673f3da0e	29f643ad-529b-4b68-9932-1828b89c8fa1
 926550ee-84bb-414a-99f6-e11673f3da0e	e0e19340-ce43-46a4-b5b7-fb8622c2fdcd
 926550ee-84bb-414a-99f6-e11673f3da0e	cf811019-a242-4070-851b-3fbb11e88898
 926550ee-84bb-414a-99f6-e11673f3da0e	669ddf50-cf30-4822-8de0-96a7b2192a72
@@ -1003,25 +1042,20 @@ COPY public.admin_role_permissions (role_id, permission_id) FROM stdin;
 926550ee-84bb-414a-99f6-e11673f3da0e	b6151fdf-2507-4841-a50e-24668be1ea79
 926550ee-84bb-414a-99f6-e11673f3da0e	1d702124-962e-4d24-9a83-cbfb33b21b93
 926550ee-84bb-414a-99f6-e11673f3da0e	0adebdc6-0b0d-4dda-b217-5de5f3b5ed26
-926550ee-84bb-414a-99f6-e11673f3da0e	4ade7771-a344-4bcb-a7ee-4f079430104e
-926550ee-84bb-414a-99f6-e11673f3da0e	7a71bbd5-3e2e-4d9f-a0ac-43563e7fb583
-926550ee-84bb-414a-99f6-e11673f3da0e	1dcba78f-a3d7-496f-a2ba-ed6585be6b73
-926550ee-84bb-414a-99f6-e11673f3da0e	107a5e7f-39d7-4f91-8d6e-c68a866de6c8
-926550ee-84bb-414a-99f6-e11673f3da0e	79710646-175d-4aae-bdd1-ba9bc8d2844f
-926550ee-84bb-414a-99f6-e11673f3da0e	5bc3fe92-08d5-4857-b05b-c1b912418a6b
-926550ee-84bb-414a-99f6-e11673f3da0e	43ed1a83-e047-4c39-a3d5-effae8fa2470
-926550ee-84bb-414a-99f6-e11673f3da0e	0ca45dcb-baa7-4d64-89fe-da7e0d3e0387
-926550ee-84bb-414a-99f6-e11673f3da0e	51062b59-ddd6-4ff8-ac4e-2f70f4cde409
-926550ee-84bb-414a-99f6-e11673f3da0e	8332b6b7-13cb-472f-a4b0-73cc50eea78e
-926550ee-84bb-414a-99f6-e11673f3da0e	55afa5c3-5076-4a94-a014-fa92c5fddb01
-926550ee-84bb-414a-99f6-e11673f3da0e	1c9d2a05-1853-4ace-bc60-e4156437384b
-926550ee-84bb-414a-99f6-e11673f3da0e	6a942717-6026-44e7-80e7-26858f8c3eb5
-926550ee-84bb-414a-99f6-e11673f3da0e	a629f498-ffea-40d3-b191-bb736eb424cf
-926550ee-84bb-414a-99f6-e11673f3da0e	664eb436-11ef-46e0-975d-9b30e7f6a127
-926550ee-84bb-414a-99f6-e11673f3da0e	ccaa881a-2690-41ec-aec9-c061f97c9b7d
-926550ee-84bb-414a-99f6-e11673f3da0e	29f643ad-529b-4b68-9932-1828b89c8fa1
+e4d44e14-47e2-4632-8c43-1ee84cd85eca	4ade7771-a344-4bcb-a7ee-4f079430104e
+e4d44e14-47e2-4632-8c43-1ee84cd85eca	7a71bbd5-3e2e-4d9f-a0ac-43563e7fb583
+e4d44e14-47e2-4632-8c43-1ee84cd85eca	1dcba78f-a3d7-496f-a2ba-ed6585be6b73
+e4d44e14-47e2-4632-8c43-1ee84cd85eca	51062b59-ddd6-4ff8-ac4e-2f70f4cde409
+e4d44e14-47e2-4632-8c43-1ee84cd85eca	8332b6b7-13cb-472f-a4b0-73cc50eea78e
+e4d44e14-47e2-4632-8c43-1ee84cd85eca	55afa5c3-5076-4a94-a014-fa92c5fddb01
+e4d44e14-47e2-4632-8c43-1ee84cd85eca	1c9d2a05-1853-4ace-bc60-e4156437384b
+e4d44e14-47e2-4632-8c43-1ee84cd85eca	6a942717-6026-44e7-80e7-26858f8c3eb5
+e4d44e14-47e2-4632-8c43-1ee84cd85eca	5bc3fe92-08d5-4857-b05b-c1b912418a6b
 e4d44e14-47e2-4632-8c43-1ee84cd85eca	bd93314d-9f7e-4048-b578-e518247f01b0
 e4d44e14-47e2-4632-8c43-1ee84cd85eca	d8693266-66d8-4df3-964f-3b3c854155b9
+e4d44e14-47e2-4632-8c43-1ee84cd85eca	a629f498-ffea-40d3-b191-bb736eb424cf
+e4d44e14-47e2-4632-8c43-1ee84cd85eca	664eb436-11ef-46e0-975d-9b30e7f6a127
+e4d44e14-47e2-4632-8c43-1ee84cd85eca	ccaa881a-2690-41ec-aec9-c061f97c9b7d
 e4d44e14-47e2-4632-8c43-1ee84cd85eca	e0e19340-ce43-46a4-b5b7-fb8622c2fdcd
 e4d44e14-47e2-4632-8c43-1ee84cd85eca	cf811019-a242-4070-851b-3fbb11e88898
 e4d44e14-47e2-4632-8c43-1ee84cd85eca	669ddf50-cf30-4822-8de0-96a7b2192a72
@@ -1034,24 +1068,12 @@ e4d44e14-47e2-4632-8c43-1ee84cd85eca	ea11fbc5-c6c8-43c6-b013-66cebc87beba
 e4d44e14-47e2-4632-8c43-1ee84cd85eca	b6151fdf-2507-4841-a50e-24668be1ea79
 e4d44e14-47e2-4632-8c43-1ee84cd85eca	1d702124-962e-4d24-9a83-cbfb33b21b93
 e4d44e14-47e2-4632-8c43-1ee84cd85eca	0adebdc6-0b0d-4dda-b217-5de5f3b5ed26
-e4d44e14-47e2-4632-8c43-1ee84cd85eca	4ade7771-a344-4bcb-a7ee-4f079430104e
-e4d44e14-47e2-4632-8c43-1ee84cd85eca	7a71bbd5-3e2e-4d9f-a0ac-43563e7fb583
-e4d44e14-47e2-4632-8c43-1ee84cd85eca	1dcba78f-a3d7-496f-a2ba-ed6585be6b73
-e4d44e14-47e2-4632-8c43-1ee84cd85eca	5bc3fe92-08d5-4857-b05b-c1b912418a6b
-e4d44e14-47e2-4632-8c43-1ee84cd85eca	51062b59-ddd6-4ff8-ac4e-2f70f4cde409
-e4d44e14-47e2-4632-8c43-1ee84cd85eca	8332b6b7-13cb-472f-a4b0-73cc50eea78e
-e4d44e14-47e2-4632-8c43-1ee84cd85eca	55afa5c3-5076-4a94-a014-fa92c5fddb01
-e4d44e14-47e2-4632-8c43-1ee84cd85eca	1c9d2a05-1853-4ace-bc60-e4156437384b
-e4d44e14-47e2-4632-8c43-1ee84cd85eca	6a942717-6026-44e7-80e7-26858f8c3eb5
-e4d44e14-47e2-4632-8c43-1ee84cd85eca	a629f498-ffea-40d3-b191-bb736eb424cf
-e4d44e14-47e2-4632-8c43-1ee84cd85eca	664eb436-11ef-46e0-975d-9b30e7f6a127
-e4d44e14-47e2-4632-8c43-1ee84cd85eca	ccaa881a-2690-41ec-aec9-c061f97c9b7d
+f72b62cb-1ae0-4ba2-b178-12539e326c14	4ade7771-a344-4bcb-a7ee-4f079430104e
 f72b62cb-1ae0-4ba2-b178-12539e326c14	bd93314d-9f7e-4048-b578-e518247f01b0
+f72b62cb-1ae0-4ba2-b178-12539e326c14	ccaa881a-2690-41ec-aec9-c061f97c9b7d
 f72b62cb-1ae0-4ba2-b178-12539e326c14	e0e19340-ce43-46a4-b5b7-fb8622c2fdcd
 f72b62cb-1ae0-4ba2-b178-12539e326c14	2c5b5e04-816b-4864-bf47-d7eff12f79d4
 f72b62cb-1ae0-4ba2-b178-12539e326c14	ea11fbc5-c6c8-43c6-b013-66cebc87beba
-f72b62cb-1ae0-4ba2-b178-12539e326c14	4ade7771-a344-4bcb-a7ee-4f079430104e
-f72b62cb-1ae0-4ba2-b178-12539e326c14	ccaa881a-2690-41ec-aec9-c061f97c9b7d
 \.
 
 
@@ -1060,11 +1082,11 @@ f72b62cb-1ae0-4ba2-b178-12539e326c14	ccaa881a-2690-41ec-aec9-c061f97c9b7d
 --
 
 COPY public.admin_roles (id, slug, name, description, is_system, created_at, updated_at) FROM stdin;
+926550ee-84bb-414a-99f6-e11673f3da0e	super-admin	Super Admin	Full platform access. Assign sparingly.	t	2026-05-04 07:22:01.076	2026-05-13 11:21:22.071
+e4d44e14-47e2-4632-8c43-1ee84cd85eca	manager	Operations Manager	Day-to-day commerce operations without user/role administration.	t	2026-05-12 07:03:29.765	2026-05-13 11:21:22.074
+f72b62cb-1ae0-4ba2-b178-12539e326c14	support	Support	Read-heavy access for customer service.	t	2026-05-12 07:03:29.768	2026-05-13 11:21:22.076
 5dc16cb3-f12c-4195-9c85-90563c17d927	inventory-management	inventory management	update & manage inventory	f	2026-05-11 09:40:56.034	2026-05-11 09:40:56.034
 36d65b9f-5927-487b-be37-943b03c16541	products-management	products management	update and manage all products	f	2026-05-11 12:02:41.329	2026-05-11 12:02:41.329
-926550ee-84bb-414a-99f6-e11673f3da0e	super-admin	Super Admin	Full platform access. Assign sparingly.	t	2026-05-04 07:22:01.076	2026-05-12 15:14:57.02
-e4d44e14-47e2-4632-8c43-1ee84cd85eca	manager	Operations Manager	Day-to-day commerce operations without user/role administration.	t	2026-05-12 07:03:29.765	2026-05-12 15:14:57.022
-f72b62cb-1ae0-4ba2-b178-12539e326c14	support	Support	Read-heavy access for customer service.	t	2026-05-12 07:03:29.768	2026-05-12 15:14:57.024
 \.
 
 
@@ -1178,8 +1200,8 @@ d9d76782-cbfc-42e9-932a-e2d102a1a02e	c7b8e71d-3489-4bd7-8f88-2e541ee86e41	\N	def
 1d62551d-4147-4618-b49d-c956c15bad85	64289463-e48b-4261-bfef-e59b622eb20e	64ea42f1-5306-476a-b2cd-cfe65a894d1b	default-warehouse	0	0	0	10	2026-05-08 07:09:31.477
 d8a7c195-a26f-4e1d-b475-d9b47970ff80	64289463-e48b-4261-bfef-e59b622eb20e	e752cecd-c989-4ff8-8f5a-3c64455eef67	default-warehouse	0	0	0	10	2026-05-08 07:09:31.478
 65b69e03-f9bc-4aa6-962e-40c453256469	64289463-e48b-4261-bfef-e59b622eb20e	70d5b65c-5cd7-40f8-91ec-e7b7b218c5b8	default-warehouse	20	1	19	10	2026-05-08 07:50:58.828
-fa630b05-bc52-4cfb-8927-b597813e65c7	64289463-e48b-4261-bfef-e59b622eb20e	40973815-351e-42b2-99dc-e30539f21968	default-warehouse	20	5	15	10	2026-05-12 14:16:03.675
 b090fcda-7fd0-491f-a568-eb88e441fdd6	64289463-e48b-4261-bfef-e59b622eb20e	\N	default-warehouse	99	14	85	10	2026-05-07 11:45:56.203
+fa630b05-bc52-4cfb-8927-b597813e65c7	64289463-e48b-4261-bfef-e59b622eb20e	40973815-351e-42b2-99dc-e30539f21968	default-warehouse	20	7	13	10	2026-05-13 11:10:48.301
 fc039723-4b20-4b28-850d-956f5ede1dd9	64289463-e48b-4261-bfef-e59b622eb20e	891c80cc-4be3-4853-b2f2-cb896bac7a33	default-warehouse	0	0	0	10	2026-05-08 07:09:31.788
 8ecbf34f-6e3c-4a54-865c-96b2cfd61db3	eaacdf54-eaa9-4dcc-839e-a10a61588523	\N	default-warehouse	100	2	98	10	2026-05-07 06:55:48.037
 caf29d2a-ac95-41a5-a473-731481b1993f	0019bc5a-cfda-423a-8033-04e19527878c	\N	default-warehouse	100	1	99	10	2026-05-08 05:31:15.452
@@ -1219,6 +1241,8 @@ cfbb5d88-a177-4b41-842e-169ce80801f8	fa630b05-bc52-4cfb-8927-b597813e65c7	cart	0
 7f006d0d-eb77-445b-b219-fcbcbd85e4d2	fa630b05-bc52-4cfb-8927-b597813e65c7	cart	135be7b1-4437-4307-bfe2-fa8dae093e80	1	2026-05-12 08:43:42.234	2026-05-12 08:13:42.236
 dab8d733-daa3-4609-8cfe-f6c13035eb3b	fa630b05-bc52-4cfb-8927-b597813e65c7	cart	ccdf6deb-132e-466f-81ab-2212cc21631a	1	2026-05-12 10:31:13.905	2026-05-12 10:01:13.906
 3331cb30-fe30-4fc4-8b79-44e47ce3c2de	fa630b05-bc52-4cfb-8927-b597813e65c7	cart	cd64cb9e-9506-419b-93f9-a56ba8da4454	1	2026-05-12 13:56:02.422	2026-05-12 13:26:02.425
+ccdce86f-9c9d-4b8b-9460-b66b243ed16d	fa630b05-bc52-4cfb-8927-b597813e65c7	cart	8090910a-5527-43e1-94b1-88ed61adc313	1	2026-05-13 06:55:45.941	2026-05-13 06:25:45.945
+bf49a282-03ae-4ec1-89f2-b2b634285fc4	fa630b05-bc52-4cfb-8927-b597813e65c7	cart	9c818bd2-dec3-4ab2-aa76-4817c8307147	1	2026-05-13 08:15:51.203	2026-05-13 07:45:51.206
 \.
 
 
@@ -1389,7 +1413,7 @@ COPY public.products (id, sku, name, slug, type, description, short_description,
 c7b8e71d-3489-4bd7-8f88-2e541ee86e41	SKU-001	Test Product	test-product	simple	\N	\N	29.99	\N	\N	active	both	\N	{}	{}	2026-05-04 06:49:27.174	2026-05-04 06:49:27.174	\N
 eaacdf54-eaa9-4dcc-839e-a10a61588523	SKU-003	Test Product	test-product-2	simple	\N	\N	31.99	\N	\N	active	both	\N	{}	{}	2026-05-04 06:49:51.979	2026-05-05 11:39:11.361	\N
 0019bc5a-cfda-423a-8033-04e19527878c	SKU-002	Test Product	test-product-1	simple	\N	\N	30.99	\N	\N	active	both	\N	{}	{}	2026-05-04 06:49:39.284	2026-05-07 08:58:45.008	\N
-64289463-e48b-4261-bfef-e59b622eb20e	SKU-004	Test Product	test-product-3	configurable	\N	\N	32.87	\N	\N	active	both	\N	{}	{}	2026-05-04 06:50:26.021	2026-05-08 07:18:00.501	\N
+64289463-e48b-4261-bfef-e59b622eb20e	SKU-004	Test Product	test-product-3	configurable	\N	\N	299.00	\N	\N	active	both	\N	{}	{}	2026-05-04 06:50:26.021	2026-05-13 06:23:41.271	\N
 \.
 
 
@@ -1463,13 +1487,30 @@ COPY public.storefront_filter_options (id, filter_id, value, label, sort_order, 
 
 
 --
+-- Data for Name: storefront_filter_tree_nodes; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.storefront_filter_tree_nodes (id, filter_id, parent_id, nav_link_id, sort_order, is_active, created_at, updated_at) FROM stdin;
+0016db0a-9e8d-4e3d-a47e-a87b6fe14c1b	dfae5a8c-a7eb-4fda-b267-a49014377d22	\N	fad48ea0-c980-4726-96db-6ef98eb29bbd	0	t	2026-05-13 16:15:59.64	2026-05-13 16:15:59.64
+16de8541-3612-4edd-9fd1-733b0f9bd878	dfae5a8c-a7eb-4fda-b267-a49014377d22	\N	2c47212c-1930-4afc-b697-68c49aa95b8b	0	t	2026-05-13 16:15:59.64	2026-05-13 16:15:59.64
+d75a1edd-23ad-4d0d-9ca6-008df7c081c0	dfae5a8c-a7eb-4fda-b267-a49014377d22	\N	6f6c4165-e162-4ebd-ad78-987a42165c3a	0	t	2026-05-13 16:15:59.64	2026-05-13 16:15:59.64
+ef02366e-1f0a-44ff-b4d2-4c137e591c8d	dfae5a8c-a7eb-4fda-b267-a49014377d22	0016db0a-9e8d-4e3d-a47e-a87b6fe14c1b	a3a33bbb-33fd-424d-9ea8-dfde8f14aea8	1	t	2026-05-13 16:15:59.64	2026-05-13 16:15:59.64
+23f87784-c88d-4edd-b856-4a9b13de1bb5	dfae5a8c-a7eb-4fda-b267-a49014377d22	0016db0a-9e8d-4e3d-a47e-a87b6fe14c1b	717041de-8afa-4da2-aa80-deccebd2571d	2	t	2026-05-13 16:15:59.64	2026-05-13 16:15:59.64
+74d85676-94ee-4c42-beb4-e8e05583c268	dfae5a8c-a7eb-4fda-b267-a49014377d22	16de8541-3612-4edd-9fd1-733b0f9bd878	c321a5fa-2fdb-4370-be83-1898acfb9828	1	t	2026-05-13 16:15:59.64	2026-05-13 16:15:59.64
+8ee5a045-2a2b-4c74-978d-c57850062fc0	dfae5a8c-a7eb-4fda-b267-a49014377d22	16de8541-3612-4edd-9fd1-733b0f9bd878	18280818-a3d3-4764-8a0d-b5952e04db68	2	t	2026-05-13 16:15:59.64	2026-05-13 16:15:59.64
+e46a1719-e013-41cc-9c2b-79c1eee0459a	dfae5a8c-a7eb-4fda-b267-a49014377d22	16de8541-3612-4edd-9fd1-733b0f9bd878	fb69a8e5-27c1-4293-ba49-c190a5f3c738	3	t	2026-05-13 16:15:59.64	2026-05-13 16:15:59.64
+6af10942-b0b6-4679-9402-79eb34fe40ed	dfae5a8c-a7eb-4fda-b267-a49014377d22	d75a1edd-23ad-4d0d-9ca6-008df7c081c0	e470e2bf-0acb-4cc6-8651-49b7154e25fe	1	t	2026-05-13 16:15:59.64	2026-05-13 16:15:59.64
+\.
+
+
+--
 -- Data for Name: storefront_filters; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.storefront_filters (id, code, name, kind, sort_order, is_active, created_at, updated_at) FROM stdin;
 dfae5a8c-a7eb-4fda-b267-a49014377d22	category	Category	CATEGORY	0	t	2026-05-12 13:16:46.685	2026-05-12 13:16:46.685
 80fee301-d334-438f-9137-6bf3095754c4	size	Size	ATTRIBUTE	3	t	2026-05-12 13:16:46.705	2026-05-12 13:16:46.705
-4635a7d1-abb9-47c1-9f26-bbb9bc26a5d0	price	Price	PRICE	1	t	2026-05-12 13:16:46.699	2026-05-12 13:18:39.341
+4635a7d1-abb9-47c1-9f26-bbb9bc26a5d0	price	Price	PRICE	1	t	2026-05-12 13:16:46.699	2026-05-13 11:23:36.946
 \.
 
 
@@ -1477,12 +1518,21 @@ dfae5a8c-a7eb-4fda-b267-a49014377d22	category	Category	CATEGORY	0	t	2026-05-12 1
 -- Data for Name: storefront_nav_links; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.storefront_nav_links (id, label, secondary_label, href, sort_order, is_active, kind, created_at, updated_at) FROM stdin;
-00000000-0000-0000-0000-00000000e001	Home	\N	/	0	t	LINK	2026-05-12 20:13:42.623	2026-05-12 20:13:42.623
-00000000-0000-0000-0000-00000000e002	Products	Categories	/products	10	t	MEGA_CATEGORIES	2026-05-12 20:13:42.623	2026-05-12 20:13:42.623
-00000000-0000-0000-0000-00000000e003	Track order	\N	/track-order	20	t	LINK	2026-05-12 20:13:42.623	2026-05-12 20:13:42.623
-00000000-0000-0000-0000-00000000e004	Complaints	\N	/complain	30	t	LINK	2026-05-12 20:13:42.623	2026-05-12 20:13:42.623
-00000000-0000-0000-0000-00000000e005	Cart	\N	/cart	40	t	LINK	2026-05-12 20:13:42.623	2026-05-12 20:13:42.623
+COPY public.storefront_nav_links (id, label, secondary_label, href, sort_order, is_active, kind, created_at, updated_at, zone, parent_id, category_id, open_mega_menu) FROM stdin;
+00000000-0000-0000-0000-00000000e001	Home	\N	/	0	t	LINK	2026-05-13 11:15:47.684	2026-05-13 11:15:47.684	header	\N	\N	f
+00000000-0000-0000-0000-00000000e003	Track order	\N	/track-order	20	t	LINK	2026-05-13 11:15:47.684	2026-05-13 11:15:47.684	header	\N	\N	f
+00000000-0000-0000-0000-00000000e004	Complaints	\N	/complain	30	t	LINK	2026-05-13 11:15:47.684	2026-05-13 11:15:47.684	header	\N	\N	f
+00000000-0000-0000-0000-00000000e005	Cart	\N	/cart	40	t	LINK	2026-05-13 11:15:47.684	2026-05-13 11:15:47.684	header	\N	\N	f
+00000000-0000-0000-0000-00000000e002	Products	Categories	/products	10	t	LINK	2026-05-13 11:15:47.684	2026-05-13 11:15:47.684	header	\N	\N	t
+fad48ea0-c980-4726-96db-6ef98eb29bbd	Flavour	\N	/categories/flavour	0	t	LINK	2026-05-13 14:53:49.81	2026-05-13 14:53:49.81	mega	\N	\N	f
+a3a33bbb-33fd-424d-9ea8-dfde8f14aea8	vanilla	\N	http://localhost:3001/products/test-product-3	1	t	LINK	2026-05-13 10:39:53.895	2026-05-13 10:39:53.895	mega	fad48ea0-c980-4726-96db-6ef98eb29bbd	\N	f
+717041de-8afa-4da2-aa80-deccebd2571d	chocolate	\N	http://localhost:3001/products/test-product-3	2	t	LINK	2026-05-13 10:40:16.775	2026-05-13 10:40:16.775	mega	fad48ea0-c980-4726-96db-6ef98eb29bbd	\N	f
+2c47212c-1930-4afc-b697-68c49aa95b8b	Weight	\N	/	0	t	LINK	2026-05-13 10:40:56.931	2026-05-13 10:40:56.931	mega	\N	\N	f
+c321a5fa-2fdb-4370-be83-1898acfb9828	1kg	\N	http://localhost:3001/products/test-product-3	1	t	LINK	2026-05-13 10:41:15.89	2026-05-13 10:41:15.89	mega	2c47212c-1930-4afc-b697-68c49aa95b8b	\N	f
+18280818-a3d3-4764-8a0d-b5952e04db68	500g	\N	http://localhost:3001/products/test-product-3	2	t	LINK	2026-05-13 10:41:43.833	2026-05-13 10:41:43.833	mega	2c47212c-1930-4afc-b697-68c49aa95b8b	\N	f
+fb69a8e5-27c1-4293-ba49-c190a5f3c738	250g	\N	http://localhost:3001/products/test-product-3	3	t	LINK	2026-05-13 10:41:59.442	2026-05-13 10:41:59.442	mega	2c47212c-1930-4afc-b697-68c49aa95b8b	\N	f
+6f6c4165-e162-4ebd-ad78-987a42165c3a	SIGNATURE ITEMS	\N	/	0	t	LINK	2026-05-13 10:44:23.917	2026-05-13 10:44:23.917	mega	\N	\N	f
+e470e2bf-0acb-4cc6-8651-49b7154e25fe	Three Milk Cake	\N	http://localhost:3001/products/test-product-3	1	t	LINK	2026-05-13 10:44:41.631	2026-05-13 10:44:41.631	mega	6f6c4165-e162-4ebd-ad78-987a42165c3a	\N	f
 \.
 
 
@@ -1865,6 +1915,14 @@ ALTER TABLE ONLY public.shipping_zones
 
 ALTER TABLE ONLY public.storefront_filter_options
     ADD CONSTRAINT storefront_filter_options_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: storefront_filter_tree_nodes storefront_filter_tree_nodes_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.storefront_filter_tree_nodes
+    ADD CONSTRAINT storefront_filter_tree_nodes_pkey PRIMARY KEY (id);
 
 
 --
@@ -2742,6 +2800,27 @@ CREATE UNIQUE INDEX storefront_filter_options_filter_id_value_key ON public.stor
 
 
 --
+-- Name: storefront_filter_tree_nodes_filter_id_is_active_sort_order_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX storefront_filter_tree_nodes_filter_id_is_active_sort_order_idx ON public.storefront_filter_tree_nodes USING btree (filter_id, is_active, sort_order);
+
+
+--
+-- Name: storefront_filter_tree_nodes_filter_id_nav_link_id_key; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX storefront_filter_tree_nodes_filter_id_nav_link_id_key ON public.storefront_filter_tree_nodes USING btree (filter_id, nav_link_id);
+
+
+--
+-- Name: storefront_filter_tree_nodes_filter_id_parent_id_sort_order_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX storefront_filter_tree_nodes_filter_id_parent_id_sort_order_idx ON public.storefront_filter_tree_nodes USING btree (filter_id, parent_id, sort_order);
+
+
+--
 -- Name: storefront_filters_code_key; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2760,6 +2839,13 @@ CREATE INDEX storefront_filters_is_active_sort_order_idx ON public.storefront_fi
 --
 
 CREATE INDEX storefront_nav_links_is_active_sort_order_idx ON public.storefront_nav_links USING btree (is_active, sort_order);
+
+
+--
+-- Name: storefront_nav_links_zone_parent_id_sort_order_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX storefront_nav_links_zone_parent_id_sort_order_idx ON public.storefront_nav_links USING btree (zone, parent_id, sort_order);
 
 
 --
@@ -3151,6 +3237,46 @@ ALTER TABLE ONLY public.storefront_filter_options
 
 
 --
+-- Name: storefront_filter_tree_nodes storefront_filter_tree_nodes_filter_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.storefront_filter_tree_nodes
+    ADD CONSTRAINT storefront_filter_tree_nodes_filter_id_fkey FOREIGN KEY (filter_id) REFERENCES public.storefront_filters(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: storefront_filter_tree_nodes storefront_filter_tree_nodes_nav_link_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.storefront_filter_tree_nodes
+    ADD CONSTRAINT storefront_filter_tree_nodes_nav_link_id_fkey FOREIGN KEY (nav_link_id) REFERENCES public.storefront_nav_links(id) ON UPDATE CASCADE ON DELETE SET NULL;
+
+
+--
+-- Name: storefront_filter_tree_nodes storefront_filter_tree_nodes_parent_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.storefront_filter_tree_nodes
+    ADD CONSTRAINT storefront_filter_tree_nodes_parent_id_fkey FOREIGN KEY (parent_id) REFERENCES public.storefront_filter_tree_nodes(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: storefront_nav_links storefront_nav_links_category_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.storefront_nav_links
+    ADD CONSTRAINT storefront_nav_links_category_id_fkey FOREIGN KEY (category_id) REFERENCES public.categories(id) ON UPDATE CASCADE ON DELETE SET NULL;
+
+
+--
+-- Name: storefront_nav_links storefront_nav_links_parent_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.storefront_nav_links
+    ADD CONSTRAINT storefront_nav_links_parent_id_fkey FOREIGN KEY (parent_id) REFERENCES public.storefront_nav_links(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
 -- Name: taxes taxes_tax_class_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3193,5 +3319,5 @@ REVOKE USAGE ON SCHEMA public FROM PUBLIC;
 -- PostgreSQL database dump complete
 --
 
-\unrestrict G5lCH5mhnYJ3QJLyqqzy38RCcECIIpkhAU8TahKZxbwRluM6lgXGkyzvX8qpxtc
+\unrestrict 7hi3KNpvbpZYJJAPBNNemJtjPZlw9AimlbLn4gh2RSHzf2Pc5CT0yUOrhaEUnsx
 

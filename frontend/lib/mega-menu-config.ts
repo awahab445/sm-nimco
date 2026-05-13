@@ -99,3 +99,28 @@ export function getMegaMenuPromo(): MegaMenuPromo {
     ctaHref: env?.NEXT_PUBLIC_MEGA_MENU_PROMO_HREF?.trim() || '/products',
   };
 }
+
+export type MegaMenuProductSpotlight = {
+  imageSrc: string;
+  href: string;
+  alt: string;
+};
+
+/** Static fallback when no catalog product is available for the mega menu spotlight. */
+export function getMegaMenuProductSpotlightFallback(): MegaMenuProductSpotlight {
+  const promo = getMegaMenuPromo();
+  return {
+    imageSrc: promo.imageSrc,
+    href: promo.ctaHref,
+    alt: 'Featured product',
+  };
+}
+
+/** Optional slug override: `NEXT_PUBLIC_MEGA_MENU_PRODUCT_SLUG`. */
+export function getMegaMenuProductSlug(): string | undefined {
+  const slug =
+    typeof process !== 'undefined'
+      ? process.env.NEXT_PUBLIC_MEGA_MENU_PRODUCT_SLUG?.trim()
+      : undefined;
+  return slug || undefined;
+}

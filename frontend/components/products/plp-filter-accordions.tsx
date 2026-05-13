@@ -4,6 +4,23 @@ import type { ProductFacets, FacetPanelAttribute, FacetPanelCategory, FacetPanel
 import type { PlpFilterState } from '@/lib/plp-url-state';
 import { PlpDualRangePrice } from '@/components/products/plp-dual-range-price';
 
+function AccordionToggle() {
+  return (
+    <svg
+      className="plp-filter-accordion__toggle"
+      width="12"
+      height="12"
+      viewBox="0 0 12 12"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+    >
+      <path className="plp-filter-accordion__toggle-bar" d="M2 6h8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <path className="plp-filter-accordion__toggle-bar plp-filter-accordion__toggle-bar--vertical" d="M6 2v8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 function AccordionSection({
   title,
   children,
@@ -14,15 +31,16 @@ function AccordionSection({
   defaultOpen?: boolean;
 }) {
   return (
-    <details
-      className="group border-b border-border py-1 last:border-b-0"
-      open={defaultOpen}
-    >
-      <summary className="flex cursor-pointer list-none items-center justify-between py-2 text-sm font-medium text-foreground marker:hidden [&::-webkit-details-marker]:hidden">
-        <span>{title}</span>
-        <span className="text-muted-foreground transition-transform group-open:rotate-180">▾</span>
+    <details className="plp-filter-accordion" open={defaultOpen}>
+      <summary className="plp-filter-accordion__trigger">
+        <span className="plp-filter-accordion__trigger-inner">
+          <span className="plp-filter-accordion__title">{title}</span>
+          <span className="plp-filter-accordion__icon">
+            <AccordionToggle />
+          </span>
+        </span>
       </summary>
-      <div className="pb-3 pt-1">{children}</div>
+      <div className="plp-filter-accordion__body">{children}</div>
     </details>
   );
 }
@@ -51,7 +69,7 @@ export function PlpFilterAccordions({
   const panels = (facets?.filterPanels ?? []).filter((p) => !(hideCategoryPanels && p.kind === 'category'));
 
   return (
-    <div className="rounded-xl border border-border bg-card">
+    <div className="plp-filter-accordions">
       {panels.map((panel, idx) => {
         if (panel.kind === 'category') {
           return (

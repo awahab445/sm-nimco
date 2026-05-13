@@ -35,7 +35,7 @@ type TreeRow = {
     href: string;
     categoryId: string | null;
     isActive: boolean;
-    category?: { slug: string; name: string } | null;
+    category?: { id: string; slug: string; name: string } | null;
   } | null;
 };
 
@@ -193,7 +193,24 @@ export class StorefrontFilterService {
     return h || '/products';
   }
 
-  private buildBrowseTree(flat: TreeRow[]): PlpBrowseTreeNode[] {
+  private slugFromHref(href: string): string | null {
+    const m = href.trim().match(/\/categories\/([^/?#]+)/i);
+    return m?.[1] ?? null;
+  }
+
+  private resolveCategoryId(
+    nav: { categoryId?: string | null; href?: string; category?: { id?: string; slug?: string } | null } | null | undefined,
+    slugToId: Map<string, string>,
+  ): string | null {
+    if (!nav) return null;
+    if (nav.categoryId) return nav.categoryId;
+    if (nav.category?.id) return nav.category.id;
+    const slug = nav.category?.slug ?? this.slugFromHref(nav.href ?? '');
+    if (slug && slugToId.has(slug)) return slugToId.get(slug)!;
+    return null;
+  }
+
+  private buildBrowseTree(flat: TreeRow[], slugToId: Map<string, string>): PlpBrowseTreeNode[] {
     const byParent = new Map<string | null, TreeRow[]>();
     for (const row of flat) {
       const key = row.parentId;
@@ -209,7 +226,7 @@ export class StorefrontFilterService {
         const nav = row.navLink;
         const label = nav?.label?.trim() || 'Item';
         const href = nav ? this.resolveNavHref(nav) : '/products';
-        const categoryId = nav?.categoryId ?? null;
+        const categoryId = this.resolveCategoryId(nav, slugToId);
         return {
           id: row.id,
           label,
@@ -257,16 +274,39 @@ export class StorefrontFilterService {
       orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }],
       include: {
         navLink: {
-          include: { category: { select: { slug: true, name: true } } },
+          include: { category: { select: { id: true, name: true, slug: true } } },
         },
       },
     });
+
+    const slugToId = new Map<string, string>();
+    for (const r of rows as TreeRow[]) {
+      const nav = r.navLink;
+      if (!nav) continue;
+      if (nav.category?.id && nav.category.slug) slugToId.set(nav.category.slug, nav.category.id);
+      const slug = this.slugFromHref(nav.href ?? '');
+      if (slug && nav.categoryId) slugToId.set(slug, nav.categoryId);
+    }
+    const missingSlugs = new Set<string>();
+    for (const r of rows as TreeRow[]) {
+      const nav = r.navLink;
+      if (!nav || this.resolveCategoryId(nav, slugToId)) continue;
+      const slug = nav.category?.slug ?? this.slugFromHref(nav.href ?? '');
+      if (slug) missingSlugs.add(slug);
+    }
+    if (missingSlugs.size > 0) {
+      const cats = await this.db.category.findMany({
+        where: { slug: { in: [...missingSlugs] }, isActive: true },
+        select: { id: true, slug: true },
+      });
+      for (const c of cats) slugToId.set(c.slug, c.id);
+    }
 
     const activeRows = rows.filter((r: TreeRow) => r.navLink?.isActive !== false) as TreeRow[];
     if (activeRows.length === 0) {
       return { label: filter.name, tree: [] };
     }
-    return { label: filter.name, tree: this.buildBrowseTree(activeRows) };
+    return { label: filter.name, tree: this.buildBrowseTree(activeRows, slugToId) };
   }
 
   async syncBrowseTreeFromNavigation(filterId: string) {
