@@ -17,6 +17,10 @@ import { CreateStorefrontFilterDto } from '../dto/create-storefront-filter.dto';
 import { UpdateStorefrontFilterDto } from '../dto/update-storefront-filter.dto';
 import { CreateStorefrontFilterOptionDto } from '../dto/create-storefront-filter-option.dto';
 import { UpdateStorefrontFilterOptionDto } from '../dto/update-storefront-filter-option.dto';
+import {
+  ReorderFilterBrowseTreeDto,
+  UpdateFilterBrowseTreeNodeDto,
+} from '../dto/filter-browse-tree.dto';
 import { AdminJwtAuthGuard } from '../../admin/guards/admin-jwt-auth.guard';
 import { AdminPermissionsGuard } from '../../admin/guards/admin-permissions.guard';
 import { RequirePermissions } from '../../admin/decorators/require-permissions.decorator';
@@ -31,6 +35,38 @@ export class AdminStorefrontFiltersController {
   @HttpCode(HttpStatus.OK)
   async list() {
     const data = await this.storefrontFilterService.listAllForAdmin();
+    return { data };
+  }
+
+  @Patch('browse-tree/reorder')
+  @RequirePermissions('products.manage')
+  @HttpCode(HttpStatus.OK)
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+  async reorderBrowseTree(@Body() dto: ReorderFilterBrowseTreeDto) {
+    return this.storefrontFilterService.reorderBrowseTree(dto);
+  }
+
+  @Patch('browse-tree/:nodeId')
+  @RequirePermissions('products.manage')
+  @HttpCode(HttpStatus.OK)
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+  async updateBrowseTreeNode(@Param('nodeId') nodeId: string, @Body() dto: UpdateFilterBrowseTreeNodeDto) {
+    return this.storefrontFilterService.updateBrowseTreeNode(nodeId, dto);
+  }
+
+  @Get(':filterId/browse-tree')
+  @RequirePermissions('products.read')
+  @HttpCode(HttpStatus.OK)
+  async listBrowseTree(@Param('filterId') filterId: string) {
+    const data = await this.storefrontFilterService.listBrowseTreeForAdmin(filterId);
+    return { data };
+  }
+
+  @Post(':filterId/browse-tree/sync-from-navigation')
+  @RequirePermissions('products.manage')
+  @HttpCode(HttpStatus.OK)
+  async syncBrowseTree(@Param('filterId') filterId: string) {
+    const data = await this.storefrontFilterService.syncBrowseTreeFromNavigation(filterId);
     return { data };
   }
 

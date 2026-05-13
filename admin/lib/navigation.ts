@@ -137,7 +137,7 @@ export const adminNavGroups: NavGroup[] = [
       {
         href: '/store-navigation',
         label: 'Store navigation',
-        description: 'Storefront header menu links and mega menu',
+        description: 'Header links and layered mega menu',
         phase: 'D',
         requirePermission: ['products.read'],
       },

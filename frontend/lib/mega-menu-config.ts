@@ -10,7 +10,7 @@ export type MegaMenuBadge = 'hot' | 'new';
  * TEMPORARY — set to `false` after verifying the mega menu with real API categories.
  * When `true`, empty API results use `MOCK_MEGA_MENU_CATEGORY_TREE` so the UI always renders for QA.
  */
-export const MEGA_MENU_USE_MOCK_CATEGORIES = true;
+export const MEGA_MENU_USE_MOCK_CATEGORIES = false;
 
 /** Demo tree for layout / badge testing (slugs are fake — links 404 unless you add matching categories). */
 export const MOCK_MEGA_MENU_CATEGORY_TREE: CategoryTreeItem[] = [
@@ -58,6 +58,8 @@ export const MOCK_MEGA_MENU_CATEGORY_TREE: CategoryTreeItem[] = [
 export const CATEGORY_NAV_BADGES: Record<string, MegaMenuBadge> = {
   'demo-phones': 'hot',
   'demo-new-in': 'new',
+  phones: 'hot',
+  'fashion-new-in': 'new',
 };
 
 export type MegaMenuPromo = {

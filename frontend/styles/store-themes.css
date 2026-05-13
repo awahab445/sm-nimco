@@ -6,6 +6,19 @@
 
 [data-store-theme] {
   --radius-card: 0.5rem;
+  --primary-light: color-mix(in srgb, var(--primary) 12%, var(--background));
+  --mega-menu-shadow: 0 16px 48px -12px color-mix(in srgb, var(--foreground) 14%, transparent);
+  --navbar-background: color-mix(in srgb, var(--background) 92%, transparent);
+  --navbar-foreground: var(--foreground);
+  --navbar-muted-foreground: var(--muted-foreground);
+  --navbar-border: var(--border);
+}
+
+@media (prefers-color-scheme: dark) {
+  [data-store-theme] {
+    --primary-light: color-mix(in srgb, var(--primary) 22%, var(--muted));
+    --mega-menu-shadow: 0 20px 56px -16px color-mix(in srgb, #000 55%, transparent);
+  }
 }
 
 /* ——— default: calm neutrals + trustworthy blue (general ecommerce) ——— */
@@ -176,6 +189,16 @@
 /* ——— mehfil_shereen: white/neutral canvas + logo pattern; gold CTAs, navy anchors ——— */
 [data-store-theme="mehfil_shereen"] {
   --radius-card: 0.5rem;
+  --navbar-background: linear-gradient(
+    165deg,
+    #3d121c 0%,
+    #5c1f2e 28%,
+    #6b2838 55%,
+    #5a2230 100%
+  );
+  --navbar-foreground: rgba(255, 248, 250, 0.96);
+  --navbar-muted-foreground: rgba(255, 248, 250, 0.78);
+  --navbar-border: color-mix(in srgb, var(--primary) 45%, rgba(255, 240, 245, 0.2));
   /*
    * Light: solid readable column (80rem / max-w-7xl); pattern only in side gutters (.mehfil-store-shell).
    */
@@ -207,6 +230,10 @@
 @media (prefers-color-scheme: dark) {
   [data-store-theme="mehfil_shereen"] {
     /* Dark: wine-warm charcoal + rosé accents */
+    --navbar-background: linear-gradient(165deg, #2a0c14 0%, #3d1520 40%, #321018 100%);
+    --navbar-foreground: rgba(255, 248, 250, 0.95);
+    --navbar-muted-foreground: rgba(255, 248, 250, 0.72);
+    --navbar-border: rgba(200, 120, 130, 0.2);
     --background: #1c1216;
     --foreground: #f2ede6;
     --muted: #322428;

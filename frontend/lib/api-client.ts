@@ -219,65 +219,58 @@ export const categoryApi = {
     fetchApi<Category>(`/categories/slug/${encodeURIComponent(slug)}`),
 };
 
-/** Configurable storefront header links (managed in Admin → Store navigation). */
-export type StorefrontNavKind = 'LINK' | 'MEGA_CATEGORIES';
+/** Layered mega menu node (from Store navigation). */
+export interface StorefrontNavMegaNode {
+  id: string;
+  label: string;
+  href: string;
+  sortOrder: number;
+  children?: StorefrontNavMegaNode[];
+}
 
+/** Header bar link (Admin → Store navigation). */
 export interface StorefrontNavItem {
   id: string;
   label: string;
   secondaryLabel: string | null;
   href: string;
   sortOrder: number;
-  kind: StorefrontNavKind;
+  openMegaMenu: boolean;
 }
 
-/** Used when the API is unreachable or returns no rows (matches default migration seed). */
-export const STOREFRONT_NAV_FALLBACK: StorefrontNavItem[] = [
-  {
-    id: '00000000-0000-0000-0000-00000000e001',
-    label: 'Home',
-    secondaryLabel: null,
-    href: '/',
-    sortOrder: 0,
-    kind: 'LINK',
-  },
-  {
-    id: '00000000-0000-0000-0000-00000000e002',
-    label: 'Products',
-    secondaryLabel: 'Categories',
-    href: '/products',
-    sortOrder: 10,
-    kind: 'MEGA_CATEGORIES',
-  },
-  {
-    id: '00000000-0000-0000-0000-00000000e003',
-    label: 'Track order',
-    secondaryLabel: null,
-    href: '/track-order',
-    sortOrder: 20,
-    kind: 'LINK',
-  },
-  {
-    id: '00000000-0000-0000-0000-00000000e004',
-    label: 'Complaints',
-    secondaryLabel: null,
-    href: '/complain',
-    sortOrder: 30,
-    kind: 'LINK',
-  },
-  {
-    id: '00000000-0000-0000-0000-00000000e005',
-    label: 'Cart',
-    secondaryLabel: null,
-    href: '/cart',
-    sortOrder: 40,
-    kind: 'LINK',
-  },
-];
+export interface StorefrontNavigationPayload {
+  header: StorefrontNavItem[];
+  megaMenu: StorefrontNavMegaNode[];
+}
+
+export const STOREFRONT_NAV_FALLBACK: StorefrontNavigationPayload = {
+  header: [
+    { id: '00000000-0000-0000-0000-00000000e001', label: 'Home', secondaryLabel: null, href: '/', sortOrder: 0, openMegaMenu: false },
+    { id: '00000000-0000-0000-0000-00000000e002', label: 'Products', secondaryLabel: 'Categories', href: '/products', sortOrder: 10, openMegaMenu: true },
+    { id: '00000000-0000-0000-0000-00000000e003', label: 'Track order', secondaryLabel: null, href: '/track-order', sortOrder: 20, openMegaMenu: false },
+    { id: '00000000-0000-0000-0000-00000000e004', label: 'Complaints', secondaryLabel: null, href: '/complain', sortOrder: 30, openMegaMenu: false },
+    { id: '00000000-0000-0000-0000-00000000e005', label: 'Cart', secondaryLabel: null, href: '/cart', sortOrder: 40, openMegaMenu: false },
+  ],
+  megaMenu: [],
+};
 
 export const storefrontNavApi = {
-  getNavigation: (): Promise<{ data: StorefrontNavItem[] }> =>
-    fetchApi<{ data: StorefrontNavItem[] }>('/storefront/navigation'),
+  getNavigation: (): Promise<{ data: StorefrontNavigationPayload }> =>
+    fetchApi<{ data: StorefrontNavigationPayload }>('/storefront/navigation'),
+};
+
+export type PlpBrowseTreeNode = {
+  id: string;
+  label: string;
+  href: string;
+  categoryId: string | null;
+  sortOrder: number;
+  children?: PlpBrowseTreeNode[];
+};
+
+export const plpBrowseApi = {
+  getBrowseTree: (): Promise<{ data: { label: string; tree: PlpBrowseTreeNode[] } }> =>
+    fetchApi<{ data: { label: string; tree: PlpBrowseTreeNode[] } }>('/storefront/plp-browse-tree'),
 };
 
 // Product API

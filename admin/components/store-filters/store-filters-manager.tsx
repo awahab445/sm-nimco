@@ -13,6 +13,7 @@ import {
   type StorefrontFilterKind,
   type StorefrontFilterOptionRow,
 } from '@/lib/api/store-filters';
+import { StoreFilterBrowseTree } from '@/components/store-filters/store-filter-browse-tree';
 import { formatApiError } from '@/lib/api/error-message';
 
 export function StoreFiltersManager() {
@@ -194,8 +195,9 @@ export function StoreFiltersManager() {
       <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">Store filters</h1>
       <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
         Choose which filters appear on the shop product listing, set their <strong>display names</strong>, and for
-        attribute filters define option values. Product JSON attributes must use the same <strong>code</strong> and{' '}
-        <strong>value</strong> strings. One <strong>Category</strong> and one <strong>Price</strong> filter is allowed.
+        attribute filters define option values. The <strong>Category</strong> filter controls the layered browse tree on
+        the products page (synced from Store navigation). Product JSON attributes must use the same <strong>code</strong>{' '}
+        and <strong>value</strong> strings. One <strong>Category</strong> and one <strong>Price</strong> filter is allowed.
       </p>
 
       <div className="mt-6 flex justify-end">
@@ -256,6 +258,14 @@ export function StoreFiltersManager() {
                           className="mr-2 text-sm font-medium text-zinc-600 underline dark:text-zinc-400"
                         >
                           {expandedId === row.id ? 'Hide options' : 'Options'}
+                        </button>
+                      ) : row.kind === 'CATEGORY' ? (
+                        <button
+                          type="button"
+                          onClick={() => setExpandedId((id) => (id === row.id ? null : row.id))}
+                          className="mr-2 text-sm font-medium text-zinc-600 underline dark:text-zinc-400"
+                        >
+                          {expandedId === row.id ? 'Hide browse tree' : 'Browse tree'}
                         </button>
                       ) : null}
                       <button
@@ -324,6 +334,13 @@ export function StoreFiltersManager() {
                             </tbody>
                           </table>
                         )}
+                      </td>
+                    </tr>
+                  ) : null}
+                  {row.kind === 'CATEGORY' && expandedId === row.id ? (
+                    <tr key={`${row.id}-browse`} className="bg-zinc-50 dark:bg-zinc-900/40">
+                      <td colSpan={6} className="px-4 py-3">
+                        <StoreFilterBrowseTree filterId={row.id} filterName={row.name} />
                       </td>
                     </tr>
                   ) : null}

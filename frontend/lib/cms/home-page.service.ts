@@ -1,6 +1,6 @@
 import { fetchApi } from '@/lib/api-client';
 import type { HomePageLayoutResponse, HomeSection } from './home-page-types';
-import { HOME_PAGE_DEFAULT_SECTIONS } from './home-page-defaults';
+import { HOME_PAGE_DEFAULT_SECTIONS, HOME_SUBSCRIPTION_SECTION } from './home-page-defaults';
 
 function normalizeSections(raw: unknown): HomeSection[] | null {
   if (!raw || typeof raw !== 'object') return null;
@@ -45,6 +45,14 @@ async function resolveCmsBlockRefs(sections: HomeSection[]): Promise<HomeSection
   }
 
   return resolved;
+}
+
+/** Ensure email subscription CTA is on the homepage (CMS layouts often omit it). */
+function ensureHomeSubscriptionSection(sections: HomeSection[]): HomeSection[] {
+  if (sections.some((s) => s.type === 'subscription_cta' || s.type === 'newsletter_cta')) {
+    return sections;
+  }
+  return [...sections, HOME_SUBSCRIPTION_SECTION];
 }
 
 /**
@@ -141,12 +149,12 @@ export async function getHomePageSections(): Promise<HomeSection[]> {
     const sections = normalizeSections(payload);
     if (sections) {
       const withBlocks = await resolveCmsBlockRefs(sections);
-      return withLiveHeroSlides(withBlocks);
+      return ensureHomeSubscriptionSection(await withLiveHeroSlides(withBlocks));
     }
   } catch {
     // Network or 404 — use defaults in dev / when CMS not deployed
   }
 
   const defaultsResolved = await resolveCmsBlockRefs(HOME_PAGE_DEFAULT_SECTIONS);
-  return withLiveHeroSlides(defaultsResolved);
+  return ensureHomeSubscriptionSection(await withLiveHeroSlides(defaultsResolved));
 }

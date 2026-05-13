@@ -8,22 +8,16 @@ import { useAuthStore } from '@/lib/auth.store';
 import { useCartStore } from '@/lib/cart.store';
 import { STORE_NAME, getStoreLogoSrc } from '@/lib/config';
 import {
-  categoryApi,
   storefrontNavApi,
   STOREFRONT_NAV_FALLBACK,
-  type CategoryTreeItem,
   type StorefrontNavItem,
+  type StorefrontNavMegaNode,
 } from '@/lib/api-client';
-import { getMegaMenuCategoryRoots, parseCategoryTreeResponse } from '@/lib/mega-menu-config';
 import { SearchBar } from '@/components/search/search-bar';
 import { DesktopShopMegaMenu, MobileCategoryAccordions } from '@/components/layout/store-mega-menu';
 import { ShoppingBagIcon } from '@/components/icons/shopping-bag-icon';
 
 const DESKTOP_NAV_MIN_WIDTH = 1024;
-
-function sortNavRoots<T extends { position?: number }>(items: T[]): T[] {
-  return [...items].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
-}
 
 function isCartHref(href: string): boolean {
   const h = href.trim().split('?')[0] ?? '';
@@ -35,28 +29,11 @@ export function Header() {
   const cart = useCartStore((s) => s.cart);
   const cartItemCount = cart?.items?.reduce((sum, i) => sum + i.quantity, 0) ?? 0;
   const logoSrc = getStoreLogoSrc();
-  const [navTree, setNavTree] = useState<CategoryTreeItem[]>([]);
-  const [mainNav, setMainNav] = useState<StorefrontNavItem[]>(STOREFRONT_NAV_FALLBACK);
+  const [mainNav, setMainNav] = useState<StorefrontNavItem[]>(STOREFRONT_NAV_FALLBACK.header);
+  const [megaMenu, setMegaMenu] = useState<StorefrontNavMegaNode[]>(STOREFRONT_NAV_FALLBACK.megaMenu);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const mobileNavTitleId = useId();
-
-  useEffect(() => {
-    let cancelled = false;
-    categoryApi
-      .getCategories({ tree: true })
-      .then((res) => {
-        if (cancelled) return;
-        const tree = parseCategoryTreeResponse(res);
-        setNavTree(sortNavRoots(tree));
-      })
-      .catch(() => {
-        if (!cancelled) setNavTree([]);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -64,11 +41,20 @@ export function Header() {
       .getNavigation()
       .then((res) => {
         if (cancelled) return;
-        const list = res.data ?? [];
-        setMainNav(list.length > 0 ? list : STOREFRONT_NAV_FALLBACK);
+        const payload = res.data;
+        if (payload?.header?.length) {
+          setMainNav(payload.header);
+          setMegaMenu(payload.megaMenu ?? []);
+        } else {
+          setMainNav(STOREFRONT_NAV_FALLBACK.header);
+          setMegaMenu(STOREFRONT_NAV_FALLBACK.megaMenu);
+        }
       })
       .catch(() => {
-        if (!cancelled) setMainNav(STOREFRONT_NAV_FALLBACK);
+        if (!cancelled) {
+          setMainNav(STOREFRONT_NAV_FALLBACK.header);
+          setMegaMenu(STOREFRONT_NAV_FALLBACK.megaMenu);
+        }
       });
     return () => {
       cancelled = true;
@@ -104,14 +90,13 @@ export function Header() {
   }, []);
 
   const closeMobileNav = () => setMobileNavOpen(false);
-  const megaMenuRoots = getMegaMenuCategoryRoots(navTree);
 
   function desktopNavItem(item: StorefrontNavItem) {
-    if (item.kind === 'MEGA_CATEGORIES') {
+    if (item.openMegaMenu) {
       return (
         <DesktopShopMegaMenu
           key={item.id}
-          roots={megaMenuRoots}
+          roots={megaMenu}
           primaryLabel={item.label}
           secondaryLabel={item.secondaryLabel}
           primaryHref={item.href}
@@ -132,7 +117,7 @@ export function Header() {
           title={item.label}
         >
           <span className="relative inline-flex h-6 w-6 items-center justify-center">
-            <ShoppingBagIcon className="h-6 w-6 text-foreground" strokeWidth={2} aria-hidden />
+            <ShoppingBagIcon className="h-6 w-6" strokeWidth={2} aria-hidden />
             {cartItemCount > 0 ? (
               <span
                 className="pointer-events-none absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-semibold leading-none text-white ring-2 ring-background"
@@ -157,7 +142,7 @@ export function Header() {
   }
 
   function mobileNavItem(item: StorefrontNavItem) {
-    if (item.kind === 'MEGA_CATEGORIES') {
+    if (item.openMegaMenu) {
       return (
         <div key={item.id} className="space-y-1">
           <Link
@@ -167,7 +152,7 @@ export function Header() {
           >
             {item.label}
           </Link>
-          <MobileCategoryAccordions roots={megaMenuRoots} onNavigate={closeMobileNav} />
+          <MobileCategoryAccordions roots={megaMenu} onNavigate={closeMobileNav} />
         </div>
       );
     }
@@ -184,7 +169,7 @@ export function Header() {
           }
           onClick={closeMobileNav}
         >
-          <span className="relative inline-flex h-6 w-6 shrink-0 items-center justify-center text-foreground">
+          <span className="relative inline-flex h-6 w-6 shrink-0 items-center justify-center">
             <ShoppingBagIcon className="h-6 w-6" strokeWidth={2} aria-hidden />
             {cartItemCount > 0 ? (
               <span
@@ -282,7 +267,7 @@ export function Header() {
     ) : null;
 
   return (
-    <header className="sticky top-0 z-[60] w-full max-w-full overflow-visible border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 relative">
+    <header className="site-header sticky top-0 z-[60] w-full max-w-full overflow-visible border-b relative">
       <div className="mx-auto flex min-h-14 w-full min-w-0 max-w-[100rem] items-center justify-between gap-2 py-1.5 px-4 sm:gap-3 sm:px-8 lg:gap-4 lg:px-12 xl:px-16">
         <Link
           href="/"

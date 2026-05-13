@@ -37,10 +37,18 @@ type Props = {
   facets: ProductFacets | null;
   categoryNameById: Map<string, string>;
   onFiltersChange: (next: PlpFilterState) => void;
+  /** When true, category facet panel is hidden (browse tree handles categories). */
+  hideCategoryPanels?: boolean;
 };
 
-export function PlpFilterAccordions({ filters, facets, categoryNameById, onFiltersChange }: Props) {
-  const panels = facets?.filterPanels ?? [];
+export function PlpFilterAccordions({
+  filters,
+  facets,
+  categoryNameById,
+  onFiltersChange,
+  hideCategoryPanels = false,
+}: Props) {
+  const panels = (facets?.filterPanels ?? []).filter((p) => !(hideCategoryPanels && p.kind === 'category'));
 
   return (
     <div className="rounded-xl border border-border bg-card">

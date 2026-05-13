@@ -16,20 +16,10 @@ import {
   setPendingCouponCode,
   validateCouponCodeForCartLike,
 } from '@/lib/coupon-sync';
+import { formatVariantAttributes } from '@/lib/format-variant-attributes';
 
 function formatPrice(value: number, currency = DEFAULT_CURRENCY): string {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(value);
-}
-
-function formatVariantAttributes(attrs: Record<string, unknown> | undefined): string[] {
-  if (!attrs || typeof attrs !== 'object') return [];
-  return Object.entries(attrs)
-    .filter(([, v]) => v != null && v !== '')
-    .map(([k, v]) => {
-      const key = k.charAt(0).toUpperCase() + k.slice(1).replace(/([A-Z])/g, ' $1').trim();
-      const value = typeof v === 'object' ? JSON.stringify(v) : String(v);
-      return `${key}: ${value}`;
-    });
 }
 
 export default function CartPage() {
@@ -186,7 +176,7 @@ export default function CartPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight text-foreground">
-        <ShoppingBagIcon className="h-7 w-7 shrink-0 text-foreground" strokeWidth={2} aria-hidden />
+        <ShoppingBagIcon className="h-7 w-7 shrink-0" strokeWidth={2} aria-hidden />
         Your cart
       </h1>
 

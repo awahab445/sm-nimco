@@ -1,5 +1,13 @@
 import type { HomeSection } from './home-page-types';
 
+/** Email signup block appended to the homepage when CMS layout omits it. */
+export const HOME_SUBSCRIPTION_SECTION: HomeSection = {
+  id: 'subscription',
+  type: 'subscription_cta',
+  title: 'Stay in the loop',
+  subtitle: 'Get product drops and offers by email.',
+};
+
 /**
  * Fallback layout when no API is configured — replace via `getHomePageSections`.
  *
@@ -94,10 +102,5 @@ export const HOME_PAGE_DEFAULT_SECTIONS: HomeSection[] = [
     viewAllHref: '/products?page=2',
     source: { kind: 'latest', limit: 4, page: 2 },
   },
-  {
-    id: 'subscription',
-    type: 'subscription_cta',
-    title: 'Stay in the loop',
-    subtitle: 'Get product drops and offers by email.',
-  },
+  HOME_SUBSCRIPTION_SECTION,
 ];

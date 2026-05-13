@@ -91,7 +91,7 @@ export function CategoriesManager() {
           </h1>
           <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
             Manage the catalog tree, visibility, and sort order. Inactive categories stay hidden on
-            the storefront.
+            the storefront product listing and filters.
           </p>
           <div className="mt-3 rounded-lg border border-sky-200 bg-sky-50 px-3 py-2.5 text-sm text-sky-950 dark:border-sky-900/60 dark:bg-sky-950/40 dark:text-sky-100">
             <p className="font-medium text-sky-900 dark:text-sky-50">Price and listing filters are not set here</p>
@@ -150,7 +150,11 @@ export function CategoriesManager() {
         {loading ? (
           <div className="p-8 text-center text-sm text-zinc-500">Loading categories…</div>
         ) : sortedDisplay.length === 0 ? (
-          <div className="p-8 text-center text-sm text-zinc-500">No categories match this filter.</div>
+          <div className="p-8 text-center text-sm text-zinc-500">
+            {rows.length === 0
+              ? 'No categories yet. Create a top-level category to organize products on the storefront.'
+              : 'No categories match this filter.'}
+          </div>
         ) : (
           <table className="w-full min-w-[720px] text-left text-sm">
             <thead className="border-b border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900/50">

@@ -2,12 +2,31 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useCallback, useRef, useState } from 'react';
-import type { CategoryTreeItem } from '@/lib/api-client';
+import type { StorefrontNavMegaNode } from '@/lib/api-client';
 import { CATEGORY_NAV_BADGES, getMegaMenuPromo } from '@/lib/mega-menu-config';
 
-function sortByPosition<T extends { position?: number }>(items: T[]): T[] {
-  return [...items].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+function sortByOrder<T extends { sortOrder?: number }>(items: T[]): T[] {
+  return [...items].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+}
+
+function normalizePath(href: string): string {
+  const base = href.trim().split('?')[0]?.split('#')[0] ?? '/';
+  if (base.length > 1 && base.endsWith('/')) return base.slice(0, -1);
+  return base || '/';
+}
+
+function isNavActive(href: string, pathname: string): boolean {
+  const target = normalizePath(href);
+  const current = normalizePath(pathname);
+  if (target === '/') return current === '/';
+  return current === target || current.startsWith(`${target}/`);
+}
+
+function badgeSlugFromHref(href: string): string {
+  const m = href.match(/\/categories\/([^/?#]+)/);
+  return m?.[1] ?? '';
 }
 
 function CategoryBadge({ slug }: { slug: string }) {
@@ -27,25 +46,71 @@ function CategoryBadge({ slug }: { slug: string }) {
   );
 }
 
+function megaLinkClass(level: 2 | 3, active: boolean): string {
+  const depth = level === 2 ? 'mega-menu-nav-link--l2' : 'mega-menu-nav-link--l3';
+  const state = active ? ' mega-menu-nav-link--active' : '';
+  return `mega-menu-nav-link ${depth}${state}`;
+}
+
+type MegaMenuLinkProps = {
+  href: string;
+  label: string;
+  level: 2 | 3;
+  pathname: string;
+  onNavigate?: () => void;
+};
+
+function MegaMenuLink({ href, label, level, pathname, onNavigate }: MegaMenuLinkProps) {
+  const active = isNavActive(href, pathname);
+  return (
+    <Link
+      href={href}
+      className={megaLinkClass(level, active)}
+      aria-current={active ? 'page' : undefined}
+      onClick={onNavigate}
+    >
+      <span>{label}</span>
+      <CategoryBadge slug={badgeSlugFromHref(href)} />
+    </Link>
+  );
+}
+
 const CLOSE_MS = 180;
 
+function NavChevron({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className ?? 'header-nav-trigger__chevron h-3.5 w-3.5'}
+      viewBox="0 0 16 16"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+    >
+      <path
+        d="M4 6l4 4 4-4"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 type DesktopMegaMenuProps = {
-  roots: CategoryTreeItem[];
-  /** Primary tab label (default: Products). */
+  roots: StorefrontNavMegaNode[];
   primaryLabel?: string;
-  /** Secondary tab label (default: Categories). */
   secondaryLabel?: string | null;
-  /** Primary tab URL (default: /products). */
   primaryHref?: string;
 };
 
-/** Desktop: hover primary or secondary label for full-width mega panel (lg+). */
 export function DesktopShopMegaMenu({
   roots,
   primaryLabel = 'Products',
   secondaryLabel = 'Categories',
   primaryHref = '/products',
 }: DesktopMegaMenuProps) {
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -61,7 +126,6 @@ export function DesktopShopMegaMenu({
     closeTimer.current = setTimeout(() => setOpen(false), CLOSE_MS);
   }, [cancelClose]);
 
-/** Opens menu and clears any pending close timer. */
   const openMenu = useCallback(() => {
     cancelClose();
     setOpen(true);
@@ -69,16 +133,13 @@ export function DesktopShopMegaMenu({
 
   if (roots.length === 0) {
     return (
-      <Link
-        href="/products"
-        className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-      >
+      <Link href="/products" className="header-nav-trigger text-sm font-medium">
         Products
       </Link>
     );
   }
 
-  const columns = sortByPosition(roots).slice(0, 4);
+  const columns = sortByOrder(roots).slice(0, 4);
   const colCount = Math.min(4, Math.max(1, columns.length));
   const promo = getMegaMenuPromo();
 
@@ -93,9 +154,8 @@ export function DesktopShopMegaMenu({
           href={primaryHref}
           onMouseEnter={openMenu}
           onFocus={openMenu}
-          className={`text-sm font-medium transition-colors hover:text-foreground ${
-            open ? 'text-foreground' : 'text-muted-foreground'
-          }`}
+          className="header-nav-trigger text-sm font-medium"
+          aria-expanded={open}
         >
           {primaryLabel}
         </Link>
@@ -106,24 +166,23 @@ export function DesktopShopMegaMenu({
             onFocus={openMenu}
             aria-expanded={open}
             aria-haspopup="true"
-            className={`cursor-pointer border-0 bg-transparent p-0 text-sm font-medium transition-colors hover:text-foreground ${
-              open ? 'text-foreground' : 'text-muted-foreground'
-            }`}
+            className="header-nav-trigger cursor-pointer border-0 bg-transparent p-0 text-sm font-medium"
           >
-            {secondaryLabel}
+            <span>{secondaryLabel}</span>
+            <NavChevron />
           </button>
         ) : null}
       </div>
 
       {open ? (
         <div
-          className="store-mega-menu-panel absolute left-1/2 top-full z-[999] w-screen max-w-[100vw] -translate-x-1/2 border-t border-border bg-white pt-2 font-sans text-foreground shadow-[0_16px_48px_-12px_rgba(15,23,42,0.18)]"
+          className="store-mega-menu-panel absolute left-1/2 top-full z-[999] w-screen max-w-[100vw] -translate-x-1/2"
           role="region"
           aria-label="Shop categories"
           onMouseEnter={openMenu}
         >
           <div className="mx-auto max-w-[100rem] overflow-x-auto px-4 py-8 sm:px-8 lg:px-12 xl:px-16">
-            <MegaMenuGridInner columns={columns} promo={promo} colCount={colCount} />
+            <MegaMenuGridInner columns={columns} promo={promo} colCount={colCount} pathname={pathname} />
           </div>
         </div>
       ) : null}
@@ -131,14 +190,40 @@ export function DesktopShopMegaMenu({
   );
 }
 
+function MegaMenuChildList({
+  node,
+  pathname,
+}: {
+  node: StorefrontNavMegaNode;
+  pathname: string;
+}) {
+  const grandchildren = sortByOrder(node.children ?? []);
+  return (
+    <li>
+      <MegaMenuLink href={node.href} label={node.label} level={2} pathname={pathname} />
+      {grandchildren.length > 0 ? (
+        <ul className="mega-menu-nav-nested space-y-0.5">
+          {grandchildren.map((gc) => (
+            <li key={gc.id}>
+              <MegaMenuLink href={gc.href} label={gc.label} level={3} pathname={pathname} />
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </li>
+  );
+}
+
 function MegaMenuGridInner({
   columns,
   promo,
   colCount,
+  pathname,
 }: {
-  columns: CategoryTreeItem[];
+  columns: StorefrontNavMegaNode[];
   promo: ReturnType<typeof getMegaMenuPromo>;
   colCount: number;
+  pathname: string;
 }) {
   return (
     <div
@@ -148,37 +233,29 @@ function MegaMenuGridInner({
       }}
     >
       {columns.map((root) => {
-        const children = sortByPosition(root.children ?? []);
+        const children = sortByOrder(root.children ?? []);
+        const rootActive = isNavActive(root.href, pathname);
         return (
           <div key={root.id} className="min-w-0">
             <Link
-              href={`/categories/${root.slug}`}
-              className="mega-menu-nav-heading block text-sm font-bold tracking-tight text-foreground hover:text-primary"
+              href={root.href}
+              className={`mega-menu-nav-heading${rootActive ? ' mega-menu-nav-heading--active' : ''}`}
+              aria-current={rootActive ? 'page' : undefined}
             >
-              {root.name}
+              {root.label}
             </Link>
             <ul className="mt-3 max-h-[min(40vh,22rem)] space-y-0.5 overflow-y-auto overscroll-contain pr-1">
               {children.length === 0 ? (
                 <li>
-                  <Link
-                    href={`/categories/${root.slug}`}
-                    className="mega-menu-nav-link block rounded-md py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted/80 hover:text-primary"
-                  >
-                    Shop {root.name}
-                  </Link>
+                  <MegaMenuLink
+                    href={root.href}
+                    label={`Shop ${root.label}`}
+                    level={2}
+                    pathname={pathname}
+                  />
                 </li>
               ) : (
-                children.map((ch) => (
-                  <li key={ch.id}>
-                    <Link
-                      href={`/categories/${ch.slug}`}
-                      className="mega-menu-nav-link flex flex-wrap items-center rounded-md py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted/80 hover:text-primary"
-                    >
-                      <span>{ch.name}</span>
-                      <CategoryBadge slug={ch.slug} />
-                    </Link>
-                  </li>
-                ))
+                children.map((ch) => <MegaMenuChildList key={ch.id} node={ch} pathname={pathname} />)
               )}
             </ul>
           </div>
@@ -186,7 +263,7 @@ function MegaMenuGridInner({
       })}
 
       <aside className="min-w-0 lg:max-w-[300px]">
-        <div className="flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+        <div className="mega-menu-promo-card flex h-full flex-col overflow-hidden rounded-xl">
           <div className="relative aspect-[4/3] w-full shrink-0 bg-muted">
             <Image
               src={promo.imageSrc}
@@ -218,59 +295,110 @@ function MegaMenuGridInner({
 }
 
 type MobileCategoryAccordionsProps = {
-  roots: CategoryTreeItem[];
+  roots: StorefrontNavMegaNode[];
   onNavigate: () => void;
 };
 
-/** Mobile drawer: nested categories as accordions (lg:hidden). */
+function MobileChildBlock({
+  node,
+  pathname,
+  onNavigate,
+}: {
+  node: StorefrontNavMegaNode;
+  pathname: string;
+  onNavigate: () => void;
+}) {
+  const grandchildren = sortByOrder(node.children ?? []);
+  if (grandchildren.length === 0) {
+    return (
+      <li>
+        <MegaMenuLink href={node.href} label={node.label} level={2} pathname={pathname} onNavigate={onNavigate} />
+      </li>
+    );
+  }
+
+  const childActive = isNavActive(node.href, pathname);
+  return (
+    <li className="mega-menu-mobile-nested">
+      <details className="mega-menu-mobile-root" open={childActive || undefined}>
+        <summary className="header-nav-trigger flex cursor-pointer list-none items-center justify-between gap-2 px-2 py-2 text-sm font-medium marker:hidden [&::-webkit-details-marker]:hidden">
+          <span>{node.label}</span>
+          <NavChevron className="header-nav-trigger__chevron h-3 w-3" />
+        </summary>
+        <div className="mega-menu-mobile-panel px-2 py-2">
+          <MegaMenuLink
+            href={node.href}
+            label={`All in ${node.label}`}
+            level={2}
+            pathname={pathname}
+            onNavigate={onNavigate}
+          />
+          <ul className="mt-1 space-y-0.5">
+            {grandchildren.map((gc) => (
+              <li key={gc.id}>
+                <MegaMenuLink
+                  href={gc.href}
+                  label={gc.label}
+                  level={3}
+                  pathname={pathname}
+                  onNavigate={onNavigate}
+                />
+              </li>
+            ))}
+          </ul>
+        </div>
+      </details>
+    </li>
+  );
+}
+
 export function MobileCategoryAccordions({ roots, onNavigate }: MobileCategoryAccordionsProps) {
+  const pathname = usePathname();
   if (roots.length === 0) return null;
 
-  const sorted = sortByPosition(roots);
+  const sorted = sortByOrder(roots);
 
   return (
     <div className="border-t border-border pt-2 lg:hidden">
-      <p className="px-3 pb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Categories</p>
+      <p className="header-nav-categories-label px-3 pb-1 text-xs font-semibold uppercase tracking-wide">
+        Categories
+      </p>
       <div className="space-y-1.5 px-1">
-      {sorted.map((cat) => {
-        const children = sortByPosition(cat.children ?? []);
-        return (
-          <details
-            key={cat.id}
-            className="group rounded-md border border-border/60 bg-card/30 open:bg-muted/40"
-          >
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-3 py-2.5 text-sm font-medium text-foreground marker:hidden [&::-webkit-details-marker]:hidden">
-              <span>{cat.name}</span>
-              <span className="text-xs text-muted-foreground transition-transform group-open:rotate-180" aria-hidden>
-                ▾
-              </span>
-            </summary>
-            <div className="border-t border-border/60 px-2 py-2">
-              <Link
-                href={`/categories/${cat.slug}`}
-                className="mega-menu-nav-link block rounded-md px-2 py-2 text-sm font-medium text-foreground hover:bg-muted"
-                onClick={onNavigate}
-              >
-                All in {cat.name}
-              </Link>
-              <ul className="mt-1 space-y-0.5">
-                {children.map((ch) => (
-                  <li key={ch.id}>
-                    <Link
-                      href={`/categories/${ch.slug}`}
-                      className="mega-menu-nav-link flex flex-wrap items-center rounded-md px-2 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
-                      onClick={onNavigate}
-                    >
-                      <span>{ch.name}</span>
-                      <CategoryBadge slug={ch.slug} />
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </details>
-        );
-      })}
+        {sorted.map((cat) => {
+          const children = sortByOrder(cat.children ?? []);
+          const rootActive = isNavActive(cat.href, pathname);
+          return (
+            <details
+              key={cat.id}
+              className="mega-menu-mobile-root"
+              open={rootActive || undefined}
+            >
+              <summary className="header-nav-trigger flex cursor-pointer list-none items-center justify-between gap-2 px-3 py-2.5 text-sm font-medium marker:hidden [&::-webkit-details-marker]:hidden">
+                <span>{cat.label}</span>
+                <NavChevron className="header-nav-trigger__chevron h-3 w-3" />
+              </summary>
+              <div className="mega-menu-mobile-panel px-2 py-2">
+                <MegaMenuLink
+                  href={cat.href}
+                  label={`All in ${cat.label}`}
+                  level={2}
+                  pathname={pathname}
+                  onNavigate={onNavigate}
+                />
+                <ul className="mt-1 space-y-0.5">
+                  {children.map((ch) => (
+                    <MobileChildBlock
+                      key={ch.id}
+                      node={ch}
+                      pathname={pathname}
+                      onNavigate={onNavigate}
+                    />
+                  ))}
+                </ul>
+              </div>
+            </details>
+          );
+        })}
       </div>
     </div>
   );

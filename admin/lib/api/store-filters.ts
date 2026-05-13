@@ -100,3 +100,54 @@ export async function updateStoreFilterOption(
 export async function deleteStoreFilterOption(optionId: string): Promise<void> {
   await fetchApi<unknown>(`/admin/store-filters/options/${encodeURIComponent(optionId)}`, { method: 'DELETE' });
 }
+
+export type FilterBrowseTreeNodeRow = {
+  id: string;
+  filterId: string;
+  parentId: string | null;
+  navLinkId: string | null;
+  sortOrder: number;
+  isActive: boolean;
+  navLink?: {
+    id: string;
+    label: string;
+    href: string;
+    categoryId: string | null;
+    isActive: boolean;
+    category?: { id: string; name: string; slug: string } | null;
+  } | null;
+};
+
+export async function fetchFilterBrowseTree(filterId: string): Promise<FilterBrowseTreeNodeRow[]> {
+  const res = await fetchApi<{ data: FilterBrowseTreeNodeRow[] }>(
+    `/admin/store-filters/${encodeURIComponent(filterId)}/browse-tree`,
+  );
+  return res.data;
+}
+
+export async function syncFilterBrowseTreeFromNavigation(filterId: string): Promise<FilterBrowseTreeNodeRow[]> {
+  const res = await fetchApi<{ data: FilterBrowseTreeNodeRow[] }>(
+    `/admin/store-filters/${encodeURIComponent(filterId)}/browse-tree/sync-from-navigation`,
+    { method: 'POST' },
+  );
+  return res.data;
+}
+
+export async function updateFilterBrowseTreeNode(
+  nodeId: string,
+  body: { isActive?: boolean; sortOrder?: number; parentId?: string | null },
+): Promise<FilterBrowseTreeNodeRow> {
+  return fetchApi<FilterBrowseTreeNodeRow>(`/admin/store-filters/browse-tree/${encodeURIComponent(nodeId)}`, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  });
+}
+
+export async function reorderFilterBrowseTree(
+  items: Array<{ id: string; parentId: string | null; sortOrder: number }>,
+): Promise<void> {
+  await fetchApi('/admin/store-filters/browse-tree/reorder', {
+    method: 'PATCH',
+    body: JSON.stringify({ items }),
+  });
+}

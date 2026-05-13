@@ -1,14 +1,13 @@
 import { Controller, Get, HttpCode, HttpStatus } from '@nestjs/common';
 import { StorefrontNavService } from '../services/storefront-nav.service';
 
-/** Public storefront header navigation (no auth). */
-@Controller('storefront')
+@Controller('storefront/navigation')
 export class StorefrontNavController {
   constructor(private readonly storefrontNavService: StorefrontNavService) {}
 
-  @Get('navigation')
+  @Get()
   @HttpCode(HttpStatus.OK)
-  async getNavigation() {
+  async list() {
     const data = await this.storefrontNavService.findPublic();
     return { data };
   }

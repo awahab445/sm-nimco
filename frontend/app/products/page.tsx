@@ -23,7 +23,10 @@ import {
 } from '@/lib/plp-url-state';
 import { PlpFilterAccordions } from '@/components/products/plp-filter-accordions';
 import { PlpActiveFilterChips } from '@/components/products/plp-active-filter-chips';
+import { PlpBrowseTree, PlpBrowseBreadcrumbs } from '@/components/products/plp-browse-tree';
 import { PlpProductGridSkeleton } from '@/components/products/plp-product-grid-skeleton';
+import { plpBrowseApi, type PlpBrowseTreeNode } from '@/lib/api-client';
+import { findBrowseNodeLabel } from '@/lib/plp-browse-tree';
 
 function flattenCategories(res: { data?: Category[] } | CategoryTreeLike[]): Category[] {
   if (Array.isArray(res)) {
@@ -79,6 +82,10 @@ function ProductsContent() {
   const [previewFacets, setPreviewFacets] = useState<ProductFacets | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [browseLabel, setBrowseLabel] = useState('Categories');
+  const [browseTree, setBrowseTree] = useState<PlpBrowseTreeNode[]>([]);
+
+  const selectedCategoryId = applied.categoryIds[0] ?? null;
 
   const listQuery = useMemo(() => plpStateToListQuery(applied), [applied]);
   const listQueryKey = useMemo(() => JSON.stringify(listQuery), [listQuery]);
@@ -87,6 +94,26 @@ function ProductsContent() {
 
   useEffect(() => {
     setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    plpBrowseApi
+      .getBrowseTree()
+      .then((res) => {
+        if (cancelled) return;
+        setBrowseLabel(res.data?.label ?? 'Categories');
+        setBrowseTree(res.data?.tree ?? []);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setBrowseLabel('Categories');
+          setBrowseTree([]);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -208,6 +235,34 @@ function ProductsContent() {
     });
   };
 
+  const selectBrowseCategory = useCallback(
+    (categoryId: string | null) => {
+      replaceFilters({
+        ...applied,
+        categoryIds: categoryId ? [categoryId] : [],
+        page: 1,
+      });
+    },
+    [applied, replaceFilters],
+  );
+
+  const pageTitle = useMemo(() => {
+    if (applied.search) return `Search results`;
+    const fromTree = findBrowseNodeLabel(browseTree, selectedCategoryId);
+    if (fromTree) return fromTree;
+    if (selectedCategoryId) {
+      return categoryNameById.get(selectedCategoryId) ?? 'Products';
+    }
+    return 'Products';
+  }, [applied.search, browseTree, selectedCategoryId, categoryNameById]);
+
+  const pageSubtitle = useMemo(() => {
+    if (applied.search) return `Results for "${applied.search}"`;
+    if (selectedCategoryId) return 'Browse products in this category.';
+    if (hasActiveFilters(applied)) return 'Filtered results.';
+    return 'Browse all products.';
+  }, [applied, selectedCategoryId]);
+
   const drawerShowLabel = previewLoading
     ? 'Updating…'
     : previewFacets != null
@@ -232,11 +287,18 @@ function ProductsContent() {
           </button>
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4">
+          <PlpBrowseTree
+            label={browseLabel}
+            tree={browseTree}
+            selectedCategoryId={draft.categoryIds[0] ?? null}
+            onSelectCategory={(id) => setDraft((d) => ({ ...d, categoryIds: id ? [id] : [], page: 1 }))}
+          />
           <PlpFilterAccordions
             filters={draft}
             facets={facets}
             categoryNameById={categoryNameById}
             onFiltersChange={setDraft}
+            hideCategoryPanels
           />
         </div>
         <div
@@ -268,8 +330,14 @@ function ProductsContent() {
   return (
     <div className="mx-auto w-full max-w-7xl px-4 pb-24 pt-6 sm:px-6 sm:pt-8 sm:pb-8 lg:px-8 lg:pb-8">
       <div className="flex w-full min-w-0 flex-col gap-6 lg:flex-row lg:items-start lg:gap-8">
-        <aside className="hidden w-72 shrink-0 lg:block" aria-label="Product filters">
-          <div className="sticky top-20 space-y-3">
+        <aside className="hidden w-72 shrink-0 lg:block" aria-label="Product navigation and filters">
+          <div className="sticky top-20 space-y-4">
+            <PlpBrowseTree
+              label={browseLabel}
+              tree={browseTree}
+              selectedCategoryId={selectedCategoryId}
+              onSelectCategory={selectBrowseCategory}
+            />
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Refine</h2>
               <button
@@ -286,20 +354,28 @@ function ProductsContent() {
               facets={facets}
               categoryNameById={categoryNameById}
               onFiltersChange={(next) => replaceFilters({ ...next, page: 1 })}
+              hideCategoryPanels
             />
           </div>
         </aside>
 
         <div className="min-w-0 w-full flex-1">
+          <div className="mb-4 lg:hidden">
+            <PlpBrowseTree
+              label={browseLabel}
+              tree={browseTree}
+              selectedCategoryId={selectedCategoryId}
+              onSelectCategory={selectBrowseCategory}
+            />
+          </div>
+          <PlpBrowseBreadcrumbs
+            tree={browseTree}
+            selectedCategoryId={selectedCategoryId}
+            onSelectCategory={selectBrowseCategory}
+          />
           <div className="mb-6">
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">Products</h1>
-            <p className="mt-1 text-muted-foreground">
-              {applied.search
-                ? `Search results for "${applied.search}"`
-                : hasActiveFilters(applied)
-                  ? 'Filtered results.'
-                  : 'Browse all products.'}
-            </p>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">{pageTitle}</h1>
+            <p className="mt-1 text-muted-foreground">{pageSubtitle}</p>
             {!isInitialLoad && meta != null && (
               <p className="mt-2 text-sm text-muted-foreground">
                 {meta.total} {meta.total === 1 ? 'product' : 'products'}

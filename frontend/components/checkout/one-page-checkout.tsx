@@ -15,6 +15,7 @@ import {
   clearPendingCouponCode,
   setPendingCouponCode,
 } from '@/lib/coupon-sync';
+import { formatVariantAttributes } from '@/lib/format-variant-attributes';
 
 const emptyAddress: Address = {
   firstName: '',
@@ -50,18 +51,6 @@ function formatAddressLine(a: AddressWithId): string {
 
 function formatPrice(value: number, currency: string) {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(value);
-}
-
-/** Format variant attributes for display (e.g. "Size: M", "Color: Red") */
-function formatVariantAttributes(attrs: Record<string, unknown> | undefined): string[] {
-  if (!attrs || typeof attrs !== 'object') return [];
-  return Object.entries(attrs)
-    .filter(([, v]) => v != null && v !== '')
-    .map(([k, v]) => {
-      const key = k.charAt(0).toUpperCase() + k.slice(1).replace(/([A-Z])/g, ' $1').trim();
-      const value = typeof v === 'object' ? JSON.stringify(v) : String(v);
-      return `${key}: ${value}`;
-    });
 }
 
 function validateAddress(addr: Address): boolean {

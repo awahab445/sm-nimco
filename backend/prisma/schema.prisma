@@ -196,6 +196,7 @@ model Category {
   parent   Category?         @relation("CategoryTree", fields: [parentId], references: [id], onDelete: SetNull)
   children Category[]        @relation("CategoryTree")
   products ProductCategory[]
+  storefrontNavLinks StorefrontNavLink[]
 
   @@index([slug])
   @@index([parentId])
@@ -1012,9 +1013,33 @@ model StorefrontFilter {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   options StorefrontFilterOption[]
+  browseTreeNodes StorefrontFilterTreeNode[]
 
   @@index([isActive, sortOrder])
   @@map("storefront_filters")
+}
+
+/** PLP side-rail browse tree (synced from Store navigation mega menu; managed under Store filters). */
+model StorefrontFilterTreeNode {
+  id        String   @id @default(uuid()) @db.Uuid
+  filterId  String   @map("filter_id") @db.Uuid
+  parentId  String?  @map("parent_id") @db.Uuid
+  /** Source row in Store navigation (mega zone) for label, href, and category. */
+  navLinkId String?  @map("nav_link_id") @db.Uuid
+  sortOrder Int      @default(0) @map("sort_order")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  filter   StorefrontFilter           @relation(fields: [filterId], references: [id], onDelete: Cascade)
+  parent   StorefrontFilterTreeNode?  @relation("FilterBrowseTree", fields: [parentId], references: [id], onDelete: Cascade)
+  children StorefrontFilterTreeNode[] @relation("FilterBrowseTree")
+  navLink  StorefrontNavLink?         @relation(fields: [navLinkId], references: [id], onDelete: SetNull)
+
+  @@unique([filterId, navLinkId])
+  @@index([filterId, parentId, sortOrder])
+  @@index([filterId, isActive, sortOrder])
+  @@map("storefront_filter_tree_nodes")
 }
 
 model StorefrontFilterOption {
@@ -1042,14 +1067,26 @@ model StorefrontNavLink {
   id             String   @id @default(uuid()) @db.Uuid
   label          String   @db.VarChar(128)
   secondaryLabel String?  @map("secondary_label") @db.VarChar(128)
-  href           String   @db.VarChar(512)
+  href           String   @default("") @db.VarChar(512)
   sortOrder      Int      @default(0) @map("sort_order")
   isActive       Boolean  @default(true) @map("is_active")
-  /** LINK | MEGA_CATEGORIES — only one active row should use MEGA_CATEGORIES. */
+  /** header bar link, or legacy MEGA_CATEGORIES (migrated to openMegaMenu). */
   kind           String   @default("LINK") @db.VarChar(32)
+  /** header = top bar; mega = layered mega menu tree */
+  zone           String   @default("header") @db.VarChar(16)
+  parentId       String?  @map("parent_id") @db.Uuid
+  categoryId     String?  @map("category_id")
+  /** Header item that opens the mega menu panel (replaces MEGA_CATEGORIES kind). */
+  openMegaMenu   Boolean  @default(false) @map("open_mega_menu")
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
 
+  parent   StorefrontNavLink?  @relation("StorefrontNavTree", fields: [parentId], references: [id], onDelete: Cascade)
+  children StorefrontNavLink[] @relation("StorefrontNavTree")
+  category Category?           @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  filterTreeNodes StorefrontFilterTreeNode[]
+
   @@index([isActive, sortOrder])
+  @@index([zone, parentId, sortOrder])
   @@map("storefront_nav_links")
 }

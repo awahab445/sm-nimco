@@ -13,7 +13,7 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { StorefrontNavService } from '../services/storefront-nav.service';
-import { CreateStorefrontNavLinkDto } from '../dto/create-storefront-nav-link.dto';
+import { CreateStorefrontNavLinkDto, ReorderStorefrontNavDto } from '../dto/create-storefront-nav-link.dto';
 import { UpdateStorefrontNavLinkDto } from '../dto/update-storefront-nav-link.dto';
 import { AdminJwtAuthGuard } from '../../admin/guards/admin-jwt-auth.guard';
 import { AdminPermissionsGuard } from '../../admin/guards/admin-permissions.guard';
@@ -38,6 +38,14 @@ export class AdminStorefrontNavController {
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
   async create(@Body() dto: CreateStorefrontNavLinkDto) {
     return this.storefrontNavService.create(dto);
+  }
+
+  @Patch('reorder')
+  @RequirePermissions('products.manage')
+  @HttpCode(HttpStatus.OK)
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+  async reorder(@Body() dto: ReorderStorefrontNavDto) {
+    return this.storefrontNavService.reorder(dto);
   }
 
   @Patch(':id')

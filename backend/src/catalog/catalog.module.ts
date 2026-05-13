@@ -4,6 +4,7 @@ import { AdminProductController } from './controllers/admin-product.controller';
 import { CategoryController } from './controllers/category.controller';
 import { AdminCategoryController } from './controllers/admin-category.controller';
 import { AdminStorefrontFiltersController } from './controllers/admin-storefront-filters.controller';
+import { StorefrontFilterController } from './controllers/storefront-filter.controller';
 import { StorefrontNavController } from './controllers/storefront-nav.controller';
 import { AdminStorefrontNavController } from './controllers/admin-storefront-nav.controller';
 import {
@@ -31,6 +32,7 @@ import { AdminRbacService } from '../admin/services/admin-rbac.service';
     CategoryController,
     AdminCategoryController,
     AdminStorefrontFiltersController,
+    StorefrontFilterController,
     StorefrontNavController,
     AdminStorefrontNavController,
   ],

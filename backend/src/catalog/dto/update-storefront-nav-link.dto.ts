@@ -1,4 +1,4 @@
-import { IsBoolean, IsIn, IsInt, IsOptional, IsString, MaxLength, Min } from 'class-validator';
+import { IsBoolean, IsIn, IsInt, IsOptional, IsString, IsUUID, MaxLength, Min } from 'class-validator';
 
 export class UpdateStorefrontNavLinkDto {
   @IsOptional()
@@ -29,4 +29,21 @@ export class UpdateStorefrontNavLinkDto {
   @IsString()
   @IsIn(['LINK', 'MEGA_CATEGORIES'])
   kind?: string;
+
+  @IsOptional()
+  @IsString()
+  @IsIn(['header', 'mega'])
+  zone?: string;
+
+  @IsOptional()
+  @IsUUID()
+  parentId?: string | null;
+
+  @IsOptional()
+  @IsString()
+  categoryId?: string | null;
+
+  @IsOptional()
+  @IsBoolean()
+  openMegaMenu?: boolean;
 }

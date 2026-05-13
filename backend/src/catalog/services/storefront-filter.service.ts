@@ -9,6 +9,35 @@ import { CreateStorefrontFilterDto } from '../dto/create-storefront-filter.dto';
 import { UpdateStorefrontFilterDto } from '../dto/update-storefront-filter.dto';
 import { CreateStorefrontFilterOptionDto } from '../dto/create-storefront-filter-option.dto';
 import { UpdateStorefrontFilterOptionDto } from '../dto/update-storefront-filter-option.dto';
+import {
+  ReorderFilterBrowseTreeDto,
+  UpdateFilterBrowseTreeNodeDto,
+} from '../dto/filter-browse-tree.dto';
+
+export type PlpBrowseTreeNode = {
+  id: string;
+  label: string;
+  href: string;
+  categoryId: string | null;
+  sortOrder: number;
+  children: PlpBrowseTreeNode[];
+};
+
+type TreeRow = {
+  id: string;
+  filterId: string;
+  parentId: string | null;
+  navLinkId: string | null;
+  sortOrder: number;
+  isActive: boolean;
+  navLink?: {
+    label: string;
+    href: string;
+    categoryId: string | null;
+    isActive: boolean;
+    category?: { slug: string; name: string } | null;
+  } | null;
+};
 
 @Injectable()
 export class StorefrontFilterService {
@@ -156,5 +185,190 @@ export class StorefrontFilterService {
     if (!opt) throw new NotFoundException('Option not found');
     await this.db.storefrontFilterOption.delete({ where: { id: optionId } });
     return { id: optionId };
+  }
+
+  private resolveNavHref(nav: { href: string; category?: { slug: string } | null }): string {
+    if (nav.category?.slug) return `/categories/${nav.category.slug}`;
+    const h = nav.href?.trim();
+    return h || '/products';
+  }
+
+  private buildBrowseTree(flat: TreeRow[]): PlpBrowseTreeNode[] {
+    const byParent = new Map<string | null, TreeRow[]>();
+    for (const row of flat) {
+      const key = row.parentId;
+      if (!byParent.has(key)) byParent.set(key, []);
+      byParent.get(key)!.push(row);
+    }
+    for (const list of byParent.values()) {
+      list.sort((a, b) => a.sortOrder - b.sortOrder);
+    }
+
+    const walk = (parentId: string | null): PlpBrowseTreeNode[] =>
+      (byParent.get(parentId) ?? []).map((row) => {
+        const nav = row.navLink;
+        const label = nav?.label?.trim() || 'Item';
+        const href = nav ? this.resolveNavHref(nav) : '/products';
+        const categoryId = nav?.categoryId ?? null;
+        return {
+          id: row.id,
+          label,
+          href,
+          categoryId,
+          sortOrder: row.sortOrder,
+          children: walk(row.id),
+        };
+      });
+
+    return walk(null);
+  }
+
+  private async getCategoryFilterOrThrow(filterId: string) {
+    const filter = await this.db.storefrontFilter.findUnique({ where: { id: filterId } });
+    if (!filter) throw new NotFoundException('Filter not found');
+    if (filter.kind !== 'CATEGORY') {
+      throw new BadRequestException('Browse tree is only available for CATEGORY filters.');
+    }
+    return filter;
+  }
+
+  async listBrowseTreeForAdmin(filterId: string) {
+    await this.getCategoryFilterOrThrow(filterId);
+    return this.db.storefrontFilterTreeNode.findMany({
+      where: { filterId },
+      orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }],
+      include: {
+        navLink: {
+          include: { category: { select: { id: true, name: true, slug: true } } },
+        },
+      },
+    });
+  }
+
+  async findPublicBrowseTree(): Promise<{ label: string; tree: PlpBrowseTreeNode[] } | null> {
+    const filter = await this.db.storefrontFilter.findFirst({
+      where: { kind: 'CATEGORY', isActive: true },
+      orderBy: { sortOrder: 'asc' },
+    });
+    if (!filter) return null;
+
+    const rows = await this.db.storefrontFilterTreeNode.findMany({
+      where: { filterId: filter.id, isActive: true },
+      orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }],
+      include: {
+        navLink: {
+          include: { category: { select: { slug: true, name: true } } },
+        },
+      },
+    });
+
+    const activeRows = rows.filter((r: TreeRow) => r.navLink?.isActive !== false) as TreeRow[];
+    if (activeRows.length === 0) {
+      return { label: filter.name, tree: [] };
+    }
+    return { label: filter.name, tree: this.buildBrowseTree(activeRows) };
+  }
+
+  async syncBrowseTreeFromNavigation(filterId: string) {
+    await this.getCategoryFilterOrThrow(filterId);
+
+    const navLinks = await this.db.storefrontNavLink.findMany({
+      where: { zone: 'mega' },
+      orderBy: [{ sortOrder: 'asc' }, { label: 'asc' }],
+    });
+
+    await this.db.$transaction(async (tx: any) => {
+      const existing = await tx.storefrontFilterTreeNode.findMany({ where: { filterId } });
+      const byNavId = new Map<string, { id: string }>();
+      for (const row of existing) {
+        if (row.navLinkId) byNavId.set(row.navLinkId, row);
+      }
+
+      const navIdToTreeId = new Map<string, string>();
+
+      for (const nav of navLinks.filter((n: { parentId: string | null }) => !n.parentId)) {
+        const prev = byNavId.get(nav.id);
+        const node = prev
+          ? await tx.storefrontFilterTreeNode.update({
+              where: { id: prev.id },
+              data: { sortOrder: nav.sortOrder, parentId: null },
+            })
+          : await tx.storefrontFilterTreeNode.create({
+              data: {
+                filterId,
+                navLinkId: nav.id,
+                parentId: null,
+                sortOrder: nav.sortOrder,
+                isActive: nav.isActive,
+              },
+            });
+        navIdToTreeId.set(nav.id, node.id);
+      }
+
+      for (const nav of navLinks.filter((n: { parentId: string | null }) => n.parentId)) {
+        const parentTreeId = navIdToTreeId.get(nav.parentId!);
+        if (!parentTreeId) continue;
+        const prev = byNavId.get(nav.id);
+        const node = prev
+          ? await tx.storefrontFilterTreeNode.update({
+              where: { id: prev.id },
+              data: { sortOrder: nav.sortOrder, parentId: parentTreeId },
+            })
+          : await tx.storefrontFilterTreeNode.create({
+              data: {
+                filterId,
+                navLinkId: nav.id,
+                parentId: parentTreeId,
+                sortOrder: nav.sortOrder,
+                isActive: nav.isActive,
+              },
+            });
+        navIdToTreeId.set(nav.id, node.id);
+      }
+
+      const validNavIds = new Set(navLinks.map((n: { id: string }) => n.id));
+      const stale = existing.filter((r: { navLinkId: string | null }) => r.navLinkId && !validNavIds.has(r.navLinkId));
+      if (stale.length) {
+        await tx.storefrontFilterTreeNode.deleteMany({
+          where: { id: { in: stale.map((s: { id: string }) => s.id) } },
+        });
+      }
+    });
+
+    return this.listBrowseTreeForAdmin(filterId);
+  }
+
+  async updateBrowseTreeNode(nodeId: string, dto: UpdateFilterBrowseTreeNodeDto) {
+    const row = await this.db.storefrontFilterTreeNode.findUnique({ where: { id: nodeId } });
+    if (!row) throw new NotFoundException('Browse tree node not found');
+    if (dto.parentId !== undefined && dto.parentId === nodeId) {
+      throw new BadRequestException('A node cannot be its own parent.');
+    }
+    return this.db.storefrontFilterTreeNode.update({
+      where: { id: nodeId },
+      data: {
+        ...(dto.isActive !== undefined ? { isActive: dto.isActive } : {}),
+        ...(dto.sortOrder !== undefined ? { sortOrder: dto.sortOrder } : {}),
+        ...(dto.parentId !== undefined ? { parentId: dto.parentId } : {}),
+      },
+      include: {
+        navLink: { include: { category: { select: { id: true, name: true, slug: true } } } },
+      },
+    });
+  }
+
+  async reorderBrowseTree(dto: ReorderFilterBrowseTreeDto) {
+    await this.db.$transaction(
+      dto.items.map((item) =>
+        this.db.storefrontFilterTreeNode.update({
+          where: { id: item.id },
+          data: {
+            parentId: item.parentId ?? null,
+            sortOrder: item.sortOrder,
+          },
+        }),
+      ),
+    );
+    return { ok: true };
   }
 }

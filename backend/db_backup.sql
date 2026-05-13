@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict dO7VIOe0jSjNfIP47Qee7hiCqROZgVPuQDNKJSXU2uxXf6qHHnbObUwQxh9yvKf
+\restrict G5lCH5mhnYJ3QJLyqqzy38RCcECIIpkhAU8TahKZxbwRluM6lgXGkyzvX8qpxtc
 
 -- Dumped from database version 18.3
 -- Dumped by pg_dump version 18.3
@@ -835,6 +835,25 @@ CREATE TABLE public.storefront_filters (
 ALTER TABLE public.storefront_filters OWNER TO postgres;
 
 --
+-- Name: storefront_nav_links; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.storefront_nav_links (
+    id uuid NOT NULL,
+    label character varying(128) NOT NULL,
+    secondary_label character varying(128),
+    href character varying(512) NOT NULL,
+    sort_order integer DEFAULT 0 NOT NULL,
+    is_active boolean DEFAULT true NOT NULL,
+    kind character varying(32) DEFAULT 'LINK'::character varying NOT NULL,
+    created_at timestamp(3) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at timestamp(3) without time zone NOT NULL
+);
+
+
+ALTER TABLE public.storefront_nav_links OWNER TO postgres;
+
+--
 -- Name: subscribers; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -941,6 +960,11 @@ b6151fdf-2507-4841-a50e-24668be1ea79	customers.update	Update customers	2026-05-1
 4ade7771-a344-4bcb-a7ee-4f079430104e	inventory.read	Read inventory	2026-05-04 07:22:01.056
 7a71bbd5-3e2e-4d9f-a0ac-43563e7fb583	inventory.manage	Manage inventory and stock	2026-05-04 07:22:01.057
 1dcba78f-a3d7-496f-a2ba-ed6585be6b73	orders.manage	Manage orders (implies all orders.* actions)	2026-05-04 07:22:01.06
+107a5e7f-39d7-4f91-8d6e-c68a866de6c8	admin.access.full	Full administrative access (implies all permissions).	2026-05-04 07:22:01.029
+79710646-175d-4aae-bdd1-ba9bc8d2844f	admin.users.create	Create staff admin users	2026-05-04 07:22:01.042
+5bc3fe92-08d5-4857-b05b-c1b912418a6b	admin.users.read	View admin users	2026-05-04 07:22:01.043
+43ed1a83-e047-4c39-a3d5-effae8fa2470	admin.users.update	Update admin users	2026-05-04 07:22:01.044
+0ca45dcb-baa7-4d64-89fe-da7e0d3e0387	admin.users.delete	Deactivate or remove admin users	2026-05-04 07:22:01.045
 51062b59-ddd6-4ff8-ac4e-2f70f4cde409	customers.manage	Manage customers and groups (implies all customers.* actions)	2026-05-04 07:22:01.063
 8332b6b7-13cb-472f-a4b0-73cc50eea78e	promotions.manage	Manage promotions	2026-05-04 07:22:01.064
 55afa5c3-5076-4a94-a014-fa92c5fddb01	shipping.manage	Manage shipping zones and methods	2026-05-04 07:22:01.065
@@ -950,11 +974,6 @@ a629f498-ffea-40d3-b191-bb736eb424cf	cms.manage	Manage CMS pages, blocks, and sl
 664eb436-11ef-46e0-975d-9b30e7f6a127	subscriptions.manage	View storefront email subscriptions (subscriber list)	2026-05-12 07:40:14.805
 ccaa881a-2690-41ec-aec9-c061f97c9b7d	reports.read	Access reports and exports	2026-05-04 07:22:01.072
 29f643ad-529b-4b68-9932-1828b89c8fa1	settings.manage	Platform settings	2026-05-04 07:22:01.074
-107a5e7f-39d7-4f91-8d6e-c68a866de6c8	admin.access.full	Full administrative access (implies all permissions).	2026-05-04 07:22:01.029
-79710646-175d-4aae-bdd1-ba9bc8d2844f	admin.users.create	Create staff admin users	2026-05-04 07:22:01.042
-5bc3fe92-08d5-4857-b05b-c1b912418a6b	admin.users.read	View admin users	2026-05-04 07:22:01.043
-43ed1a83-e047-4c39-a3d5-effae8fa2470	admin.users.update	Update admin users	2026-05-04 07:22:01.044
-0ca45dcb-baa7-4d64-89fe-da7e0d3e0387	admin.users.delete	Deactivate or remove admin users	2026-05-04 07:22:01.045
 \.
 
 
@@ -987,6 +1006,11 @@ COPY public.admin_role_permissions (role_id, permission_id) FROM stdin;
 926550ee-84bb-414a-99f6-e11673f3da0e	4ade7771-a344-4bcb-a7ee-4f079430104e
 926550ee-84bb-414a-99f6-e11673f3da0e	7a71bbd5-3e2e-4d9f-a0ac-43563e7fb583
 926550ee-84bb-414a-99f6-e11673f3da0e	1dcba78f-a3d7-496f-a2ba-ed6585be6b73
+926550ee-84bb-414a-99f6-e11673f3da0e	107a5e7f-39d7-4f91-8d6e-c68a866de6c8
+926550ee-84bb-414a-99f6-e11673f3da0e	79710646-175d-4aae-bdd1-ba9bc8d2844f
+926550ee-84bb-414a-99f6-e11673f3da0e	5bc3fe92-08d5-4857-b05b-c1b912418a6b
+926550ee-84bb-414a-99f6-e11673f3da0e	43ed1a83-e047-4c39-a3d5-effae8fa2470
+926550ee-84bb-414a-99f6-e11673f3da0e	0ca45dcb-baa7-4d64-89fe-da7e0d3e0387
 926550ee-84bb-414a-99f6-e11673f3da0e	51062b59-ddd6-4ff8-ac4e-2f70f4cde409
 926550ee-84bb-414a-99f6-e11673f3da0e	8332b6b7-13cb-472f-a4b0-73cc50eea78e
 926550ee-84bb-414a-99f6-e11673f3da0e	55afa5c3-5076-4a94-a014-fa92c5fddb01
@@ -996,11 +1020,6 @@ COPY public.admin_role_permissions (role_id, permission_id) FROM stdin;
 926550ee-84bb-414a-99f6-e11673f3da0e	664eb436-11ef-46e0-975d-9b30e7f6a127
 926550ee-84bb-414a-99f6-e11673f3da0e	ccaa881a-2690-41ec-aec9-c061f97c9b7d
 926550ee-84bb-414a-99f6-e11673f3da0e	29f643ad-529b-4b68-9932-1828b89c8fa1
-926550ee-84bb-414a-99f6-e11673f3da0e	107a5e7f-39d7-4f91-8d6e-c68a866de6c8
-926550ee-84bb-414a-99f6-e11673f3da0e	79710646-175d-4aae-bdd1-ba9bc8d2844f
-926550ee-84bb-414a-99f6-e11673f3da0e	5bc3fe92-08d5-4857-b05b-c1b912418a6b
-926550ee-84bb-414a-99f6-e11673f3da0e	43ed1a83-e047-4c39-a3d5-effae8fa2470
-926550ee-84bb-414a-99f6-e11673f3da0e	0ca45dcb-baa7-4d64-89fe-da7e0d3e0387
 e4d44e14-47e2-4632-8c43-1ee84cd85eca	bd93314d-9f7e-4048-b578-e518247f01b0
 e4d44e14-47e2-4632-8c43-1ee84cd85eca	d8693266-66d8-4df3-964f-3b3c854155b9
 e4d44e14-47e2-4632-8c43-1ee84cd85eca	e0e19340-ce43-46a4-b5b7-fb8622c2fdcd
@@ -1018,6 +1037,7 @@ e4d44e14-47e2-4632-8c43-1ee84cd85eca	0adebdc6-0b0d-4dda-b217-5de5f3b5ed26
 e4d44e14-47e2-4632-8c43-1ee84cd85eca	4ade7771-a344-4bcb-a7ee-4f079430104e
 e4d44e14-47e2-4632-8c43-1ee84cd85eca	7a71bbd5-3e2e-4d9f-a0ac-43563e7fb583
 e4d44e14-47e2-4632-8c43-1ee84cd85eca	1dcba78f-a3d7-496f-a2ba-ed6585be6b73
+e4d44e14-47e2-4632-8c43-1ee84cd85eca	5bc3fe92-08d5-4857-b05b-c1b912418a6b
 e4d44e14-47e2-4632-8c43-1ee84cd85eca	51062b59-ddd6-4ff8-ac4e-2f70f4cde409
 e4d44e14-47e2-4632-8c43-1ee84cd85eca	8332b6b7-13cb-472f-a4b0-73cc50eea78e
 e4d44e14-47e2-4632-8c43-1ee84cd85eca	55afa5c3-5076-4a94-a014-fa92c5fddb01
@@ -1026,7 +1046,6 @@ e4d44e14-47e2-4632-8c43-1ee84cd85eca	6a942717-6026-44e7-80e7-26858f8c3eb5
 e4d44e14-47e2-4632-8c43-1ee84cd85eca	a629f498-ffea-40d3-b191-bb736eb424cf
 e4d44e14-47e2-4632-8c43-1ee84cd85eca	664eb436-11ef-46e0-975d-9b30e7f6a127
 e4d44e14-47e2-4632-8c43-1ee84cd85eca	ccaa881a-2690-41ec-aec9-c061f97c9b7d
-e4d44e14-47e2-4632-8c43-1ee84cd85eca	5bc3fe92-08d5-4857-b05b-c1b912418a6b
 f72b62cb-1ae0-4ba2-b178-12539e326c14	bd93314d-9f7e-4048-b578-e518247f01b0
 f72b62cb-1ae0-4ba2-b178-12539e326c14	e0e19340-ce43-46a4-b5b7-fb8622c2fdcd
 f72b62cb-1ae0-4ba2-b178-12539e326c14	2c5b5e04-816b-4864-bf47-d7eff12f79d4
@@ -1041,11 +1060,11 @@ f72b62cb-1ae0-4ba2-b178-12539e326c14	ccaa881a-2690-41ec-aec9-c061f97c9b7d
 --
 
 COPY public.admin_roles (id, slug, name, description, is_system, created_at, updated_at) FROM stdin;
-926550ee-84bb-414a-99f6-e11673f3da0e	super-admin	Super Admin	Full platform access. Assign sparingly.	t	2026-05-04 07:22:01.076	2026-05-12 13:46:26.936
-e4d44e14-47e2-4632-8c43-1ee84cd85eca	manager	Operations Manager	Day-to-day commerce operations without user/role administration.	t	2026-05-12 07:03:29.765	2026-05-12 13:46:26.939
-f72b62cb-1ae0-4ba2-b178-12539e326c14	support	Support	Read-heavy access for customer service.	t	2026-05-12 07:03:29.768	2026-05-12 13:46:26.941
 5dc16cb3-f12c-4195-9c85-90563c17d927	inventory-management	inventory management	update & manage inventory	f	2026-05-11 09:40:56.034	2026-05-11 09:40:56.034
 36d65b9f-5927-487b-be37-943b03c16541	products-management	products management	update and manage all products	f	2026-05-11 12:02:41.329	2026-05-11 12:02:41.329
+926550ee-84bb-414a-99f6-e11673f3da0e	super-admin	Super Admin	Full platform access. Assign sparingly.	t	2026-05-04 07:22:01.076	2026-05-12 15:14:57.02
+e4d44e14-47e2-4632-8c43-1ee84cd85eca	manager	Operations Manager	Day-to-day commerce operations without user/role administration.	t	2026-05-12 07:03:29.765	2026-05-12 15:14:57.022
+f72b62cb-1ae0-4ba2-b178-12539e326c14	support	Support	Read-heavy access for customer service.	t	2026-05-12 07:03:29.768	2026-05-12 15:14:57.024
 \.
 
 
@@ -1069,7 +1088,7 @@ COPY public.admin_users (id, email, password_hash, first_name, last_name, is_act
 20dd43d6-e741-4256-bf8d-8fef76fb7c47	a.wahab445@gmail.com	$2b$10$aYlaY6PZ6o.AKWYdUr775uZW9A0bfkp0mka65ej/BomKZsZmLkwei	abdul	wahab	t	2026-05-11 14:39:50.892+05	2026-05-11 09:21:52.545	2026-05-11 09:39:50.893
 1988f799-1a91-49d9-8322-36d857c54915	products@admin.com	$2b$10$VNC/Tyfa5JH/FI7DcGmwou5P0HlaXmZ3KA0T9dnAf8rQqhpeOdl3y	products	management	t	2026-05-11 17:03:42.621+05	2026-05-11 12:03:18.182	2026-05-11 12:03:42.624
 f2579ef9-ed54-4bcc-a685-61f049bf38a0	dummy@admin.com	$2b$10$I6FYLJt9Vs/JS0nK4iSX6eSV2UY5jpweG1kkFuWqxRoAy..ij18My	inventory	manager	t	2026-05-12 10:53:22.532+05	2026-05-11 09:41:54.067	2026-05-12 05:53:22.533
-f4b18155-4045-41e5-8bfc-c9371013bbd3	huzaifa@admin.com	$2b$10$b9eBNs4skCrh/Fy/70wta.64I6Z1w60vXENXBSnCf2qNEACEuoG2u	Super	Admin	t	2026-05-12 18:48:41.119+05	2026-05-04 07:22:01.201	2026-05-12 13:48:41.122
+f4b18155-4045-41e5-8bfc-c9371013bbd3	huzaifa@admin.com	$2b$10$b9eBNs4skCrh/Fy/70wta.64I6Z1w60vXENXBSnCf2qNEACEuoG2u	Super	Admin	t	2026-05-12 20:10:28.466+05	2026-05-04 07:22:01.201	2026-05-12 15:10:28.478
 \.
 
 
@@ -1159,7 +1178,7 @@ d9d76782-cbfc-42e9-932a-e2d102a1a02e	c7b8e71d-3489-4bd7-8f88-2e541ee86e41	\N	def
 1d62551d-4147-4618-b49d-c956c15bad85	64289463-e48b-4261-bfef-e59b622eb20e	64ea42f1-5306-476a-b2cd-cfe65a894d1b	default-warehouse	0	0	0	10	2026-05-08 07:09:31.477
 d8a7c195-a26f-4e1d-b475-d9b47970ff80	64289463-e48b-4261-bfef-e59b622eb20e	e752cecd-c989-4ff8-8f5a-3c64455eef67	default-warehouse	0	0	0	10	2026-05-08 07:09:31.478
 65b69e03-f9bc-4aa6-962e-40c453256469	64289463-e48b-4261-bfef-e59b622eb20e	70d5b65c-5cd7-40f8-91ec-e7b7b218c5b8	default-warehouse	20	1	19	10	2026-05-08 07:50:58.828
-fa630b05-bc52-4cfb-8927-b597813e65c7	64289463-e48b-4261-bfef-e59b622eb20e	40973815-351e-42b2-99dc-e30539f21968	default-warehouse	20	5	15	10	2026-05-12 13:26:02.432
+fa630b05-bc52-4cfb-8927-b597813e65c7	64289463-e48b-4261-bfef-e59b622eb20e	40973815-351e-42b2-99dc-e30539f21968	default-warehouse	20	5	15	10	2026-05-12 14:16:03.675
 b090fcda-7fd0-491f-a568-eb88e441fdd6	64289463-e48b-4261-bfef-e59b622eb20e	\N	default-warehouse	99	14	85	10	2026-05-07 11:45:56.203
 fc039723-4b20-4b28-850d-956f5ede1dd9	64289463-e48b-4261-bfef-e59b622eb20e	891c80cc-4be3-4853-b2f2-cb896bac7a33	default-warehouse	0	0	0	10	2026-05-08 07:09:31.788
 8ecbf34f-6e3c-4a54-865c-96b2cfd61db3	eaacdf54-eaa9-4dcc-839e-a10a61588523	\N	default-warehouse	100	2	98	10	2026-05-07 06:55:48.037
@@ -1451,6 +1470,19 @@ COPY public.storefront_filters (id, code, name, kind, sort_order, is_active, cre
 dfae5a8c-a7eb-4fda-b267-a49014377d22	category	Category	CATEGORY	0	t	2026-05-12 13:16:46.685	2026-05-12 13:16:46.685
 80fee301-d334-438f-9137-6bf3095754c4	size	Size	ATTRIBUTE	3	t	2026-05-12 13:16:46.705	2026-05-12 13:16:46.705
 4635a7d1-abb9-47c1-9f26-bbb9bc26a5d0	price	Price	PRICE	1	t	2026-05-12 13:16:46.699	2026-05-12 13:18:39.341
+\.
+
+
+--
+-- Data for Name: storefront_nav_links; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.storefront_nav_links (id, label, secondary_label, href, sort_order, is_active, kind, created_at, updated_at) FROM stdin;
+00000000-0000-0000-0000-00000000e001	Home	\N	/	0	t	LINK	2026-05-12 20:13:42.623	2026-05-12 20:13:42.623
+00000000-0000-0000-0000-00000000e002	Products	Categories	/products	10	t	MEGA_CATEGORIES	2026-05-12 20:13:42.623	2026-05-12 20:13:42.623
+00000000-0000-0000-0000-00000000e003	Track order	\N	/track-order	20	t	LINK	2026-05-12 20:13:42.623	2026-05-12 20:13:42.623
+00000000-0000-0000-0000-00000000e004	Complaints	\N	/complain	30	t	LINK	2026-05-12 20:13:42.623	2026-05-12 20:13:42.623
+00000000-0000-0000-0000-00000000e005	Cart	\N	/cart	40	t	LINK	2026-05-12 20:13:42.623	2026-05-12 20:13:42.623
 \.
 
 
@@ -1841,6 +1873,14 @@ ALTER TABLE ONLY public.storefront_filter_options
 
 ALTER TABLE ONLY public.storefront_filters
     ADD CONSTRAINT storefront_filters_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: storefront_nav_links storefront_nav_links_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.storefront_nav_links
+    ADD CONSTRAINT storefront_nav_links_pkey PRIMARY KEY (id);
 
 
 --
@@ -2716,6 +2756,13 @@ CREATE INDEX storefront_filters_is_active_sort_order_idx ON public.storefront_fi
 
 
 --
+-- Name: storefront_nav_links_is_active_sort_order_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX storefront_nav_links_is_active_sort_order_idx ON public.storefront_nav_links USING btree (is_active, sort_order);
+
+
+--
 -- Name: subscribers_created_at_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -3146,5 +3193,5 @@ REVOKE USAGE ON SCHEMA public FROM PUBLIC;
 -- PostgreSQL database dump complete
 --
 
-\unrestrict dO7VIOe0jSjNfIP47Qee7hiCqROZgVPuQDNKJSXU2uxXf6qHHnbObUwQxh9yvKf
+\unrestrict G5lCH5mhnYJ3QJLyqqzy38RCcECIIpkhAU8TahKZxbwRluM6lgXGkyzvX8qpxtc
 
