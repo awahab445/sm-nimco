@@ -1,5 +1,7 @@
 'use client';
 
+import { sanitizeCmsHtml } from '@/lib/sanitize-html';
+
 interface CmsBlockSectionProps {
   blockIdentifier: string;
   contentHtml?: string | null;
@@ -14,11 +16,13 @@ export function CmsBlockSection({ blockIdentifier, contentHtml }: CmsBlockSectio
     return null;
   }
 
+  const safeHtml = sanitizeCmsHtml(contentHtml);
+
   return (
     <section
       className="cms-block-section prose prose-zinc mx-auto max-w-none dark:prose-invert"
       data-cms-block={blockIdentifier}
-      dangerouslySetInnerHTML={{ __html: contentHtml }}
+      dangerouslySetInnerHTML={{ __html: safeHtml }}
     />
   );
 }

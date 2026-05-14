@@ -3,7 +3,7 @@
  * Handles API calls for authentication. Backend returns JWT in access_token.
  */
 
-import { getToken, setToken, clearToken } from './auth-token';
+import { clearSession } from './auth-token';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
@@ -68,10 +68,7 @@ async function fetchAuth<T>(
   };
 
   if (withToken) {
-    const token = getToken();
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
+    // Session cookie is HttpOnly; API auth uses credentials: include.
   }
 
   const response = await fetch(url, {
@@ -81,7 +78,7 @@ async function fetchAuth<T>(
   });
 
   if (response.status === 401 && withToken) {
-    clearToken();
+    void clearSession();
   }
 
   if (!response.ok) {
@@ -126,7 +123,7 @@ export const authService = {
     try {
       await fetchAuth<{ message?: string }>('/auth/logout', { method: 'POST' }, true);
     } finally {
-      clearToken();
+      await clearSession();
     }
   },
 
@@ -157,9 +154,4 @@ export const authService = {
       body: JSON.stringify({ token, password }),
     });
   },
-
-  /** Store token after login/register (and set cookie for middleware). */
-  setToken,
-  /** Clear token (e.g. on logout or 401). */
-  clearToken,
 };

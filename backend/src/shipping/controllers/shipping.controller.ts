@@ -10,6 +10,7 @@ import {
   HttpCode,
   HttpStatus,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { ShippingService } from '../services/shipping.service';
 import { CreateZoneDto, UpdateZoneDto } from '../dto/create-zone.dto';
@@ -23,6 +24,7 @@ import {
 import { AdminJwtAuthGuard } from '../../admin/guards/admin-jwt-auth.guard';
 import { AdminPermissionsGuard } from '../../admin/guards/admin-permissions.guard';
 import { RequirePermissions } from '../../admin/decorators/require-permissions.decorator';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 
 @Controller('shipping')
 export class ShippingController {
@@ -43,8 +45,9 @@ export class ShippingController {
    * GET /shipping/order/:orderId
    */
   @Get('order/:orderId')
-  async getOrderShipping(@Param('orderId') orderId: string) {
-    return this.shippingService.getOrderShipping(orderId);
+  @UseGuards(JwtAuthGuard)
+  async getOrderShipping(@Param('orderId') orderId: string, @Req() request: any) {
+    return this.shippingService.getOrderShippingAuthorized(orderId, request.user);
   }
 }
 

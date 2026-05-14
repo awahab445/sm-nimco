@@ -10,6 +10,11 @@ export class FirstAdminBootstrapDto {
   @MaxLength(128)
   password!: string;
 
+  @IsString()
+  @MinLength(16)
+  @MaxLength(256)
+  bootstrapToken!: string;
+
   @IsOptional()
   @IsString()
   @MaxLength(255)

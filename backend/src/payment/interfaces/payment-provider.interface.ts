@@ -37,6 +37,7 @@ export interface PaymentProvider {
   verifyCallback(
     callbackData: Record<string, any>,
     config: PaymentMethodConfig,
+    context?: { rawBody?: Buffer; signature?: string },
   ): Promise<CallbackVerificationResult>;
 
   /**

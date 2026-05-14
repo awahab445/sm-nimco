@@ -12,6 +12,11 @@ import {
 } from '../types/payment.types';
 import { randomUUID } from 'crypto';
 
+export interface StripeCallbackContext {
+  rawBody?: Buffer;
+  signature?: string;
+}
+
 @Injectable()
 export class StripeProvider implements PaymentProvider {
   private readonly logger = new Logger(StripeProvider.name);
@@ -79,6 +84,7 @@ export class StripeProvider implements PaymentProvider {
   async verifyCallback(
     callbackData: Record<string, any>,
     config: PaymentMethodConfig,
+    context?: StripeCallbackContext,
   ): Promise<CallbackVerificationResult> {
     const stripeConfig = config.config as {
       secretKey: string;
@@ -93,12 +99,42 @@ export class StripeProvider implements PaymentProvider {
       apiVersion: '2025-02-24.acacia',
     });
 
-    // For Stripe, we verify webhook events
-    // In production, you'd verify the webhook signature here
-    const event = callbackData as Stripe.Event;
+    let event: Stripe.Event;
 
     try {
-      // Verify event type
+      if (stripeConfig.webhookSecret) {
+        if (!context?.rawBody || !context.signature) {
+          return {
+            isValid: false,
+            paymentId: '',
+            gatewayTransactionId: '',
+            amount: 0,
+            currency: '',
+            status: PaymentStatus.FAILED,
+            gatewayResponse: callbackData,
+            error: 'Stripe webhook signature verification requires raw body and stripe-signature header',
+          };
+        }
+        event = stripe.webhooks.constructEvent(
+          context.rawBody,
+          context.signature,
+          stripeConfig.webhookSecret,
+        );
+      } else if (process.env.NODE_ENV === 'production') {
+        return {
+          isValid: false,
+          paymentId: '',
+          gatewayTransactionId: '',
+          amount: 0,
+          currency: '',
+          status: PaymentStatus.FAILED,
+          gatewayResponse: callbackData,
+          error: 'Stripe webhookSecret must be configured in production',
+        };
+      } else {
+        event = callbackData as Stripe.Event;
+      }
+
       if (event.type === 'payment_intent.succeeded') {
         const paymentIntent = event.data.object as Stripe.PaymentIntent;
 

@@ -12,6 +12,10 @@ import {
   type StorefrontNavZone,
 } from '@/lib/api/storefront-navigation';
 import { formatApiError } from '@/lib/api/error-message';
+import {
+  MegaMenuBannerSection,
+  type BannerFormState,
+} from '@/components/store-navigation/mega-menu-banner-section';
 
 type TreeNode = StorefrontNavRow & { children: TreeNode[] };
 
@@ -62,6 +66,12 @@ const emptyForm = (sortOrder: number, parentId = ''): FormState => ({
   parentId,
 });
 
+const emptyBannerForm = (): BannerFormState => ({
+  bannerImageUrl: '',
+  bannerHref: '',
+  bannerAlt: '',
+});
+
 export function StoreNavigationManager() {
   const [rows, setRows] = useState<StorefrontNavRow[]>([]);
   const [categories, setCategories] = useState<AdminCategoryListItem[]>([]);
@@ -74,6 +84,11 @@ export function StoreNavigationManager() {
   const [saving, setSaving] = useState(false);
   const [formErr, setFormErr] = useState<string | null>(null);
   const [dragId, setDragId] = useState<string | null>(null);
+  const [bannerLinkId, setBannerLinkId] = useState<string | null>(null);
+  const [bannerForm, setBannerForm] = useState<BannerFormState>(emptyBannerForm);
+  const [bannerSaving, setBannerSaving] = useState(false);
+  const [bannerErr, setBannerErr] = useState<string | null>(null);
+  const [bannerSaved, setBannerSaved] = useState(false);
 
   const load = useCallback(async () => {
     setError(null);
@@ -98,7 +113,32 @@ export function StoreNavigationManager() {
     () => rows.filter((r) => r.zone === 'header').sort((a, b) => a.sortOrder - b.sortOrder),
     [rows],
   );
+  const megaMenuHeaderLinks = useMemo(
+    () => headerRows.filter((r) => r.openMegaMenu),
+    [headerRows],
+  );
+  const bannerTarget = useMemo(() => {
+    if (megaMenuHeaderLinks.length === 0) return null;
+    return megaMenuHeaderLinks.find((r) => r.id === bannerLinkId) ?? megaMenuHeaderLinks[0];
+  }, [megaMenuHeaderLinks, bannerLinkId]);
   const megaTree = useMemo(() => buildTree(rows, 'mega'), [rows]);
+
+  useEffect(() => {
+    if (!bannerTarget) {
+      setBannerForm(emptyBannerForm());
+      setBannerLinkId(null);
+      return;
+    }
+    setBannerLinkId(bannerTarget.id);
+    setBannerForm({
+      bannerImageUrl: bannerTarget.bannerImageUrl ?? '',
+      bannerHref: bannerTarget.bannerHref ?? '',
+      bannerAlt: bannerTarget.bannerAlt ?? '',
+    });
+    setBannerErr(null);
+    setBannerSaved(false);
+  }, [bannerTarget?.id, bannerTarget?.bannerImageUrl, bannerTarget?.bannerHref, bannerTarget?.bannerAlt]);
+
   const megaFlat = useMemo(() => flattenTree(megaTree), [megaTree]);
 
   const categoryOptions = useMemo(
@@ -180,7 +220,7 @@ export function StoreNavigationManager() {
   }
 
   async function handleDelete(row: StorefrontNavRow) {
-    if (!window.confirm(`Delete “${row.label}” and any nested items?`)) return;
+    if (!window.confirm(`Delete â€œ${row.label}â€ and any nested items?`)) return;
     try {
       await deleteStorefrontNavItem(row.id);
       await load();
@@ -231,13 +271,34 @@ export function StoreNavigationManager() {
     setDragId(null);
   }
 
+  async function saveMegaMenuBanner(e: React.FormEvent) {
+    e.preventDefault();
+    if (!bannerTarget) return;
+    setBannerErr(null);
+    setBannerSaved(false);
+    setBannerSaving(true);
+    try {
+      await updateStorefrontNavItem(bannerTarget.id, {
+        bannerImageUrl: bannerForm.bannerImageUrl.trim() || null,
+        bannerHref: bannerForm.bannerHref.trim() || null,
+        bannerAlt: bannerForm.bannerAlt.trim() || null,
+      });
+      setBannerSaved(true);
+      await load();
+    } catch (err) {
+      setBannerErr(formatApiError(err));
+    } finally {
+      setBannerSaving(false);
+    }
+  }
+
   return (
     <div className="mx-auto max-w-5xl space-y-8 px-4 py-8">
       <div>
         <h1 className="text-2xl font-semibold text-foreground">Store navigation</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Manage the header bar and layered mega menu. Link items to catalog categories or set custom URLs.
-          Product categories are for catalog organization only — navigation is configured here.
+          Product categories are for catalog organization only â€” navigation is configured here.
         </p>
       </div>
 
@@ -248,7 +309,7 @@ export function StoreNavigationManager() {
       ) : null}
 
       {loading ? (
-        <p className="text-sm text-muted-foreground">Loading…</p>
+        <p className="text-sm text-muted-foreground">Loadingâ€¦</p>
       ) : (
         <>
           <section className="space-y-3">
@@ -276,12 +337,17 @@ export function StoreNavigationManager() {
                             Mega menu
                           </span>
                         ) : null}
+                        {row.openMegaMenu && row.bannerImageUrl ? (
+                          <span className="ml-2 rounded bg-emerald-500/10 px-1.5 py-0.5 text-xs text-emerald-700 dark:text-emerald-400">
+                            Banner
+                          </span>
+                        ) : null}
                         {!row.isActive ? (
                           <span className="ml-2 text-xs text-muted-foreground">(inactive)</span>
                         ) : null}
                       </p>
                       <p className="mt-0.5 font-mono text-xs text-muted-foreground">
-                        {row.category?.slug ? `/categories/${row.category.slug}` : row.href || '—'} · sort{' '}
+                        {row.category?.slug ? `/categories/${row.category.slug}` : row.href || 'â€”'} Â· sort{' '}
                         {row.sortOrder}
                       </p>
                     </div>
@@ -303,11 +369,26 @@ export function StoreNavigationManager() {
             </ul>
           </section>
 
+          <MegaMenuBannerSection
+            targets={megaMenuHeaderLinks}
+            selectedId={bannerTarget?.id ?? null}
+            onSelectTarget={setBannerLinkId}
+            bannerForm={bannerForm}
+            onBannerChange={(next) => {
+              setBannerForm((f) => ({ ...f, ...next }));
+              setBannerSaved(false);
+            }}
+            onSubmit={(e) => void saveMegaMenuBanner(e)}
+            saving={bannerSaving}
+            error={bannerErr}
+            saved={bannerSaved}
+          />
+
           <section className="space-y-3">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <h2 className="text-lg font-semibold text-foreground">Mega menu (layered navigation)</h2>
-                <p className="text-xs text-muted-foreground">Drag rows to reorder; drop on “Make child” to nest.</p>
+                <p className="text-xs text-muted-foreground">Drag rows to reorder; drop on â€œMake childâ€ to nest.</p>
               </div>
               <button
                 type="button"
@@ -337,15 +418,15 @@ export function StoreNavigationManager() {
                     <div className="min-w-0 flex-1">
                       <p className="font-medium text-foreground">
                         <span className="mr-2 cursor-grab text-muted-foreground" aria-hidden>
-                          ⠿
+                          â ¿
                         </span>
                         {row.label}
                         {row.category ? (
-                          <span className="ml-2 text-xs text-muted-foreground">→ {row.category.name}</span>
+                          <span className="ml-2 text-xs text-muted-foreground">â†’ {row.category.name}</span>
                         ) : null}
                       </p>
                       <p className="mt-0.5 font-mono text-xs text-muted-foreground">
-                        {row.category?.slug ? `/categories/${row.category.slug}` : row.href || '—'}
+                        {row.category?.slug ? `/categories/${row.category.slug}` : row.href || 'â€”'}
                       </p>
                     </div>
                     <div className="flex shrink-0 flex-wrap gap-2">
@@ -383,7 +464,7 @@ export function StoreNavigationManager() {
         <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal>
           <form
             onSubmit={(e) => void submitForm(e)}
-            className="max-h-[90vh] w-full max-w-md overflow-y-auto space-y-4 rounded-xl border border-border bg-background p-6 shadow-xl"
+            className="max-h-[90vh] w-full max-w-lg overflow-y-auto space-y-4 rounded-xl border border-border bg-background p-6 shadow-xl"
           >
             <h2 className="text-lg font-semibold">
               {editing ? 'Edit' : 'New'} {modalZone === 'header' ? 'header link' : 'mega menu item'}
@@ -407,7 +488,7 @@ export function StoreNavigationManager() {
                 onChange={(e) => setForm((f) => ({ ...f, categoryId: e.target.value }))}
                 className="mt-1 w-full rounded-md border border-input bg-card px-3 py-2 text-sm"
               >
-                <option value="">— Custom URL —</option>
+                <option value="">â€” Custom URL â€”</option>
                 {categoryOptions.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.name} ({c.slug})
@@ -455,7 +536,7 @@ export function StoreNavigationManager() {
                   onChange={(e) => setForm((f) => ({ ...f, parentId: e.target.value }))}
                   className="mt-1 w-full rounded-md border border-input bg-card px-3 py-2 text-sm"
                 >
-                  <option value="">— Top level (column) —</option>
+                  <option value="">â€” Top level (column) â€”</option>
                   {parentOptions.map((p) => (
                     <option key={p.id} value={p.id}>
                       {p.label}
@@ -498,7 +579,7 @@ export function StoreNavigationManager() {
                 disabled={saving}
                 className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
               >
-                {saving ? 'Saving…' : 'Save'}
+                {saving ? 'Savingâ€¦' : 'Save'}
               </button>
             </div>
           </form>

@@ -34,6 +34,44 @@ export class PaymentService {
   /**
    * Create payment intent for an order
    */
+  async createIntentAuthorized(
+    orderId: string,
+    paymentMethodCode: string,
+    returnUrl?: string,
+    cancelUrl?: string,
+    actor?: { typ: 'admin' | 'customer'; customerId?: string; adminUserId?: string } | null,
+    guestEmail?: string,
+  ): Promise<PaymentIntentResult> {
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+    });
+
+    if (!order) {
+      throw new NotFoundException(`Order ${orderId} not found`);
+    }
+
+    if (actor?.typ === 'admin') {
+      // staff may create intents for any order
+    } else if (actor?.typ === 'customer') {
+      if (order.customerId && order.customerId !== actor.customerId) {
+        throw new ForbiddenException('You do not have access to this order');
+      }
+    } else {
+      const normalizedGuest = (guestEmail || '').trim().toLowerCase();
+      const orderEmail = (order.customerEmail || '').trim().toLowerCase();
+      if (!normalizedGuest || normalizedGuest !== orderEmail) {
+        throw new ForbiddenException(
+          'Customer email must match the order to create a payment intent',
+        );
+      }
+    }
+
+    return this.createIntent(orderId, paymentMethodCode, returnUrl, cancelUrl);
+  }
+
+  /**
+   * Create payment intent for an order
+   */
   async createIntent(
     orderId: string,
     paymentMethodCode: string,
@@ -137,6 +175,7 @@ export class PaymentService {
   async verifyCallback(
     providerCode: string,
     callbackData: Record<string, any>,
+    verificationContext?: { rawBody?: Buffer; signature?: string },
   ): Promise<void> {
     // Load payment method
     const paymentMethod = await this.prisma.paymentMethod.findUnique({
@@ -157,7 +196,7 @@ export class PaymentService {
       provider: paymentMethod.provider,
       flowType: paymentMethod.flowType as any,
       config: paymentMethod.config as Record<string, any>,
-    });
+    }, verificationContext);
 
     if (!verificationResult.isValid) {
       this.logger.warn(

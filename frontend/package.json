@@ -3,18 +3,20 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "dev": "next dev --webpack -p 3001",
+    "build": "next build --webpack",
+    "start": "next start -p 3001",
     "lint": "eslint",
     "test": "jest",
     "test:watch": "jest --watch"
   },
   "dependencies": {
+    "jose": "^6.2.3",
     "lucide-react": "^0.468.0",
     "next": "16.1.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "sanitize-html": "^2.17.4",
     "swiper": "^12.1.4",
     "zustand": "^5.0.9"
   },
@@ -26,6 +28,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/sanitize-html": "^2.16.1",
     "eslint": "^9",
     "eslint-config-next": "16.1.0",
     "jest": "^30.3.0",

@@ -15,6 +15,7 @@ import {
 } from '@/lib/api-client';
 import { SearchBar } from '@/components/search/search-bar';
 import { DesktopShopMegaMenu, MobileCategoryAccordions } from '@/components/layout/store-mega-menu';
+import { UserMenuDropdown } from '@/components/layout/user-menu-dropdown';
 import { ShoppingBagIcon } from '@/components/icons/shopping-bag-icon';
 
 const DESKTOP_NAV_MIN_WIDTH = 1024;
@@ -91,8 +92,19 @@ export function Header() {
 
   const closeMobileNav = () => setMobileNavOpen(false);
 
+  const cartNavItem = mainNav.find((item) => isCartHref(item.href));
+  const desktopNavLinks = mainNav.filter((item) => !isCartHref(item.href));
+
   function desktopNavItem(item: StorefrontNavItem) {
     if (item.openMegaMenu) {
+      const adminBanner =
+        item.bannerImageUrl?.trim()
+          ? {
+              imageUrl: item.bannerImageUrl,
+              href: item.bannerHref?.trim() || item.href,
+              alt: item.bannerAlt?.trim() || item.label,
+            }
+          : null;
       return (
         <DesktopShopMegaMenu
           key={item.id}
@@ -100,6 +112,7 @@ export function Header() {
           primaryLabel={item.label}
           secondaryLabel={item.secondaryLabel}
           primaryHref={item.href}
+          adminBanner={adminBanner}
         />
       );
     }
@@ -241,7 +254,7 @@ export function Header() {
                 className="rounded-md px-3 py-3 text-base font-medium text-foreground active:bg-muted sm:py-2.5 sm:text-sm"
                 onClick={closeMobileNav}
               >
-                Account
+                My Profile
               </Link>
             ) : (
               <>
@@ -293,33 +306,12 @@ export function Header() {
         </div>
 
         <nav
-          className="hidden shrink-0 items-center gap-3 overflow-visible xl:gap-6 lg:flex"
+          className="hidden shrink-0 self-stretch items-center gap-3 overflow-visible xl:gap-6 lg:flex"
           aria-label="Main navigation"
         >
-          {mainNav.map((item) => desktopNavItem(item))}
-          {isAuthenticated ? (
-            <Link
-              href="/account"
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-            >
-              Account
-            </Link>
-          ) : (
-            <>
-              <Link
-                href="/login"
-                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-              >
-                Log in
-              </Link>
-              <Link
-                href="/register"
-                className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground shadow-sm transition-opacity hover:opacity-90"
-              >
-                Sign up
-              </Link>
-            </>
-          )}
+          {desktopNavLinks.map((item) => desktopNavItem(item))}
+          <UserMenuDropdown />
+          {cartNavItem ? desktopNavItem(cartNavItem) : null}
         </nav>
 
         <button

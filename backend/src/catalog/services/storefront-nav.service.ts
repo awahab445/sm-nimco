@@ -24,6 +24,9 @@ export type StorefrontNavHeaderPublic = {
   href: string;
   sortOrder: number;
   openMegaMenu: boolean;
+  bannerImageUrl: string | null;
+  bannerHref: string | null;
+  bannerAlt: string | null;
 };
 
 export type StorefrontNavPublicPayload = {
@@ -43,10 +46,33 @@ type NavRow = {
   parentId: string | null;
   categoryId: string | null;
   openMegaMenu: boolean;
+  bannerImageUrl: string | null;
+  bannerHref: string | null;
+  bannerAlt: string | null;
   createdAt: Date;
   updatedAt: Date;
   category?: { slug: string; name: string } | null;
 };
+
+const STOREFRONT_RESERVED_CMS_SLUGS = new Set(
+  [
+    'account',
+    'addresses',
+    'api',
+    'cart',
+    'categories',
+    'checkout',
+    'create-password',
+    'login',
+    'logout',
+    'orders',
+    'pages',
+    'products',
+    'profile',
+    'register',
+    'track-order',
+  ].map((s) => s.toLowerCase()),
+);
 
 @Injectable()
 export class StorefrontNavService {
@@ -63,6 +89,67 @@ export class StorefrontNavService {
       }
       throw e;
     }
+  }
+
+  private normalizeHref(href: string): string {
+    const h = href.trim().split('?')[0]?.split('#')[0] ?? '/';
+    if (h.length > 1 && h.endsWith('/')) return h.slice(0, -1);
+    return h || '/';
+  }
+
+  private cmsPageHref(slug: string): string {
+    const s = slug.trim();
+    if (!s) return '/';
+    return `/${encodeURIComponent(s)}`;
+  }
+
+  private async appendPublishedCmsPages(header: StorefrontNavHeaderPublic[]): Promise<StorefrontNavHeaderPublic[]> {
+    const cmsPages = await this.prisma.cmsPage.findMany({
+      where: { status: 'published' },
+      orderBy: [{ title: 'asc' }],
+      select: { id: true, title: true, slug: true },
+    });
+
+    const existingHrefs = new Set(header.map((item) => this.normalizeHref(item.href)));
+    const cmsNavItems: StorefrontNavHeaderPublic[] = [];
+
+    for (const page of cmsPages) {
+      const slug = page.slug?.trim();
+      if (!slug || STOREFRONT_RESERVED_CMS_SLUGS.has(slug.toLowerCase())) continue;
+
+      const href = this.cmsPageHref(slug);
+      if (existingHrefs.has(this.normalizeHref(href))) continue;
+
+      cmsNavItems.push({
+        id: `cms:${page.id}`,
+        label: page.title.trim() || slug,
+        secondaryLabel: null,
+        href,
+        sortOrder: 0,
+        openMegaMenu: false,
+        bannerImageUrl: null,
+        bannerHref: null,
+        bannerAlt: null,
+      });
+      existingHrefs.add(this.normalizeHref(href));
+    }
+
+    if (cmsNavItems.length === 0) return header;
+
+    const cartIndex = header.findIndex((item) => this.normalizeHref(item.href) === '/cart');
+    const insertAt = cartIndex >= 0 ? cartIndex : header.length;
+    const before = header.slice(0, insertAt);
+    const after = header.slice(insertAt);
+
+    const baseSortOrder =
+      before.length > 0 ? Math.max(...before.map((item) => item.sortOrder)) + 1 : 25;
+
+    const positionedCmsItems = cmsNavItems.map((item, index) => ({
+      ...item,
+      sortOrder: baseSortOrder + index,
+    }));
+
+    return [...before, ...positionedCmsItems, ...after];
   }
 
   private resolveHref(row: { href: string; category?: { slug: string } | null }): string {
@@ -135,10 +222,14 @@ export class StorefrontNavService {
         href: this.resolveHref(r),
         sortOrder: r.sortOrder,
         openMegaMenu: r.openMegaMenu || r.kind === 'MEGA_CATEGORIES',
+        bannerImageUrl: r.bannerImageUrl?.trim() || null,
+        bannerHref: r.bannerHref?.trim() || null,
+        bannerAlt: r.bannerAlt?.trim() || null,
       }));
 
     const megaFlat = rows.filter((r) => r.zone === 'mega') as NavRow[];
-    return { header, megaMenu: this.buildMegaTree(megaFlat) };
+    const headerWithCms = await this.appendPublishedCmsPages(header);
+    return { header: headerWithCms, megaMenu: this.buildMegaTree(megaFlat) };
   }
 
   async listAllForAdmin() {
@@ -172,6 +263,9 @@ export class StorefrontNavService {
           parentId,
           categoryId: dto.categoryId ?? null,
           openMegaMenu: dto.openMegaMenu ?? false,
+          bannerImageUrl: dto.bannerImageUrl?.trim() || null,
+          bannerHref: dto.bannerHref?.trim() || null,
+          bannerAlt: dto.bannerAlt?.trim() || null,
         },
         include: { category: { select: { id: true, name: true, slug: true } } },
       }),
@@ -208,6 +302,15 @@ export class StorefrontNavService {
           ...(dto.parentId !== undefined ? { parentId: dto.parentId } : {}),
           ...(dto.categoryId !== undefined ? { categoryId: dto.categoryId } : {}),
           ...(dto.openMegaMenu !== undefined ? { openMegaMenu: dto.openMegaMenu } : {}),
+          ...(dto.bannerImageUrl !== undefined
+            ? { bannerImageUrl: dto.bannerImageUrl === null ? null : dto.bannerImageUrl.trim() || null }
+            : {}),
+          ...(dto.bannerHref !== undefined
+            ? { bannerHref: dto.bannerHref === null ? null : dto.bannerHref.trim() || null }
+            : {}),
+          ...(dto.bannerAlt !== undefined
+            ? { bannerAlt: dto.bannerAlt === null ? null : dto.bannerAlt.trim() || null }
+            : {}),
         },
         include: { category: { select: { id: true, name: true, slug: true } } },
       }),

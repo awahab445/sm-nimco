@@ -46,4 +46,19 @@ export class UpdateStorefrontNavLinkDto {
   @IsOptional()
   @IsBoolean()
   openMegaMenu?: boolean;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(512)
+  bannerImageUrl?: string | null;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(512)
+  bannerHref?: string | null;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(256)
+  bannerAlt?: string | null;
 }

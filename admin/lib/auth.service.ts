@@ -3,7 +3,7 @@
  */
 
 import { fetchApi } from './api-client';
-import { clearToken, getToken, setToken as persistToken } from './auth-token';
+import { clearSession } from './auth-token';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
@@ -46,30 +46,15 @@ export const authService = {
     );
   },
 
-  /**
-   * Clears local session immediately and notifies the server best-effort (no await).
-   * Avoids waiting on the network so the UI can redirect on the first click.
-   */
-  logout: (): void => {
-    const token = getToken();
-    if (token) {
-      const url = `${API_BASE_URL}/admin/auth/logout`;
-      void fetch(url, {
-        method: 'POST',
-        headers: new Headers({
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        }),
-        credentials: 'include',
-      }).catch(() => {});
+  logout: async (): Promise<void> => {
+    try {
+      await fetchApi<{ message?: string }>('/admin/auth/logout', { method: 'POST' }, true);
+    } finally {
+      await clearSession();
     }
-    clearToken();
   },
 
   getMe: async (): Promise<AdminUser> => {
     return fetchApi<AdminUser>('/admin/auth/me', { method: 'GET' }, true);
   },
-
-  setToken: persistToken,
-  clearToken,
 };

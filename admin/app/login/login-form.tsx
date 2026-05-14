@@ -3,11 +3,12 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/lib/auth.store';
+import { safeRedirectPath } from '@/lib/safe-redirect';
 
 export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get('redirect') || '/';
+  const redirectTo = safeRedirectPath(searchParams.get('redirect'), '/');
   const { login, isAuthenticated, isLoading, error, clearError } = useAuthStore();
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [validationErrors, setValidationErrors] = useState<{
@@ -17,7 +18,7 @@ export function LoginForm() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      router.replace(redirectTo.startsWith('/') ? redirectTo : '/');
+      router.replace(redirectTo);
     }
   }, [isAuthenticated, redirectTo, router]);
 
@@ -41,7 +42,7 @@ export function LoginForm() {
     if (!validate()) return;
     try {
       await login(formData);
-      router.replace(redirectTo.startsWith('/') ? redirectTo : '/');
+      router.replace(redirectTo);
     } catch {
       /* store holds error */
     }

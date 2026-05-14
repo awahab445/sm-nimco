@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AdminModule } from '../admin/admin.module';
+import { AuthModule } from '../auth/auth.module';
 import { PaymentController } from './controllers/payment.controller';
 import { AdminPaymentMethodController } from './controllers/admin-payment-method.controller';
 import { PaymentService } from './services/payment.service';
@@ -14,7 +15,7 @@ import { OfflineCODProvider } from './providers/offline-cod.provider';
 import { CatalogModule } from '../catalog/catalog.module';
 
 @Module({
-  imports: [CatalogModule, AdminModule],
+  imports: [CatalogModule, AdminModule, AuthModule],
   controllers: [PaymentController, AdminPaymentMethodController],
   providers: [
     PaymentService,

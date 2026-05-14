@@ -22,10 +22,6 @@ import type { CustomerJwtPayload } from '../../auth/strategies/jwt.strategy';
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
-  /**
-   * Create order from cart
-   * POST /orders
-   */
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async createOrder(
@@ -40,10 +36,6 @@ export class OrderController {
     return this.orderService.createOrder(createOrderDto, requestMetadata);
   }
 
-  /**
-   * Get current customer's orders. Requires Bearer token.
-   * GET /orders/my
-   */
   @Get('my')
   @UseGuards(CustomerJwtAuthGuard)
   async findMyOrders(
@@ -53,10 +45,6 @@ export class OrderController {
     return this.orderService.findAll(query, user.customerId);
   }
 
-  /**
-   * Track order via email + order number (public-safe lookup)
-   * GET /orders/track?orderNumber=...&email=...
-   */
   @Get('track')
   async trackOrder(
     @Query('orderNumber') orderNumber: string,
@@ -65,21 +53,6 @@ export class OrderController {
     return this.orderService.trackByOrderNumberAndEmail(orderNumber, email);
   }
 
-  /**
-   * Get order by ID (customer/admin JWT required; customer ownership enforced)
-   * GET /orders/:id
-   */
-  @Get(':id')
-  @UseGuards(JwtAuthGuard)
-  async findOne(@Param('id') id: string, @Req() request: any) {
-    const customerId = request.user?.typ === 'customer' ? request.user.customerId : undefined;
-    return this.orderService.findOneById(id, customerId);
-  }
-
-  /**
-   * Get order by order number (customer/admin JWT required; customer ownership enforced)
-   * GET /orders/number/:orderNumber
-   */
   @Get('number/:orderNumber')
   @UseGuards(JwtAuthGuard)
   async findOneByOrderNumber(
@@ -90,15 +63,17 @@ export class OrderController {
     return this.orderService.findOneByOrderNumber(orderNumber, customerId);
   }
 
-  /**
-   * List orders (admin or with customerId from token when implemented)
-   * GET /orders
-   */
   @Get()
   @UseGuards(CustomerJwtAuthGuard)
   async findAll(@Query() query: OrderQueryDto & { customerEmail?: string }, @Req() request: any) {
     const customerId = request.user?.customerId || undefined;
     return this.orderService.findAll(query, customerId);
   }
-}
 
+  @Get(':id')
+  @UseGuards(JwtAuthGuard)
+  async findOne(@Param('id') id: string, @Req() request: any) {
+    const customerId = request.user?.typ === 'customer' ? request.user.customerId : undefined;
+    return this.orderService.findOneById(id, customerId);
+  }
+}

@@ -2,15 +2,16 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { productApi, type StorefrontNavMegaNode } from '@/lib/api-client';
+import { createPortal } from 'react-dom';
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { type StorefrontNavMegaNode } from '@/lib/api-client';
 import {
   CATEGORY_NAV_BADGES,
-  getMegaMenuProductSlug,
-  getMegaMenuProductSpotlightFallback,
   type MegaMenuProductSpotlight,
 } from '@/lib/mega-menu-config';
 import { resolveImageUrl } from '@/lib/resolve-image-url';
+
+const MEGA_MENU_BANNER_COL_PX = 252;
 
 function sortByOrder<T extends { sortOrder?: number }>(items: T[]): T[] {
   return [...items].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
@@ -81,6 +82,38 @@ function MegaMenuLink({ href, label, level, pathname, onNavigate }: MegaMenuLink
 }
 
 const CLOSE_MS = 180;
+const SITE_HEADER_SELECTOR = 'header.site-header';
+
+function useMegaMenuPanelPosition(open: boolean): CSSProperties {
+  const [style, setStyle] = useState<CSSProperties>({});
+
+  const sync = useCallback(() => {
+    const header = document.querySelector(SITE_HEADER_SELECTOR);
+    if (!header) return;
+    const { bottom, width } = header.getBoundingClientRect();
+    setStyle({
+      position: 'fixed',
+      top: bottom,
+      left: '50%',
+      width: `min(${width}px, calc(100vw - 2rem))`,
+      maxWidth: '72rem',
+      zIndex: 50,
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    sync();
+    window.addEventListener('resize', sync);
+    window.addEventListener('scroll', sync, true);
+    return () => {
+      window.removeEventListener('resize', sync);
+      window.removeEventListener('scroll', sync, true);
+    };
+  }, [open, sync]);
+
+  return style;
+}
 
 function NavChevron({ className }: { className?: string }) {
   return (
@@ -102,11 +135,18 @@ function NavChevron({ className }: { className?: string }) {
   );
 }
 
+type MegaMenuAdminBanner = {
+  imageUrl: string;
+  href: string;
+  alt: string;
+} | null;
+
 type DesktopMegaMenuProps = {
   roots: StorefrontNavMegaNode[];
   primaryLabel?: string;
   secondaryLabel?: string | null;
   primaryHref?: string;
+  adminBanner?: MegaMenuAdminBanner;
 };
 
 export function DesktopShopMegaMenu({
@@ -114,10 +154,17 @@ export function DesktopShopMegaMenu({
   primaryLabel = 'Products',
   secondaryLabel = 'Categories',
   primaryHref = '/products',
+  adminBanner = null,
 }: DesktopMegaMenuProps) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const panelStyle = useMegaMenuPanelPosition(open);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const cancelClose = useCallback(() => {
     if (closeTimer.current) {
@@ -136,6 +183,11 @@ export function DesktopShopMegaMenu({
     setOpen(true);
   }, [cancelClose]);
 
+  const closeMenu = useCallback(() => {
+    cancelClose();
+    setOpen(false);
+  }, [cancelClose]);
+
   if (roots.length === 0) {
     return (
       <Link href="/products" className="header-nav-trigger text-sm font-medium">
@@ -147,19 +199,39 @@ export function DesktopShopMegaMenu({
   const columns = sortByOrder(roots).slice(0, 4);
   const colCount = Math.min(4, Math.max(1, columns.length));
 
+  const megaMenuPanel =
+    open && mounted ? (
+      <div
+        className="store-mega-menu-panel"
+        style={panelStyle}
+        role="region"
+        aria-label="Shop categories"
+        onMouseEnter={openMenu}
+        onMouseLeave={scheduleClose}
+      >
+        <div className="store-mega-menu-panel__inner">
+          <MegaMenuNavGrid
+            columns={columns}
+            colCount={colCount}
+            pathname={pathname}
+            adminBanner={adminBanner}
+            primaryHref={primaryHref}
+          />
+        </div>
+      </div>
+    ) : null;
+
   return (
     <div
-      className="relative hidden overflow-visible lg:block"
-      onMouseEnter={openMenu}
+      className="relative hidden self-stretch items-center overflow-visible lg:flex"
       onMouseLeave={scheduleClose}
     >
-      <div className="flex items-center gap-6">
+      <div className="flex h-full items-center gap-6">
         <Link
           href={primaryHref}
-          onMouseEnter={openMenu}
-          onFocus={openMenu}
+          onMouseEnter={closeMenu}
+          onFocus={closeMenu}
           className="header-nav-trigger text-sm font-medium"
-          aria-expanded={open}
         >
           {primaryLabel}
         </Link>
@@ -178,23 +250,7 @@ export function DesktopShopMegaMenu({
         ) : null}
       </div>
 
-      {open ? (
-        <div
-          className="store-mega-menu-panel absolute left-1/2 top-full z-[999] w-[min(calc(100vw-8rem),64rem)] max-w-5xl -translate-x-1/2"
-          role="region"
-          aria-label="Shop categories"
-          onMouseEnter={openMenu}
-        >
-          <div className="px-5 py-6 sm:px-7">
-            <MegaMenuNavGrid
-              columns={columns}
-              colCount={colCount}
-              pathname={pathname}
-              loadSpotlight={open}
-            />
-          </div>
-        </div>
-      ) : null}
+      {mounted && megaMenuPanel ? createPortal(megaMenuPanel, document.body) : null}
     </div>
   );
 }
@@ -223,65 +279,35 @@ function MegaMenuChildList({
   );
 }
 
-function useMegaMenuProductSpotlight(load: boolean): MegaMenuProductSpotlight {
-  const fallback = useMemo(() => getMegaMenuProductSpotlightFallback(), []);
-  const [spotlight, setSpotlight] = useState<MegaMenuProductSpotlight>(fallback);
-  const loadedRef = useRef(false);
-
-  useEffect(() => {
-    if (!load || loadedRef.current) return;
-    loadedRef.current = true;
-
-    const slug = getMegaMenuProductSlug();
-    let cancelled = false;
-
-    (async () => {
-      try {
-        let product;
-        if (slug) {
-          product = await productApi.getProductBySlug(slug);
-        } else {
-          const list = (await productApi.listProducts({ limit: 12, page: 1 })).data ?? [];
-          product = list.find((p) => (p.images?.length ?? 0) > 0) ?? list[0];
-        }
-
-        if (!product || cancelled) return;
-
-        const image = product.images?.find((i) => i.isPrimary) ?? product.images?.[0];
-        const imageSrc = resolveImageUrl(image?.url);
-        if (!imageSrc) return;
-
-        setSpotlight({
-          imageSrc,
-          href: `/products/${product.slug}`,
-          alt: image?.alt?.trim() || product.name,
-        });
-      } catch {
-        // Keep static fallback.
-      }
-    })();
-
-    return () => {
-      cancelled = true;
+function useAdminMegaMenuBanner(
+  adminBanner: MegaMenuAdminBanner,
+  primaryHref: string,
+): MegaMenuProductSpotlight | null {
+  return useMemo(() => {
+    if (!adminBanner) return null;
+    const url = adminBanner.imageUrl?.trim();
+    if (!url) return null;
+    const imageSrc = resolveImageUrl(url);
+    if (!imageSrc) return null;
+    return {
+      imageSrc,
+      href: adminBanner.href?.trim() || primaryHref,
+      alt: adminBanner.alt?.trim() || 'Mega menu promotion',
     };
-  }, [load, fallback]);
-
-  return spotlight;
+  }, [adminBanner, primaryHref]);
 }
 
 function MegaMenuProductSpotlight({ spotlight }: { spotlight: MegaMenuProductSpotlight }) {
   return (
-    <aside className="mega-menu-product-spotlight hidden min-w-0 self-start lg:block">
+    <aside className="mega-menu-product-spotlight hidden lg:block">
       <Link href={spotlight.href} className="mega-menu-product-spotlight__link">
-        <div className="mega-menu-product-spotlight__media">
-          <img
-            src={spotlight.imageSrc}
-            alt={spotlight.alt}
-            className="mega-menu-product-spotlight__image"
-            loading="lazy"
-            decoding="async"
-          />
-        </div>
+        <img
+          src={spotlight.imageSrc}
+          alt={spotlight.alt}
+          className="mega-menu-product-spotlight__image"
+          loading="lazy"
+          decoding="async"
+        />
       </Link>
     </aside>
   );
@@ -291,20 +317,25 @@ function MegaMenuNavGrid({
   columns,
   colCount,
   pathname,
-  loadSpotlight,
+  adminBanner,
+  primaryHref = '/products',
 }: {
   columns: StorefrontNavMegaNode[];
   colCount: number;
   pathname: string;
-  loadSpotlight: boolean;
+  adminBanner: MegaMenuAdminBanner;
+  primaryHref?: string;
 }) {
-  const spotlight = useMegaMenuProductSpotlight(loadSpotlight);
+  const spotlight = useAdminMegaMenuBanner(adminBanner, primaryHref);
 
   return (
     <div
-      className="grid gap-x-6 gap-y-5"
+      className="mega-menu-nav-grid grid items-start gap-x-8 gap-y-5 overflow-visible"
+      data-mega-col-count={colCount}
       style={{
-        gridTemplateColumns: `repeat(${colCount}, minmax(0, 1fr)) minmax(220px, 280px)`,
+        gridTemplateColumns: spotlight
+          ? `repeat(${colCount}, minmax(0, 1fr)) ${MEGA_MENU_BANNER_COL_PX}px`
+          : `repeat(${colCount}, minmax(0, 1fr))`,
       }}
     >
       {columns.map((root) => {
@@ -319,7 +350,7 @@ function MegaMenuNavGrid({
             >
               {root.label}
             </Link>
-            <ul className="mt-3 max-h-[min(40vh,22rem)] space-y-0.5 overflow-y-auto overscroll-contain pr-1">
+            <ul className="mega-menu-nav-column-list mt-3 space-y-0.5 pr-1">
               {children.length === 0 ? (
                 <li>
                   <MegaMenuLink
@@ -336,7 +367,7 @@ function MegaMenuNavGrid({
           </div>
         );
       })}
-      <MegaMenuProductSpotlight spotlight={spotlight} />
+      {spotlight ? <MegaMenuProductSpotlight spotlight={spotlight} /> : null}
     </div>
   );
 }

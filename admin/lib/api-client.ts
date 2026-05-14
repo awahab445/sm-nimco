@@ -1,4 +1,4 @@
-import { getToken, clearToken } from './auth-token';
+import { getToken, clearSession } from './auth-token';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 const DEFAULT_TIMEOUT_MS = 15000;
@@ -58,7 +58,7 @@ export async function fetchApi<T>(
   });
 
   if (response.status === 401 && withAuth) {
-    clearToken();
+    void clearSession();
     redirectToLogin();
     throw new ApiError('Unauthorized', 401);
   }

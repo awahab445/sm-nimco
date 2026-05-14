@@ -1,8 +1,13 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
+import type { Request } from 'express';
 import { PrismaService } from '../../catalog/services/prisma.service';
 import type { JwtPayload } from '../auth.service';
+import {
+  ADMIN_AUTH_COOKIE,
+  CUSTOMER_AUTH_COOKIE,
+} from '../../common/auth-cookies';
 
 export type JwtValidatePayload =
   | {
@@ -21,11 +26,23 @@ export type JwtValidatePayload =
 /** Use on routes protected by {@link CustomerJwtAuthGuard}. */
 export type CustomerJwtPayload = Extract<JwtValidatePayload, { typ: 'customer' }>;
 
+function extractJwtFromRequest(req: Request): string | null {
+  const bearer = ExtractJwt.fromAuthHeaderAsBearerToken()(req);
+  if (bearer) {
+    return bearer;
+  }
+  const cookies = (req as Request & { cookies?: Record<string, string> }).cookies;
+  if (!cookies) {
+    return null;
+  }
+  return cookies[CUSTOMER_AUTH_COOKIE] || cookies[ADMIN_AUTH_COOKIE] || null;
+}
+
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(private readonly prisma: PrismaService) {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: extractJwtFromRequest,
       ignoreExpiration: false,
       secretOrKey: process.env.JWT_SECRET || 'change-me-in-production',
     });

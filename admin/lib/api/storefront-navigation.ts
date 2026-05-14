@@ -1,4 +1,5 @@
 import { fetchApi } from '../api-client';
+import { getToken } from '../auth-token';
 
 export type StorefrontNavZone = 'header' | 'mega';
 
@@ -14,6 +15,9 @@ export type StorefrontNavRow = {
   parentId: string | null;
   categoryId: string | null;
   openMegaMenu: boolean;
+  bannerImageUrl: string | null;
+  bannerHref: string | null;
+  bannerAlt: string | null;
   createdAt: string;
   updatedAt: string;
   category?: { id: string; name: string; slug: string } | null;
@@ -35,6 +39,9 @@ export type CreateStorefrontNavBody = {
   parentId?: string | null;
   categoryId?: string | null;
   openMegaMenu?: boolean;
+  bannerImageUrl?: string | null;
+  bannerHref?: string | null;
+  bannerAlt?: string | null;
 };
 
 export async function createStorefrontNavItem(body: CreateStorefrontNavBody): Promise<StorefrontNavRow> {
@@ -74,4 +81,32 @@ export async function reorderStorefrontNavigation(body: ReorderStorefrontNavBody
     method: 'PATCH',
     body: JSON.stringify(body),
   });
+}
+
+export async function uploadStorefrontNavBannerImage(
+  file: File,
+): Promise<{ url: string; filename: string }> {
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+  const formData = new FormData();
+  formData.append('file', file);
+  const headers = new Headers();
+  const token = getToken();
+  if (token) headers.set('Authorization', `Bearer ${token}`);
+  const response = await fetch(`${baseUrl}/admin/storefront-navigation/banner/upload`, {
+    method: 'POST',
+    body: formData,
+    credentials: 'include',
+    headers,
+  });
+  if (!response.ok) {
+    let message = `Upload failed (${response.status})`;
+    try {
+      const errorData = (await response.json()) as { message?: string };
+      if (errorData?.message) message = errorData.message;
+    } catch {
+      /* ignore */
+    }
+    throw new Error(message);
+  }
+  return response.json() as Promise<{ url: string; filename: string }>;
 }

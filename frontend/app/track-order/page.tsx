@@ -41,7 +41,9 @@ export default function TrackOrderPage() {
     setLoading(true);
     try {
       const match = await orderApi.trackOrder(trimmedOrderNumber, trimmedEmail);
-      router.push(`/orders/${match.id}`);
+      router.push(
+        `/orders/${match.id}?orderNumber=${encodeURIComponent(trimmedOrderNumber)}&email=${encodeURIComponent(trimmedEmail)}`,
+      );
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to look up order. Please try again.');
     } finally {

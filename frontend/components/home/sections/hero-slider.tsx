@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import type { HeroSlide } from '@/lib/cms/home-page-types';
+import { useHydrated } from '@/lib/use-hydrated';
 
 export type HeroSliderLayout = 'card' | 'immersive';
 
@@ -28,6 +29,7 @@ export function HeroSlider({
   slideHeightPx,
   layout = 'card',
 }: HeroSliderProps) {
+  const hydrated = useHydrated();
   const [index, setIndex] = useState(0);
   const n = slides.length;
   const safeIndex = n === 0 ? 0 : index % n;
@@ -214,7 +216,7 @@ export function HeroSlider({
         )}
       </div>
 
-      {n > 1 && (
+      {hydrated && n > 1 ? (
         <>
           <div
             className={
@@ -259,7 +261,7 @@ export function HeroSlider({
             <span aria-hidden className="block leading-none">›</span>
           </button>
         </>
-      )}
+      ) : null}
     </section>
   );
 }

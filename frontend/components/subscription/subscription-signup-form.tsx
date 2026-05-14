@@ -1,6 +1,7 @@
 'use client';
 
 import { subscriptionApi } from '@/lib/api-client';
+import { useHydrated } from '@/lib/use-hydrated';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 
 const EMAIL_RE =
@@ -19,6 +20,7 @@ export function SubscriptionSignupForm({
   className = '',
   inputId = 'subscription-email',
 }: SubscriptionSignupFormProps) {
+  const hydrated = useHydrated();
   const [email, setEmail] = useState(defaultEmail);
   const [clientError, setClientError] = useState<string | null>(null);
   const [serverError, setServerError] = useState<string | null>(null);
@@ -77,33 +79,43 @@ export function SubscriptionSignupForm({
 
   return (
     <div className={className}>
-      <form
-        className="flex flex-col gap-3 sm:flex-row sm:items-stretch"
-        onSubmit={(e) => void onSubmit(e)}
-        noValidate
-      >
-        <label htmlFor={inputId} className="sr-only">
-          Email address
-        </label>
-        <input
-          id={inputId}
-          type="email"
-          name="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="you@example.com"
-          autoComplete="email"
-          disabled={loading}
-          className="min-w-0 flex-1 rounded-md border border-input bg-muted px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/25 disabled:opacity-60"
-        />
-        <button
-          type="submit"
-          disabled={loading}
-          className="rounded-md bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground shadow-sm transition-opacity hover:opacity-90 disabled:opacity-60"
+      {hydrated ? (
+        <form
+          className="flex flex-col gap-3 sm:flex-row sm:items-stretch"
+          onSubmit={(e) => void onSubmit(e)}
+          noValidate
         >
-          {loading ? 'Subscribing…' : 'Subscribe'}
-        </button>
-      </form>
+          <label htmlFor={inputId} className="sr-only">
+            Email address
+          </label>
+          <input
+            id={inputId}
+            type="email"
+            name="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@example.com"
+            autoComplete="email"
+            disabled={loading}
+            className="min-w-0 flex-1 rounded-md border border-input bg-muted px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/25 disabled:opacity-60"
+          />
+          <button
+            type="submit"
+            disabled={loading}
+            className="rounded-md bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground shadow-sm transition-opacity hover:opacity-90 disabled:opacity-60"
+          >
+            {loading ? 'Subscribing…' : 'Subscribe'}
+          </button>
+        </form>
+      ) : (
+        <div
+          className="flex flex-col gap-3 sm:flex-row sm:items-stretch"
+          aria-hidden
+        >
+          <div className="min-h-[42px] min-w-0 flex-1 rounded-md border border-input bg-muted" />
+          <div className="h-[42px] w-28 shrink-0 rounded-md bg-primary/80" />
+        </div>
+      )}
       {clientError ? (
         <p className="mt-3 text-sm text-destructive" role="alert">
           {clientError}

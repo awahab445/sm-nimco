@@ -10,49 +10,52 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
+import type { Request } from 'express';
 import { PaymentService } from '../services/payment.service';
 import { CreatePaymentIntentDto } from '../dto/create-payment-intent.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { OptionalJwtAuthGuard } from '../../auth/guards/optional-jwt-auth.guard';
 import { AdminJwtAuthGuard } from '../../admin/guards/admin-jwt-auth.guard';
 import { AdminPermissionsGuard } from '../../admin/guards/admin-permissions.guard';
 import { RequirePermissions } from '../../admin/decorators/require-permissions.decorator';
+import type { JwtValidatePayload } from '../../auth/strategies/jwt.strategy';
 
 @Controller('payments')
 export class PaymentController {
   constructor(private readonly paymentService: PaymentService) {}
 
-  /**
-   * Create payment intent
-   * POST /payments/intent
-   */
   @Post('intent')
   @HttpCode(HttpStatus.CREATED)
-  async createIntent(@Body() createIntentDto: CreatePaymentIntentDto) {
-    return this.paymentService.createIntent(
+  @UseGuards(OptionalJwtAuthGuard)
+  async createIntent(
+    @Body() createIntentDto: CreatePaymentIntentDto,
+    @Req() request: { user?: JwtValidatePayload | null },
+  ) {
+    return this.paymentService.createIntentAuthorized(
       createIntentDto.orderId,
       createIntentDto.paymentMethodCode,
       createIntentDto.returnUrl,
       createIntentDto.cancelUrl,
+      request.user,
+      createIntentDto.customerEmail,
     );
   }
 
-  /**
-   * Payment gateway callback
-   * POST /payments/callback/:provider
-   */
   @Post('callback/:provider')
   @HttpCode(HttpStatus.OK)
   async handleCallback(
     @Param('provider') provider: string,
-    @Req() request: any,
+    @Req() request: Request & { rawBody?: Buffer },
   ) {
-    // Accept both query params and body for different gateway formats
     const callbackData = {
       ...request.query,
-      ...request.body,
+      ...(typeof request.body === 'object' && request.body !== null ? request.body : {}),
     };
 
-    await this.paymentService.verifyCallback(provider, callbackData);
+    await this.paymentService.verifyCallback(provider, callbackData, {
+      rawBody: request.rawBody,
+      signature: request.headers['stripe-signature'] as string | undefined,
+    });
 
     return {
       success: true,
@@ -60,39 +63,11 @@ export class PaymentController {
     };
   }
 
-  /**
-   * Get active payment methods
-   * GET /payments/methods
-   */
   @Get('methods')
   async getPaymentMethods() {
     return this.paymentService.getActivePaymentMethods();
   }
 
-  /**
-   * Get payment by ID (customer/admin JWT required)
-   * GET /payments/:id
-   */
-  @Get(':id')
-  @UseGuards(JwtAuthGuard)
-  async getPayment(@Param('id') id: string, @Req() request: any) {
-    return this.paymentService.getPaymentAuthorized(id, request.user);
-  }
-
-  /**
-   * Get payments for an order (customer/admin JWT required)
-   * GET /payments/order/:orderId
-   */
-  @Get('order/:orderId')
-  @UseGuards(JwtAuthGuard)
-  async getPaymentsByOrder(@Param('orderId') orderId: string, @Req() request: any) {
-    return this.paymentService.getPaymentsByOrderAuthorized(orderId, request.user);
-  }
-
-  /**
-   * Track payments via order number + customer email (public-safe lookup)
-   * GET /payments/track?orderNumber=...&email=...
-   */
   @Get('track')
   async trackPayments(
     @Query('orderNumber') orderNumber: string,
@@ -101,10 +76,12 @@ export class PaymentController {
     return this.paymentService.getPaymentsForTracking(orderNumber, email);
   }
 
-  /**
-   * Get pending COD payments (admin/logistics)
-   * GET /payments/cod/pending
-   */
+  @Get('order/:orderId')
+  @UseGuards(JwtAuthGuard)
+  async getPaymentsByOrder(@Param('orderId') orderId: string, @Req() request: any) {
+    return this.paymentService.getPaymentsByOrderAuthorized(orderId, request.user);
+  }
+
   @Get('cod/pending')
   @UseGuards(AdminJwtAuthGuard, AdminPermissionsGuard)
   @RequirePermissions('payments.manage')
@@ -112,10 +89,6 @@ export class PaymentController {
     return this.paymentService.getPendingCODPayments();
   }
 
-  /**
-   * Mark COD payment as collected (admin/logistics)
-   * POST /payments/cod/:paymentId/collect
-   */
   @Post('cod/:paymentId/collect')
   @UseGuards(AdminJwtAuthGuard, AdminPermissionsGuard)
   @RequirePermissions('payments.manage')
@@ -128,10 +101,6 @@ export class PaymentController {
     };
   }
 
-  /**
-   * Mark COD payment as failed (RTO - admin/logistics)
-   * POST /payments/cod/:paymentId/fail
-   */
   @Post('cod/:paymentId/fail')
   @UseGuards(AdminJwtAuthGuard, AdminPermissionsGuard)
   @RequirePermissions('payments.manage')
@@ -146,5 +115,10 @@ export class PaymentController {
       message: 'COD payment marked as failed',
     };
   }
-}
 
+  @Get(':id')
+  @UseGuards(JwtAuthGuard)
+  async getPayment(@Param('id') id: string, @Req() request: any) {
+    return this.paymentService.getPaymentAuthorized(id, request.user);
+  }
+}

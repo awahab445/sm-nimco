@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { orderApi } from '@/lib/api-client';
 import { useCartStore } from '@/lib/cart.store';
 import {
@@ -78,6 +78,7 @@ interface Order {
 
 export default function OrderDetailPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const router = useRouter();
   const orderId = params.id as string;
   const reorderFromOrder = useCartStore((s) => s.reorderFromOrder);
@@ -89,13 +90,18 @@ export default function OrderDetailPage() {
 
   useEffect(() => {
     loadOrder();
-  }, [orderId]);
+  }, [orderId, searchParams]);
 
   const loadOrder = async () => {
     try {
       setLoading(true);
       setError(null);
-      const orderData = await orderApi.getOrder(orderId);
+      const guestOrderNumber = searchParams.get('orderNumber')?.trim();
+      const guestEmail = searchParams.get('email')?.trim();
+      const orderData =
+        guestOrderNumber && guestEmail
+          ? await orderApi.trackOrder(guestOrderNumber, guestEmail)
+          : await orderApi.getOrder(orderId);
       setOrder(orderData as unknown as Order);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to load order');

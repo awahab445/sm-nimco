@@ -4,6 +4,7 @@ import { PrismaService } from '../../catalog/services/prisma.service';
 import { UpsertCmsPageDto } from '../dto/upsert-cms-page.dto';
 import { UpsertCmsBlockDto } from '../dto/upsert-cms-block.dto';
 import { UpsertCmsSliderDto } from '../dto/upsert-cms-slider.dto';
+import { sanitizeCmsHtml } from '../../common/sanitize-html';
 
 @Injectable()
 export class CmsService {
@@ -29,9 +30,11 @@ export class CmsService {
 
   createPage(dto: UpsertCmsPageDto) {
     const contentJson = dto.contentJson as Prisma.InputJsonValue | undefined;
+    const contentHtml = dto.contentHtml !== undefined ? sanitizeCmsHtml(dto.contentHtml) : undefined;
     return this.prisma.cmsPage.create({
       data: {
         ...dto,
+        contentHtml,
         contentJson,
         status: dto.status ?? 'draft',
         publishedAt: dto.status === 'published' ? new Date() : null,
@@ -42,10 +45,12 @@ export class CmsService {
   async updatePage(id: string, dto: Partial<UpsertCmsPageDto>) {
     await this.getPageById(id);
     const contentJson = dto.contentJson as Prisma.InputJsonValue | undefined;
+    const contentHtml = dto.contentHtml !== undefined ? sanitizeCmsHtml(dto.contentHtml) : undefined;
     return this.prisma.cmsPage.update({
       where: { id },
       data: {
         ...dto,
+        ...(contentHtml !== undefined ? { contentHtml } : {}),
         contentJson,
         publishedAt: dto.status === 'published' ? new Date() : undefined,
       },
@@ -77,15 +82,24 @@ export class CmsService {
 
   createBlock(dto: UpsertCmsBlockDto) {
     const contentJson = dto.contentJson as Prisma.InputJsonValue | undefined;
+    const contentHtml = dto.contentHtml !== undefined ? sanitizeCmsHtml(dto.contentHtml) : undefined;
     return this.prisma.cmsBlock.create({
-      data: { ...dto, contentJson, isActive: dto.isActive ?? true },
+      data: { ...dto, contentHtml, contentJson, isActive: dto.isActive ?? true },
     });
   }
 
   async updateBlock(id: string, dto: Partial<UpsertCmsBlockDto>) {
     await this.getBlockById(id);
     const contentJson = dto.contentJson as Prisma.InputJsonValue | undefined;
-    return this.prisma.cmsBlock.update({ where: { id }, data: { ...dto, contentJson } });
+    const contentHtml = dto.contentHtml !== undefined ? sanitizeCmsHtml(dto.contentHtml) : undefined;
+    return this.prisma.cmsBlock.update({
+      where: { id },
+      data: {
+        ...dto,
+        ...(contentHtml !== undefined ? { contentHtml } : {}),
+        contentJson,
+      },
+    });
   }
 
   async deleteBlock(id: string) {

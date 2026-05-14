@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsOptional, IsUrl } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsUrl, IsEmail } from 'class-validator';
 
 export class CreatePaymentIntentDto {
   @IsString()
@@ -8,6 +8,10 @@ export class CreatePaymentIntentDto {
   @IsString()
   @IsNotEmpty()
   paymentMethodCode: string;
+
+  @IsEmail()
+  @IsOptional()
+  customerEmail?: string;
 
   @IsUrl()
   @IsOptional()

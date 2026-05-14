@@ -1,13 +1,14 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { isValidAdminSessionCookie } from '@/lib/validate-session';
 
 const COOKIE_NAME = 'admin-auth-token';
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isLogin = pathname === '/login' || pathname.startsWith('/login/');
   const token = request.cookies.get(COOKIE_NAME)?.value;
-  const isAuthenticated = Boolean(token);
+  const isAuthenticated = await isValidAdminSessionCookie(token);
 
   if (!isLogin && !isAuthenticated) {
     const loginUrl = new URL('/login', request.url);

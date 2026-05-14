@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { authService, type LoginCredentials, type AdminUser } from './auth.service';
-import { clearToken } from './auth-token';
+import { clearSession, establishSession } from './auth-token';
 
 interface AuthState {
   user: AdminUser | null;
@@ -24,7 +24,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await authService.login(credentials);
-      authService.setToken(response.access_token);
+      await establishSession(response.access_token);
       set({
         user: response.user,
         isAuthenticated: true,
@@ -45,7 +45,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   logout: () => {
-    authService.logout();
+    void authService.logout();
     set({
       user: null,
       isAuthenticated: false,
@@ -65,7 +65,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         error: null,
       });
     } catch {
-      clearToken();
+      await clearSession();
       set({
         user: null,
         isAuthenticated: false,

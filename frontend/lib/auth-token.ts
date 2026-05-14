@@ -1,34 +1,30 @@
 /**
- * JWT token storage for auth.
- * Stores in localStorage (for API client) and sets a cookie (for middleware).
- * Cookie name must match middleware check: auth-token
+ * HttpOnly session cookie is set via POST /api/session after login.
+ * API requests use credentials: include (backend may also set its own API-domain cookie).
  */
 
-const TOKEN_KEY = 'auth-token';
-const COOKIE_NAME = 'auth-token';
-const COOKIE_MAX_AGE_DAYS = 7;
-
-function isClient(): boolean {
-  return typeof window !== 'undefined';
-}
+const SESSION_ENDPOINT = '/api/session';
 
 export function getToken(): string | null {
-  if (!isClient()) return null;
-  const fromStorage = localStorage.getItem(TOKEN_KEY);
-  if (fromStorage) return fromStorage;
-  const match = document.cookie.match(new RegExp(`(^| )${COOKIE_NAME}=([^;]+)`));
-  return match ? decodeURIComponent(match[2]) : null;
+  return null;
 }
 
-export function setToken(token: string): void {
-  if (!isClient()) return;
-  localStorage.setItem(TOKEN_KEY, token);
-  const maxAge = COOKIE_MAX_AGE_DAYS * 24 * 60 * 60;
-  document.cookie = `${COOKIE_NAME}=${encodeURIComponent(token)}; path=/; max-age=${maxAge}; SameSite=Lax`;
+export async function establishSession(token: string): Promise<void> {
+  await fetch(SESSION_ENDPOINT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token }),
+  });
 }
 
+export async function clearSession(): Promise<void> {
+  await fetch(SESSION_ENDPOINT, { method: 'DELETE' });
+}
+
+/** @deprecated Tokens are no longer stored in browser storage. */
+export function setToken(_token: string): void {}
+
+/** @deprecated Use clearSession(). */
 export function clearToken(): void {
-  if (!isClient()) return;
-  localStorage.removeItem(TOKEN_KEY);
-  document.cookie = `${COOKIE_NAME}=; path=/; max-age=0`;
+  void clearSession();
 }

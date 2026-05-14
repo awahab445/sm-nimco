@@ -7,6 +7,7 @@ import { MailService } from './mail.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { CustomerJwtAuthGuard } from './guards/customer-jwt-auth.guard';
+import { OptionalJwtAuthGuard } from './guards/optional-jwt-auth.guard';
 import { CatalogModule } from '../catalog/catalog.module';
 import { CustomerGroupModule } from '../customer-group/customer-group.module';
 import { CustomerModule } from '../customer/customer.module';
@@ -25,7 +26,7 @@ import { CustomerModule } from '../customer/customer.module';
     forwardRef(() => CustomerModule),
   ],
   controllers: [AuthController],
-  providers: [AuthService, MailService, JwtStrategy, JwtAuthGuard, CustomerJwtAuthGuard],
-  exports: [AuthService, JwtModule, JwtAuthGuard, CustomerJwtAuthGuard],
+  providers: [AuthService, MailService, JwtStrategy, JwtAuthGuard, CustomerJwtAuthGuard, OptionalJwtAuthGuard],
+  exports: [AuthService, JwtModule, JwtAuthGuard, CustomerJwtAuthGuard, OptionalJwtAuthGuard],
 })
 export class AuthModule {}

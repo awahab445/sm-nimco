@@ -1078,6 +1078,10 @@ model StorefrontNavLink {
   categoryId     String?  @map("category_id")
   /** Header item that opens the mega menu panel (replaces MEGA_CATEGORIES kind). */
   openMegaMenu   Boolean  @default(false) @map("open_mega_menu")
+  /** Promo image in mega menu right column (header item with openMegaMenu). */
+  bannerImageUrl String?  @map("banner_image_url") @db.VarChar(512)
+  bannerHref     String?  @map("banner_href") @db.VarChar(512)
+  bannerAlt      String?  @map("banner_alt") @db.VarChar(256)
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
 

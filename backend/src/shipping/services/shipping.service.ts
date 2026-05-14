@@ -3,6 +3,7 @@ import {
   NotFoundException,
   BadRequestException,
   Logger,
+  ForbiddenException,
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../../catalog/services/prisma.service';
@@ -807,6 +808,25 @@ export class ShippingService {
     }
 
     return this.mapToOrderShippingEntity(orderShipping);
+  }
+
+  async getOrderShippingAuthorized(
+    orderId: string,
+    actor?: { typ: 'admin' | 'customer'; customerId?: string },
+  ): Promise<OrderShipping> {
+    if (!actor) {
+      throw new ForbiddenException('Authentication required');
+    }
+    if (actor.typ === 'customer') {
+      const order = await this.prisma.order.findUnique({
+        where: { id: orderId },
+        select: { customerId: true },
+      });
+      if (!order || order.customerId !== actor.customerId) {
+        throw new ForbiddenException('You do not have access to this order shipping');
+      }
+    }
+    return this.getOrderShipping(orderId);
   }
 
   /**

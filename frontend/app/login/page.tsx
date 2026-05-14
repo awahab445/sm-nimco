@@ -5,12 +5,13 @@ import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/lib/auth.store';
 import Link from 'next/link';
+import { safeRedirectPath } from '@/lib/safe-redirect';
 import { storefrontUi } from '@/lib/storefront-ui';
 
 function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get('redirect') || '/account';
+  const redirectTo = safeRedirectPath(searchParams.get('redirect'), '/account');
   const { login, isAuthenticated, isLoading, error, clearError } = useAuthStore();
   const [formData, setFormData] = useState({
     email: '',
@@ -23,7 +24,7 @@ function LoginContent() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      router.push(redirectTo.startsWith('/') ? redirectTo : '/account');
+      router.push(redirectTo);
     }
   }, [isAuthenticated, redirectTo, router]);
 

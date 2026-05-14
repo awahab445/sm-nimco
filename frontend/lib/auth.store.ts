@@ -5,7 +5,7 @@
 
 import { create } from 'zustand';
 import { authService, User, LoginCredentials, RegisterData } from './auth.service';
-import { clearToken } from './auth-token';
+import { clearSession, establishSession } from './auth-token';
 
 interface AuthState {
   user: User | null;
@@ -32,7 +32,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await authService.login(credentials);
-      authService.setToken(response.access_token);
+      await establishSession(response.access_token);
       set({
         user: response.user,
         isAuthenticated: true,
@@ -55,7 +55,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await authService.register(data);
-      authService.setToken(response.access_token);
+      await establishSession(response.access_token);
       set({
         user: response.user,
         isAuthenticated: true,
@@ -78,7 +78,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await authService.setPassword(token, password);
-      authService.setToken(response.access_token);
+      await establishSession(response.access_token);
       set({
         user: response.user,
         isAuthenticated: true,
@@ -104,7 +104,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-      clearToken();
+      await clearSession();
       set({
         user: null,
         isAuthenticated: false,
@@ -125,7 +125,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         error: null,
       });
     } catch {
-      clearToken();
+      await clearSession();
       set({
         user: null,
         isAuthenticated: false,

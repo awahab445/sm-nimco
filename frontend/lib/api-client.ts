@@ -3,7 +3,7 @@
  * Sends Bearer token when present (for /customers/me, /addresses, /orders/my, etc.)
  */
 
-import { getToken, clearToken } from './auth-token';
+import { getToken, clearSession } from './auth-token';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
@@ -43,7 +43,7 @@ export async function fetchApi<T>(
   });
 
   if (response.status === 401 && typeof window !== 'undefined') {
-    clearToken();
+    void clearSession();
   }
 
   if (!response.ok) {
@@ -236,6 +236,9 @@ export interface StorefrontNavItem {
   href: string;
   sortOrder: number;
   openMegaMenu: boolean;
+  bannerImageUrl?: string | null;
+  bannerHref?: string | null;
+  bannerAlt?: string | null;
 }
 
 export interface StorefrontNavigationPayload {
@@ -248,7 +251,6 @@ export const STOREFRONT_NAV_FALLBACK: StorefrontNavigationPayload = {
     { id: '00000000-0000-0000-0000-00000000e001', label: 'Home', secondaryLabel: null, href: '/', sortOrder: 0, openMegaMenu: false },
     { id: '00000000-0000-0000-0000-00000000e002', label: 'Products', secondaryLabel: 'Categories', href: '/products', sortOrder: 10, openMegaMenu: true },
     { id: '00000000-0000-0000-0000-00000000e003', label: 'Track order', secondaryLabel: null, href: '/track-order', sortOrder: 20, openMegaMenu: false },
-    { id: '00000000-0000-0000-0000-00000000e004', label: 'Complaints', secondaryLabel: null, href: '/complain', sortOrder: 30, openMegaMenu: false },
     { id: '00000000-0000-0000-0000-00000000e005', label: 'Cart', secondaryLabel: null, href: '/cart', sortOrder: 40, openMegaMenu: false },
   ],
   megaMenu: [],

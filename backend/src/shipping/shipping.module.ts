@@ -5,12 +5,13 @@ import { CourierService } from './services/courier.service';
 import { ShippingEligibilityEvaluator } from './services/shipping-eligibility-evaluator.service';
 import { ShippingEventHandlers } from './events/shipping.handlers';
 import { CatalogModule } from '../catalog/catalog.module';
+import { AuthModule } from '../auth/auth.module';
 import { AdminJwtAuthGuard } from '../admin/guards/admin-jwt-auth.guard';
 import { AdminPermissionsGuard } from '../admin/guards/admin-permissions.guard';
 import { AdminRbacService } from '../admin/services/admin-rbac.service';
 
 @Module({
-  imports: [CatalogModule], // For PrismaService
+  imports: [CatalogModule, AuthModule],
   controllers: [ShippingController, AdminShippingController],
   providers: [
     ShippingService,
