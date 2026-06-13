@@ -55,7 +55,7 @@ services:
     volumes:
       - ecommerce_uploads:/app/uploads
     ports:
-      - "127.0.0.1:3000:3000"
+      - "127.0.0.1:${HOST_API_PORT:-3100}:3000"
 
   storefront:
     build:
@@ -74,7 +74,7 @@ services:
     environment:
       NODE_ENV: production
     ports:
-      - "127.0.0.1:3001:3001"
+      - "127.0.0.1:${HOST_STOREFRONT_PORT:-3101}:3001"
 
   admin:
     build:
@@ -90,7 +90,7 @@ services:
     environment:
       NODE_ENV: production
     ports:
-      - "127.0.0.1:3002:3002"
+      - "127.0.0.1:${HOST_ADMIN_PORT:-3102}:3002"
 
 volumes:
   ecommerce_pg_data:

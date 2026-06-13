@@ -83,6 +83,7 @@ Run the full stack in Docker — no Node/Postgres/Redis/PM2 on the host. Only **
    cp deploy/env/docker.env.example deploy/env/docker.env
    nano deploy/env/docker.env
    ```
+   If ports **3000–3002** are already used on the host (e.g. by another Docker app), set `HOST_API_PORT`, `HOST_STOREFRONT_PORT`, and `HOST_ADMIN_PORT` in `docker.env` (defaults: **3100**, **3101**, **3102**). Nginx reads the same values from `configure-nginx.sh`.
 2. Build and start (build one service at a time on low-RAM VPS):
    ```bash
    bash deploy/docker/compose.sh build api

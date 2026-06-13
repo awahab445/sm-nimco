@@ -29,9 +29,16 @@ for var in SHOP_DOMAIN ADMIN_DOMAIN API_DOMAIN; do
   fi
 done
 
+HOST_API_PORT="${HOST_API_PORT:-3100}"
+HOST_STOREFRONT_PORT="${HOST_STOREFRONT_PORT:-3101}"
+HOST_ADMIN_PORT="${HOST_ADMIN_PORT:-3102}"
+
 sed -e "s/SHOP_DOMAIN/${SHOP_DOMAIN}/g" \
     -e "s/ADMIN_DOMAIN/${ADMIN_DOMAIN}/g" \
     -e "s/API_DOMAIN/${API_DOMAIN}/g" \
+    -e "s/HOST_API_PORT/${HOST_API_PORT}/g" \
+    -e "s/HOST_STOREFRONT_PORT/${HOST_STOREFRONT_PORT}/g" \
+    -e "s/HOST_ADMIN_PORT/${HOST_ADMIN_PORT}/g" \
     "${TEMPLATE}" > "${SITE}"
 
 ln -sf "${SITE}" /etc/nginx/sites-enabled/ecommerce-demo

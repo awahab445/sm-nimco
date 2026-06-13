@@ -15,15 +15,18 @@ fi
 # shellcheck source=/dev/null
 source "${ENV_FILE}"
 
+HOST_API_PORT="${HOST_API_PORT:-3100}"
+API_HEALTH_URL="http://127.0.0.1:${HOST_API_PORT}/health"
+
 COMPOSE=(docker compose --env-file "${ENV_FILE}" -f "${REPO_ROOT}/docker-compose.prod.yml")
 
 echo "=== Waiting for API health ==="
 for i in $(seq 1 30); do
-  if curl -sf "http://127.0.0.1:3000/health" >/dev/null 2>&1; then
+  if curl -sf "${API_HEALTH_URL}" >/dev/null 2>&1; then
     break
   fi
   if [[ "$i" -eq 30 ]]; then
-    echo "API not responding on http://127.0.0.1:3000/health"
+    echo "API not responding on ${API_HEALTH_URL}"
     exit 1
   fi
   sleep 2
@@ -51,7 +54,7 @@ if [[ -n "${ADMIN_EMAIL:-}" && -n "${ADMIN_PASSWORD:-}" ]]; then
       lastName: process.env.ADMIN_LAST_NAME || 'User',
     }));
   ")
-  curl -sf -X POST "http://127.0.0.1:3000/admin/bootstrap/first-user" \
+  curl -sf -X POST "http://127.0.0.1:${HOST_API_PORT}/admin/bootstrap/first-user" \
     -H "Content-Type: application/json" \
     -d "${PAYLOAD}" \
     && echo "Admin user created: ${ADMIN_EMAIL}" \
