@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { authService, type LoginCredentials, type AdminUser } from './auth.service';
-import { clearSession, establishSession } from './auth-token';
+import { bootstrapSessionFromCookie, clearSession, establishSession } from './auth-token';
 
 interface AuthState {
   user: AdminUser | null;
@@ -57,6 +57,10 @@ export const useAuthStore = create<AuthState>((set) => ({
   checkAuth: async () => {
     set({ isLoading: true });
     try {
+      const ready = await bootstrapSessionFromCookie();
+      if (!ready) {
+        throw new Error('not authenticated');
+      }
       const user = await authService.getMe();
       set({
         user,
