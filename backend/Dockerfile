@@ -1,0 +1,33 @@
+FROM node:20-alpine AS deps
+WORKDIR /app
+COPY backend/package.json backend/package-lock.json ./
+COPY backend/prisma ./prisma/
+RUN npm ci
+
+FROM node:20-alpine AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY backend/ .
+RUN npx prisma generate && npm run build
+
+FROM node:20-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+
+RUN apk add --no-cache openssl
+
+COPY backend/package.json backend/package-lock.json ./
+COPY backend/prisma ./prisma/
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/src/admin ./src/admin
+COPY --from=builder /app/prisma/seed.ts ./prisma/seed.ts
+COPY --from=builder /app/tsconfig.json ./tsconfig.json
+COPY deploy/docker/entrypoint-api.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+RUN mkdir -p uploads/products uploads/cms-slides uploads/storefront-nav
+
+EXPOSE 3000
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["node", "dist/src/main.js"]

@@ -7,7 +7,7 @@ module.exports = {
     {
       name: 'ecommerce-api',
       cwd: path.join(root, 'backend'),
-      script: 'dist/main.js',
+      script: 'dist/src/main.js',
       instances: 1,
       autorestart: true,
       max_memory_restart: '600M',
