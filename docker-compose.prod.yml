@@ -73,6 +73,8 @@ services:
       - api
     environment:
       NODE_ENV: production
+      JWT_SECRET: ${JWT_SECRET}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
     ports:
       - "127.0.0.1:${HOST_STOREFRONT_PORT:-3101}:3001"
 
@@ -89,6 +91,8 @@ services:
       - api
     environment:
       NODE_ENV: production
+      JWT_SECRET: ${JWT_SECRET}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
     ports:
       - "127.0.0.1:${HOST_ADMIN_PORT:-3102}:3002"
 

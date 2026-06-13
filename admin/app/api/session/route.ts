@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { sessionCookieOptions, sessionCookieSecure } from '@/lib/session-cookie-options';
 
 const COOKIE_NAME = 'admin-auth-token';
 const MAX_AGE = 7 * 24 * 60 * 60;
@@ -12,10 +13,8 @@ export async function POST(request: Request) {
 
   const response = NextResponse.json({ ok: true });
   response.cookies.set(COOKIE_NAME, token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    path: '/',
+    ...sessionCookieOptions,
+    secure: sessionCookieSecure(),
     maxAge: MAX_AGE,
   });
   return response;
@@ -24,10 +23,8 @@ export async function POST(request: Request) {
 export async function DELETE() {
   const response = NextResponse.json({ ok: true });
   response.cookies.set(COOKIE_NAME, '', {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    path: '/',
+    ...sessionCookieOptions,
+    secure: sessionCookieSecure(),
     maxAge: 0,
   });
   return response;
