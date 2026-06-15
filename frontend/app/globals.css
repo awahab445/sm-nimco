@@ -4,7 +4,7 @@
 
 html {
   overflow-x: clip;
-  background-color: #d9e8fc;
+  background-color: #ffffff;
   color: #1a2e40;
 }
 
@@ -13,7 +13,7 @@ html {
   --color-brand-secondary: #a3d2ff;
   --color-brand-accent: #526baf;
   --color-brand-text: #1a2e40;
-  --color-brand-bg: #d9e8fc;
+  --color-brand-bg: #ffffff;
   --shadow-product-card: 0 1px 3px 0 color-mix(in srgb, #1a2e40 7%, transparent),
     0 4px 14px -2px color-mix(in srgb, #2b7fff 8%, transparent);
   --color-background: var(--background);
@@ -88,14 +88,14 @@ button .cart-icon {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-  color: var(--color-brand-text, #1a2e40);
+  color: inherit;
   transition: color 0.15s ease;
 }
 
-.header-nav-trigger:hover,
-.header-nav-trigger:focus-visible,
-.header-nav-trigger[aria-expanded='true'] {
-  color: var(--color-brand-primary, #2b7fff);
+.site-header .header-nav-trigger:hover,
+.site-header .header-nav-trigger:focus-visible,
+.site-header .header-nav-trigger[aria-expanded='true'] {
+  color: var(--navbar-muted-foreground, #dbeafe);
 }
 
 .header-nav-trigger__chevron {
@@ -114,7 +114,7 @@ details.mega-menu-mobile-root[open] > summary .header-nav-trigger__chevron {
 }
 
 .header-nav-categories-label {
-  color: var(--color-brand-accent, #526baf);
+  color: var(--navbar-muted-foreground, #dbeafe);
 }
 
 @keyframes header-user-menu-enter {
@@ -183,23 +183,35 @@ details.mega-menu-mobile-root[open] > summary .header-nav-trigger__chevron {
 .site-header {
   background: var(--navbar-background);
   border-bottom-color: var(--navbar-border);
-  color: var(--navbar-foreground, var(--color-brand-text, #1a2e40));
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
+  color: var(--navbar-foreground, #ffffff);
 }
 
-/* Default cleaning brand: dark navy links on soft blue navbar */
-html[data-store-theme="default"] header.site-header nav > a,
-html[data-store-theme="default"] header.site-header nav .header-nav-trigger,
-html[data-store-theme="default"] header.site-header nav button[aria-haspopup='menu'] {
-  color: var(--color-brand-text, #1a2e40);
+/* Header bar links, icons, and triggers — high contrast on navbar background */
+.site-header nav a,
+.site-header nav .header-nav-trigger,
+.site-header nav button[aria-haspopup='menu'],
+.site-header nav button[aria-haspopup='true'],
+.site-header > div > a[href='/'],
+.site-header > div > button[aria-controls='mobile-main-nav'] {
+  color: var(--navbar-foreground, #ffffff);
+  transition: color 0.15s ease;
 }
 
-html[data-store-theme="default"] header.site-header nav > a:hover,
-html[data-store-theme="default"] header.site-header nav .header-nav-trigger:hover,
-html[data-store-theme="default"] header.site-header nav .header-nav-trigger[aria-expanded='true'],
-html[data-store-theme="default"] header.site-header nav button[aria-haspopup='menu']:hover {
-  color: var(--color-brand-primary, #2b7fff);
+.site-header nav a:hover,
+.site-header nav .header-nav-trigger:hover,
+.site-header nav .header-nav-trigger[aria-expanded='true'],
+.site-header nav button[aria-haspopup='menu']:hover,
+.site-header nav button[aria-haspopup='true']:hover,
+.site-header > div > a[href='/']:hover,
+.site-header > div > button[aria-controls='mobile-main-nav']:hover {
+  color: var(--navbar-muted-foreground, #dbeafe);
+}
+
+html[data-store-theme='default'] .store-mega-menu-panel {
+  background: var(--popover);
+  color: var(--popover-foreground);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
 
 .store-mega-menu-panel {

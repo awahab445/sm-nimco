@@ -119,7 +119,7 @@ export function Header() {
         <Link
           key={item.id}
           href={item.href}
-          className="relative inline-flex items-center justify-center text-brand-text transition-colors hover:text-brand-primary"
+          className="relative inline-flex items-center justify-center text-white transition-colors hover:text-blue-100"
           aria-label={
             cartItemCount > 0
               ? `${item.label}, ${cartItemCount} ${cartItemCount === 1 ? 'item' : 'items'}`
@@ -131,7 +131,7 @@ export function Header() {
             <ShoppingBagIcon className="h-6 w-6" strokeWidth={2} aria-hidden />
             {cartItemCount > 0 ? (
               <span
-                className="pointer-events-none absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-semibold leading-none text-white ring-2 ring-background"
+                className="pointer-events-none absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-semibold leading-none text-white ring-2 ring-blue-800"
                 aria-hidden
               >
                 {cartItemCount > 99 ? '99+' : cartItemCount}
@@ -145,7 +145,7 @@ export function Header() {
       <Link
         key={item.id}
         href={item.href}
-        className="text-sm font-medium text-brand-text transition-colors hover:text-brand-primary"
+        className="text-sm font-medium text-white transition-colors hover:text-blue-100"
       >
         {item.label}
       </Link>
@@ -184,7 +184,7 @@ export function Header() {
             <ShoppingBagIcon className="h-6 w-6" strokeWidth={2} aria-hidden />
             {cartItemCount > 0 ? (
               <span
-                className="pointer-events-none absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-semibold leading-none text-white ring-2 ring-background"
+                className="pointer-events-none absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-semibold leading-none text-white ring-2 ring-blue-800"
                 aria-hidden
               >
                 {cartItemCount > 99 ? '99+' : cartItemCount}
@@ -278,11 +278,11 @@ export function Header() {
     ) : null;
 
   return (
-    <header className="site-header sticky top-0 z-[60] w-full max-w-full overflow-visible border-b relative">
+    <header className="site-header sticky top-0 z-[60] w-full max-w-full overflow-visible border-b border-blue-900 bg-blue-800 relative">
       <div className="mx-auto flex min-h-14 w-full min-w-0 max-w-[100rem] items-center justify-between gap-2 py-1.5 px-4 sm:gap-3 sm:px-8 lg:gap-4 lg:px-12 xl:px-16">
         <Link
           href="/"
-          className="inline-flex shrink-0 items-center bg-transparent text-lg font-semibold tracking-tight text-brand-text outline-none ring-0 focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 focus-visible:ring-offset-brand-bg"
+          className="inline-flex shrink-0 items-center bg-transparent text-lg font-semibold tracking-tight text-white outline-none ring-0 focus-visible:ring-2 focus-visible:ring-blue-200 focus-visible:ring-offset-2 focus-visible:ring-offset-blue-800"
         >
           {logoSrc ? (
             <Image
@@ -300,7 +300,7 @@ export function Header() {
         </Link>
 
         <div className="flex min-w-0 flex-1 justify-center px-1 sm:px-2">
-          <SearchBar />
+          <SearchBar variant="header" />
         </div>
 
         <nav
@@ -314,7 +314,7 @@ export function Header() {
 
         <button
           type="button"
-          className="inline-flex shrink-0 items-center justify-center rounded-md border border-border bg-brand-bg p-2.5 text-brand-text shadow-sm transition-colors hover:bg-brand-secondary/30 active:bg-brand-secondary/40 lg:hidden"
+          className="inline-flex shrink-0 items-center justify-center rounded-md border border-white/30 bg-blue-800 p-2.5 text-white shadow-sm transition-colors hover:bg-blue-700 hover:text-blue-100 active:bg-blue-900 lg:hidden"
           aria-expanded={mobileNavOpen}
           aria-controls="mobile-main-nav"
           aria-haspopup="dialog"

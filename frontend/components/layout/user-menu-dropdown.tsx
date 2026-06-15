@@ -45,7 +45,7 @@ export function UserMenuDropdown() {
     >
       <button
         type="button"
-        className="inline-flex h-full items-center justify-center text-brand-text transition-colors hover:text-brand-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/30 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-bg"
+        className="inline-flex h-full items-center justify-center text-white transition-colors hover:text-blue-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200/50 focus-visible:ring-offset-2 focus-visible:ring-offset-blue-800"
         aria-label={isAuthenticated ? 'Account menu' : 'Sign in menu'}
         aria-expanded={open}
         aria-haspopup="menu"

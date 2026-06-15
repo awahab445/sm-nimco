@@ -23,7 +23,7 @@
 
 /* ——— default: fresh blue-and-white household cleaning brand ——— */
 [data-store-theme="default"] {
-  --background: #d9e8fc;
+  --background: #ffffff;
   --foreground: #1a2e40;
   --muted: #f0f7ff;
   --muted-foreground: #526baf;
@@ -46,17 +46,17 @@
   --ring: #2b7fff;
   --popover: #ffffff;
   --popover-foreground: #1a2e40;
-  --navbar-background: #d9e8fc;
-  --navbar-foreground: #1a2e40;
-  --navbar-muted-foreground: #526baf;
-  --navbar-border: #e3eef9;
+  --navbar-background: #1e40af;
+  --navbar-foreground: #ffffff;
+  --navbar-muted-foreground: #dbeafe;
+  --navbar-border: #1e3a8a;
   --mega-menu-shadow: 0 8px 32px -8px color-mix(in srgb, #2b7fff 14%, transparent);
 }
 
 /* Keep the default storefront light and airy even when OS prefers dark */
 @media (prefers-color-scheme: dark) {
   [data-store-theme="default"] {
-    --background: #d9e8fc;
+    --background: #ffffff;
     --foreground: #1a2e40;
     --muted: #f0f7ff;
     --muted-foreground: #526baf;
@@ -79,10 +79,10 @@
     --ring: #2b7fff;
     --popover: #ffffff;
     --popover-foreground: #1a2e40;
-    --navbar-background: #d9e8fc;
-    --navbar-foreground: #1a2e40;
-    --navbar-muted-foreground: #526baf;
-    --navbar-border: #e3eef9;
+    --navbar-background: #1e40af;
+    --navbar-foreground: #ffffff;
+    --navbar-muted-foreground: #dbeafe;
+    --navbar-border: #1e3a8a;
     --mega-menu-shadow: 0 8px 32px -8px color-mix(in srgb, #2b7fff 14%, transparent);
   }
 }
