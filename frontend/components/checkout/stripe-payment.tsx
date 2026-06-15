@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { storefrontUi } from '@/lib/storefront-ui';
 
 interface StripePaymentProps {
   clientSecret: string;
@@ -93,7 +94,7 @@ export function StripePayment({ clientSecret, onSuccess, onError }: StripePaymen
       <button
         type="submit"
         disabled={processing}
-        className="w-full rounded-md bg-primary px-6 py-2 text-primary-foreground shadow-sm transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+        className={`w-full ${storefrontUi.btnPrimary} px-6 py-2`}
       >
         {processing ? 'Processing...' : 'Pay Now'}
       </button>

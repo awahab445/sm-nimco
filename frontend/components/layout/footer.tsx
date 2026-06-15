@@ -34,7 +34,7 @@ export function Footer() {
       className={
         IS_MEHFIL_THEME
           ? 'border-t border-primary/25 bg-secondary text-secondary-foreground'
-          : 'border-t border-border bg-muted/40'
+          : 'border-t border-border bg-brand-bg'
       }
     >
       <div className="mx-auto w-full max-w-[100rem] px-4 py-12 sm:px-8 lg:px-12 xl:px-16">
@@ -44,7 +44,7 @@ export function Footer() {
               className={
                 IS_MEHFIL_THEME
                   ? 'text-sm font-semibold text-secondary-foreground'
-                  : 'text-sm font-semibold text-foreground'
+                  : 'text-sm font-semibold text-brand-text'
               }
             >
               {STORE_NAME}

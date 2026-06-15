@@ -10,6 +10,7 @@ import {
   paymentStatusBadgeClass,
 } from '@/lib/order-status-badges';
 import Link from 'next/link';
+import { storefrontUi } from '@/lib/storefront-ui';
 
 interface Order {
   id: string;
@@ -101,11 +102,9 @@ export default function OrdersPage() {
   }, []);
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+    <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-foreground">
-          Order History
-        </h1>
+        <h2 className="text-2xl font-semibold text-brand-text">Order History</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           View and track your orders
         </p>
@@ -126,16 +125,13 @@ export default function OrdersPage() {
       {/* Orders List */}
       {loading ? (
         <div className="flex flex-col items-center justify-center py-16">
-          <div className="h-10 w-10 animate-spin rounded-full border-2 border-muted border-t-primary" aria-hidden />
+          <div className="h-10 w-10 animate-spin rounded-full border-2 border-brand-secondary border-t-brand-primary" aria-hidden />
           <p className="mt-4 text-muted-foreground">Loading orders…</p>
         </div>
       ) : orders.length === 0 ? (
-        <div className="rounded-lg border border-border bg-muted/50 py-16 text-center">
+        <div className="rounded-lg border border-border bg-brand-secondary/15 py-16 text-center">
           <p className="text-muted-foreground">You haven’t placed any orders yet.</p>
-          <Link
-            href="/products"
-            className="mt-4 inline-block rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-opacity hover:opacity-90"
-          >
+          <Link href="/products" className={`mt-4 inline-block ${storefrontUi.btnPrimary}`}>
             Start shopping
           </Link>
         </div>
@@ -144,12 +140,12 @@ export default function OrdersPage() {
             {orders.map((order) => (
               <div
                 key={order.id}
-                className="overflow-hidden rounded-lg border border-border bg-card shadow-sm"
+                className={`overflow-hidden ${storefrontUi.card}`}
               >
                 <div className="p-6">
                   <div className="flex justify-between items-start mb-4">
                     <div>
-                      <h3 className="text-lg font-semibold text-foreground">
+                      <h3 className="text-lg font-semibold text-brand-text">
                         Order #{order.orderNumber}
                       </h3>
                       <p className="text-sm text-muted-foreground">
@@ -161,7 +157,7 @@ export default function OrdersPage() {
                       </p>
                     </div>
                     <div className="text-right">
-                      <div className="text-lg font-semibold text-foreground">
+                      <div className="text-lg font-semibold text-brand-text">
                         {new Intl.NumberFormat('en-US', {
                           style: 'currency',
                           currency: order.currency,
@@ -198,14 +194,14 @@ export default function OrdersPage() {
 
                   {/* Order Items */}
                   <div className="mt-4 border-t border-border pt-4">
-                    <h4 className="mb-2 text-sm font-medium text-foreground">Items</h4>
+                    <h4 className="mb-2 text-sm font-medium text-brand-text">Items</h4>
                     <div className="space-y-2">
                       {order.items.map((item) => (
                         <div key={item.id} className="flex justify-between text-sm">
                           <span className="text-muted-foreground">
                             {item.name} × {item.quantity}
                           </span>
-                          <span className="text-foreground">
+                          <span className="text-brand-text">
                             {new Intl.NumberFormat('en-US', {
                               style: 'currency',
                               currency: order.currency,
@@ -222,7 +218,7 @@ export default function OrdersPage() {
                       type="button"
                       onClick={() => handleReorder(order)}
                       disabled={reorderOrderId === order.id}
-                      className="inline-flex items-center gap-2 rounded-md border border-primary px-4 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/10 disabled:cursor-not-allowed disabled:opacity-50"
+                      className={`inline-flex items-center gap-2 ${storefrontUi.btnSecondary}`}
                       title="Add all items from this order to a new cart"
                     >
                       {reorderOrderId === order.id ? (
@@ -236,7 +232,7 @@ export default function OrdersPage() {
                     </button>
                     <Link
                       href={`/orders/${order.id}`}
-                      className="rounded-md border border-primary px-4 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/10"
+                      className={storefrontUi.btnSecondary}
                     >
                       View Details →
                     </Link>
@@ -251,7 +247,7 @@ export default function OrdersPage() {
                 <button
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page === 1}
-                  className="rounded-md border border-border bg-card px-4 py-2 text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
+                  className="rounded-md border border-border bg-card px-4 py-2 text-brand-text transition-colors hover:bg-brand-secondary/25 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Previous
                 </button>
@@ -261,7 +257,7 @@ export default function OrdersPage() {
                 <button
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   disabled={page === totalPages}
-                  className="rounded-md border border-border bg-card px-4 py-2 text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
+                  className="rounded-md border border-border bg-card px-4 py-2 text-brand-text transition-colors hover:bg-brand-secondary/25 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Next
                 </button>

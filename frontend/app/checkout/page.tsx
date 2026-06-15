@@ -6,6 +6,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { CheckoutProvider, useCheckout } from '@/lib/checkout-context';
 import { useAuthStore } from '@/lib/auth.store';
 import { OnePageCheckout } from '@/components/checkout/one-page-checkout';
+import { storefrontUi } from '@/lib/storefront-ui';
 
 function CheckoutContent() {
   const router = useRouter();
@@ -67,7 +68,7 @@ function CheckoutContent() {
           <button
             type="button"
             onClick={() => router.push('/cart')}
-            className="rounded-md bg-primary px-6 py-2 text-primary-foreground shadow-sm transition-opacity hover:opacity-90"
+            className={`${storefrontUi.btnPrimary} px-6 py-2`}
           >
             Return to cart
           </button>

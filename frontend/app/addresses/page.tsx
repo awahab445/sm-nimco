@@ -124,7 +124,7 @@ export default function AddressesPage() {
           >
             ← Back to Addresses
           </button>
-          <h2 className="text-2xl font-semibold text-foreground">
+          <h2 className="text-2xl font-semibold text-brand-text">
             {viewMode === 'add' ? 'Add New Address' : 'Edit Address'}
           </h2>
         </div>
@@ -144,7 +144,7 @@ export default function AddressesPage() {
     <>
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-semibold text-foreground">
+          <h2 className="text-2xl font-semibold text-brand-text">
             My Addresses
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -153,7 +153,7 @@ export default function AddressesPage() {
         </div>
         <button
           onClick={handleAdd}
-          className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-ring/30 focus:ring-offset-2 focus:ring-offset-background"
+          className={storefrontUi.btnPrimary}
         >
           Add New Address
         </button>
@@ -166,14 +166,11 @@ export default function AddressesPage() {
       )}
 
       {addresses.length === 0 ? (
-        <div className="rounded-lg border border-border bg-card p-12 text-center shadow-sm">
+        <div className={`p-12 text-center ${storefrontUi.card}`}>
             <p className="mb-4 text-muted-foreground">
               You don't have any saved addresses yet.
             </p>
-            <button
-              onClick={handleAdd}
-              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-opacity hover:opacity-90"
-            >
+            <button onClick={handleAdd} className={storefrontUi.btnPrimary}>
               Add Your First Address
             </button>
           </div>
@@ -182,7 +179,7 @@ export default function AddressesPage() {
             {addresses.map((address) => (
               <div
                 key={address.id}
-                className="rounded-lg border border-border bg-card p-6 shadow-sm"
+                className={`p-6 ${storefrontUi.card}`}
               >
                 <div className="mb-4 flex items-start justify-between">
                   <div className="flex-1">
@@ -191,7 +188,7 @@ export default function AddressesPage() {
                         {address.label}
                       </p>
                     )}
-                    <h3 className="text-lg font-semibold text-foreground">
+                    <h3 className="text-lg font-semibold text-brand-text">
                       {address.firstName} {address.lastName}
                     </h3>
                     {address.company && (
@@ -202,12 +199,12 @@ export default function AddressesPage() {
                   </div>
                   <div className="flex gap-2">
                     {address.isDefaultBilling && (
-                      <span className="rounded bg-primary/15 px-2 py-1 text-xs font-medium text-primary">
+                      <span className={storefrontUi.badgeBrand}>
                         Billing
                       </span>
                     )}
                     {address.isDefaultShipping && (
-                      <span className="rounded bg-success/15 px-2 py-1 text-xs font-medium text-success">
+                      <span className="rounded bg-brand-secondary/55 px-2 py-1 text-xs font-medium text-brand-accent ring-1 ring-inset ring-brand-primary/20">
                         Shipping
                       </span>
                     )}
@@ -227,14 +224,14 @@ export default function AddressesPage() {
                 <div className="flex flex-wrap gap-2">
                   <button
                     onClick={() => handleEdit(address)}
-                    className="rounded-md border border-border bg-card px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring/30"
+                    className="rounded-md border border-border bg-card px-3 py-1.5 text-sm font-medium text-brand-text transition-colors hover:bg-brand-secondary/25 focus:outline-none focus:ring-2 focus:ring-brand-primary/30"
                   >
                     Edit
                   </button>
                   {!address.isDefaultBilling && (
                     <button
                       onClick={() => handleSetDefaultBilling(address.id)}
-                      className="rounded-md border border-border bg-card px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring/30"
+                      className="rounded-md border border-border bg-card px-3 py-1.5 text-sm font-medium text-brand-text transition-colors hover:bg-brand-secondary/25 focus:outline-none focus:ring-2 focus:ring-brand-primary/30"
                     >
                       Set Billing
                     </button>
@@ -242,7 +239,7 @@ export default function AddressesPage() {
                   {!address.isDefaultShipping && (
                     <button
                       onClick={() => handleSetDefaultShipping(address.id)}
-                      className="rounded-md border border-border bg-card px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring/30"
+                      className="rounded-md border border-border bg-card px-3 py-1.5 text-sm font-medium text-brand-text transition-colors hover:bg-brand-secondary/25 focus:outline-none focus:ring-2 focus:ring-brand-primary/30"
                     >
                       Set Shipping
                     </button>

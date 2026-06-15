@@ -17,6 +17,7 @@ import {
   validateCouponCodeForCartLike,
 } from '@/lib/coupon-sync';
 import { formatVariantAttributes } from '@/lib/format-variant-attributes';
+import { storefrontUi } from '@/lib/storefront-ui';
 
 function formatPrice(value: number, currency = DEFAULT_CURRENCY): string {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(value);
@@ -191,7 +192,7 @@ export default function CartPage() {
           <p className="text-muted-foreground">Your cart is empty.</p>
           <Link
             href="/products"
-            className="mt-4 inline-block rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-opacity hover:opacity-90"
+            className={`mt-4 inline-block ${storefrontUi.btnPrimary}`}
           >
             Continue shopping
           </Link>
@@ -315,7 +316,7 @@ export default function CartPage() {
               </div>
               <Link
                 href={cartId ? `/checkout?cartId=${cartId}` : '/cart'}
-                className="mt-4 block w-full rounded-md bg-primary py-2.5 text-center text-sm font-medium text-primary-foreground shadow-sm transition-opacity hover:opacity-90"
+                className={`mt-4 block w-full py-2.5 text-center text-sm ${storefrontUi.btnPrimary}`}
               >
                 Proceed to checkout
               </Link>

@@ -9,6 +9,7 @@ import { useCartStore } from '@/lib/cart.store';
 import { STORE_NAME, getStoreLogoSrc } from '@/lib/config';
 import {
   storefrontNavApi,
+  mergeStorefrontNavigation,
   STOREFRONT_NAV_FALLBACK,
   type StorefrontNavItem,
   type StorefrontNavMegaNode,
@@ -42,14 +43,11 @@ export function Header() {
       .getNavigation()
       .then((res) => {
         if (cancelled) return;
-        const payload = res.data;
-        if (payload?.header?.length) {
-          setMainNav(payload.header);
-          setMegaMenu(payload.megaMenu ?? []);
-        } else {
-          setMainNav(STOREFRONT_NAV_FALLBACK.header);
-          setMegaMenu(STOREFRONT_NAV_FALLBACK.megaMenu);
-        }
+        const merged = mergeStorefrontNavigation(
+          res.data ?? { header: [], megaMenu: [] },
+        );
+        setMainNav(merged.header);
+        setMegaMenu(merged.megaMenu);
       })
       .catch(() => {
         if (!cancelled) {
@@ -121,7 +119,7 @@ export function Header() {
         <Link
           key={item.id}
           href={item.href}
-          className="relative inline-flex items-center justify-center text-foreground transition-opacity hover:opacity-80"
+          className="relative inline-flex items-center justify-center text-brand-text transition-colors hover:text-brand-primary"
           aria-label={
             cartItemCount > 0
               ? `${item.label}, ${cartItemCount} ${cartItemCount === 1 ? 'item' : 'items'}`
@@ -147,7 +145,7 @@ export function Header() {
       <Link
         key={item.id}
         href={item.href}
-        className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+        className="text-sm font-medium text-brand-text transition-colors hover:text-brand-primary"
       >
         {item.label}
       </Link>
@@ -160,7 +158,7 @@ export function Header() {
         <div key={item.id} className="space-y-1">
           <Link
             href={item.href}
-            className="block rounded-md px-3 py-3 text-base font-medium text-foreground active:bg-muted sm:py-2.5 sm:text-sm"
+            className="block rounded-md px-3 py-3 text-base font-medium text-brand-text active:bg-brand-secondary/30 sm:py-2.5 sm:text-sm"
             onClick={closeMobileNav}
           >
             {item.label}
@@ -174,7 +172,7 @@ export function Header() {
         <Link
           key={item.id}
           href={item.href}
-          className="flex items-center gap-3 rounded-md px-3 py-3 text-base font-semibold text-foreground active:bg-muted sm:py-2.5 sm:text-sm"
+          className="flex items-center gap-3 rounded-md px-3 py-3 text-base font-semibold text-brand-text active:bg-brand-secondary/30 sm:py-2.5 sm:text-sm"
           aria-label={
             cartItemCount > 0
               ? `${item.label}, ${cartItemCount} ${cartItemCount === 1 ? 'item' : 'items'}`
@@ -201,7 +199,7 @@ export function Header() {
       <Link
         key={item.id}
         href={item.href}
-        className="rounded-md px-3 py-3 text-base font-medium text-foreground active:bg-muted sm:py-2.5 sm:text-sm"
+        className="rounded-md px-3 py-3 text-base font-medium text-brand-text active:bg-brand-secondary/30 sm:py-2.5 sm:text-sm"
         onClick={closeMobileNav}
       >
         {item.label}
@@ -220,21 +218,21 @@ export function Header() {
       >
         <button
           type="button"
-          className="min-h-0 min-w-0 flex-1 cursor-pointer bg-black/50 backdrop-blur-[1px]"
+          className="min-h-0 min-w-0 flex-1 cursor-pointer bg-brand-text/40 backdrop-blur-[1px]"
           aria-label="Close menu"
           onClick={closeMobileNav}
         />
         <div
-          className="flex h-[100dvh] max-h-[100dvh] w-[min(100vw,22rem)] max-w-[min(100vw,22rem)] shrink-0 flex-col border-l border-border bg-background shadow-2xl"
+          className="flex h-[100dvh] max-h-[100dvh] w-[min(100vw,22rem)] max-w-[min(100vw,22rem)] shrink-0 flex-col border-l border-border bg-brand-bg shadow-2xl"
           style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
         >
           <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
-            <p id={mobileNavTitleId} className="text-sm font-semibold text-foreground">
+            <p id={mobileNavTitleId} className="text-sm font-semibold text-brand-text">
               Menu
             </p>
             <button
               type="button"
-              className="rounded-md p-2 text-muted-foreground hover:bg-muted hover:text-foreground"
+              className="rounded-md p-2 text-brand-text hover:bg-brand-secondary/30 hover:text-brand-primary"
               aria-label="Close menu"
               onClick={closeMobileNav}
             >
@@ -251,7 +249,7 @@ export function Header() {
             {isAuthenticated ? (
               <Link
                 href="/account"
-                className="rounded-md px-3 py-3 text-base font-medium text-foreground active:bg-muted sm:py-2.5 sm:text-sm"
+                className="rounded-md px-3 py-3 text-base font-medium text-brand-text active:bg-brand-secondary/30 sm:py-2.5 sm:text-sm"
                 onClick={closeMobileNav}
               >
                 My Profile
@@ -260,14 +258,14 @@ export function Header() {
               <>
                 <Link
                   href="/login"
-                  className="rounded-md px-3 py-3 text-base font-medium text-foreground active:bg-muted sm:py-2.5 sm:text-sm"
+                  className="rounded-md px-3 py-3 text-base font-medium text-brand-text active:bg-brand-secondary/30 sm:py-2.5 sm:text-sm"
                   onClick={closeMobileNav}
                 >
                   Log in
                 </Link>
                 <Link
                   href="/register"
-                  className="mt-1 rounded-md bg-primary px-3 py-3 text-center text-base font-medium text-primary-foreground shadow-sm active:opacity-90 sm:py-2.5 sm:text-sm"
+                  className="mt-1 rounded-md bg-brand-primary px-3 py-3 text-center text-base font-medium text-white shadow-sm transition-all duration-200 hover:brightness-110 sm:py-2.5 sm:text-sm"
                   onClick={closeMobileNav}
                 >
                   Sign up
@@ -284,7 +282,7 @@ export function Header() {
       <div className="mx-auto flex min-h-14 w-full min-w-0 max-w-[100rem] items-center justify-between gap-2 py-1.5 px-4 sm:gap-3 sm:px-8 lg:gap-4 lg:px-12 xl:px-16">
         <Link
           href="/"
-          className="inline-flex shrink-0 items-center bg-transparent text-lg font-semibold tracking-tight text-foreground outline-none ring-0 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          className="inline-flex shrink-0 items-center bg-transparent text-lg font-semibold tracking-tight text-brand-text outline-none ring-0 focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 focus-visible:ring-offset-brand-bg"
         >
           {logoSrc ? (
             <Image
@@ -316,7 +314,7 @@ export function Header() {
 
         <button
           type="button"
-          className="inline-flex shrink-0 items-center justify-center rounded-md border border-border bg-background p-2.5 text-foreground shadow-sm transition-colors hover:bg-muted active:bg-muted/80 lg:hidden"
+          className="inline-flex shrink-0 items-center justify-center rounded-md border border-border bg-brand-bg p-2.5 text-brand-text shadow-sm transition-colors hover:bg-brand-secondary/30 active:bg-brand-secondary/40 lg:hidden"
           aria-expanded={mobileNavOpen}
           aria-controls="mobile-main-nav"
           aria-haspopup="dialog"

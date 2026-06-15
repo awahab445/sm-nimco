@@ -88,6 +88,32 @@ async function main() {
   }
   console.log('Seed: storefront filter slots (category, price, brand, size).');
 
+  // 3c. Default storefront header navigation (matches migration defaults; safe when db push skips migrations)
+  const defaultHeaderNav = [
+    { id: '00000000-0000-0000-0000-00000000e001', label: 'Home', href: '/', sortOrder: 0, kind: 'LINK', openMegaMenu: false },
+    { id: '00000000-0000-0000-0000-00000000e002', label: 'Products', secondaryLabel: 'Categories', href: '/products', sortOrder: 10, kind: 'MEGA_CATEGORIES', openMegaMenu: true },
+    { id: '00000000-0000-0000-0000-00000000e003', label: 'Track order', href: '/track-order', sortOrder: 20, kind: 'LINK', openMegaMenu: false },
+    { id: '00000000-0000-0000-0000-00000000e005', label: 'Cart', href: '/cart', sortOrder: 40, kind: 'LINK', openMegaMenu: false },
+  ] as const;
+  for (const link of defaultHeaderNav) {
+    await prisma.storefrontNavLink.upsert({
+      where: { id: link.id },
+      update: {},
+      create: {
+        id: link.id,
+        label: link.label,
+        secondaryLabel: 'secondaryLabel' in link ? link.secondaryLabel : null,
+        href: link.href,
+        sortOrder: link.sortOrder,
+        isActive: true,
+        kind: link.kind,
+        zone: 'header',
+        openMegaMenu: link.openMegaMenu,
+      },
+    });
+  }
+  console.log('Seed: default storefront header navigation.');
+
   // 4. CMS: starter page
   await prisma.cmsPage.upsert({
     where: { slug: 'about-us' },

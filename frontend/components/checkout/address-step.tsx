@@ -364,7 +364,7 @@ export function AddressStep({ onNext }: AddressStepProps) {
         <button
           type="submit"
           disabled={isLoading}
-          className="rounded-md bg-primary px-6 py-2 text-primary-foreground shadow-sm transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+          className={`${storefrontUi.btnPrimary} px-6 py-2`}
         >
           {isLoading ? 'Saving...' : 'Continue to Shipping'}
         </button>

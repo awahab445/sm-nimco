@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useCheckout } from '@/lib/checkout-context';
 import { shippingApi } from '@/lib/api-client';
 import { DEFAULT_CURRENCY } from '@/lib/config';
+import { storefrontUi } from '@/lib/storefront-ui';
 
 interface ShippingStepProps {
   onNext: () => void;
@@ -119,8 +120,8 @@ export function ShippingStep({ onNext, onBack }: ShippingStepProps) {
                 key={option.methodId}
                 className={`block cursor-pointer rounded-lg border-2 p-4 transition-colors ${
                   selectedMethodId === option.methodId
-                    ? 'border-primary bg-primary/10'
-                    : 'border-border hover:border-input'
+                    ? storefrontUi.optionSelected
+                    : storefrontUi.optionIdle
                 }`}
               >
                 <div className="flex items-start">
@@ -130,7 +131,7 @@ export function ShippingStep({ onNext, onBack }: ShippingStepProps) {
                     value={option.methodId}
                     checked={selectedMethodId === option.methodId}
                     onChange={(e) => setSelectedMethodId(e.target.value)}
-                    className="mt-1 h-4 w-4 text-primary focus:ring-ring"
+                    className="mt-1 h-4 w-4 text-brand-primary focus:ring-brand-primary/30"
                   />
                   <div className="ml-3 flex-1">
                     <div className="flex items-start justify-between">
@@ -178,7 +179,7 @@ export function ShippingStep({ onNext, onBack }: ShippingStepProps) {
         <button
           type="submit"
           disabled={isLoading || loadingOptions || !selectedMethodId}
-          className="rounded-md bg-primary px-6 py-2 text-primary-foreground shadow-sm transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+          className={`${storefrontUi.btnPrimary} px-6 py-2`}
         >
           {isLoading ? 'Saving...' : 'Continue to Payment'}
         </button>

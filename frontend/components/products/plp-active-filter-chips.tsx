@@ -80,7 +80,7 @@ export function PlpActiveFilterChips({ filters, categoryNameById, onChange }: Pr
           key={c.key}
           type="button"
           onClick={c.onRemove}
-          className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/60 px-3 py-1 text-xs font-medium text-foreground transition-colors hover:bg-muted"
+          className="inline-flex items-center gap-1.5 rounded-full border border-brand-secondary/60 bg-brand-secondary/40 px-3 py-1 text-xs font-medium text-brand-text transition-colors hover:bg-brand-secondary/60"
         >
           <span>{c.label}</span>
           <span className="text-muted-foreground" aria-hidden>

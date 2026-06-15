@@ -21,58 +21,69 @@
   }
 }
 
-/* ——— default: calm neutrals + trustworthy blue (general ecommerce) ——— */
+/* ——— default: fresh blue-and-white household cleaning brand ——— */
 [data-store-theme="default"] {
-  --background: #fafaf9;
-  --foreground: #1c1917;
-  --muted: #f5f5f4;
-  --muted-foreground: #78716c;
+  --background: #d9e8fc;
+  --foreground: #1a2e40;
+  --muted: #f0f7ff;
+  --muted-foreground: #526baf;
   --card: #ffffff;
-  --card-foreground: #1c1917;
-  --border: #e7e5e4;
-  --input: #d6d3d1;
-  --primary: #1d4ed8;
-  --primary-foreground: #f8fafc;
-  --secondary: #f5f5f4;
-  --secondary-foreground: #292524;
-  --accent: #e7e5e4;
-  --accent-foreground: #1c1917;
+  --card-foreground: #1a2e40;
+  --border: #e3eef9;
+  --input: #c8ddf5;
+  --primary: #2b7fff;
+  --primary-foreground: #ffffff;
+  --secondary: #a3d2ff;
+  --secondary-foreground: #1a2e40;
+  --accent: #e8f4ff;
+  --accent-foreground: #526baf;
   --destructive: #dc2626;
   --destructive-foreground: #fef2f2;
   --success: #15803d;
   --success-foreground: #f0fdf4;
   --warning: #b45309;
   --warning-foreground: #fffbeb;
-  --ring: #1d4ed8;
+  --ring: #2b7fff;
   --popover: #ffffff;
-  --popover-foreground: #1c1917;
+  --popover-foreground: #1a2e40;
+  --navbar-background: #d9e8fc;
+  --navbar-foreground: #1a2e40;
+  --navbar-muted-foreground: #526baf;
+  --navbar-border: #e3eef9;
+  --mega-menu-shadow: 0 8px 32px -8px color-mix(in srgb, #2b7fff 14%, transparent);
 }
 
+/* Keep the default storefront light and airy even when OS prefers dark */
 @media (prefers-color-scheme: dark) {
   [data-store-theme="default"] {
-    --background: #0c0a09;
-    --foreground: #fafaf9;
-    --muted: #292524;
-    --muted-foreground: #a8a29e;
-    --card: #1c1917;
-    --card-foreground: #fafaf9;
-    --border: #44403c;
-    --input: #57534e;
-    --primary: #3b82f6;
-    --primary-foreground: #020617;
-    --secondary: #292524;
-    --secondary-foreground: #fafaf9;
-    --accent: #44403c;
-    --accent-foreground: #fafaf9;
-    --destructive: #f87171;
-    --destructive-foreground: #450a0a;
-    --success: #4ade80;
-    --success-foreground: #052e16;
-    --warning: #fbbf24;
-    --warning-foreground: #451a03;
-    --ring: #60a5fa;
-    --popover: #1c1917;
-    --popover-foreground: #fafaf9;
+    --background: #d9e8fc;
+    --foreground: #1a2e40;
+    --muted: #f0f7ff;
+    --muted-foreground: #526baf;
+    --card: #ffffff;
+    --card-foreground: #1a2e40;
+    --border: #e3eef9;
+    --input: #c8ddf5;
+    --primary: #2b7fff;
+    --primary-foreground: #ffffff;
+    --secondary: #a3d2ff;
+    --secondary-foreground: #1a2e40;
+    --accent: #e8f4ff;
+    --accent-foreground: #526baf;
+    --destructive: #dc2626;
+    --destructive-foreground: #fef2f2;
+    --success: #15803d;
+    --success-foreground: #f0fdf4;
+    --warning: #b45309;
+    --warning-foreground: #fffbeb;
+    --ring: #2b7fff;
+    --popover: #ffffff;
+    --popover-foreground: #1a2e40;
+    --navbar-background: #d9e8fc;
+    --navbar-foreground: #1a2e40;
+    --navbar-muted-foreground: #526baf;
+    --navbar-border: #e3eef9;
+    --mega-menu-shadow: 0 8px 32px -8px color-mix(in srgb, #2b7fff 14%, transparent);
   }
 }
 

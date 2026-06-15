@@ -323,7 +323,7 @@ function ProductsContent() {
               replaceFilters({ ...draft, page: 1 });
               setDrawerOpen(false);
             }}
-            className="w-full rounded-md bg-primary py-3 text-sm font-semibold text-primary-foreground shadow-sm transition-opacity hover:opacity-90 disabled:opacity-50"
+            className="btn-brand-primary w-full py-3 text-sm font-semibold"
           >
             {drawerShowLabel}
           </button>
@@ -473,11 +473,11 @@ function ProductsContent() {
               setDraft(clonePlpFilters(applied));
               setDrawerOpen(true);
             }}
-            className="flex w-full items-center justify-center gap-2 rounded-md bg-primary py-3 text-sm font-semibold text-primary-foreground shadow-sm"
+            className={`btn-brand-primary flex w-full items-center justify-center gap-2 py-3 text-sm font-semibold`}
           >
             Filter
             {hasActiveFilters(applied) ? (
-              <span className="rounded-full bg-primary-foreground/15 px-2 py-0.5 text-xs">On</span>
+              <span className="rounded-full bg-white/20 px-2 py-0.5 text-xs">On</span>
             ) : null}
           </button>
         </div>

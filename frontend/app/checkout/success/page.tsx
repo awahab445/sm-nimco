@@ -7,6 +7,7 @@ import { orderApi, paymentApi } from '@/lib/api-client';
 import { authService } from '@/lib/auth.service';
 import { useAuthStore } from '@/lib/auth.store';
 import { useCartStore } from '@/lib/cart.store';
+import { storefrontUi } from '@/lib/storefront-ui';
 
 interface OrderPayment {
   id: string;
@@ -159,7 +160,7 @@ function CheckoutSuccessContent() {
           <button
             type="button"
             onClick={() => router.push('/')}
-            className="rounded-md bg-primary px-6 py-2 text-primary-foreground shadow-sm transition-opacity hover:opacity-90"
+            className={`${storefrontUi.btnPrimary} px-6 py-2`}
           >
             Return to Home
           </button>
@@ -276,7 +277,7 @@ function CheckoutSuccessContent() {
 
           {/* Customer Email */}
           {order.customerEmail && (
-            <div className="mb-6 rounded-lg border border-primary/25 bg-primary/10 p-4">
+            <div className="mb-6 rounded-lg border border-brand-secondary/60 bg-brand-secondary/25 p-4">
               <p className="text-sm text-foreground">
                 A confirmation email has been sent to <strong>{order.customerEmail}</strong>
               </p>
@@ -311,7 +312,7 @@ function CheckoutSuccessContent() {
                         setAccountCreationLoading(false);
                       }
                     }}
-                    className="rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground shadow-sm transition-opacity hover:opacity-90 disabled:opacity-50"
+                    className={`${storefrontUi.btnPrimary} px-4 py-2 text-sm`}
                   >
                     {accountCreationLoading ? 'Sending…' : 'Create account with this email'}
                   </button>
@@ -328,7 +329,7 @@ function CheckoutSuccessContent() {
             {isPaymentFailed && (
               <button
                 onClick={() => router.push(`/checkout?orderId=${order.id}`)}
-                className="flex-1 rounded-md bg-primary px-6 py-2 text-primary-foreground shadow-sm transition-opacity hover:opacity-90"
+                className={`btn-brand-primary flex-1 px-6 py-2`}
               >
                 Retry Payment
               </button>

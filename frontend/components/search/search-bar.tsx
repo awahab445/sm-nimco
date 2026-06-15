@@ -109,7 +109,7 @@ export function SearchBar() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onFocus={() => query.trim().length >= MIN_QUERY_LENGTH && setOpen(true)}
-            className="w-full rounded-lg border border-input bg-muted py-2 pl-4 pr-10 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:bg-card focus:outline-none focus:ring-2 focus:ring-ring/25"
+            className="w-full rounded-lg border border-input bg-card py-2 pl-4 pr-10 text-sm text-brand-text placeholder:text-brand-accent/70 focus:border-brand-primary focus:bg-card focus:outline-none focus:ring-2 focus:ring-brand-primary/25"
             aria-expanded={open}
             aria-controls="search-suggestions"
             aria-autocomplete="list"

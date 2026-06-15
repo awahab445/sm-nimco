@@ -31,7 +31,7 @@ function CheckoutFailureContent() {
               <button
                 type="button"
                 onClick={() => router.push(`/checkout?orderId=${orderId}`)}
-                className="rounded-md bg-primary px-6 py-2 text-primary-foreground shadow-sm transition-opacity hover:opacity-90"
+                className={`${storefrontUi.btnPrimary} px-6 py-2`}
               >
                 Retry Payment
               </button>

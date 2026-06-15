@@ -4,6 +4,7 @@ import { useCheckout } from '@/lib/checkout-context';
 import { useRouter } from 'next/navigation';
 import { useCartStore } from '@/lib/cart.store';
 import { DEFAULT_CURRENCY } from '@/lib/config';
+import { storefrontUi } from '@/lib/storefront-ui';
 
 interface ReviewStepProps {
   onBack: () => void;
@@ -238,7 +239,7 @@ export function ReviewStep({ onBack }: ReviewStepProps) {
           type="button"
           onClick={handlePlaceOrder}
           disabled={isLoading}
-          className="rounded-md bg-primary px-6 py-2 text-primary-foreground shadow-sm transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+          className={`${storefrontUi.btnPrimary} px-6 py-2`}
         >
           {isLoading ? 'Processing...' : paymentRedirectUrl ? 'Proceed to Payment' : 'Place Order'}
         </button>

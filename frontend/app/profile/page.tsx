@@ -79,7 +79,7 @@ export default function ProfilePage() {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
-          <div className="inline-block h-12 w-12 animate-spin rounded-full border-2 border-muted border-t-primary" />
+          <div className="inline-block h-12 w-12 animate-spin rounded-full border-2 border-brand-secondary border-t-brand-primary" />
           <p className="mt-4 text-muted-foreground">Loading profile...</p>
         </div>
       </div>
@@ -93,15 +93,15 @@ export default function ProfilePage() {
   return (
     <>
       <div className="mb-6">
-        <h2 className="text-2xl font-semibold text-foreground">My Profile</h2>
+        <h2 className="text-2xl font-semibold text-brand-text">My Profile</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           Manage your account information and preferences
         </p>
       </div>
 
       {success && (
-        <div className="mb-6 rounded-md border border-success/30 bg-success/10 p-4">
-          <p className="text-sm font-medium text-success">Profile updated successfully!</p>
+        <div className="mb-6 rounded-md border border-brand-secondary/50 bg-brand-secondary/25 p-4">
+          <p className="text-sm font-medium text-brand-accent">Profile updated successfully!</p>
         </div>
       )}
 
@@ -115,7 +115,7 @@ export default function ProfilePage() {
         <div>
           <label className={storefrontUi.label}>Customer Group</label>
           <div className="mt-1">
-            <p className="text-foreground">
+            <p className="text-brand-text">
               {profile.customerGroup?.name || 'N/A'}
               {profile.customerGroup?.discountPercent && (
                 <span className="ml-2 text-sm text-muted-foreground">
@@ -130,7 +130,7 @@ export default function ProfilePage() {
         </div>
 
         <div className="border-t border-border pt-6">
-          <h2 className="mb-4 text-lg font-medium text-foreground">Personal Information</h2>
+          <h2 className="mb-4 text-lg font-medium text-brand-text">Personal Information</h2>
 
           <div className="mb-4">
             <label htmlFor="firstName" className={storefrontUi.label}>
@@ -194,14 +194,14 @@ export default function ProfilePage() {
           <button
             type="button"
             onClick={() => router.back()}
-            className="rounded-md border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring/30 focus:ring-offset-2 focus:ring-offset-background"
+            className="rounded-md border border-border bg-card px-4 py-2 text-sm font-medium text-brand-text transition-colors hover:bg-brand-secondary/25 focus:outline-none focus:ring-2 focus:ring-brand-primary/30 focus:ring-offset-2 focus:ring-offset-brand-bg"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={saving}
-            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-ring/30 focus:ring-offset-2 focus:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50"
+            className={storefrontUi.btnPrimary}
           >
             {saving ? 'Saving...' : 'Save Changes'}
           </button>

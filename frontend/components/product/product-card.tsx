@@ -7,6 +7,7 @@ import type { Product } from '@/lib/api-client';
 import { useCartStore } from '@/lib/cart.store';
 import { DEFAULT_CURRENCY } from '@/lib/config';
 import { resolveImageUrl } from '@/lib/resolve-image-url';
+import { storefrontUi } from '@/lib/storefront-ui';
 
 function formatPrice(value: string | number, currency = DEFAULT_CURRENCY): string {
   const n = typeof value === 'string' ? parseFloat(value) : value;
@@ -14,8 +15,7 @@ function formatPrice(value: string | number, currency = DEFAULT_CURRENCY): strin
 }
 
 /** Matches primary actions elsewhere on product cards (same as Add to cart). */
-const productCardPrimaryCtaClass =
-  'w-full rounded-md bg-primary py-2 text-sm font-medium text-primary-foreground shadow-sm transition-opacity hover:opacity-90';
+const productCardPrimaryCtaClass = storefrontUi.btnPrimaryBlock;
 
 /** Variant to use for add-to-cart: first real variant, or synthetic for simple product with no variants. */
 export function getVariantForCart(product: Product): { id: string; productId: string; price: number } | null {
@@ -69,8 +69,8 @@ export function ProductCard({ product, showViewOnly = false, availableQuantity }
   };
 
   return (
-    <div className="group flex flex-col overflow-hidden rounded-lg border border-border bg-card text-card-foreground shadow-sm transition-shadow hover:shadow-md">
-      <Link href={`/products/${product.slug}`} className="relative aspect-square overflow-hidden bg-muted">
+    <div className="group flex flex-col overflow-hidden rounded-lg border border-border bg-card text-brand-text shadow-product-card transition-shadow hover:shadow-md">
+      <Link href={`/products/${product.slug}`} className="relative aspect-square overflow-hidden bg-brand-secondary/20">
         {imageUrl ? (
           <img
             src={imageUrl}
@@ -85,11 +85,11 @@ export function ProductCard({ product, showViewOnly = false, availableQuantity }
       </Link>
       <div className="flex flex-1 flex-col p-4">
         <Link href={`/products/${product.slug}`}>
-          <h3 className="font-medium text-foreground line-clamp-2">
+          <h3 className="font-medium text-brand-text line-clamp-2">
             {product.name}
           </h3>
         </Link>
-        <p className="mt-1 text-sm font-medium text-foreground/90">
+        <p className="mt-1 text-sm font-medium text-brand-text/90">
           {formatPrice(product.basePrice)}
         </p>
         <div className="mt-auto pt-3">

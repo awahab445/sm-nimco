@@ -83,12 +83,12 @@ export function CategorySidebar({ filterCategoryId = null }: CategorySidebarProp
 
   const linkClassDesktop = (active: boolean) =>
     `block rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-      active ? 'bg-primary/10 text-primary' : 'text-foreground/90 hover:bg-muted'
+      active ? 'bg-brand-secondary/50 text-brand-accent' : 'text-brand-text/90 hover:bg-brand-secondary/30'
     }`;
 
   const linkClassSheet = (active: boolean) =>
     `flex w-full items-center justify-between rounded-lg px-4 py-3.5 text-base font-medium transition-colors sm:text-[15px] ${
-      active ? 'bg-primary/10 text-primary' : 'text-foreground hover:bg-muted'
+      active ? 'bg-brand-secondary/50 text-brand-accent' : 'text-brand-text hover:bg-brand-secondary/30'
     }`;
 
   const closeSheet = () => setSheetOpen(false);
@@ -105,12 +105,12 @@ export function CategorySidebar({ filterCategoryId = null }: CategorySidebarProp
         {/* absolute layers: avoids flex + fixed stacking bugs on mobile (sheet hidden behind backdrop) */}
         <button
           type="button"
-          className="absolute inset-0 z-0 cursor-pointer bg-black/50"
+          className="absolute inset-0 z-0 cursor-pointer bg-brand-text/40"
           aria-label="Close category menu"
           onClick={closeSheet}
         />
         <div
-          className="absolute inset-x-0 bottom-0 z-10 flex max-h-[min(88dvh,560px)] min-h-[12rem] flex-col rounded-t-2xl border-t border-border bg-background text-foreground shadow-[0_-8px_32px_rgba(0,0,0,0.15)]"
+          className="absolute inset-x-0 bottom-0 z-10 flex max-h-[min(88dvh,560px)] min-h-[12rem] flex-col rounded-t-2xl border-t border-border bg-brand-bg text-brand-text shadow-[0_-8px_32px_color-mix(in_srgb,#1A2E40_12%,transparent)]"
           style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom, 0px))' }}
         >
           <div className="flex shrink-0 flex-col items-center border-b border-border/80 pt-2 pb-1">

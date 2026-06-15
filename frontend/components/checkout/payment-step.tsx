@@ -90,8 +90,8 @@ export function PaymentStep({ onNext, onBack }: PaymentStepProps) {
                 key={method.code}
                 className={`block cursor-pointer rounded-lg border-2 p-4 transition-colors ${
                   selectedMethod === method.code
-                    ? 'border-primary bg-primary/10'
-                    : 'border-border hover:border-input'
+                    ? storefrontUi.optionSelected
+                    : storefrontUi.optionIdle
                 }`}
               >
                 <div className="flex items-center">
@@ -101,7 +101,7 @@ export function PaymentStep({ onNext, onBack }: PaymentStepProps) {
                     value={method.code}
                     checked={selectedMethod === method.code}
                     onChange={(e) => setSelectedMethod(e.target.value)}
-                    className="h-4 w-4 text-primary focus:ring-ring"
+                    className="h-4 w-4 text-brand-primary focus:ring-brand-primary/30"
                   />
                   <span className="ml-3 font-medium text-foreground">{method.name}</span>
                 </div>
@@ -172,7 +172,7 @@ export function PaymentStep({ onNext, onBack }: PaymentStepProps) {
         <button
           type="submit"
           disabled={isLoading}
-          className="rounded-md bg-primary px-6 py-2 text-primary-foreground shadow-sm transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+          className={`${storefrontUi.btnPrimary} px-6 py-2`}
         >
           {isLoading ? 'Processing...' : 'Review Order'}
         </button>

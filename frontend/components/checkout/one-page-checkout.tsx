@@ -876,8 +876,8 @@ export function OnePageCheckout() {
                     key={opt.methodId}
                     className={`flex cursor-pointer items-center gap-3 rounded-lg border-2 p-4 transition-colors ${
                       selectedShippingId === opt.methodId
-                        ? 'border-primary bg-primary/10'
-                        : 'border-border hover:border-input'
+                        ? storefrontUi.optionSelected
+                        : storefrontUi.optionIdle
                     }`}
                   >
                     <input
@@ -886,7 +886,7 @@ export function OnePageCheckout() {
                       value={opt.methodId}
                       checked={selectedShippingId === opt.methodId}
                       onChange={() => setSelectedShippingId(opt.methodId)}
-                      className="h-4 w-4 text-primary"
+                      className="h-4 w-4 text-brand-primary"
                     />
                     <div className="flex-1">
                       <span className="font-medium text-foreground">
@@ -919,10 +919,10 @@ export function OnePageCheckout() {
                 {paymentMethods.map((m) => (
                   <label
                     key={m.code}
-                    className={`flex cursor-pointer items-center gap-3 rounded-lg border-2 p-4 ${
+                    className={`flex cursor-pointer items-center gap-3 rounded-lg border-2 p-4 transition-colors ${
                       selectedPaymentCode === m.code
-                        ? 'border-primary bg-primary/10'
-                        : 'border-border'
+                        ? storefrontUi.optionSelected
+                        : storefrontUi.optionIdle
                     }`}
                   >
                     <input
@@ -931,7 +931,7 @@ export function OnePageCheckout() {
                       value={m.code}
                       checked={selectedPaymentCode === m.code}
                       onChange={() => setSelectedPaymentCode(m.code)}
-                      className="h-4 w-4 text-primary"
+                      className="h-4 w-4 text-brand-primary"
                     />
                     <span className="font-medium text-foreground">{m.name}</span>
                   </label>

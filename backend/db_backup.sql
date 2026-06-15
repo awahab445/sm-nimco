@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict FCPlYexTBFsVDHZ42A18aFYsI7gd0hF5rV5jsAVFlJW6xsJ5sO163VfXzntMsxc
+\restrict usEvP7wuccpT0bO7I6l5zxYcTxhWMapsaC45twdggbmVxFGC8NvgnkV8WWQu3BZ
 
 -- Dumped from database version 18.3
 -- Dumped by pg_dump version 18.3
@@ -869,7 +869,10 @@ CREATE TABLE public.storefront_nav_links (
     zone character varying(16) DEFAULT 'header'::character varying NOT NULL,
     parent_id uuid,
     category_id text,
-    open_mega_menu boolean DEFAULT false NOT NULL
+    open_mega_menu boolean DEFAULT false NOT NULL,
+    banner_image_url character varying(512),
+    banner_href character varying(512),
+    banner_alt character varying(256)
 );
 
 
@@ -964,6 +967,23 @@ COPY public.account_creation_tokens (id, email, token, expires_at, created_at) F
 --
 
 COPY public.admin_permissions (id, key, description, created_at) FROM stdin;
+6a942717-6026-44e7-80e7-26858f8c3eb5	payments.manage	Manage payment configuration	2026-05-11 11:57:44.154
+a629f498-ffea-40d3-b191-bb736eb424cf	cms.manage	Manage CMS pages, blocks, and sliders	2026-05-06 11:10:43.51
+664eb436-11ef-46e0-975d-9b30e7f6a127	subscriptions.manage	View storefront email subscriptions (subscriber list)	2026-05-12 07:40:14.805
+ccaa881a-2690-41ec-aec9-c061f97c9b7d	reports.read	Access reports and exports	2026-05-04 07:22:01.072
+29f643ad-529b-4b68-9932-1828b89c8fa1	settings.manage	Platform settings	2026-05-04 07:22:01.074
+107a5e7f-39d7-4f91-8d6e-c68a866de6c8	admin.access.full	Full administrative access (implies all permissions).	2026-05-04 07:22:01.029
+79710646-175d-4aae-bdd1-ba9bc8d2844f	admin.users.create	Create staff admin users	2026-05-04 07:22:01.042
+5bc3fe92-08d5-4857-b05b-c1b912418a6b	admin.users.read	View admin users	2026-05-04 07:22:01.043
+43ed1a83-e047-4c39-a3d5-effae8fa2470	admin.users.update	Update admin users	2026-05-04 07:22:01.044
+0ca45dcb-baa7-4d64-89fe-da7e0d3e0387	admin.users.delete	Deactivate or remove admin users	2026-05-04 07:22:01.045
+bd93314d-9f7e-4048-b578-e518247f01b0	admin.roles.read	View roles and permission assignments	2026-05-04 07:22:01.047
+05e177b9-9c57-40a1-92c5-fe6e61dde134	admin.roles.manage	Create or update roles and permissions	2026-05-04 07:22:01.049
+d8693266-66d8-4df3-964f-3b3c854155b9	products.create	Create products	2026-05-11 11:57:44.123
+e0e19340-ce43-46a4-b5b7-fb8622c2fdcd	products.read	Read products	2026-05-11 11:57:44.048
+cf811019-a242-4070-851b-3fbb11e88898	products.update	Update products and their sub-resources (variants, images, categories)	2026-05-11 11:57:44.126
+669ddf50-cf30-4822-8de0-96a7b2192a72	products.delete	Delete products	2026-05-11 11:57:44.127
+578c6923-b261-4247-ab41-a11f61e98b6a	orders.create	Create orders (admin-side)	2026-05-11 11:57:44.129
 2c5b5e04-816b-4864-bf47-d7eff12f79d4	orders.read	Read orders	2026-05-04 07:22:01.059
 85e0875b-36cf-41ae-ac81-bab9cf0a5b14	orders.update	Update orders, status, fulfillment	2026-05-11 11:57:44.133
 7b44e006-b5f3-4800-94f8-c068828c2f2b	orders.delete	Delete orders	2026-05-11 11:57:44.134
@@ -979,23 +999,6 @@ b6151fdf-2507-4841-a50e-24668be1ea79	customers.update	Update customers	2026-05-1
 8332b6b7-13cb-472f-a4b0-73cc50eea78e	promotions.manage	Manage promotions	2026-05-04 07:22:01.064
 55afa5c3-5076-4a94-a014-fa92c5fddb01	shipping.manage	Manage shipping zones and methods	2026-05-04 07:22:01.065
 1c9d2a05-1853-4ace-bc60-e4156437384b	tax.manage	Manage tax classes and rates	2026-05-04 07:22:01.069
-6a942717-6026-44e7-80e7-26858f8c3eb5	payments.manage	Manage payment configuration	2026-05-11 11:57:44.154
-a629f498-ffea-40d3-b191-bb736eb424cf	cms.manage	Manage CMS pages, blocks, and sliders	2026-05-06 11:10:43.51
-664eb436-11ef-46e0-975d-9b30e7f6a127	subscriptions.manage	View storefront email subscriptions (subscriber list)	2026-05-12 07:40:14.805
-ccaa881a-2690-41ec-aec9-c061f97c9b7d	reports.read	Access reports and exports	2026-05-04 07:22:01.072
-107a5e7f-39d7-4f91-8d6e-c68a866de6c8	admin.access.full	Full administrative access (implies all permissions).	2026-05-04 07:22:01.029
-79710646-175d-4aae-bdd1-ba9bc8d2844f	admin.users.create	Create staff admin users	2026-05-04 07:22:01.042
-5bc3fe92-08d5-4857-b05b-c1b912418a6b	admin.users.read	View admin users	2026-05-04 07:22:01.043
-43ed1a83-e047-4c39-a3d5-effae8fa2470	admin.users.update	Update admin users	2026-05-04 07:22:01.044
-0ca45dcb-baa7-4d64-89fe-da7e0d3e0387	admin.users.delete	Deactivate or remove admin users	2026-05-04 07:22:01.045
-bd93314d-9f7e-4048-b578-e518247f01b0	admin.roles.read	View roles and permission assignments	2026-05-04 07:22:01.047
-05e177b9-9c57-40a1-92c5-fe6e61dde134	admin.roles.manage	Create or update roles and permissions	2026-05-04 07:22:01.049
-d8693266-66d8-4df3-964f-3b3c854155b9	products.create	Create products	2026-05-11 11:57:44.123
-e0e19340-ce43-46a4-b5b7-fb8622c2fdcd	products.read	Read products	2026-05-11 11:57:44.048
-cf811019-a242-4070-851b-3fbb11e88898	products.update	Update products and their sub-resources (variants, images, categories)	2026-05-11 11:57:44.126
-669ddf50-cf30-4822-8de0-96a7b2192a72	products.delete	Delete products	2026-05-11 11:57:44.127
-29f643ad-529b-4b68-9932-1828b89c8fa1	settings.manage	Platform settings	2026-05-04 07:22:01.074
-578c6923-b261-4247-ab41-a11f61e98b6a	orders.create	Create orders (admin-side)	2026-05-11 11:57:44.129
 \.
 
 
@@ -1010,6 +1013,23 @@ COPY public.admin_role_permissions (role_id, permission_id) FROM stdin;
 36d65b9f-5927-487b-be37-943b03c16541	cf811019-a242-4070-851b-3fbb11e88898
 36d65b9f-5927-487b-be37-943b03c16541	669ddf50-cf30-4822-8de0-96a7b2192a72
 36d65b9f-5927-487b-be37-943b03c16541	0adebdc6-0b0d-4dda-b217-5de5f3b5ed26
+926550ee-84bb-414a-99f6-e11673f3da0e	6a942717-6026-44e7-80e7-26858f8c3eb5
+926550ee-84bb-414a-99f6-e11673f3da0e	a629f498-ffea-40d3-b191-bb736eb424cf
+926550ee-84bb-414a-99f6-e11673f3da0e	664eb436-11ef-46e0-975d-9b30e7f6a127
+926550ee-84bb-414a-99f6-e11673f3da0e	ccaa881a-2690-41ec-aec9-c061f97c9b7d
+926550ee-84bb-414a-99f6-e11673f3da0e	29f643ad-529b-4b68-9932-1828b89c8fa1
+926550ee-84bb-414a-99f6-e11673f3da0e	107a5e7f-39d7-4f91-8d6e-c68a866de6c8
+926550ee-84bb-414a-99f6-e11673f3da0e	79710646-175d-4aae-bdd1-ba9bc8d2844f
+926550ee-84bb-414a-99f6-e11673f3da0e	5bc3fe92-08d5-4857-b05b-c1b912418a6b
+926550ee-84bb-414a-99f6-e11673f3da0e	43ed1a83-e047-4c39-a3d5-effae8fa2470
+926550ee-84bb-414a-99f6-e11673f3da0e	0ca45dcb-baa7-4d64-89fe-da7e0d3e0387
+926550ee-84bb-414a-99f6-e11673f3da0e	bd93314d-9f7e-4048-b578-e518247f01b0
+926550ee-84bb-414a-99f6-e11673f3da0e	05e177b9-9c57-40a1-92c5-fe6e61dde134
+926550ee-84bb-414a-99f6-e11673f3da0e	d8693266-66d8-4df3-964f-3b3c854155b9
+926550ee-84bb-414a-99f6-e11673f3da0e	e0e19340-ce43-46a4-b5b7-fb8622c2fdcd
+926550ee-84bb-414a-99f6-e11673f3da0e	cf811019-a242-4070-851b-3fbb11e88898
+926550ee-84bb-414a-99f6-e11673f3da0e	669ddf50-cf30-4822-8de0-96a7b2192a72
+926550ee-84bb-414a-99f6-e11673f3da0e	578c6923-b261-4247-ab41-a11f61e98b6a
 926550ee-84bb-414a-99f6-e11673f3da0e	2c5b5e04-816b-4864-bf47-d7eff12f79d4
 926550ee-84bb-414a-99f6-e11673f3da0e	85e0875b-36cf-41ae-ac81-bab9cf0a5b14
 926550ee-84bb-414a-99f6-e11673f3da0e	7b44e006-b5f3-4800-94f8-c068828c2f2b
@@ -1025,23 +1045,17 @@ COPY public.admin_role_permissions (role_id, permission_id) FROM stdin;
 926550ee-84bb-414a-99f6-e11673f3da0e	8332b6b7-13cb-472f-a4b0-73cc50eea78e
 926550ee-84bb-414a-99f6-e11673f3da0e	55afa5c3-5076-4a94-a014-fa92c5fddb01
 926550ee-84bb-414a-99f6-e11673f3da0e	1c9d2a05-1853-4ace-bc60-e4156437384b
-926550ee-84bb-414a-99f6-e11673f3da0e	6a942717-6026-44e7-80e7-26858f8c3eb5
-926550ee-84bb-414a-99f6-e11673f3da0e	a629f498-ffea-40d3-b191-bb736eb424cf
-926550ee-84bb-414a-99f6-e11673f3da0e	664eb436-11ef-46e0-975d-9b30e7f6a127
-926550ee-84bb-414a-99f6-e11673f3da0e	ccaa881a-2690-41ec-aec9-c061f97c9b7d
-926550ee-84bb-414a-99f6-e11673f3da0e	107a5e7f-39d7-4f91-8d6e-c68a866de6c8
-926550ee-84bb-414a-99f6-e11673f3da0e	79710646-175d-4aae-bdd1-ba9bc8d2844f
-926550ee-84bb-414a-99f6-e11673f3da0e	5bc3fe92-08d5-4857-b05b-c1b912418a6b
-926550ee-84bb-414a-99f6-e11673f3da0e	43ed1a83-e047-4c39-a3d5-effae8fa2470
-926550ee-84bb-414a-99f6-e11673f3da0e	0ca45dcb-baa7-4d64-89fe-da7e0d3e0387
-926550ee-84bb-414a-99f6-e11673f3da0e	bd93314d-9f7e-4048-b578-e518247f01b0
-926550ee-84bb-414a-99f6-e11673f3da0e	05e177b9-9c57-40a1-92c5-fe6e61dde134
-926550ee-84bb-414a-99f6-e11673f3da0e	d8693266-66d8-4df3-964f-3b3c854155b9
-926550ee-84bb-414a-99f6-e11673f3da0e	e0e19340-ce43-46a4-b5b7-fb8622c2fdcd
-926550ee-84bb-414a-99f6-e11673f3da0e	cf811019-a242-4070-851b-3fbb11e88898
-926550ee-84bb-414a-99f6-e11673f3da0e	669ddf50-cf30-4822-8de0-96a7b2192a72
-926550ee-84bb-414a-99f6-e11673f3da0e	29f643ad-529b-4b68-9932-1828b89c8fa1
-926550ee-84bb-414a-99f6-e11673f3da0e	578c6923-b261-4247-ab41-a11f61e98b6a
+e4d44e14-47e2-4632-8c43-1ee84cd85eca	6a942717-6026-44e7-80e7-26858f8c3eb5
+e4d44e14-47e2-4632-8c43-1ee84cd85eca	a629f498-ffea-40d3-b191-bb736eb424cf
+e4d44e14-47e2-4632-8c43-1ee84cd85eca	664eb436-11ef-46e0-975d-9b30e7f6a127
+e4d44e14-47e2-4632-8c43-1ee84cd85eca	ccaa881a-2690-41ec-aec9-c061f97c9b7d
+e4d44e14-47e2-4632-8c43-1ee84cd85eca	5bc3fe92-08d5-4857-b05b-c1b912418a6b
+e4d44e14-47e2-4632-8c43-1ee84cd85eca	bd93314d-9f7e-4048-b578-e518247f01b0
+e4d44e14-47e2-4632-8c43-1ee84cd85eca	d8693266-66d8-4df3-964f-3b3c854155b9
+e4d44e14-47e2-4632-8c43-1ee84cd85eca	e0e19340-ce43-46a4-b5b7-fb8622c2fdcd
+e4d44e14-47e2-4632-8c43-1ee84cd85eca	cf811019-a242-4070-851b-3fbb11e88898
+e4d44e14-47e2-4632-8c43-1ee84cd85eca	669ddf50-cf30-4822-8de0-96a7b2192a72
+e4d44e14-47e2-4632-8c43-1ee84cd85eca	578c6923-b261-4247-ab41-a11f61e98b6a
 e4d44e14-47e2-4632-8c43-1ee84cd85eca	2c5b5e04-816b-4864-bf47-d7eff12f79d4
 e4d44e14-47e2-4632-8c43-1ee84cd85eca	85e0875b-36cf-41ae-ac81-bab9cf0a5b14
 e4d44e14-47e2-4632-8c43-1ee84cd85eca	7b44e006-b5f3-4800-94f8-c068828c2f2b
@@ -1057,23 +1071,12 @@ e4d44e14-47e2-4632-8c43-1ee84cd85eca	51062b59-ddd6-4ff8-ac4e-2f70f4cde409
 e4d44e14-47e2-4632-8c43-1ee84cd85eca	8332b6b7-13cb-472f-a4b0-73cc50eea78e
 e4d44e14-47e2-4632-8c43-1ee84cd85eca	55afa5c3-5076-4a94-a014-fa92c5fddb01
 e4d44e14-47e2-4632-8c43-1ee84cd85eca	1c9d2a05-1853-4ace-bc60-e4156437384b
-e4d44e14-47e2-4632-8c43-1ee84cd85eca	6a942717-6026-44e7-80e7-26858f8c3eb5
-e4d44e14-47e2-4632-8c43-1ee84cd85eca	a629f498-ffea-40d3-b191-bb736eb424cf
-e4d44e14-47e2-4632-8c43-1ee84cd85eca	664eb436-11ef-46e0-975d-9b30e7f6a127
-e4d44e14-47e2-4632-8c43-1ee84cd85eca	ccaa881a-2690-41ec-aec9-c061f97c9b7d
-e4d44e14-47e2-4632-8c43-1ee84cd85eca	5bc3fe92-08d5-4857-b05b-c1b912418a6b
-e4d44e14-47e2-4632-8c43-1ee84cd85eca	bd93314d-9f7e-4048-b578-e518247f01b0
-e4d44e14-47e2-4632-8c43-1ee84cd85eca	d8693266-66d8-4df3-964f-3b3c854155b9
-e4d44e14-47e2-4632-8c43-1ee84cd85eca	e0e19340-ce43-46a4-b5b7-fb8622c2fdcd
-e4d44e14-47e2-4632-8c43-1ee84cd85eca	cf811019-a242-4070-851b-3fbb11e88898
-e4d44e14-47e2-4632-8c43-1ee84cd85eca	669ddf50-cf30-4822-8de0-96a7b2192a72
-e4d44e14-47e2-4632-8c43-1ee84cd85eca	578c6923-b261-4247-ab41-a11f61e98b6a
-f72b62cb-1ae0-4ba2-b178-12539e326c14	2c5b5e04-816b-4864-bf47-d7eff12f79d4
-f72b62cb-1ae0-4ba2-b178-12539e326c14	ea11fbc5-c6c8-43c6-b013-66cebc87beba
-f72b62cb-1ae0-4ba2-b178-12539e326c14	4ade7771-a344-4bcb-a7ee-4f079430104e
 f72b62cb-1ae0-4ba2-b178-12539e326c14	ccaa881a-2690-41ec-aec9-c061f97c9b7d
 f72b62cb-1ae0-4ba2-b178-12539e326c14	bd93314d-9f7e-4048-b578-e518247f01b0
 f72b62cb-1ae0-4ba2-b178-12539e326c14	e0e19340-ce43-46a4-b5b7-fb8622c2fdcd
+f72b62cb-1ae0-4ba2-b178-12539e326c14	2c5b5e04-816b-4864-bf47-d7eff12f79d4
+f72b62cb-1ae0-4ba2-b178-12539e326c14	ea11fbc5-c6c8-43c6-b013-66cebc87beba
+f72b62cb-1ae0-4ba2-b178-12539e326c14	4ade7771-a344-4bcb-a7ee-4f079430104e
 \.
 
 
@@ -1084,9 +1087,9 @@ f72b62cb-1ae0-4ba2-b178-12539e326c14	e0e19340-ce43-46a4-b5b7-fb8622c2fdcd
 COPY public.admin_roles (id, slug, name, description, is_system, created_at, updated_at) FROM stdin;
 5dc16cb3-f12c-4195-9c85-90563c17d927	inventory-management	inventory management	update & manage inventory	f	2026-05-11 09:40:56.034	2026-05-11 09:40:56.034
 36d65b9f-5927-487b-be37-943b03c16541	products-management	products management	update and manage all products	f	2026-05-11 12:02:41.329	2026-05-11 12:02:41.329
-926550ee-84bb-414a-99f6-e11673f3da0e	super-admin	Super Admin	Full platform access. Assign sparingly.	t	2026-05-04 07:22:01.076	2026-05-13 14:13:46.279
-e4d44e14-47e2-4632-8c43-1ee84cd85eca	manager	Operations Manager	Day-to-day commerce operations without user/role administration.	t	2026-05-12 07:03:29.765	2026-05-13 14:13:46.283
-f72b62cb-1ae0-4ba2-b178-12539e326c14	support	Support	Read-heavy access for customer service.	t	2026-05-12 07:03:29.768	2026-05-13 14:13:46.285
+926550ee-84bb-414a-99f6-e11673f3da0e	super-admin	Super Admin	Full platform access. Assign sparingly.	t	2026-05-04 07:22:01.076	2026-05-14 13:39:16.329
+e4d44e14-47e2-4632-8c43-1ee84cd85eca	manager	Operations Manager	Day-to-day commerce operations without user/role administration.	t	2026-05-12 07:03:29.765	2026-05-14 13:39:16.331
+f72b62cb-1ae0-4ba2-b178-12539e326c14	support	Support	Read-heavy access for customer service.	t	2026-05-12 07:03:29.768	2026-05-14 13:39:16.333
 \.
 
 
@@ -1127,7 +1130,7 @@ COPY public.categories (id, name, slug, description, parent_id, "position", is_a
 --
 
 COPY public.cms_banner_sliders (id, name, identifier, is_active, autoplay_ms, created_at, updated_at, slide_height_px, slide_width_px) FROM stdin;
-1bf78196-8e5c-416b-b0f4-e70a8396b3f4	Home Hero Slider	home-hero	t	5000	2026-05-06 11:10:43.589	2026-05-12 13:16:46.744	800	1920
+1bf78196-8e5c-416b-b0f4-e70a8396b3f4	Home Hero Slider	home-hero	t	5000	2026-05-06 11:10:43.589	2026-05-14 09:07:13.805	800	1885
 \.
 
 
@@ -1136,8 +1139,8 @@ COPY public.cms_banner_sliders (id, name, identifier, is_active, autoplay_ms, cr
 --
 
 COPY public.cms_banner_slides (id, slider_id, title, subtitle, image_url, cta_label, cta_href, sort_order, is_active, created_at, updated_at) FROM stdin;
-2fbde3c6-f209-4e11-82c1-3791c338897b	1bf78196-8e5c-416b-b0f4-e70a8396b3f4	Shop smarter with confidence	Curated essentials at fair prices.	/themes/mehfil-shereen/banner1.jpeg	Shop now	/products	0	t	2026-05-12 13:16:46.754	2026-05-12 13:16:46.754
-4fa0e661-157c-44ce-ad0b-085e7515db2f	1bf78196-8e5c-416b-b0f4-e70a8396b3f4	Track your orders anytime	Real-time updates from checkout to delivery.	/themes/mehfil-shereen/banner2.jpeg	Track order	/track-order	1	t	2026-05-12 13:16:46.754	2026-05-12 13:16:46.754
+9c40ac54-e719-445e-a0c6-65135e30f02c	1bf78196-8e5c-416b-b0f4-e70a8396b3f4	Shop smarter with confidence	Curated essentials at fair prices.	/themes/mehfil-shereen/banner1.jpeg	Shop now	/products	0	t	2026-05-14 09:07:13.805	2026-05-14 09:07:13.805
+84f64450-3535-4380-ad79-680cdbd5e36d	1bf78196-8e5c-416b-b0f4-e70a8396b3f4	Track your orders anytime	Real-time updates from checkout to delivery.	/themes/mehfil-shereen/banner2.jpeg	Track order	/track-order	1	t	2026-05-14 09:07:13.805	2026-05-14 09:07:13.805
 \.
 
 
@@ -1207,6 +1210,8 @@ fc039723-4b20-4b28-850d-956f5ede1dd9	64289463-e48b-4261-bfef-e59b622eb20e	891c80
 caf29d2a-ac95-41a5-a473-731481b1993f	0019bc5a-cfda-423a-8033-04e19527878c	\N	default-warehouse	100	1	99	10	2026-05-08 05:31:15.452
 07e81ff3-1553-4678-9036-ade52d4a6643	64289463-e48b-4261-bfef-e59b622eb20e	18e49bc7-2bdb-4383-8637-942828855344	default-warehouse	0	0	0	10	2026-05-08 07:09:31.884
 2d9f722d-00ba-432b-a4c4-933685f23035	64289463-e48b-4261-bfef-e59b622eb20e	20ad4b9c-7aa6-4a01-a7de-ff512ece316c	default-warehouse	0	0	0	10	2026-05-08 07:09:31.888
+f005258c-8708-44fb-9cf8-d723e7de4cd0	eaacdf54-eaa9-4dcc-839e-a10a61588523	19304891-7368-4eb6-a4f8-bd140381e8d4	default-warehouse	0	0	0	10	2026-05-14 06:14:56.045
+11ffd245-2dce-4a7e-ba75-f2ed43770e17	eaacdf54-eaa9-4dcc-839e-a10a61588523	f840ba72-8fdc-4bea-80b0-9ada1f11dba6	default-warehouse	0	0	0	10	2026-05-14 06:14:59.964
 1148d7f0-33c0-473e-92a6-0a3c4fe74c27	0019bc5a-cfda-423a-8033-04e19527878c	bbe6abee-df1f-46d4-a47e-593106a4e776	default-warehouse	0	0	0	10	2026-05-08 06:48:57.899
 d7d69f94-c73c-4ed8-ba80-89e18c136d9c	0019bc5a-cfda-423a-8033-04e19527878c	3f1e118d-37e7-4268-a7e6-2f10b9491f45	default-warehouse	0	0	0	10	2026-05-08 06:48:57.899
 73386270-fb62-492b-b6d6-d6cddc61473b	0019bc5a-cfda-423a-8033-04e19527878c	6fec5888-ccbd-4d0e-b7d1-6c8999ea65d1	default-warehouse	0	0	0	10	2026-05-08 06:48:57.901
@@ -1316,6 +1321,7 @@ COPY public.product_images (id, product_id, variant_id, url, alt_text, "position
 7f4f5fef-7a46-4304-bd80-c3c3871efeeb	64289463-e48b-4261-bfef-e59b622eb20e	\N	http://localhost:3000/uploads/products/c121e192-cb81-4cd3-a6aa-0f5626018350.jpeg	Test Product	0	t	2026-05-07 08:58:21.484
 0c174ab5-fffb-463f-8b50-3f9279e6bb28	0019bc5a-cfda-423a-8033-04e19527878c	\N	http://localhost:3000/uploads/products/2f491573-6056-4a31-8ddc-c069d2c6218c.jpeg	Test Product	0	t	2026-05-07 08:58:45.103
 70c79fbc-4b25-4755-8e8a-feb6dfaad1c7	64289463-e48b-4261-bfef-e59b622eb20e	\N	http://localhost:3000/uploads/products/50a1d6b7-16e0-44bb-95b7-960d5bb04322.jpg	Test Product	5	f	2026-05-07 13:04:51.397
+057521c1-e9b4-4894-91e8-d41f338f353e	eaacdf54-eaa9-4dcc-839e-a10a61588523	\N	http://localhost:3000/uploads/products/bba6b20b-b1be-4784-9ff7-43d02cd3e6eb.jpeg	Test Product	0	t	2026-05-14 06:12:59.931
 \.
 
 
@@ -1353,6 +1359,9 @@ COPY public.product_option_values_on_products (product_id, option_id, value_id) 
 64289463-e48b-4261-bfef-e59b622eb20e	906abee1-8c7f-4645-8193-973989132503	e86955c2-ebde-4ba0-9925-743eb1a2371e
 64289463-e48b-4261-bfef-e59b622eb20e	906abee1-8c7f-4645-8193-973989132503	f56ce2c9-7e87-4eaf-8588-d6c8822a106e
 64289463-e48b-4261-bfef-e59b622eb20e	906abee1-8c7f-4645-8193-973989132503	0f01dc86-2798-4ffb-9902-663a759b845e
+eaacdf54-eaa9-4dcc-839e-a10a61588523	906abee1-8c7f-4645-8193-973989132503	e86955c2-ebde-4ba0-9925-743eb1a2371e
+eaacdf54-eaa9-4dcc-839e-a10a61588523	906abee1-8c7f-4645-8193-973989132503	f56ce2c9-7e87-4eaf-8588-d6c8822a106e
+eaacdf54-eaa9-4dcc-839e-a10a61588523	a39db598-111e-4007-bf54-f564b2c1f587	98acf219-fadc-4e60-88f9-3b660145230d
 \.
 
 
@@ -1376,6 +1385,8 @@ COPY public.product_options_on_products (product_id, option_id, is_required, "po
 0019bc5a-cfda-423a-8033-04e19527878c	a39db598-111e-4007-bf54-f564b2c1f587	t	1
 64289463-e48b-4261-bfef-e59b622eb20e	59574408-864b-4fb3-a08f-5ee2211a8ba1	t	0
 64289463-e48b-4261-bfef-e59b622eb20e	906abee1-8c7f-4645-8193-973989132503	t	1
+eaacdf54-eaa9-4dcc-839e-a10a61588523	906abee1-8c7f-4645-8193-973989132503	t	0
+eaacdf54-eaa9-4dcc-839e-a10a61588523	a39db598-111e-4007-bf54-f564b2c1f587	t	1
 \.
 
 
@@ -1393,6 +1404,8 @@ e752cecd-c989-4ff8-8f5a-3c64455eef67	64289463-e48b-4261-bfef-e59b622eb20e	SKU-00
 20ad4b9c-7aa6-4a01-a7de-ff512ece316c	64289463-e48b-4261-bfef-e59b622eb20e	SKU-004-CHOCOLATE-500G	Flavour: Chocolate • Weight: 500g	549.00	\N	\N	{"optionValues": {"weight": "500g", "flavour": "Chocolate"}, "optionValueIds": {"weight": "f56ce2c9-7e87-4eaf-8588-d6c8822a106e", "flavour": "63c856d5-fe9d-46d2-9233-0b06a2719141"}}	4	t	2026-05-08 07:09:20.771	2026-05-08 07:16:14.269
 13293c57-d881-4a28-b7b6-d16d5054ac55	64289463-e48b-4261-bfef-e59b622eb20e	SKU-004-STRAWBERRY-500G	Flavour: Strawberry • Weight: 500g	549.00	\N	\N	{"optionValues": {"weight": "500g", "flavour": "Strawberry"}, "optionValueIds": {"weight": "f56ce2c9-7e87-4eaf-8588-d6c8822a106e", "flavour": "30d60dcc-867c-4fbd-a208-4aef88480725"}}	7	t	2026-05-08 07:09:20.794	2026-05-08 07:16:14.27
 64ea42f1-5306-476a-b2cd-cfe65a894d1b	64289463-e48b-4261-bfef-e59b622eb20e	SKU-004-VANILA-250G	Flavour: Vanila • Weight: 250g	299.00	\N	\N	{"optionValues": {"weight": "250g", "flavour": "Vanila"}, "optionValueIds": {"weight": "0f01dc86-2798-4ffb-9902-663a759b845e", "flavour": "c1ed8248-fa5f-4ed8-9b60-0534ee9cbfc4"}}	2	t	2026-05-08 07:09:20.755	2026-05-08 07:16:23.789
+19304891-7368-4eb6-a4f8-bd140381e8d4	eaacdf54-eaa9-4dcc-839e-a10a61588523	SKU-003-1KG-FAMILY-PACK	Weight: 1kg • Pack: Family pack	999.00	\N	\N	{"optionValues": {"pack": "Family pack", "weight": "1kg"}, "optionValueIds": {"pack": "98acf219-fadc-4e60-88f9-3b660145230d", "weight": "e86955c2-ebde-4ba0-9925-743eb1a2371e"}}	0	t	2026-05-14 06:14:12.449	2026-05-14 06:16:45.858
+f840ba72-8fdc-4bea-80b0-9ada1f11dba6	eaacdf54-eaa9-4dcc-839e-a10a61588523	SKU-003-500G-FAMILY-PACK	Weight: 500g • Pack: Family pack	499.00	\N	\N	{"optionValues": {"pack": "Family pack", "weight": "500g"}, "optionValueIds": {"pack": "98acf219-fadc-4e60-88f9-3b660145230d", "weight": "f56ce2c9-7e87-4eaf-8588-d6c8822a106e"}}	1	t	2026-05-14 06:14:12.467	2026-05-14 06:16:57.773
 7c5c0c2a-0fb2-47a3-9f49-6d4db0fdbb58	0019bc5a-cfda-423a-8033-04e19527878c	SKU-002-VANILA-FAMILY-PACK	Flavour: Vanila • Pack: Family pack	30.99	\N	\N	{"optionValues": {"pack": "Family pack", "flavour": "Vanila"}, "optionValueIds": {"pack": "98acf219-fadc-4e60-88f9-3b660145230d", "flavour": "c1ed8248-fa5f-4ed8-9b60-0534ee9cbfc4"}}	0	t	2026-05-08 06:48:48.477	2026-05-08 06:48:48.477
 3f1e118d-37e7-4268-a7e6-2f10b9491f45	0019bc5a-cfda-423a-8033-04e19527878c	SKU-002-VANILA-PACK-OF-2	Flavour: Vanila • Pack: Pack of 2	30.99	\N	\N	{"optionValues": {"pack": "Pack of 2", "flavour": "Vanila"}, "optionValueIds": {"pack": "e2ca73f9-da0c-4357-ad26-0a3b5234734c", "flavour": "c1ed8248-fa5f-4ed8-9b60-0534ee9cbfc4"}}	1	t	2026-05-08 06:48:48.498	2026-05-08 06:48:48.498
 140ff2e8-5a90-4e87-ad63-8cb3786637bc	0019bc5a-cfda-423a-8033-04e19527878c	SKU-002-VANILA-PACK-OF-3	Flavour: Vanila • Pack: Pack of 3	30.99	\N	\N	{"optionValues": {"pack": "Pack of 3", "flavour": "Vanila"}, "optionValueIds": {"pack": "d79e5779-4b44-422c-bcb0-43743dba8196", "flavour": "c1ed8248-fa5f-4ed8-9b60-0534ee9cbfc4"}}	2	t	2026-05-08 06:48:48.507	2026-05-08 06:48:48.507
@@ -1411,9 +1424,9 @@ bbe6abee-df1f-46d4-a47e-593106a4e776	0019bc5a-cfda-423a-8033-04e19527878c	SKU-00
 
 COPY public.products (id, sku, name, slug, type, description, short_description, base_price, cost, weight, status, visibility, tax_class_id, attributes, meta_data, created_at, updated_at, deleted_at) FROM stdin;
 c7b8e71d-3489-4bd7-8f88-2e541ee86e41	SKU-001	Test Product	test-product	simple	\N	\N	29.99	\N	\N	active	both	\N	{}	{}	2026-05-04 06:49:27.174	2026-05-04 06:49:27.174	\N
-eaacdf54-eaa9-4dcc-839e-a10a61588523	SKU-003	Test Product	test-product-2	simple	\N	\N	31.99	\N	\N	active	both	\N	{}	{}	2026-05-04 06:49:51.979	2026-05-05 11:39:11.361	\N
 0019bc5a-cfda-423a-8033-04e19527878c	SKU-002	Test Product	test-product-1	simple	\N	\N	30.99	\N	\N	active	both	\N	{}	{}	2026-05-04 06:49:39.284	2026-05-07 08:58:45.008	\N
 64289463-e48b-4261-bfef-e59b622eb20e	SKU-004	Test Product	test-product-3	configurable	\N	\N	299.00	\N	\N	active	both	\N	{}	{}	2026-05-04 06:50:26.021	2026-05-13 06:23:41.271	\N
+eaacdf54-eaa9-4dcc-839e-a10a61588523	SKU-003	cococut barfi	test-product-2	configurable	\N	\N	999.00	\N	\N	active	both	\N	{}	{}	2026-05-04 06:49:51.979	2026-05-14 06:18:44.037	\N
 \.
 
 
@@ -1486,6 +1499,9 @@ COPY public.storefront_filter_options (id, filter_id, value, label, sort_order, 
 e34eac23-420a-4bb3-b085-ebebfc53b391	80fee301-d334-438f-9137-6bf3095754c4	250g	\N	1	t	2026-05-13 13:29:04.136	2026-05-13 13:38:15.519
 87fd742c-10c0-4fdd-b79e-a4b184689a91	80fee301-d334-438f-9137-6bf3095754c4	500g	\N	2	t	2026-05-13 13:28:58.586	2026-05-13 13:38:18.286
 7067e462-eaea-4917-b996-27f10488944e	80fee301-d334-438f-9137-6bf3095754c4	1kg	\N	3	t	2026-05-13 13:28:34.311	2026-05-13 13:38:22.516
+07fc4a04-49f9-4f3b-bd7a-eeb890ed469c	4fdd559f-69b8-4404-afcc-94fe93667d82	Chocolate	\N	1	t	2026-05-14 06:46:41.256	2026-05-14 06:46:41.256
+a7040cbc-aeec-4c04-b694-f6d6b5c202b7	4fdd559f-69b8-4404-afcc-94fe93667d82	Vanila	\N	0	t	2026-05-14 06:47:08.763	2026-05-14 06:47:08.763
+a726ebec-b292-49e7-a7ba-005153221537	4fdd559f-69b8-4404-afcc-94fe93667d82	Strawberry	\N	2	t	2026-05-14 06:47:20.886	2026-05-14 06:47:20.886
 \.
 
 
@@ -1494,15 +1510,6 @@ e34eac23-420a-4bb3-b085-ebebfc53b391	80fee301-d334-438f-9137-6bf3095754c4	250g	\
 --
 
 COPY public.storefront_filter_tree_nodes (id, filter_id, parent_id, nav_link_id, sort_order, is_active, created_at, updated_at) FROM stdin;
-0016db0a-9e8d-4e3d-a47e-a87b6fe14c1b	dfae5a8c-a7eb-4fda-b267-a49014377d22	\N	fad48ea0-c980-4726-96db-6ef98eb29bbd	0	t	2026-05-13 16:15:59.64	2026-05-13 16:15:59.64
-16de8541-3612-4edd-9fd1-733b0f9bd878	dfae5a8c-a7eb-4fda-b267-a49014377d22	\N	2c47212c-1930-4afc-b697-68c49aa95b8b	0	t	2026-05-13 16:15:59.64	2026-05-13 16:15:59.64
-d75a1edd-23ad-4d0d-9ca6-008df7c081c0	dfae5a8c-a7eb-4fda-b267-a49014377d22	\N	6f6c4165-e162-4ebd-ad78-987a42165c3a	0	t	2026-05-13 16:15:59.64	2026-05-13 16:15:59.64
-ef02366e-1f0a-44ff-b4d2-4c137e591c8d	dfae5a8c-a7eb-4fda-b267-a49014377d22	0016db0a-9e8d-4e3d-a47e-a87b6fe14c1b	a3a33bbb-33fd-424d-9ea8-dfde8f14aea8	1	t	2026-05-13 16:15:59.64	2026-05-13 16:15:59.64
-23f87784-c88d-4edd-b856-4a9b13de1bb5	dfae5a8c-a7eb-4fda-b267-a49014377d22	0016db0a-9e8d-4e3d-a47e-a87b6fe14c1b	717041de-8afa-4da2-aa80-deccebd2571d	2	t	2026-05-13 16:15:59.64	2026-05-13 16:15:59.64
-74d85676-94ee-4c42-beb4-e8e05583c268	dfae5a8c-a7eb-4fda-b267-a49014377d22	16de8541-3612-4edd-9fd1-733b0f9bd878	c321a5fa-2fdb-4370-be83-1898acfb9828	1	t	2026-05-13 16:15:59.64	2026-05-13 16:15:59.64
-8ee5a045-2a2b-4c74-978d-c57850062fc0	dfae5a8c-a7eb-4fda-b267-a49014377d22	16de8541-3612-4edd-9fd1-733b0f9bd878	18280818-a3d3-4764-8a0d-b5952e04db68	2	t	2026-05-13 16:15:59.64	2026-05-13 16:15:59.64
-e46a1719-e013-41cc-9c2b-79c1eee0459a	dfae5a8c-a7eb-4fda-b267-a49014377d22	16de8541-3612-4edd-9fd1-733b0f9bd878	fb69a8e5-27c1-4293-ba49-c190a5f3c738	3	t	2026-05-13 16:15:59.64	2026-05-13 16:15:59.64
-6af10942-b0b6-4679-9402-79eb34fe40ed	dfae5a8c-a7eb-4fda-b267-a49014377d22	d75a1edd-23ad-4d0d-9ca6-008df7c081c0	e470e2bf-0acb-4cc6-8651-49b7154e25fe	1	t	2026-05-13 16:15:59.64	2026-05-13 16:15:59.64
 \.
 
 
@@ -1511,9 +1518,9 @@ e46a1719-e013-41cc-9c2b-79c1eee0459a	dfae5a8c-a7eb-4fda-b267-a49014377d22	16de85
 --
 
 COPY public.storefront_filters (id, code, name, kind, sort_order, is_active, created_at, updated_at) FROM stdin;
-dfae5a8c-a7eb-4fda-b267-a49014377d22	category	Category	CATEGORY	0	t	2026-05-12 13:16:46.685	2026-05-12 13:16:46.685
 4635a7d1-abb9-47c1-9f26-bbb9bc26a5d0	price	Price	PRICE	1	t	2026-05-12 13:16:46.699	2026-05-13 11:23:36.946
-80fee301-d334-438f-9137-6bf3095754c4	weight	Weight	ATTRIBUTE	3	t	2026-05-12 13:16:46.705	2026-05-13 13:20:35.189
+80fee301-d334-438f-9137-6bf3095754c4	weight	Weight	ATTRIBUTE	2	t	2026-05-12 13:16:46.705	2026-05-14 06:41:35.414
+4fdd559f-69b8-4404-afcc-94fe93667d82	flavour	Flavour	ATTRIBUTE	0	t	2026-05-14 06:44:11.2	2026-05-14 06:46:15.082
 \.
 
 
@@ -1521,21 +1528,22 @@ dfae5a8c-a7eb-4fda-b267-a49014377d22	category	Category	CATEGORY	0	t	2026-05-12 1
 -- Data for Name: storefront_nav_links; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.storefront_nav_links (id, label, secondary_label, href, sort_order, is_active, kind, created_at, updated_at, zone, parent_id, category_id, open_mega_menu) FROM stdin;
-00000000-0000-0000-0000-00000000e001	Home	\N	/	0	t	LINK	2026-05-13 11:15:47.684	2026-05-13 11:15:47.684	header	\N	\N	f
-00000000-0000-0000-0000-00000000e003	Track order	\N	/track-order	20	t	LINK	2026-05-13 11:15:47.684	2026-05-13 11:15:47.684	header	\N	\N	f
-00000000-0000-0000-0000-00000000e004	Complaints	\N	/complain	30	t	LINK	2026-05-13 11:15:47.684	2026-05-13 11:15:47.684	header	\N	\N	f
-00000000-0000-0000-0000-00000000e005	Cart	\N	/cart	40	t	LINK	2026-05-13 11:15:47.684	2026-05-13 11:15:47.684	header	\N	\N	f
-00000000-0000-0000-0000-00000000e002	Products	Categories	/products	10	t	LINK	2026-05-13 11:15:47.684	2026-05-13 11:15:47.684	header	\N	\N	t
-fad48ea0-c980-4726-96db-6ef98eb29bbd	Flavour	\N	/categories/flavour	0	t	LINK	2026-05-13 14:53:49.81	2026-05-13 14:53:49.81	mega	\N	\N	f
-a3a33bbb-33fd-424d-9ea8-dfde8f14aea8	vanilla	\N	http://localhost:3001/products/test-product-3	1	t	LINK	2026-05-13 10:39:53.895	2026-05-13 10:39:53.895	mega	fad48ea0-c980-4726-96db-6ef98eb29bbd	\N	f
-717041de-8afa-4da2-aa80-deccebd2571d	chocolate	\N	http://localhost:3001/products/test-product-3	2	t	LINK	2026-05-13 10:40:16.775	2026-05-13 10:40:16.775	mega	fad48ea0-c980-4726-96db-6ef98eb29bbd	\N	f
-2c47212c-1930-4afc-b697-68c49aa95b8b	Weight	\N	/	0	t	LINK	2026-05-13 10:40:56.931	2026-05-13 10:40:56.931	mega	\N	\N	f
-c321a5fa-2fdb-4370-be83-1898acfb9828	1kg	\N	http://localhost:3001/products/test-product-3	1	t	LINK	2026-05-13 10:41:15.89	2026-05-13 10:41:15.89	mega	2c47212c-1930-4afc-b697-68c49aa95b8b	\N	f
-18280818-a3d3-4764-8a0d-b5952e04db68	500g	\N	http://localhost:3001/products/test-product-3	2	t	LINK	2026-05-13 10:41:43.833	2026-05-13 10:41:43.833	mega	2c47212c-1930-4afc-b697-68c49aa95b8b	\N	f
-fb69a8e5-27c1-4293-ba49-c190a5f3c738	250g	\N	http://localhost:3001/products/test-product-3	3	t	LINK	2026-05-13 10:41:59.442	2026-05-13 10:41:59.442	mega	2c47212c-1930-4afc-b697-68c49aa95b8b	\N	f
-6f6c4165-e162-4ebd-ad78-987a42165c3a	SIGNATURE ITEMS	\N	/	0	t	LINK	2026-05-13 10:44:23.917	2026-05-13 10:44:23.917	mega	\N	\N	f
-e470e2bf-0acb-4cc6-8651-49b7154e25fe	Three Milk Cake	\N	http://localhost:3001/products/test-product-3	1	t	LINK	2026-05-13 10:44:41.631	2026-05-13 10:44:41.631	mega	6f6c4165-e162-4ebd-ad78-987a42165c3a	\N	f
+COPY public.storefront_nav_links (id, label, secondary_label, href, sort_order, is_active, kind, created_at, updated_at, zone, parent_id, category_id, open_mega_menu, banner_image_url, banner_href, banner_alt) FROM stdin;
+00000000-0000-0000-0000-00000000e001	Home	\N	/	0	t	LINK	2026-05-13 11:15:47.684	2026-05-13 11:15:47.684	header	\N	\N	f	\N	\N	\N
+00000000-0000-0000-0000-00000000e003	Track order	\N	/track-order	20	t	LINK	2026-05-13 11:15:47.684	2026-05-13 11:15:47.684	header	\N	\N	f	\N	\N	\N
+00000000-0000-0000-0000-00000000e005	Cart	\N	/cart	40	t	LINK	2026-05-13 11:15:47.684	2026-05-13 11:15:47.684	header	\N	\N	f	\N	\N	\N
+c321a5fa-2fdb-4370-be83-1898acfb9828	1kg	\N	http://localhost:3001/products/test-product-3	1	t	LINK	2026-05-13 10:41:15.89	2026-05-13 10:41:15.89	mega	2c47212c-1930-4afc-b697-68c49aa95b8b	\N	f	\N	\N	\N
+18280818-a3d3-4764-8a0d-b5952e04db68	500g	\N	http://localhost:3001/products/test-product-3	2	t	LINK	2026-05-13 10:41:43.833	2026-05-13 10:41:43.833	mega	2c47212c-1930-4afc-b697-68c49aa95b8b	\N	f	\N	\N	\N
+fb69a8e5-27c1-4293-ba49-c190a5f3c738	250g	\N	http://localhost:3001/products/test-product-3	3	t	LINK	2026-05-13 10:41:59.442	2026-05-13 10:41:59.442	mega	2c47212c-1930-4afc-b697-68c49aa95b8b	\N	f	\N	\N	\N
+3509717e-86ed-4d2b-967d-a05d27ce9803	Flavour	\N	/	0	t	LINK	2026-05-14 06:09:17.438	2026-05-14 06:09:34.95	mega	\N	\N	f	\N	\N	\N
+2c47212c-1930-4afc-b697-68c49aa95b8b	Weight	\N	/	2	t	LINK	2026-05-13 10:40:56.931	2026-05-14 06:09:42.598	mega	\N	\N	f	\N	\N	\N
+e32719a8-318c-4128-95d2-e7a3fd2114b7	Vanila	\N	http://localhost:3001/products	0	t	LINK	2026-05-14 06:10:17.76	2026-05-14 06:10:17.76	mega	3509717e-86ed-4d2b-967d-a05d27ce9803	\N	f	\N	\N	\N
+4c2bb66a-2a63-4131-9f8c-3d3bebf60a1c	Strawberry	\N	http://localhost:3001/products	2	t	LINK	2026-05-14 06:10:44.534	2026-05-14 06:10:44.534	mega	3509717e-86ed-4d2b-967d-a05d27ce9803	\N	f	\N	\N	\N
+81d8f5e2-1c54-491f-ab15-66531ce3d9f3	Chocolate	\N	http://localhost:3001/products	1	t	LINK	2026-05-14 06:10:32.81	2026-05-14 06:10:57.91	mega	3509717e-86ed-4d2b-967d-a05d27ce9803	\N	f	\N	\N	\N
+e470e2bf-0acb-4cc6-8651-49b7154e25fe	Three Milk Cake	\N	http://localhost:3001/products/test-product-3	0	t	LINK	2026-05-13 10:44:41.631	2026-05-14 06:12:07.096	mega	6f6c4165-e162-4ebd-ad78-987a42165c3a	\N	f	\N	\N	\N
+8a0a4887-c075-4284-819d-3c2d6b0c4832	Cocunut barfi	\N	http://localhost:3001/products/test-product-2	1	t	LINK	2026-05-14 06:12:00.063	2026-05-14 06:15:14.649	mega	6f6c4165-e162-4ebd-ad78-987a42165c3a	\N	f	\N	\N	\N
+6f6c4165-e162-4ebd-ad78-987a42165c3a	Signature Items	\N	/	1	t	LINK	2026-05-13 10:44:23.917	2026-05-14 08:33:45.73	mega	\N	\N	f	\N	\N	\N
+00000000-0000-0000-0000-00000000e002	Products	Categories	/products	10	t	LINK	2026-05-13 11:15:47.684	2026-05-14 12:06:21.738	header	\N	\N	t	http://localhost:3000/uploads/storefront-nav/dbc94ab7-7952-4dfb-bac3-59d3a0e82f55.jpeg	\N	\N
 \.
 
 
@@ -1605,6 +1613,10 @@ e752cecd-c989-4ff8-8f5a-3c64455eef67	906abee1-8c7f-4645-8193-973989132503	f56ce2
 13293c57-d881-4a28-b7b6-d16d5054ac55	906abee1-8c7f-4645-8193-973989132503	f56ce2c9-7e87-4eaf-8588-d6c8822a106e
 2c9efd53-dfc4-48f6-9a5c-9a16df162132	59574408-864b-4fb3-a08f-5ee2211a8ba1	30d60dcc-867c-4fbd-a208-4aef88480725
 2c9efd53-dfc4-48f6-9a5c-9a16df162132	906abee1-8c7f-4645-8193-973989132503	0f01dc86-2798-4ffb-9902-663a759b845e
+19304891-7368-4eb6-a4f8-bd140381e8d4	906abee1-8c7f-4645-8193-973989132503	e86955c2-ebde-4ba0-9925-743eb1a2371e
+19304891-7368-4eb6-a4f8-bd140381e8d4	a39db598-111e-4007-bf54-f564b2c1f587	98acf219-fadc-4e60-88f9-3b660145230d
+f840ba72-8fdc-4bea-80b0-9ada1f11dba6	906abee1-8c7f-4645-8193-973989132503	f56ce2c9-7e87-4eaf-8588-d6c8822a106e
+f840ba72-8fdc-4bea-80b0-9ada1f11dba6	a39db598-111e-4007-bf54-f564b2c1f587	98acf219-fadc-4e60-88f9-3b660145230d
 \.
 
 
@@ -3322,5 +3334,5 @@ REVOKE USAGE ON SCHEMA public FROM PUBLIC;
 -- PostgreSQL database dump complete
 --
 
-\unrestrict FCPlYexTBFsVDHZ42A18aFYsI7gd0hF5rV5jsAVFlJW6xsJ5sO163VfXzntMsxc
+\unrestrict usEvP7wuccpT0bO7I6l5zxYcTxhWMapsaC45twdggbmVxFGC8NvgnkV8WWQu3BZ
 

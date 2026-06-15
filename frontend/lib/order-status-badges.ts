@@ -1,37 +1,40 @@
-/** Semantic badge styles for order / payment / fulfillment status (theme tokens). */
-const muted = 'bg-muted text-muted-foreground ring-1 ring-inset ring-border';
-const warning = 'bg-warning/15 text-warning ring-1 ring-inset ring-warning/25';
-const primary = 'bg-primary/10 text-primary ring-1 ring-inset ring-primary/20';
-const success = 'bg-success/15 text-success ring-1 ring-inset ring-success/25';
+/** Semantic badge styles for order / payment / fulfillment status (brand palette). */
+const brandMuted =
+  'bg-brand-secondary/25 text-brand-text/80 ring-1 ring-inset ring-brand-secondary/35';
+const brandProgress =
+  'bg-brand-secondary/50 text-brand-accent ring-1 ring-inset ring-brand-primary/20';
+const brandComplete =
+  'bg-brand-secondary/55 text-brand-accent ring-1 ring-inset ring-brand-secondary/60';
+const warning = 'bg-warning/12 text-warning ring-1 ring-inset ring-warning/20';
 const destructive = 'bg-destructive/10 text-destructive ring-1 ring-inset ring-destructive/20';
 
 export function orderStatusBadgeClass(status: string): string {
   const map: Record<string, string> = {
     pending: warning,
-    processing: primary,
-    completed: success,
+    processing: brandProgress,
+    completed: brandComplete,
     cancelled: destructive,
   };
-  return map[status] ?? muted;
+  return map[status] ?? brandMuted;
 }
 
 export function paymentStatusBadgeClass(status: string): string {
   const map: Record<string, string> = {
     pending: warning,
-    paid: success,
+    paid: brandComplete,
     failed: destructive,
-    refunded: muted,
+    refunded: brandMuted,
   };
-  return map[status] ?? muted;
+  return map[status] ?? brandMuted;
 }
 
 export function fulfillmentStatusBadgeClass(status: string): string {
   const map: Record<string, string> = {
-    unfulfilled: muted,
-    fulfilled: success,
-    shipped: primary,
-    delivered: success,
+    unfulfilled: brandMuted,
+    fulfilled: brandProgress,
+    shipped: brandProgress,
+    delivered: brandComplete,
     cancelled: destructive,
   };
-  return map[status] ?? muted;
+  return map[status] ?? brandMuted;
 }

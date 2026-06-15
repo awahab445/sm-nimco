@@ -256,6 +256,39 @@ export const STOREFRONT_NAV_FALLBACK: StorefrontNavigationPayload = {
   megaMenu: [],
 };
 
+function normalizeNavHref(href: string): string {
+  const path = (href.trim().split('?')[0]?.split('#')[0] ?? '/').toLowerCase();
+  if (path.length > 1 && path.endsWith('/')) return path.slice(0, -1);
+  return path || '/';
+}
+
+/** Merge API nav with fallback so CMS-only responses do not replace core header links. */
+export function mergeStorefrontNavigation(
+  api: StorefrontNavigationPayload,
+  fallback: StorefrontNavigationPayload = STOREFRONT_NAV_FALLBACK,
+): StorefrontNavigationPayload {
+  const dbHeader = api.header.filter((item) => !item.id.startsWith('cms:'));
+  const cmsHeader = api.header.filter((item) => item.id.startsWith('cms:'));
+
+  const baseHeader = dbHeader.length > 0 ? dbHeader : fallback.header;
+
+  const byHref = new Map<string, StorefrontNavItem>();
+  for (const item of baseHeader) {
+    byHref.set(normalizeNavHref(item.href), item);
+  }
+  for (const item of cmsHeader) {
+    const key = normalizeNavHref(item.href);
+    if (!byHref.has(key)) {
+      byHref.set(key, item);
+    }
+  }
+
+  const header = [...byHref.values()].sort((a, b) => a.sortOrder - b.sortOrder);
+  const megaMenu = api.megaMenu?.length ? api.megaMenu : fallback.megaMenu;
+
+  return { header, megaMenu };
+}
+
 export const storefrontNavApi = {
   getNavigation: (): Promise<{ data: StorefrontNavigationPayload }> =>
     fetchApi<{ data: StorefrontNavigationPayload }>('/storefront/navigation'),

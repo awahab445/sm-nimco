@@ -1,11 +1,21 @@
 @import "tailwindcss";
+@config "../tailwind.config.ts";
 @import "../styles/store-themes.css";
 
 html {
   overflow-x: clip;
+  background-color: #d9e8fc;
+  color: #1a2e40;
 }
 
 @theme inline {
+  --color-brand-primary: #2b7fff;
+  --color-brand-secondary: #a3d2ff;
+  --color-brand-accent: #526baf;
+  --color-brand-text: #1a2e40;
+  --color-brand-bg: #d9e8fc;
+  --shadow-product-card: 0 1px 3px 0 color-mix(in srgb, #1a2e40 7%, transparent),
+    0 4px 14px -2px color-mix(in srgb, #2b7fff 8%, transparent);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);
@@ -44,6 +54,24 @@ body {
   font-family: var(--font-sans);
 }
 
+@layer base {
+  html,
+  body {
+    @apply bg-brand-bg text-brand-text;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  p,
+  span,
+  input,
+  button {
+    @apply text-brand-text;
+  }
+}
+
 /* Cart icon: theme token by default; inherit inside interactive parents */
 .cart-icon {
   stroke: currentColor;
@@ -60,14 +88,14 @@ button .cart-icon {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-  color: var(--muted-foreground);
+  color: var(--color-brand-text, #1a2e40);
   transition: color 0.15s ease;
 }
 
 .header-nav-trigger:hover,
 .header-nav-trigger:focus-visible,
 .header-nav-trigger[aria-expanded='true'] {
-  color: var(--foreground);
+  color: var(--color-brand-primary, #2b7fff);
 }
 
 .header-nav-trigger__chevron {
@@ -86,7 +114,7 @@ details.mega-menu-mobile-root[open] > summary .header-nav-trigger__chevron {
 }
 
 .header-nav-categories-label {
-  color: var(--muted-foreground);
+  color: var(--color-brand-accent, #526baf);
 }
 
 @keyframes header-user-menu-enter {
@@ -155,8 +183,23 @@ details.mega-menu-mobile-root[open] > summary .header-nav-trigger__chevron {
 .site-header {
   background: var(--navbar-background);
   border-bottom-color: var(--navbar-border);
+  color: var(--navbar-foreground, var(--color-brand-text, #1a2e40));
   -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
+}
+
+/* Default cleaning brand: dark navy links on soft blue navbar */
+html[data-store-theme="default"] header.site-header nav > a,
+html[data-store-theme="default"] header.site-header nav .header-nav-trigger,
+html[data-store-theme="default"] header.site-header nav button[aria-haspopup='menu'] {
+  color: var(--color-brand-text, #1a2e40);
+}
+
+html[data-store-theme="default"] header.site-header nav > a:hover,
+html[data-store-theme="default"] header.site-header nav .header-nav-trigger:hover,
+html[data-store-theme="default"] header.site-header nav .header-nav-trigger[aria-expanded='true'],
+html[data-store-theme="default"] header.site-header nav button[aria-haspopup='menu']:hover {
+  color: var(--color-brand-primary, #2b7fff);
 }
 
 .store-mega-menu-panel {
@@ -205,8 +248,8 @@ details.mega-menu-mobile-root[open] > summary .header-nav-trigger__chevron {
   color: var(--primary);
 }
 
-.store-mega-menu-panel .mega-menu-nav-link--l2,
-.store-mega-menu-panel .mega-menu-nav-link--l3 {
+html[data-store-theme="mehfil_shereen"] .store-mega-menu-panel .mega-menu-nav-link--l2,
+html[data-store-theme="mehfil_shereen"] .store-mega-menu-panel .mega-menu-nav-link--l3 {
   color: #ffffff;
 }
 
@@ -216,19 +259,19 @@ details.mega-menu-mobile-root[open] > summary .header-nav-trigger__chevron {
   color: var(--primary);
 }
 
-.store-mega-menu-panel .mega-menu-nav-link:hover,
-.store-mega-menu-panel .mega-menu-nav-link:focus-visible {
+html[data-store-theme="mehfil_shereen"] .store-mega-menu-panel .mega-menu-nav-link:hover,
+html[data-store-theme="mehfil_shereen"] .store-mega-menu-panel .mega-menu-nav-link:focus-visible {
   color: #ffffff;
   background-color: rgba(255, 255, 255, 0.1);
 }
 
-.store-mega-menu-panel .mega-menu-nav-link--active {
+html[data-store-theme="mehfil_shereen"] .store-mega-menu-panel .mega-menu-nav-link--active {
   color: #ffffff;
   background-color: rgba(255, 255, 255, 0.14);
   box-shadow: inset 3px 0 0 var(--primary);
 }
 
-.store-mega-menu-panel .mega-menu-nav-nested {
+html[data-store-theme="mehfil_shereen"] .store-mega-menu-panel .mega-menu-nav-nested {
   border-left-color: rgba(255, 255, 255, 0.22);
 }
 
@@ -480,12 +523,13 @@ details.mega-menu-mobile-root[open] > summary .header-nav-trigger__chevron {
 }
 
 .plp-browse-tree .mega-menu-nav-link--active {
-  background-color: var(--accent);
+  background-color: color-mix(in srgb, var(--color-brand-secondary, #a3d2ff) 45%, transparent);
+  color: var(--color-brand-accent, #526baf);
 }
 
 .plp-browse-tree .mega-menu-nav-link:hover,
 .plp-browse-tree .mega-menu-nav-link:focus-visible {
-  background-color: var(--primary-light);
+  background-color: color-mix(in srgb, var(--color-brand-secondary, #a3d2ff) 35%, transparent);
 }
 
 /* Mobile layered navigation */

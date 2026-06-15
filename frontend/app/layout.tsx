@@ -32,7 +32,7 @@ export default function RootLayout({
 
   return (
     <html lang="en" data-store-theme={storeTheme}>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} bg-brand-bg text-brand-text antialiased`}>
         <AuthProvider>
           <CartProvider>
             <div

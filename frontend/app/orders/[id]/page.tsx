@@ -10,6 +10,7 @@ import {
   paymentStatusBadgeClass,
 } from '@/lib/order-status-badges';
 import Link from 'next/link';
+import { storefrontUi } from '@/lib/storefront-ui';
 
 interface OrderItem {
   id: string;
@@ -142,7 +143,7 @@ export default function OrderDetailPage() {
     
     return (
       <div className="text-sm text-muted-foreground">
-        <div className="font-medium text-foreground">
+        <div className="font-medium text-brand-text">
           {address.firstName} {address.lastName}
         </div>
         {address.company && <div>{address.company}</div>}
@@ -169,7 +170,7 @@ export default function OrderDetailPage() {
   if (loading) {
     return (
       <div className="flex min-h-[40vh] flex-col items-center justify-center py-16">
-        <div className="h-10 w-10 animate-spin rounded-full border-2 border-muted border-t-primary" aria-hidden />
+        <div className="h-10 w-10 animate-spin rounded-full border-2 border-brand-secondary border-t-brand-primary" aria-hidden />
         <p className="mt-4 text-muted-foreground">Loading order…</p>
       </div>
     );
@@ -181,10 +182,7 @@ export default function OrderDetailPage() {
         <div className="rounded-lg border border-destructive/25 bg-destructive/10 px-4 py-3 text-destructive" role="alert">
           {error}
         </div>
-        <Link
-          href="/orders"
-          className="mt-6 inline-block rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-opacity hover:opacity-90"
-        >
+        <Link href="/orders" className={`mt-6 inline-block ${storefrontUi.btnPrimary}`}>
           Back to orders
         </Link>
       </div>
@@ -196,18 +194,15 @@ export default function OrderDetailPage() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-6xl bg-brand-bg px-4 py-8 sm:px-6 lg:px-8">
       {/* Header */}
       <div className="mb-6">
-        <Link
-          href="/orders"
-          className="mb-4 inline-block text-primary transition-colors hover:opacity-80"
-        >
+        <Link href="/orders" className={`mb-4 inline-block text-sm ${storefrontUi.link}`}>
           ← Back to Orders
         </Link>
         <div className="flex justify-between items-start mt-4">
           <div>
-            <h1 className="mb-2 text-2xl font-semibold text-foreground">
+            <h1 className="mb-2 text-2xl font-semibold text-brand-text">
               Order #{order.orderNumber}
             </h1>
               <p className="text-muted-foreground">
@@ -251,8 +246,8 @@ export default function OrderDetailPage() {
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Order Items */}
-            <div className="rounded-lg border border-border bg-card p-6 shadow-sm">
-              <h2 className="mb-4 text-xl font-semibold text-foreground">
+            <div className={`p-6 ${storefrontUi.card}`}>
+              <h2 className="mb-4 text-xl font-semibold text-brand-text">
                 Order Items
               </h2>
               <div className="space-y-4">
@@ -262,7 +257,7 @@ export default function OrderDetailPage() {
                     className="flex items-start justify-between border-b border-border pb-4 last:border-0 last:pb-0"
                   >
                     <div className="flex-1">
-                      <h3 className="font-medium text-foreground">
+                      <h3 className="font-medium text-brand-text">
                         {item.name}
                       </h3>
                       <p className="text-sm text-muted-foreground">SKU: {item.sku}</p>
@@ -280,7 +275,7 @@ export default function OrderDetailPage() {
                       </p>
                     </div>
                     <div className="text-right">
-                      <div className="font-medium text-foreground">
+                      <div className="font-medium text-brand-text">
                         {new Intl.NumberFormat('en-US', {
                           style: 'currency',
                           currency: order.currency,
@@ -309,8 +304,8 @@ export default function OrderDetailPage() {
 
             {/* Notes */}
             {order.notes && (
-              <div className="rounded-lg border border-border bg-card p-6 shadow-sm">
-                <h2 className="mb-2 text-xl font-semibold text-foreground">
+              <div className={`p-6 ${storefrontUi.card}`}>
+                <h2 className="mb-2 text-xl font-semibold text-brand-text">
                   Order Notes
                 </h2>
                 <p className="text-muted-foreground">{order.notes}</p>
@@ -321,8 +316,8 @@ export default function OrderDetailPage() {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Order Summary */}
-            <div className="rounded-lg border border-border bg-card p-6 shadow-sm">
-              <h2 className="mb-4 text-xl font-semibold text-foreground">
+            <div className={`p-6 ${storefrontUi.card}`}>
+              <h2 className="mb-4 text-xl font-semibold text-brand-text">
                 Order Summary
               </h2>
               <div className="space-y-2 text-sm">
@@ -365,7 +360,7 @@ export default function OrderDetailPage() {
                   </span>
                 </div>
                 <div className="mt-2 border-t border-border pt-2">
-                  <div className="flex justify-between text-lg font-semibold text-foreground">
+                  <div className="flex justify-between text-lg font-semibold text-brand-text">
                     <span>Total</span>
                     <span>
                       {new Intl.NumberFormat('en-US', {
@@ -379,8 +374,8 @@ export default function OrderDetailPage() {
             </div>
 
             {/* Actions */}
-            <div className="rounded-lg border border-border bg-card p-6 shadow-sm">
-              <h2 className="mb-4 text-xl font-semibold text-foreground">
+            <div className={`p-6 ${storefrontUi.card}`}>
+              <h2 className="mb-4 text-xl font-semibold text-brand-text">
                 Actions
               </h2>
               {reorderError && (
@@ -390,7 +385,7 @@ export default function OrderDetailPage() {
                 type="button"
                 onClick={handleReorder}
                 disabled={reorderLoading}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-md border border-primary px-4 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/10 disabled:cursor-not-allowed disabled:opacity-50"
+                className={`inline-flex w-full items-center justify-center gap-2 ${storefrontUi.btnSecondary}`}
                 title="Add all items from this order to a new cart"
               >
                 {reorderLoading ? (
@@ -405,24 +400,24 @@ export default function OrderDetailPage() {
             </div>
 
             {/* Billing Address */}
-            <div className="rounded-lg border border-border bg-card p-6 shadow-sm">
-              <h2 className="mb-4 text-xl font-semibold text-foreground">
+            <div className={`p-6 ${storefrontUi.card}`}>
+              <h2 className="mb-4 text-xl font-semibold text-brand-text">
                 Billing Address
               </h2>
               {formatAddress(order.billingAddress)}
             </div>
 
             {/* Shipping Address */}
-            <div className="rounded-lg border border-border bg-card p-6 shadow-sm">
-              <h2 className="mb-4 text-xl font-semibold text-foreground">
+            <div className={`p-6 ${storefrontUi.card}`}>
+              <h2 className="mb-4 text-xl font-semibold text-brand-text">
                 Shipping Address
               </h2>
               {formatAddress(order.shippingAddress)}
             </div>
 
             {/* Customer Info */}
-            <div className="rounded-lg border border-border bg-card p-6 shadow-sm">
-              <h2 className="mb-4 text-xl font-semibold text-foreground">
+            <div className={`p-6 ${storefrontUi.card}`}>
+              <h2 className="mb-4 text-xl font-semibold text-brand-text">
                 Customer Information
               </h2>
               <div className="text-sm text-muted-foreground">

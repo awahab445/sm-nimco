@@ -361,7 +361,7 @@ export default function ProductDetailPage() {
                             onClick={() => handleOptionSelect(def.code, value)}
                             className={`rounded-md border px-3 py-1.5 text-sm transition-colors ${
                               active
-                                ? 'border-primary bg-primary text-primary-foreground'
+                                ? 'border-brand-primary bg-brand-primary text-white'
                                 : 'border-input bg-card text-foreground hover:border-primary/60'
                             }`}
                           >
@@ -404,7 +404,7 @@ export default function ProductDetailPage() {
               type="button"
               onClick={handleAddToCart}
               disabled={adding || !hasVariant || !currentVariant || !inStock}
-              className="rounded-md bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground shadow-sm transition-opacity hover:opacity-90 disabled:opacity-50"
+              className={`px-6 py-2.5 ${storefrontUi.btnPrimary}`}
             >
               {added ? 'Added to cart' : adding ? 'Adding…' : hasVariant ? (inStock ? 'Add to cart' : 'Out of stock') : 'Unavailable'}
             </button>

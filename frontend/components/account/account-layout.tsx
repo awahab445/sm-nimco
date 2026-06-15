@@ -2,6 +2,7 @@
 
 import { AccountSidebar } from './account-sidebar';
 import { User } from '@/lib/auth.service';
+import { storefrontUi } from '@/lib/storefront-ui';
 
 interface AccountLayoutProps {
   children: React.ReactNode;
@@ -10,10 +11,10 @@ interface AccountLayoutProps {
 
 export function AccountLayout({ children, user: _user }: AccountLayoutProps) {
   return (
-    <div className="min-h-screen bg-muted/30">
+    <div className="min-h-screen bg-brand-bg">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">My Account</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-brand-text">My Account</h1>
           <p className="mt-2 text-sm text-muted-foreground">
             Manage your account settings and preferences
           </p>
@@ -23,7 +24,7 @@ export function AccountLayout({ children, user: _user }: AccountLayoutProps) {
           <AccountSidebar />
 
           <main className="min-w-0 flex-1">
-            <div className="rounded-lg border border-border bg-card shadow-sm">
+            <div className={storefrontUi.card}>
               <div className="p-6">{children}</div>
             </div>
           </main>
