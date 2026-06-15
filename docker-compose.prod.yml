@@ -1,0 +1,101 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: ecommerce-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ecommerce_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: ecommerce-redis
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: ecommerce-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      BOOTSTRAP_TOKEN: ${BOOTSTRAP_TOKEN}
+      CORS_ORIGIN: ${SHOP_URL},${ADMIN_URL}
+      FRONTEND_URL: ${SHOP_URL}
+      APP_URL: ${API_URL}
+      PUBLIC_BASE_URL: ${API_URL}
+      DEFAULT_CURRENCY: ${DEFAULT_CURRENCY:-PKR}
+      REDIS_ENABLED: "true"
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      COOKIE_DOMAIN: ${COOKIE_DOMAIN:-}
+    volumes:
+      - ecommerce_uploads:/app/uploads
+    ports:
+      - "127.0.0.1:${HOST_API_PORT:-3100}:3000"
+
+  storefront:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${API_URL}
+        NEXT_PUBLIC_APP_URL: ${SHOP_URL}
+        NEXT_PUBLIC_CURRENCY: ${NEXT_PUBLIC_CURRENCY:-PKR}
+        NEXT_PUBLIC_STORE_THEME: ${NEXT_PUBLIC_STORE_THEME:-mehfil_shereen}
+        NEXT_PUBLIC_STOREFRONT_HOME_LAYOUT_IDENTIFIER: ${NEXT_PUBLIC_STOREFRONT_HOME_LAYOUT_IDENTIFIER:-home-page-layout}
+    container_name: ecommerce-storefront
+    restart: unless-stopped
+    depends_on:
+      - api
+    environment:
+      NODE_ENV: production
+      JWT_SECRET: ${JWT_SECRET}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+    ports:
+      - "127.0.0.1:${HOST_STOREFRONT_PORT:-3101}:3001"
+
+  admin:
+    build:
+      context: ./admin
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${API_URL}
+        NEXT_PUBLIC_ADMIN_APP_NAME: ${NEXT_PUBLIC_ADMIN_APP_NAME:-Ecommerce Admin}
+    container_name: ecommerce-admin
+    restart: unless-stopped
+    depends_on:
+      - api
+    environment:
+      NODE_ENV: production
+      JWT_SECRET: ${JWT_SECRET}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+    ports:
+      - "127.0.0.1:${HOST_ADMIN_PORT:-3102}:3002"
+
+volumes:
+  ecommerce_pg_data:
+  ecommerce_uploads:

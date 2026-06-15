@@ -2,17 +2,17 @@
 # SHOP_DOMAIN ADMIN_DOMAIN API_DOMAIN
 
 upstream ecommerce_storefront {
-  server 127.0.0.1:3001;
+  server 127.0.0.1:HOST_STOREFRONT_PORT;
   keepalive 8;
 }
 
 upstream ecommerce_admin {
-  server 127.0.0.1:3002;
+  server 127.0.0.1:HOST_ADMIN_PORT;
   keepalive 8;
 }
 
 upstream ecommerce_api {
-  server 127.0.0.1:3000;
+  server 127.0.0.1:HOST_API_PORT;
   keepalive 8;
 }
 

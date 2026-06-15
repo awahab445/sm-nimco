@@ -71,3 +71,46 @@ bash deploy/scripts/deploy.sh
 - Strong `JWT_SECRET` required when `NODE_ENV=production`
 - Persist `backend/uploads/` across deploys if using admin image uploads
 - Run `npm run build` in production; never `next dev` on the server
+
+## Docker deployment (recommended for shared VPS)
+
+Run the full stack in Docker — no Node/Postgres/Redis/PM2 on the host. Only **Docker** and **host Nginx** are required.
+
+### Quick deploy
+
+1. Copy env template and edit domains/secrets:
+   ```bash
+   cp deploy/env/docker.env.example deploy/env/docker.env
+   nano deploy/env/docker.env
+   ```
+   If ports **3000–3002** are already used on the host (e.g. by another Docker app), set `HOST_API_PORT`, `HOST_STOREFRONT_PORT`, and `HOST_ADMIN_PORT` in `docker.env` (defaults: **3100**, **3101**, **3102**). Nginx reads the same values from `configure-nginx.sh`.
+2. Build and start (build one service at a time on low-RAM VPS):
+   ```bash
+   bash deploy/docker/compose.sh build api
+   bash deploy/docker/compose.sh build storefront
+   bash deploy/docker/compose.sh build admin
+   bash deploy/docker/compose.sh up -d
+   ```
+3. Bootstrap database and admin user:
+   ```bash
+   bash deploy/docker/bootstrap.sh
+   ```
+4. Configure host Nginx (HTTP for local `/etc/hosts` testing):
+   ```bash
+   sudo bash deploy/docker/configure-nginx.sh
+   ```
+5. Phase 2 HTTPS: update `docker.env` URLs to `https://`, rebuild frontends, run Certbot on host Nginx.
+
+### Docker files
+
+| Path | Purpose |
+|------|---------|
+| [../docker-compose.prod.yml](../docker-compose.prod.yml) | Production compose stack |
+| [env/docker.env.example](./env/docker.env.example) | Single env file for compose |
+| [docker/compose.sh](./docker/compose.sh) | Compose wrapper |
+| [docker/bootstrap.sh](./docker/bootstrap.sh) | Seed + first admin |
+| [docker/configure-nginx.sh](./docker/configure-nginx.sh) | Host Nginx site (HTTP) |
+| [docker/entrypoint-api.sh](./docker/entrypoint-api.sh) | API migrations on start |
+| [../backend/Dockerfile](../backend/Dockerfile) | NestJS API image |
+| [../frontend/Dockerfile](../frontend/Dockerfile) | Storefront image |
+| [../admin/Dockerfile](../admin/Dockerfile) | Admin image |

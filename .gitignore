@@ -15,6 +15,7 @@ yarn-error.log*
 !.env.example
 !.env.local.example
 deploy/env/demo.env
+deploy/env/docker.env
 
 # Next.js (all apps)
 .next/
