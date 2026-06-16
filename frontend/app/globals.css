@@ -4,7 +4,7 @@
 
 html {
   overflow-x: clip;
-  background-color: #ffffff;
+  background-color: #F5F5F5;
   color: #1a2e40;
 }
 
@@ -13,7 +13,7 @@ html {
   --color-brand-secondary: #eef4fe;
   --color-brand-accent: #3577d9;
   --color-brand-text: #1a2e40;
-  --color-brand-bg: #bbceef;
+  --color-brand-bg: #F5F5F5;
   --shadow-product-card: 0 1px 3px 0 color-mix(in srgb, #1a2e40 7%, transparent),
     0 4px 14px -2px color-mix(in srgb, #4f90f1 10%, transparent);
   --color-background: var(--background);

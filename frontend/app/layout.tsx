@@ -43,7 +43,7 @@ export default function RootLayout({
               }
             >
               <Header />
-              <main className="min-w-0 flex-1 max-w-full">{children}</main>
+              <main className="min-w-0 flex-1 max-w-full bg-brand-bg">{children}</main>
               <Footer />
             </div>
           </CartProvider>

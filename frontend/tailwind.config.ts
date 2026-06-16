@@ -10,7 +10,7 @@ const config = {
           secondary: '#eef4fe',
           accent: '#3577d9',
           text: '#1A2E40',
-          bg: '#bbceef',
+          bg: '#F5F5F5',
         },
       },
       boxShadow: {
