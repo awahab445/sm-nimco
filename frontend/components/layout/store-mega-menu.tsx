@@ -190,7 +190,7 @@ export function DesktopShopMegaMenu({
 
   if (roots.length === 0) {
     return (
-      <Link href="/products" className="header-nav-trigger text-sm font-medium">
+      <Link href="/products" className="header-nav-trigger text-sm font-medium text-white">
         Products
       </Link>
     );
@@ -231,7 +231,7 @@ export function DesktopShopMegaMenu({
           href={primaryHref}
           onMouseEnter={closeMenu}
           onFocus={closeMenu}
-          className="header-nav-trigger text-sm font-medium"
+          className="header-nav-trigger text-sm font-medium text-white"
         >
           {primaryLabel}
         </Link>
@@ -242,9 +242,9 @@ export function DesktopShopMegaMenu({
             onFocus={openMenu}
             aria-expanded={open}
             aria-haspopup="true"
-            className="header-nav-trigger cursor-pointer border-0 bg-transparent p-0 text-sm font-medium"
+            className="header-nav-trigger cursor-pointer border-0 bg-transparent p-0 text-sm font-medium text-white"
           >
-            <span>{secondaryLabel}</span>
+            <span className="text-white">{secondaryLabel}</span>
             <NavChevron />
           </button>
         ) : null}

@@ -38,8 +38,8 @@ export default function RootLayout({
             <div
               className={
                 storeTheme === "mehfil_shereen"
-                  ? "mehfil-store-shell flex min-h-screen min-w-0 max-w-full flex-col"
-                  : "flex min-h-screen min-w-0 max-w-full flex-col"
+                  ? "mehfil-store-shell flex min-h-screen min-w-0 max-w-full flex-col bg-brand-bg"
+                  : "flex min-h-screen min-w-0 max-w-full flex-col bg-brand-bg"
               }
             >
               <Header />

@@ -1,0 +1,57 @@
+## Architecture Boundaries
+
+- Respect the current project directory structure under `ecommerce-platform/`:
+  - `backend/` (NestJS API + Prisma)
+  - `frontend/` (Next.js storefront)
+  - `admin/` (Next.js admin panel)
+- Keep app boundaries strict: no cross-app runtime imports between `backend`, `frontend`, and `admin`.
+- Do not create redundant, nested, or duplicate configuration files.
+- Treat `ecommerce-platform/docs/Architecture.md` as the canonical architecture reference.
+
+## Frontend Theme And Styling Boundaries
+
+- Use `ecommerce-platform/frontend/tailwind.config.ts` as the single source of truth for brand tokens:
+  - `brand.primary: #4F90F1`
+  - `brand.secondary: #EEF4FE`
+  - `brand.accent: #3577D9`
+  - `brand.text: #1A2E40`
+  - `brand.bg: #E2EEFC`
+- Keep `boxShadow.product-card` defined exactly once in `tailwind.config.ts`.
+- Do not duplicate brand token declarations in `ecommerce-platform/frontend/app/globals.css` `@theme`.
+- In `globals.css`, only map semantic tokens (`--color-primary`, `--color-background`, etc.) from theme variables.
+- For UI/layout color updates, do not hardcode inline hex colors in TSX/CSS when a `brand-*` token can be used.
+- Header/Footer chrome must use unified blue styling from brand tokens; nav links and icons on chrome must remain readable (`text-white` when on blue backgrounds).
+
+## Stability And Reflection Rules
+
+- Before modifying any file, read the full file first.
+- Do not introduce duplicate object keys, duplicate routes, duplicate config keys, or conflicting CSS class/property definitions.
+- Preserve current core functionality unless explicitly asked to overhaul:
+  - Prisma models and migrations
+  - Zustand state stores
+  - Search/filter logic
+  - Checkout and cart flows
+- For frontend API integration changes, extend existing API client patterns rather than creating parallel networking layers.
+
+## Backend Boundaries
+
+- Keep data-model and persistence logic in `ecommerce-platform/backend/` only.
+- Respect route domain boundaries and guards:
+  - Public storefront routes
+  - `/admin/*` routes with admin auth/permissions
+- Keep cart/checkout ephemeral storage behavior aligned with current Redis/in-memory strategy unless explicitly changed.
+
+## Cleanup And Quality Assurance
+
+- After each set of file changes, run formatting/lint checks in affected app(s) to catch syntax regressions:
+  - `frontend`: `npm run lint`
+  - `backend`: `npm run lint`
+  - `admin`: `npm run lint`
+- Resolve introduced syntax issues (dangling brackets, malformed objects/classes, duplicate keys) before finishing.
+- Preserve icon visibility and contrast in structural components (header/footer).
+
+## Working Principles
+
+- Minimize diff scope and avoid unrelated refactors.
+- Reuse existing conventions and utilities before adding new abstractions.
+- Do not commit or push unless explicitly requested.

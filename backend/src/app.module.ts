@@ -33,7 +33,6 @@ import { SubscriptionModule } from './subscription/subscription.module';
     CatalogModule,
     AuthModule,
     AdminModule,
-    CatalogModule,
     InventoryModule,
     CartModule,
     OrderModule,

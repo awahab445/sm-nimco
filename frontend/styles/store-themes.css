@@ -26,31 +26,31 @@
   --background: #ffffff;
   --foreground: #1a2e40;
   --muted: #f0f7ff;
-  --muted-foreground: #526baf;
+  --muted-foreground: #3577d9;
   --card: #ffffff;
   --card-foreground: #1a2e40;
   --border: #e3eef9;
   --input: #c8ddf5;
-  --primary: #2b7fff;
+  --primary: #4f90f1;
   --primary-foreground: #ffffff;
-  --secondary: #a3d2ff;
+  --secondary: #eef4fe;
   --secondary-foreground: #1a2e40;
   --accent: #e8f4ff;
-  --accent-foreground: #526baf;
+  --accent-foreground: #3577d9;
   --destructive: #dc2626;
   --destructive-foreground: #fef2f2;
   --success: #15803d;
   --success-foreground: #f0fdf4;
   --warning: #b45309;
   --warning-foreground: #fffbeb;
-  --ring: #2b7fff;
+  --ring: #4f90f1;
   --popover: #ffffff;
   --popover-foreground: #1a2e40;
   --navbar-background: #1e40af;
   --navbar-foreground: #ffffff;
   --navbar-muted-foreground: #dbeafe;
   --navbar-border: #1e3a8a;
-  --mega-menu-shadow: 0 8px 32px -8px color-mix(in srgb, #2b7fff 14%, transparent);
+  --mega-menu-shadow: 0 8px 32px -8px color-mix(in srgb, #4f90f1 14%, transparent);
 }
 
 /* Keep the default storefront light and airy even when OS prefers dark */
@@ -59,31 +59,31 @@
     --background: #ffffff;
     --foreground: #1a2e40;
     --muted: #f0f7ff;
-    --muted-foreground: #526baf;
+    --muted-foreground: #3577d9;
     --card: #ffffff;
     --card-foreground: #1a2e40;
     --border: #e3eef9;
     --input: #c8ddf5;
-    --primary: #2b7fff;
+    --primary: #4f90f1;
     --primary-foreground: #ffffff;
-    --secondary: #a3d2ff;
+    --secondary: #eef4fe;
     --secondary-foreground: #1a2e40;
     --accent: #e8f4ff;
-    --accent-foreground: #526baf;
+    --accent-foreground: #3577d9;
     --destructive: #dc2626;
     --destructive-foreground: #fef2f2;
     --success: #15803d;
     --success-foreground: #f0fdf4;
     --warning: #b45309;
     --warning-foreground: #fffbeb;
-    --ring: #2b7fff;
+    --ring: #4f90f1;
     --popover: #ffffff;
     --popover-foreground: #1a2e40;
     --navbar-background: #1e40af;
     --navbar-foreground: #ffffff;
     --navbar-muted-foreground: #dbeafe;
     --navbar-border: #1e3a8a;
-    --mega-menu-shadow: 0 8px 32px -8px color-mix(in srgb, #2b7fff 14%, transparent);
+    --mega-menu-shadow: 0 8px 32px -8px color-mix(in srgb, #4f90f1 14%, transparent);
   }
 }
 

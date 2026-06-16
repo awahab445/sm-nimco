@@ -9,13 +9,13 @@ html {
 }
 
 @theme inline {
-  --color-brand-primary: #2b7fff;
-  --color-brand-secondary: #a3d2ff;
-  --color-brand-accent: #526baf;
+  --color-brand-primary: #4f90f1;
+  --color-brand-secondary: #eef4fe;
+  --color-brand-accent: #3577d9;
   --color-brand-text: #1a2e40;
-  --color-brand-bg: #ffffff;
+  --color-brand-bg: #bbceef;
   --shadow-product-card: 0 1px 3px 0 color-mix(in srgb, #1a2e40 7%, transparent),
-    0 4px 14px -2px color-mix(in srgb, #2b7fff 8%, transparent);
+    0 4px 14px -2px color-mix(in srgb, #4f90f1 10%, transparent);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);
@@ -181,7 +181,9 @@ details.mega-menu-mobile-root[open] > summary .header-nav-trigger__chevron {
 }
 
 .site-header {
-  background: var(--navbar-background);
+  background-color: #4f90f1 !important;
+  background-image: none !important;
+  position: relative;
   border-bottom-color: var(--navbar-border);
   color: var(--navbar-foreground, #ffffff);
 }
@@ -535,13 +537,13 @@ html[data-store-theme="mehfil_shereen"] .store-mega-menu-panel .mega-menu-nav-ne
 }
 
 .plp-browse-tree .mega-menu-nav-link--active {
-  background-color: color-mix(in srgb, var(--color-brand-secondary, #a3d2ff) 45%, transparent);
-  color: var(--color-brand-accent, #526baf);
+  background-color: color-mix(in srgb, var(--color-brand-secondary, #eef4fe) 45%, transparent);
+  color: var(--color-brand-accent, #3577d9);
 }
 
 .plp-browse-tree .mega-menu-nav-link:hover,
 .plp-browse-tree .mega-menu-nav-link:focus-visible {
-  background-color: color-mix(in srgb, var(--color-brand-secondary, #a3d2ff) 35%, transparent);
+  background-color: color-mix(in srgb, var(--color-brand-secondary, #eef4fe) 35%, transparent);
 }
 
 /* Mobile layered navigation */

@@ -1,24 +1,21 @@
 import type { Config } from 'tailwindcss';
 
-/**
- * Brand palette for household cleaning products storefront.
- * Tailwind v4 also mirrors these in app/globals.css @theme for CSS-first usage.
- */
+/** Brand palette + product-card shadow — sole theme source (see app/globals.css @config). */
 const config = {
   theme: {
     extend: {
       colors: {
         brand: {
-          primary: '#2B7FFF',
-          secondary: '#A3D2FF',
-          accent: '#526BAF',
+          primary: '#4f90f1',
+          secondary: '#eef4fe',
+          accent: '#3577d9',
           text: '#1A2E40',
-          bg: '#FFFFFF',
+          bg: '#bbceef',
         },
       },
       boxShadow: {
         'product-card':
-          '0 1px 3px 0 color-mix(in srgb, #1A2E40 7%, transparent), 0 4px 14px -2px color-mix(in srgb, #2B7FFF 8%, transparent)',
+          '0 1px 3px 0 color-mix(in srgb, #1A2E40 7%, transparent), 0 4px 14px -2px color-mix(in srgb, #4f90f1 10%, transparent)',
       },
     },
   },

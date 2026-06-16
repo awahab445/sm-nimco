@@ -119,7 +119,7 @@ export function Header() {
         <Link
           key={item.id}
           href={item.href}
-          className="relative inline-flex items-center justify-center text-white transition-colors hover:text-blue-100"
+          className="relative inline-flex items-center justify-center text-white transition-colors hover:text-white"
           aria-label={
             cartItemCount > 0
               ? `${item.label}, ${cartItemCount} ${cartItemCount === 1 ? 'item' : 'items'}`
@@ -127,11 +127,11 @@ export function Header() {
           }
           title={item.label}
         >
-          <span className="relative inline-flex h-6 w-6 items-center justify-center">
-            <ShoppingBagIcon className="h-6 w-6" strokeWidth={2} aria-hidden />
+          <span className="relative inline-flex h-6 w-6 items-center justify-center text-white">
+            <ShoppingBagIcon className="h-6 w-6 text-white" strokeWidth={2} aria-hidden />
             {cartItemCount > 0 ? (
               <span
-                className="pointer-events-none absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-semibold leading-none text-white ring-2 ring-blue-800"
+                className="pointer-events-none absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-semibold leading-none text-white ring-2 ring-brand-primary"
                 aria-hidden
               >
                 {cartItemCount > 99 ? '99+' : cartItemCount}
@@ -145,7 +145,7 @@ export function Header() {
       <Link
         key={item.id}
         href={item.href}
-        className="text-sm font-medium text-white transition-colors hover:text-blue-100"
+        className="text-sm font-medium text-white transition-colors hover:text-white"
       >
         {item.label}
       </Link>
@@ -180,11 +180,11 @@ export function Header() {
           }
           onClick={closeMobileNav}
         >
-          <span className="relative inline-flex h-6 w-6 shrink-0 items-center justify-center">
-            <ShoppingBagIcon className="h-6 w-6" strokeWidth={2} aria-hidden />
+          <span className="relative inline-flex h-6 w-6 shrink-0 items-center justify-center text-white">
+            <ShoppingBagIcon className="h-6 w-6 text-white" strokeWidth={2} aria-hidden />
             {cartItemCount > 0 ? (
               <span
-                className="pointer-events-none absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-semibold leading-none text-white ring-2 ring-blue-800"
+                className="pointer-events-none absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-semibold leading-none text-white ring-2 ring-brand-primary"
                 aria-hidden
               >
                 {cartItemCount > 99 ? '99+' : cartItemCount}
@@ -278,11 +278,11 @@ export function Header() {
     ) : null;
 
   return (
-    <header className="site-header sticky top-0 z-[60] w-full max-w-full overflow-visible border-b border-blue-900 bg-blue-800 relative">
+    <header className="site-header sticky top-0 z-[60] w-full max-w-full overflow-visible border-b relative bg-[#4f90f1]">
       <div className="mx-auto flex min-h-14 w-full min-w-0 max-w-[100rem] items-center justify-between gap-2 py-1.5 px-4 sm:gap-3 sm:px-8 lg:gap-4 lg:px-12 xl:px-16">
         <Link
           href="/"
-          className="inline-flex shrink-0 items-center bg-transparent text-lg font-semibold tracking-tight text-white outline-none ring-0 focus-visible:ring-2 focus-visible:ring-blue-200 focus-visible:ring-offset-2 focus-visible:ring-offset-blue-800"
+          className="inline-flex shrink-0 items-center bg-transparent text-lg font-semibold tracking-tight text-white outline-none ring-0 focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-primary"
         >
           {logoSrc ? (
             <Image
@@ -314,7 +314,7 @@ export function Header() {
 
         <button
           type="button"
-          className="inline-flex shrink-0 items-center justify-center rounded-md border border-white/30 bg-blue-800 p-2.5 text-white shadow-sm transition-colors hover:bg-blue-700 hover:text-blue-100 active:bg-blue-900 lg:hidden"
+          className="inline-flex shrink-0 items-center justify-center rounded-md border border-white/30 bg-brand-primary p-2.5 text-white shadow-sm transition-colors hover:bg-brand-accent hover:text-white active:brightness-95 lg:hidden"
           aria-expanded={mobileNavOpen}
           aria-controls="mobile-main-nav"
           aria-haspopup="dialog"
