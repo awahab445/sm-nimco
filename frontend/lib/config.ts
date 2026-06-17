@@ -22,9 +22,9 @@ const STORE_THEME_RAW =
 export const STORE_LOGO_URL =
   (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_STORE_LOGO?.trim()) || '';
 
-/** Resolved logo `src` for the header, or null to show the store name as text. */
-export function getStoreLogoSrc(): string | null {
+/** Resolved logo `src` for the header (`public/logo.png` by default). */
+export function getStoreLogoSrc(): string {
   if (STORE_LOGO_URL) return STORE_LOGO_URL;
   if (STORE_THEME_RAW === 'mehfil_shereen') return '/themes/mehfil-shereen/logo.png';
-  return null;
+  return '/logo.png';
 }

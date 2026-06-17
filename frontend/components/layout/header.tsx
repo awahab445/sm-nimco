@@ -6,7 +6,7 @@ import { useEffect, useId, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useAuthStore } from '@/lib/auth.store';
 import { useCartStore } from '@/lib/cart.store';
-import { STORE_NAME, getStoreLogoSrc } from '@/lib/config';
+import { getStoreLogoSrc } from '@/lib/config';
 import {
   storefrontNavApi,
   mergeStorefrontNavigation,
@@ -282,21 +282,22 @@ export function Header() {
       <div className="mx-auto flex min-h-14 w-full min-w-0 max-w-[100rem] items-center justify-between gap-2 py-1.5 px-4 sm:gap-3 sm:px-8 lg:gap-4 lg:px-12 xl:px-16">
         <Link
           href="/"
-          className="inline-flex shrink-0 items-center bg-transparent text-lg font-semibold tracking-tight text-white outline-none ring-0 focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-primary"
+          className="inline-flex shrink-0 items-center bg-transparent outline-none ring-0 focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-primary"
         >
-          {logoSrc ? (
-            <Image
-              src={logoSrc}
-              alt={STORE_NAME}
-              width={112}
-              height={112}
-              className="h-10 w-auto max-h-11 max-w-[8.5rem] bg-transparent object-contain object-left sm:h-12 sm:max-h-12 sm:max-w-[12rem]"
-              priority
-              unoptimized={logoSrc.startsWith('http')}
-            />
-          ) : (
-            STORE_NAME
-          )}
+          <div className="flex items-center gap-2">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-white p-1 shadow-sm">
+              <Image
+                src={logoSrc}
+                alt="M. Essa Chemicals"
+                width={48}
+                height={48}
+                className="h-12 w-12 object-contain"
+                priority
+                unoptimized={logoSrc.startsWith('http')}
+              />
+            </div>
+            <span className="ml-1 text-lg font-bold tracking-wide text-white">M. Essa Chemicals</span>
+          </div>
         </Link>
 
         <div className="flex min-w-0 flex-1 justify-center px-1 sm:px-2">
