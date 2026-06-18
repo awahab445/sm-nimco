@@ -17,14 +17,24 @@ const config = {
         'product-card':
           '0 1px 3px 0 color-mix(in srgb, #1A2E40 7%, transparent), 0 4px 14px -2px color-mix(in srgb, #4f90f1 10%, transparent)',
       },
+      animation: {
+        'whatsapp-bounce': 'whatsapp-bounce 2.5s ease-in-out infinite',
+        'plp-sheet-enter': 'plp-sheet-enter 0.32s ease-out',
+        'plp-backdrop-enter': 'plp-backdrop-enter 0.24s ease-out',
+      },
       keyframes: {
         'whatsapp-bounce': {
           '0%, 100%': { transform: 'translateY(0)' },
           '50%': { transform: 'translateY(-6px)' },
         },
-      },
-      animation: {
-        'whatsapp-bounce': 'whatsapp-bounce 2.5s ease-in-out infinite',
+        'plp-sheet-enter': {
+          from: { transform: 'translateY(100%)' },
+          to: { transform: 'translateY(0)' },
+        },
+        'plp-backdrop-enter': {
+          from: { opacity: '0' },
+          to: { opacity: '1' },
+        },
       },
     },
   },

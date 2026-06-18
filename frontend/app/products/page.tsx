@@ -55,6 +55,35 @@ function hasActiveFilters(f: PlpFilterState): boolean {
   );
 }
 
+function countActiveFilters(f: PlpFilterState): number {
+  let count = f.categoryIds.length;
+  for (const values of Object.values(f.facetAttr)) {
+    count += values.length;
+  }
+  if (f.minPrice != null && Number.isFinite(f.minPrice)) count += 1;
+  if (f.maxPrice != null && Number.isFinite(f.maxPrice)) count += 1;
+  return count;
+}
+
+function FilterFunnelIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.75}
+      aria-hidden
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75"
+      />
+    </svg>
+  );
+}
+
 function ProductsContent() {
   const router = useRouter();
   const pathname = usePathname();
@@ -149,6 +178,15 @@ function ProductsContent() {
     if (!drawerOpen) return;
     setDraft(clonePlpFilters(applied));
   }, [drawerOpen, applied]);
+
+  useEffect(() => {
+    if (!drawerOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [drawerOpen]);
 
   useEffect(() => {
     let cancelled = false;
@@ -273,73 +311,119 @@ function ProductsContent() {
     return 'Browse all products.';
   }, [applied, selectedCategoryId]);
 
-  const drawerShowLabel = previewLoading
-    ? 'Updating…'
-    : previewFacets != null
-      ? `Show ${previewFacets.matchingTotal} products`
-      : 'Show products';
+  const drawerFacetSource = previewFacets ?? facets;
+  const activeFilterCount = countActiveFilters(applied);
+
+  const applyDrawerFilters = () => {
+    replaceFilters({ ...draft, page: 1 });
+    setDrawerOpen(false);
+  };
+
+  const drawer =
+    drawerOpen && mounted ? (
+      <>
+        <button
+          type="button"
+          className="fixed inset-0 z-[260] animate-plp-backdrop-enter bg-black/45 lg:hidden"
+          aria-label="Close filters"
+          onClick={() => setDrawerOpen(false)}
+        />
+        <div
+          className="fixed inset-x-0 bottom-0 z-[261] flex max-h-[min(88vh,720px)] animate-plp-sheet-enter flex-col rounded-t-2xl border-t border-border bg-background shadow-2xl lg:hidden"
+          id="plp-mobile-filters"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Product filters"
+        >
+          <div className="flex shrink-0 flex-col border-b border-border pt-[max(0.5rem,env(safe-area-inset-top,0px))]">
+            <div className="flex justify-center py-2" aria-hidden>
+              <span className="h-1 w-10 rounded-full bg-muted-foreground/25" />
+            </div>
+            <div className="flex items-center justify-between px-4 pb-3">
+              <h2 className="text-base font-semibold text-foreground">Filters</h2>
+              <button
+                type="button"
+                className="rounded-md px-2 py-1 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                onClick={() => setDrawerOpen(false)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4">
+            <PlpBrowseTree
+              label={browseLabel}
+              tree={browseTree}
+              selectedCategoryId={draft.categoryIds[0] ?? null}
+              onSelectCategory={(id) => setDraft((d) => ({ ...d, categoryIds: id ? [id] : [], page: 1 }))}
+              categoryIdBySlug={categoryIdBySlug}
+            />
+            <div className="mt-4 border-t border-border pt-4">
+              <PlpFilterAccordions
+                filters={draft}
+                facets={drawerFacetSource}
+                categoryNameById={categoryNameById}
+                onFiltersChange={setDraft}
+                hideCategoryPanels
+              />
+            </div>
+          </div>
+          <div
+            className="shrink-0 space-y-2 border-t border-border bg-background px-4 py-3"
+            style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom, 0px))' }}
+          >
+            <button
+              type="button"
+              disabled={previewLoading}
+              onClick={applyDrawerFilters}
+              className="btn-brand-primary w-full py-3 text-sm font-semibold"
+            >
+              {previewLoading
+                ? 'Applying…'
+                : drawerFacetSource != null
+                  ? `Apply Filters (${drawerFacetSource.matchingTotal})`
+                  : 'Apply Filters'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setDrawerOpen(false)}
+              className="w-full rounded-md border border-border bg-card py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+            >
+              Close
+            </button>
+            {hasActiveFilters(draft) && (
+              <button
+                type="button"
+                onClick={() =>
+                  setDraft({
+                    page: 1,
+                    search: draft.search,
+                    categoryIds: [],
+                    facetAttr: {},
+                    minPrice: undefined,
+                    maxPrice: undefined,
+                  })
+                }
+                className="w-full text-center text-sm font-medium text-muted-foreground underline-offset-2 hover:underline"
+              >
+                Clear all filters
+              </button>
+            )}
+          </div>
+        </div>
+      </>
+    ) : null;
 
   const isInitialLoad = loading && data === null;
   const isRefreshing = loading && data !== null;
 
-  const drawer =
-    drawerOpen && mounted ? (
-      <div className="fixed inset-0 z-[260] flex flex-col bg-background lg:hidden" role="dialog" aria-modal="true" aria-label="Filters">
-        <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top,0px))]">
-          <h2 className="text-base font-semibold text-foreground">Filters</h2>
-          <button
-            type="button"
-            className="rounded-full p-2 text-muted-foreground hover:bg-muted"
-            aria-label="Close filters"
-            onClick={() => setDrawerOpen(false)}
-          >
-            ×
-          </button>
-        </div>
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4">
-          <PlpBrowseTree
-            label={browseLabel}
-            tree={browseTree}
-            selectedCategoryId={draft.categoryIds[0] ?? null}
-            onSelectCategory={(id) => setDraft((d) => ({ ...d, categoryIds: id ? [id] : [], page: 1 }))}
-            categoryIdBySlug={categoryIdBySlug}
-          />
-          <PlpFilterAccordions
-            filters={draft}
-            facets={facets}
-            categoryNameById={categoryNameById}
-            onFiltersChange={setDraft}
-            hideCategoryPanels
-          />
-        </div>
-        <div
-          className="shrink-0 border-t border-border bg-background px-4 py-3"
-          style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom, 0px))' }}
-        >
-          <button
-            type="button"
-            disabled={previewLoading}
-            onClick={() => {
-              replaceFilters({ ...draft, page: 1 });
-              setDrawerOpen(false);
-            }}
-            className="btn-brand-primary w-full py-3 text-sm font-semibold"
-          >
-            {drawerShowLabel}
-          </button>
-          <button
-            type="button"
-            onClick={clearAllFilters}
-            className="mt-2 w-full text-center text-sm font-medium text-muted-foreground underline-offset-2 hover:underline"
-          >
-            Clear all filters
-          </button>
-        </div>
-      </div>
-    ) : null;
+  const openFiltersDrawer = () => {
+    setDraft(clonePlpFilters(applied));
+    setDrawerOpen(true);
+  };
 
   return (
-    <div className="mx-auto w-full max-w-7xl px-4 pb-24 pt-6 sm:px-6 sm:pt-8 sm:pb-8 lg:px-8 lg:pb-8">
+    <div className="mx-auto w-full max-w-7xl px-4 pb-8 pt-6 sm:px-6 sm:pt-8 lg:px-8">
       <div className="flex w-full min-w-0 flex-col gap-6 lg:flex-row lg:items-start lg:gap-8">
         <aside className="hidden w-72 shrink-0 lg:block" aria-label="Product navigation and filters">
           <div className="sticky top-20 space-y-4">
@@ -390,12 +474,29 @@ function ProductsContent() {
           <div className="mb-6">
             <h1 className="text-3xl font-bold tracking-tight text-foreground">{pageTitle}</h1>
             <p className="mt-1 text-muted-foreground">{pageSubtitle}</p>
-            {!isInitialLoad && meta != null && (
-              <p className="mt-2 text-sm text-muted-foreground">
-                {meta.total} {meta.total === 1 ? 'product' : 'products'}
-                {totalPages > 1 ? ` · Page ${page} of ${totalPages}` : ''}
-              </p>
-            )}
+            <div className="mt-2 flex flex-wrap items-center gap-3">
+              {!isInitialLoad && meta != null ? (
+                <p className="text-sm text-muted-foreground">
+                  {meta.total} {meta.total === 1 ? 'product' : 'products'}
+                  {totalPages > 1 ? ` · Page ${page} of ${totalPages}` : ''}
+                </p>
+              ) : null}
+              <button
+                type="button"
+                onClick={openFiltersDrawer}
+                className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3.5 py-2 text-sm font-medium text-foreground shadow-sm transition-colors hover:bg-muted active:scale-[0.98] lg:hidden"
+                aria-expanded={drawerOpen}
+                aria-controls="plp-mobile-filters"
+              >
+                <FilterFunnelIcon className="h-4 w-4 text-muted-foreground" />
+                Filters
+                {activeFilterCount > 0 ? (
+                  <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-primary px-1.5 text-xs font-semibold text-white">
+                    {activeFilterCount}
+                  </span>
+                ) : null}
+              </button>
+            </div>
           </div>
 
           <PlpActiveFilterChips filters={applied} categoryNameById={categoryNameById} onChange={replaceFilters} />
@@ -461,27 +562,6 @@ function ProductsContent() {
           )}
         </div>
       </div>
-
-      {!drawerOpen && (
-        <div
-          className="fixed inset-x-0 bottom-0 z-[250] border-t border-border bg-background/95 px-4 py-3 backdrop-blur lg:hidden"
-          style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom, 0px))' }}
-        >
-          <button
-            type="button"
-            onClick={() => {
-              setDraft(clonePlpFilters(applied));
-              setDrawerOpen(true);
-            }}
-            className={`btn-brand-primary flex w-full items-center justify-center gap-2 py-3 text-sm font-semibold`}
-          >
-            Filter
-            {hasActiveFilters(applied) ? (
-              <span className="rounded-full bg-white/20 px-2 py-0.5 text-xs">On</span>
-            ) : null}
-          </button>
-        </div>
-      )}
 
       {mounted && drawer ? createPortal(drawer, document.body) : null}
     </div>

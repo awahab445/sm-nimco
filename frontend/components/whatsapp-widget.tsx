@@ -1,7 +1,7 @@
 'use client';
 
 /** Edit your WhatsApp number (country code, no + or spaces). */
-const WHATSAPP_PHONE = '923001234567';
+const WHATSAPP_PHONE = '923442394143';
 
 /** Pre-filled message when the chat opens. */
 const WHATSAPP_MESSAGE =
