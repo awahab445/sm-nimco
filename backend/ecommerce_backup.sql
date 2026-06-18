@@ -2,12 +2,12 @@
 -- PostgreSQL database dump
 --
 
-\restrict V40PtDrJPuPAur8PaA2d5NKYjG1oL4vZIZgAa0dAspCxLcJ1t2TjJ43vl06ew2b
+\restrict 5PO2d0mvvwgmc0kBe2dYyZsX0p1IOhSAM8Cc59vXqSP1AAVeoVSArYajE2SNnt3
 
 -- Dumped from database version 18.3
 -- Dumped by pg_dump version 18.3
 
--- Started on 2026-06-15 18:17:38
+-- Started on 2026-06-17 18:27:49
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -21,12 +21,31 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
+--
+-- TOC entry 5 (class 2615 OID 19867)
+-- Name: public; Type: SCHEMA; Schema: -; Owner: postgres
+--
+
+-- *not* creating schema, since initdb creates it
+
+
+ALTER SCHEMA public OWNER TO postgres;
+
+--
+-- TOC entry 5541 (class 0 OID 0)
+-- Dependencies: 5
+-- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: postgres
+--
+
+COMMENT ON SCHEMA public IS '';
+
+
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
 
 --
--- TOC entry 219 (class 1259 OID 18329)
+-- TOC entry 219 (class 1259 OID 21016)
 -- Name: _prisma_migrations; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -45,7 +64,7 @@ CREATE TABLE public._prisma_migrations (
 ALTER TABLE public._prisma_migrations OWNER TO postgres;
 
 --
--- TOC entry 250 (class 1259 OID 18879)
+-- TOC entry 220 (class 1259 OID 21028)
 -- Name: account_creation_tokens; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -61,7 +80,7 @@ CREATE TABLE public.account_creation_tokens (
 ALTER TABLE public.account_creation_tokens OWNER TO postgres;
 
 --
--- TOC entry 252 (class 1259 OID 18915)
+-- TOC entry 221 (class 1259 OID 21039)
 -- Name: admin_permissions; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -76,7 +95,7 @@ CREATE TABLE public.admin_permissions (
 ALTER TABLE public.admin_permissions OWNER TO postgres;
 
 --
--- TOC entry 254 (class 1259 OID 18941)
+-- TOC entry 222 (class 1259 OID 21048)
 -- Name: admin_role_permissions; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -89,7 +108,7 @@ CREATE TABLE public.admin_role_permissions (
 ALTER TABLE public.admin_role_permissions OWNER TO postgres;
 
 --
--- TOC entry 253 (class 1259 OID 18926)
+-- TOC entry 223 (class 1259 OID 21053)
 -- Name: admin_roles; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -107,7 +126,7 @@ CREATE TABLE public.admin_roles (
 ALTER TABLE public.admin_roles OWNER TO postgres;
 
 --
--- TOC entry 256 (class 1259 OID 18963)
+-- TOC entry 224 (class 1259 OID 21066)
 -- Name: admin_user_roles; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -120,7 +139,7 @@ CREATE TABLE public.admin_user_roles (
 ALTER TABLE public.admin_user_roles OWNER TO postgres;
 
 --
--- TOC entry 255 (class 1259 OID 18948)
+-- TOC entry 225 (class 1259 OID 21071)
 -- Name: admin_users; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -140,7 +159,7 @@ CREATE TABLE public.admin_users (
 ALTER TABLE public.admin_users OWNER TO postgres;
 
 --
--- TOC entry 229 (class 1259 OID 18478)
+-- TOC entry 226 (class 1259 OID 21084)
 -- Name: categories; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -160,7 +179,7 @@ CREATE TABLE public.categories (
 ALTER TABLE public.categories OWNER TO postgres;
 
 --
--- TOC entry 259 (class 1259 OID 19002)
+-- TOC entry 227 (class 1259 OID 21099)
 -- Name: cms_banner_sliders; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -170,17 +189,17 @@ CREATE TABLE public.cms_banner_sliders (
     identifier character varying(255) NOT NULL,
     is_active boolean DEFAULT true NOT NULL,
     autoplay_ms integer,
-    slide_width_px integer,
-    slide_height_px integer,
     created_at timestamp(3) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    updated_at timestamp(3) without time zone NOT NULL
+    updated_at timestamp(3) without time zone NOT NULL,
+    slide_height_px integer,
+    slide_width_px integer
 );
 
 
 ALTER TABLE public.cms_banner_sliders OWNER TO postgres;
 
 --
--- TOC entry 260 (class 1259 OID 19017)
+-- TOC entry 228 (class 1259 OID 21112)
 -- Name: cms_banner_slides; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -202,7 +221,7 @@ CREATE TABLE public.cms_banner_slides (
 ALTER TABLE public.cms_banner_slides OWNER TO postgres;
 
 --
--- TOC entry 258 (class 1259 OID 18986)
+-- TOC entry 229 (class 1259 OID 21128)
 -- Name: cms_blocks; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -222,7 +241,7 @@ CREATE TABLE public.cms_blocks (
 ALTER TABLE public.cms_blocks OWNER TO postgres;
 
 --
--- TOC entry 257 (class 1259 OID 18970)
+-- TOC entry 230 (class 1259 OID 21142)
 -- Name: cms_pages; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -245,7 +264,7 @@ CREATE TABLE public.cms_pages (
 ALTER TABLE public.cms_pages OWNER TO postgres;
 
 --
--- TOC entry 251 (class 1259 OID 18892)
+-- TOC entry 231 (class 1259 OID 21156)
 -- Name: customer_addresses; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -273,7 +292,7 @@ CREATE TABLE public.customer_addresses (
 ALTER TABLE public.customer_addresses OWNER TO postgres;
 
 --
--- TOC entry 248 (class 1259 OID 18846)
+-- TOC entry 232 (class 1259 OID 21177)
 -- Name: customer_groups; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -293,7 +312,7 @@ CREATE TABLE public.customer_groups (
 ALTER TABLE public.customer_groups OWNER TO postgres;
 
 --
--- TOC entry 249 (class 1259 OID 18862)
+-- TOC entry 233 (class 1259 OID 21191)
 -- Name: customers; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -315,7 +334,7 @@ CREATE TABLE public.customers (
 ALTER TABLE public.customers OWNER TO postgres;
 
 --
--- TOC entry 231 (class 1259 OID 18506)
+-- TOC entry 234 (class 1259 OID 21206)
 -- Name: inventory_items; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -335,7 +354,7 @@ CREATE TABLE public.inventory_items (
 ALTER TABLE public.inventory_items OWNER TO postgres;
 
 --
--- TOC entry 232 (class 1259 OID 18524)
+-- TOC entry 235 (class 1259 OID 21222)
 -- Name: inventory_reservations; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -353,7 +372,7 @@ CREATE TABLE public.inventory_reservations (
 ALTER TABLE public.inventory_reservations OWNER TO postgres;
 
 --
--- TOC entry 234 (class 1259 OID 18572)
+-- TOC entry 236 (class 1259 OID 21235)
 -- Name: order_items; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -380,7 +399,7 @@ CREATE TABLE public.order_items (
 ALTER TABLE public.order_items OWNER TO postgres;
 
 --
--- TOC entry 243 (class 1259 OID 18753)
+-- TOC entry 237 (class 1259 OID 21262)
 -- Name: order_shipping; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -408,7 +427,7 @@ CREATE TABLE public.order_shipping (
 ALTER TABLE public.order_shipping OWNER TO postgres;
 
 --
--- TOC entry 247 (class 1259 OID 18823)
+-- TOC entry 238 (class 1259 OID 21280)
 -- Name: order_taxes; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -434,7 +453,7 @@ CREATE TABLE public.order_taxes (
 ALTER TABLE public.order_taxes OWNER TO postgres;
 
 --
--- TOC entry 233 (class 1259 OID 18539)
+-- TOC entry 239 (class 1259 OID 21301)
 -- Name: orders; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -471,7 +490,7 @@ CREATE TABLE public.orders (
 ALTER TABLE public.orders OWNER TO postgres;
 
 --
--- TOC entry 235 (class 1259 OID 18601)
+-- TOC entry 240 (class 1259 OID 21332)
 -- Name: payment_methods; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -492,7 +511,7 @@ CREATE TABLE public.payment_methods (
 ALTER TABLE public.payment_methods OWNER TO postgres;
 
 --
--- TOC entry 236 (class 1259 OID 18622)
+-- TOC entry 241 (class 1259 OID 21351)
 -- Name: payments; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -519,7 +538,7 @@ CREATE TABLE public.payments (
 ALTER TABLE public.payments OWNER TO postgres;
 
 --
--- TOC entry 230 (class 1259 OID 18495)
+-- TOC entry 242 (class 1259 OID 21368)
 -- Name: product_categories; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -533,7 +552,7 @@ CREATE TABLE public.product_categories (
 ALTER TABLE public.product_categories OWNER TO postgres;
 
 --
--- TOC entry 228 (class 1259 OID 18462)
+-- TOC entry 243 (class 1259 OID 21377)
 -- Name: product_images; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -552,7 +571,7 @@ CREATE TABLE public.product_images (
 ALTER TABLE public.product_images OWNER TO postgres;
 
 --
--- TOC entry 224 (class 1259 OID 18412)
+-- TOC entry 244 (class 1259 OID 21391)
 -- Name: product_option_values; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -571,7 +590,7 @@ CREATE TABLE public.product_option_values (
 ALTER TABLE public.product_option_values OWNER TO postgres;
 
 --
--- TOC entry 226 (class 1259 OID 18442)
+-- TOC entry 245 (class 1259 OID 21406)
 -- Name: product_option_values_on_products; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -585,7 +604,7 @@ CREATE TABLE public.product_option_values_on_products (
 ALTER TABLE public.product_option_values_on_products OWNER TO postgres;
 
 --
--- TOC entry 223 (class 1259 OID 18397)
+-- TOC entry 246 (class 1259 OID 21414)
 -- Name: product_options; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -602,7 +621,7 @@ CREATE TABLE public.product_options (
 ALTER TABLE public.product_options OWNER TO postgres;
 
 --
--- TOC entry 225 (class 1259 OID 18429)
+-- TOC entry 247 (class 1259 OID 21427)
 -- Name: product_options_on_products; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -617,7 +636,7 @@ CREATE TABLE public.product_options_on_products (
 ALTER TABLE public.product_options_on_products OWNER TO postgres;
 
 --
--- TOC entry 222 (class 1259 OID 18377)
+-- TOC entry 248 (class 1259 OID 21438)
 -- Name: product_variants; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -640,7 +659,7 @@ CREATE TABLE public.product_variants (
 ALTER TABLE public.product_variants OWNER TO postgres;
 
 --
--- TOC entry 221 (class 1259 OID 18355)
+-- TOC entry 249 (class 1259 OID 21456)
 -- Name: products; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -669,7 +688,7 @@ CREATE TABLE public.products (
 ALTER TABLE public.products OWNER TO postgres;
 
 --
--- TOC entry 239 (class 1259 OID 18680)
+-- TOC entry 250 (class 1259 OID 21476)
 -- Name: promotion_customer_groups; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -684,7 +703,7 @@ CREATE TABLE public.promotion_customer_groups (
 ALTER TABLE public.promotion_customer_groups OWNER TO postgres;
 
 --
--- TOC entry 240 (class 1259 OID 18692)
+-- TOC entry 251 (class 1259 OID 21486)
 -- Name: promotion_logs; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -708,7 +727,7 @@ CREATE TABLE public.promotion_logs (
 ALTER TABLE public.promotion_logs OWNER TO postgres;
 
 --
--- TOC entry 238 (class 1259 OID 18671)
+-- TOC entry 252 (class 1259 OID 21501)
 -- Name: promotion_products; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -724,7 +743,7 @@ CREATE TABLE public.promotion_products (
 ALTER TABLE public.promotion_products OWNER TO postgres;
 
 --
--- TOC entry 237 (class 1259 OID 18641)
+-- TOC entry 253 (class 1259 OID 21508)
 -- Name: promotions; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -756,7 +775,7 @@ CREATE TABLE public.promotions (
 ALTER TABLE public.promotions OWNER TO postgres;
 
 --
--- TOC entry 244 (class 1259 OID 18773)
+-- TOC entry 254 (class 1259 OID 21536)
 -- Name: shipping_method_customer_groups; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -775,7 +794,7 @@ CREATE TABLE public.shipping_method_customer_groups (
 ALTER TABLE public.shipping_method_customer_groups OWNER TO postgres;
 
 --
--- TOC entry 242 (class 1259 OID 18729)
+-- TOC entry 255 (class 1259 OID 21549)
 -- Name: shipping_methods; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -803,7 +822,7 @@ CREATE TABLE public.shipping_methods (
 ALTER TABLE public.shipping_methods OWNER TO postgres;
 
 --
--- TOC entry 241 (class 1259 OID 18709)
+-- TOC entry 256 (class 1259 OID 21571)
 -- Name: shipping_zones; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -823,7 +842,7 @@ CREATE TABLE public.shipping_zones (
 ALTER TABLE public.shipping_zones OWNER TO postgres;
 
 --
--- TOC entry 263 (class 1259 OID 19065)
+-- TOC entry 257 (class 1259 OID 21589)
 -- Name: storefront_filter_options; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -842,7 +861,7 @@ CREATE TABLE public.storefront_filter_options (
 ALTER TABLE public.storefront_filter_options OWNER TO postgres;
 
 --
--- TOC entry 262 (class 1259 OID 19051)
+-- TOC entry 258 (class 1259 OID 21604)
 -- Name: storefront_filter_tree_nodes; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -861,7 +880,7 @@ CREATE TABLE public.storefront_filter_tree_nodes (
 ALTER TABLE public.storefront_filter_tree_nodes OWNER TO postgres;
 
 --
--- TOC entry 261 (class 1259 OID 19035)
+-- TOC entry 259 (class 1259 OID 21616)
 -- Name: storefront_filters; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -880,7 +899,7 @@ CREATE TABLE public.storefront_filters (
 ALTER TABLE public.storefront_filters OWNER TO postgres;
 
 --
--- TOC entry 264 (class 1259 OID 19082)
+-- TOC entry 260 (class 1259 OID 21630)
 -- Name: storefront_nav_links; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -892,22 +911,22 @@ CREATE TABLE public.storefront_nav_links (
     sort_order integer DEFAULT 0 NOT NULL,
     is_active boolean DEFAULT true NOT NULL,
     kind character varying(32) DEFAULT 'LINK'::character varying NOT NULL,
+    created_at timestamp(3) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at timestamp(3) without time zone NOT NULL,
     zone character varying(16) DEFAULT 'header'::character varying NOT NULL,
     parent_id uuid,
     category_id text,
     open_mega_menu boolean DEFAULT false NOT NULL,
     banner_image_url character varying(512),
     banner_href character varying(512),
-    banner_alt character varying(256),
-    created_at timestamp(3) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    updated_at timestamp(3) without time zone NOT NULL
+    banner_alt character varying(256)
 );
 
 
 ALTER TABLE public.storefront_nav_links OWNER TO postgres;
 
 --
--- TOC entry 220 (class 1259 OID 18343)
+-- TOC entry 261 (class 1259 OID 21652)
 -- Name: subscribers; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -923,7 +942,7 @@ CREATE TABLE public.subscribers (
 ALTER TABLE public.subscribers OWNER TO postgres;
 
 --
--- TOC entry 245 (class 1259 OID 18788)
+-- TOC entry 262 (class 1259 OID 21660)
 -- Name: tax_classes; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -941,7 +960,7 @@ CREATE TABLE public.tax_classes (
 ALTER TABLE public.tax_classes OWNER TO postgres;
 
 --
--- TOC entry 246 (class 1259 OID 18803)
+-- TOC entry 263 (class 1259 OID 21673)
 -- Name: taxes; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -964,7 +983,7 @@ CREATE TABLE public.taxes (
 ALTER TABLE public.taxes OWNER TO postgres;
 
 --
--- TOC entry 227 (class 1259 OID 18452)
+-- TOC entry 264 (class 1259 OID 21691)
 -- Name: variant_option_values; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -978,19 +997,19 @@ CREATE TABLE public.variant_option_values (
 ALTER TABLE public.variant_option_values OWNER TO postgres;
 
 --
--- TOC entry 5490 (class 0 OID 18329)
+-- TOC entry 5490 (class 0 OID 21016)
 -- Dependencies: 219
 -- Data for Name: _prisma_migrations; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public._prisma_migrations (id, checksum, finished_at, migration_name, logs, rolled_back_at, started_at, applied_steps_count) FROM stdin;
-4bee5d4c-6bb1-48ad-be1b-3af8cb822d19	11a0ced84fb4fcf231e3ce51d31b7e7d24a122fd3981136527fc66e8d188a1f8	2026-06-15 16:31:47.988191+05	20260212120000_newsletter_subscribers	\N	\N	2026-06-15 16:31:47.970336+05	1
+2f5e8ab8-8df8-42ca-ac94-dfd319a32b57	561b2137465cd34c6501660d21ced3ea26bd3f77bf009360ed6db53318bead96	\N	20250308000000_add_customer_password_hash	A migration failed to apply. New migrations cannot be applied before the error is recovered from. Read more about how to resolve migration issues in a production database: https://pris.ly/d/migrate-resolve\n\nMigration name: 20250308000000_add_customer_password_hash\n\nDatabase error code: 42P01\n\nDatabase error:\nERROR: relation "customers" does not exist\n\nDbError { severity: "ERROR", parsed_severity: Some(Error), code: SqlState(E42P01), message: "relation \\"customers\\" does not exist", detail: None, hint: None, position: None, where_: None, schema: None, table: None, column: None, datatype: None, constraint: None, file: Some("namespace.c"), line: Some(639), routine: Some("RangeVarGetRelidExtended") }\n\n   0: sql_schema_connector::apply_migration::apply_script\n           with migration_name="20250308000000_add_customer_password_hash"\n             at schema-engine\\connectors\\sql-schema-connector\\src\\apply_migration.rs:113\n   1: schema_commands::commands::apply_migrations::Applying migration\n           with migration_name="20250308000000_add_customer_password_hash"\n             at schema-engine\\commands\\src\\commands\\apply_migrations.rs:95\n   2: schema_core::state::ApplyMigrations\n             at schema-engine\\core\\src\\state.rs:260	\N	2026-05-04 11:22:21.031256+05	0
 \.
 
 
 --
--- TOC entry 5521 (class 0 OID 18879)
--- Dependencies: 250
+-- TOC entry 5491 (class 0 OID 21028)
+-- Dependencies: 220
 -- Data for Name: account_creation_tokens; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -999,157 +1018,173 @@ COPY public.account_creation_tokens (id, email, token, expires_at, created_at) F
 
 
 --
--- TOC entry 5523 (class 0 OID 18915)
--- Dependencies: 252
+-- TOC entry 5492 (class 0 OID 21039)
+-- Dependencies: 221
 -- Data for Name: admin_permissions; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.admin_permissions (id, key, description, created_at) FROM stdin;
-00cc5cb2-c2aa-4668-b1e9-44f7a458e3b5	orders.read	Read orders	2026-06-15 11:33:44.874
-0b072809-98bf-4129-a634-db990012331d	orders.update	Update orders, status, fulfillment	2026-06-15 11:33:44.875
-b5d6b4a0-4174-4b61-b0c3-63d586fd8b42	orders.delete	Delete orders	2026-06-15 11:33:44.876
-dba27e9e-2710-4285-ac47-bc05762d91ed	customers.create	Create customers	2026-06-15 11:33:44.877
-c1ebeb0d-5e31-48af-a8e8-83387d5879c5	customers.read	Read customers	2026-06-15 11:33:44.879
-61601ed4-b780-4b91-bb3e-c7234a4899d8	customers.update	Update customers	2026-06-15 11:33:44.88
-16bc3c14-b281-4cce-8ab5-8e77350efdd0	customers.delete	Delete customers	2026-06-15 11:33:44.881
-007822ae-cd09-495f-be82-07f02bd6202d	products.manage	Manage products, categories, and product options (implies all products.* actions)	2026-06-15 11:33:44.883
-cf5fa5d4-e2d9-40d5-9a46-b23737533b02	inventory.read	Read inventory	2026-06-15 11:33:44.884
-79e39a93-5017-48fc-a3ee-216c8ecab964	inventory.manage	Manage inventory and stock	2026-06-15 11:33:44.885
-cb2c6c00-35e3-47bd-b6ef-759df8100083	orders.manage	Manage orders (implies all orders.* actions)	2026-06-15 11:33:44.886
-463ceb62-b5e4-4a73-810a-e0f1ae19c276	customers.manage	Manage customers and groups (implies all customers.* actions)	2026-06-15 11:33:44.887
-5c7f0c43-f754-40c7-b023-92ff9c041564	promotions.manage	Manage promotions	2026-06-15 11:33:44.888
-a86d6499-c1d9-4ce6-a746-0ce8a19bed7e	shipping.manage	Manage shipping zones and methods	2026-06-15 11:33:44.89
-d2f65979-3b64-4500-a581-38420765f493	tax.manage	Manage tax classes and rates	2026-06-15 11:33:44.891
-f7455787-2afc-4d1d-a410-5818b7111536	payments.manage	Manage payment configuration	2026-06-15 11:33:44.892
-e76bf2a6-ac95-4d06-b3d7-1f7f0cb56a28	cms.manage	Manage CMS pages, blocks, and sliders	2026-06-15 11:33:44.893
-04e880a5-57b1-45c2-84bb-48cf620110ab	subscriptions.manage	View storefront email subscriptions (subscriber list)	2026-06-15 11:33:44.895
-7b4402ec-8574-4ce4-9bf4-ab1d586caf0f	reports.read	Access reports and exports	2026-06-15 11:33:44.896
-45dd1bfd-0a1c-4ca1-914a-5ef34326c2ca	settings.manage	Platform settings	2026-06-15 11:33:44.897
-40bb1bcb-7783-4f4a-8edb-6fd89779d09b	admin.access.full	Full administrative access (implies all permissions).	2026-06-15 11:33:44.852
-995c348f-fefa-4bee-819b-7ea29eab9e95	admin.users.create	Create staff admin users	2026-06-15 11:33:44.857
-e127ee8b-dc82-418a-ab5c-56aaa15642f2	admin.users.read	View admin users	2026-06-15 11:33:44.859
-b6931a25-ebd3-4037-8979-ae8018792036	admin.users.update	Update admin users	2026-06-15 11:33:44.86
-c7afb6e4-fd96-4674-b6b5-f0fd1a437610	admin.users.delete	Deactivate or remove admin users	2026-06-15 11:33:44.862
-9a20b1c7-eebc-4d8e-97cc-c4b181b67098	admin.roles.read	View roles and permission assignments	2026-06-15 11:33:44.864
-576aa7a7-ca41-41ae-873a-cb6186fc4fd8	admin.roles.manage	Create or update roles and permissions	2026-06-15 11:33:44.865
-7e848b22-9240-46f0-be3a-cad823b96e15	products.create	Create products	2026-06-15 11:33:44.867
-6c8feeb6-474e-44b5-8bd3-c5162f59d0b6	products.read	Read products	2026-06-15 11:33:44.868
-3ea61c3c-03f4-40af-be15-366908384814	products.update	Update products and their sub-resources (variants, images, categories)	2026-06-15 11:33:44.869
-135a50b1-e796-4b2e-bae7-4e02f4baecfd	products.delete	Delete products	2026-06-15 11:33:44.871
-b40564c0-d695-4802-9127-074529f683fb	orders.create	Create orders (admin-side)	2026-06-15 11:33:44.872
+107a5e7f-39d7-4f91-8d6e-c68a866de6c8	admin.access.full	Full administrative access (implies all permissions).	2026-05-04 07:22:01.029
+79710646-175d-4aae-bdd1-ba9bc8d2844f	admin.users.create	Create staff admin users	2026-05-04 07:22:01.042
+5bc3fe92-08d5-4857-b05b-c1b912418a6b	admin.users.read	View admin users	2026-05-04 07:22:01.043
+43ed1a83-e047-4c39-a3d5-effae8fa2470	admin.users.update	Update admin users	2026-05-04 07:22:01.044
+0ca45dcb-baa7-4d64-89fe-da7e0d3e0387	admin.users.delete	Deactivate or remove admin users	2026-05-04 07:22:01.045
+bd93314d-9f7e-4048-b578-e518247f01b0	admin.roles.read	View roles and permission assignments	2026-05-04 07:22:01.047
+05e177b9-9c57-40a1-92c5-fe6e61dde134	admin.roles.manage	Create or update roles and permissions	2026-05-04 07:22:01.049
+d8693266-66d8-4df3-964f-3b3c854155b9	products.create	Create products	2026-05-11 11:57:44.123
+e0e19340-ce43-46a4-b5b7-fb8622c2fdcd	products.read	Read products	2026-05-11 11:57:44.048
+cf811019-a242-4070-851b-3fbb11e88898	products.update	Update products and their sub-resources (variants, images, categories)	2026-05-11 11:57:44.126
+669ddf50-cf30-4822-8de0-96a7b2192a72	products.delete	Delete products	2026-05-11 11:57:44.127
+578c6923-b261-4247-ab41-a11f61e98b6a	orders.create	Create orders (admin-side)	2026-05-11 11:57:44.129
+2c5b5e04-816b-4864-bf47-d7eff12f79d4	orders.read	Read orders	2026-05-04 07:22:01.059
+85e0875b-36cf-41ae-ac81-bab9cf0a5b14	orders.update	Update orders, status, fulfillment	2026-05-11 11:57:44.133
+7b44e006-b5f3-4800-94f8-c068828c2f2b	orders.delete	Delete orders	2026-05-11 11:57:44.134
+269ae629-3064-4e6d-8bd8-2fb2d7d8814d	customers.create	Create customers	2026-05-11 11:57:44.136
+ea11fbc5-c6c8-43c6-b013-66cebc87beba	customers.read	Read customers	2026-05-04 07:22:01.062
+b6151fdf-2507-4841-a50e-24668be1ea79	customers.update	Update customers	2026-05-11 11:57:44.139
+1d702124-962e-4d24-9a83-cbfb33b21b93	customers.delete	Delete customers	2026-05-11 11:57:44.141
+0adebdc6-0b0d-4dda-b217-5de5f3b5ed26	products.manage	Manage products, categories, and product options (implies all products.* actions)	2026-05-11 11:57:44.1
+4ade7771-a344-4bcb-a7ee-4f079430104e	inventory.read	Read inventory	2026-05-04 07:22:01.056
+7a71bbd5-3e2e-4d9f-a0ac-43563e7fb583	inventory.manage	Manage inventory and stock	2026-05-04 07:22:01.057
+1dcba78f-a3d7-496f-a2ba-ed6585be6b73	orders.manage	Manage orders (implies all orders.* actions)	2026-05-04 07:22:01.06
+51062b59-ddd6-4ff8-ac4e-2f70f4cde409	customers.manage	Manage customers and groups (implies all customers.* actions)	2026-05-04 07:22:01.063
+8332b6b7-13cb-472f-a4b0-73cc50eea78e	promotions.manage	Manage promotions	2026-05-04 07:22:01.064
+55afa5c3-5076-4a94-a014-fa92c5fddb01	shipping.manage	Manage shipping zones and methods	2026-05-04 07:22:01.065
+1c9d2a05-1853-4ace-bc60-e4156437384b	tax.manage	Manage tax classes and rates	2026-05-04 07:22:01.069
+6a942717-6026-44e7-80e7-26858f8c3eb5	payments.manage	Manage payment configuration	2026-05-11 11:57:44.154
+a629f498-ffea-40d3-b191-bb736eb424cf	cms.manage	Manage CMS pages, blocks, and sliders	2026-05-06 11:10:43.51
+664eb436-11ef-46e0-975d-9b30e7f6a127	subscriptions.manage	View storefront email subscriptions (subscriber list)	2026-05-12 07:40:14.805
+ccaa881a-2690-41ec-aec9-c061f97c9b7d	reports.read	Access reports and exports	2026-05-04 07:22:01.072
+29f643ad-529b-4b68-9932-1828b89c8fa1	settings.manage	Platform settings	2026-05-04 07:22:01.074
 \.
 
 
 --
--- TOC entry 5525 (class 0 OID 18941)
--- Dependencies: 254
+-- TOC entry 5493 (class 0 OID 21048)
+-- Dependencies: 222
 -- Data for Name: admin_role_permissions; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.admin_role_permissions (role_id, permission_id) FROM stdin;
-dfd57df9-1f27-4dd1-851b-29801b33cbd0	00cc5cb2-c2aa-4668-b1e9-44f7a458e3b5
-dfd57df9-1f27-4dd1-851b-29801b33cbd0	0b072809-98bf-4129-a634-db990012331d
-dfd57df9-1f27-4dd1-851b-29801b33cbd0	b5d6b4a0-4174-4b61-b0c3-63d586fd8b42
-dfd57df9-1f27-4dd1-851b-29801b33cbd0	dba27e9e-2710-4285-ac47-bc05762d91ed
-dfd57df9-1f27-4dd1-851b-29801b33cbd0	c1ebeb0d-5e31-48af-a8e8-83387d5879c5
-dfd57df9-1f27-4dd1-851b-29801b33cbd0	61601ed4-b780-4b91-bb3e-c7234a4899d8
-dfd57df9-1f27-4dd1-851b-29801b33cbd0	16bc3c14-b281-4cce-8ab5-8e77350efdd0
-dfd57df9-1f27-4dd1-851b-29801b33cbd0	007822ae-cd09-495f-be82-07f02bd6202d
-dfd57df9-1f27-4dd1-851b-29801b33cbd0	cf5fa5d4-e2d9-40d5-9a46-b23737533b02
-dfd57df9-1f27-4dd1-851b-29801b33cbd0	79e39a93-5017-48fc-a3ee-216c8ecab964
-dfd57df9-1f27-4dd1-851b-29801b33cbd0	cb2c6c00-35e3-47bd-b6ef-759df8100083
-dfd57df9-1f27-4dd1-851b-29801b33cbd0	463ceb62-b5e4-4a73-810a-e0f1ae19c276
-dfd57df9-1f27-4dd1-851b-29801b33cbd0	5c7f0c43-f754-40c7-b023-92ff9c041564
-dfd57df9-1f27-4dd1-851b-29801b33cbd0	a86d6499-c1d9-4ce6-a746-0ce8a19bed7e
-dfd57df9-1f27-4dd1-851b-29801b33cbd0	d2f65979-3b64-4500-a581-38420765f493
-dfd57df9-1f27-4dd1-851b-29801b33cbd0	f7455787-2afc-4d1d-a410-5818b7111536
-dfd57df9-1f27-4dd1-851b-29801b33cbd0	e76bf2a6-ac95-4d06-b3d7-1f7f0cb56a28
-dfd57df9-1f27-4dd1-851b-29801b33cbd0	04e880a5-57b1-45c2-84bb-48cf620110ab
-dfd57df9-1f27-4dd1-851b-29801b33cbd0	7b4402ec-8574-4ce4-9bf4-ab1d586caf0f
-dfd57df9-1f27-4dd1-851b-29801b33cbd0	45dd1bfd-0a1c-4ca1-914a-5ef34326c2ca
-dfd57df9-1f27-4dd1-851b-29801b33cbd0	40bb1bcb-7783-4f4a-8edb-6fd89779d09b
-dfd57df9-1f27-4dd1-851b-29801b33cbd0	995c348f-fefa-4bee-819b-7ea29eab9e95
-dfd57df9-1f27-4dd1-851b-29801b33cbd0	e127ee8b-dc82-418a-ab5c-56aaa15642f2
-dfd57df9-1f27-4dd1-851b-29801b33cbd0	b6931a25-ebd3-4037-8979-ae8018792036
-dfd57df9-1f27-4dd1-851b-29801b33cbd0	c7afb6e4-fd96-4674-b6b5-f0fd1a437610
-dfd57df9-1f27-4dd1-851b-29801b33cbd0	9a20b1c7-eebc-4d8e-97cc-c4b181b67098
-dfd57df9-1f27-4dd1-851b-29801b33cbd0	576aa7a7-ca41-41ae-873a-cb6186fc4fd8
-dfd57df9-1f27-4dd1-851b-29801b33cbd0	7e848b22-9240-46f0-be3a-cad823b96e15
-dfd57df9-1f27-4dd1-851b-29801b33cbd0	6c8feeb6-474e-44b5-8bd3-c5162f59d0b6
-dfd57df9-1f27-4dd1-851b-29801b33cbd0	3ea61c3c-03f4-40af-be15-366908384814
-dfd57df9-1f27-4dd1-851b-29801b33cbd0	135a50b1-e796-4b2e-bae7-4e02f4baecfd
-dfd57df9-1f27-4dd1-851b-29801b33cbd0	b40564c0-d695-4802-9127-074529f683fb
-97226822-9b0f-4c86-b630-e8f98864b92f	00cc5cb2-c2aa-4668-b1e9-44f7a458e3b5
-97226822-9b0f-4c86-b630-e8f98864b92f	0b072809-98bf-4129-a634-db990012331d
-97226822-9b0f-4c86-b630-e8f98864b92f	b5d6b4a0-4174-4b61-b0c3-63d586fd8b42
-97226822-9b0f-4c86-b630-e8f98864b92f	dba27e9e-2710-4285-ac47-bc05762d91ed
-97226822-9b0f-4c86-b630-e8f98864b92f	c1ebeb0d-5e31-48af-a8e8-83387d5879c5
-97226822-9b0f-4c86-b630-e8f98864b92f	61601ed4-b780-4b91-bb3e-c7234a4899d8
-97226822-9b0f-4c86-b630-e8f98864b92f	16bc3c14-b281-4cce-8ab5-8e77350efdd0
-97226822-9b0f-4c86-b630-e8f98864b92f	007822ae-cd09-495f-be82-07f02bd6202d
-97226822-9b0f-4c86-b630-e8f98864b92f	cf5fa5d4-e2d9-40d5-9a46-b23737533b02
-97226822-9b0f-4c86-b630-e8f98864b92f	79e39a93-5017-48fc-a3ee-216c8ecab964
-97226822-9b0f-4c86-b630-e8f98864b92f	cb2c6c00-35e3-47bd-b6ef-759df8100083
-97226822-9b0f-4c86-b630-e8f98864b92f	463ceb62-b5e4-4a73-810a-e0f1ae19c276
-97226822-9b0f-4c86-b630-e8f98864b92f	5c7f0c43-f754-40c7-b023-92ff9c041564
-97226822-9b0f-4c86-b630-e8f98864b92f	a86d6499-c1d9-4ce6-a746-0ce8a19bed7e
-97226822-9b0f-4c86-b630-e8f98864b92f	d2f65979-3b64-4500-a581-38420765f493
-97226822-9b0f-4c86-b630-e8f98864b92f	f7455787-2afc-4d1d-a410-5818b7111536
-97226822-9b0f-4c86-b630-e8f98864b92f	e76bf2a6-ac95-4d06-b3d7-1f7f0cb56a28
-97226822-9b0f-4c86-b630-e8f98864b92f	04e880a5-57b1-45c2-84bb-48cf620110ab
-97226822-9b0f-4c86-b630-e8f98864b92f	7b4402ec-8574-4ce4-9bf4-ab1d586caf0f
-97226822-9b0f-4c86-b630-e8f98864b92f	e127ee8b-dc82-418a-ab5c-56aaa15642f2
-97226822-9b0f-4c86-b630-e8f98864b92f	9a20b1c7-eebc-4d8e-97cc-c4b181b67098
-97226822-9b0f-4c86-b630-e8f98864b92f	7e848b22-9240-46f0-be3a-cad823b96e15
-97226822-9b0f-4c86-b630-e8f98864b92f	6c8feeb6-474e-44b5-8bd3-c5162f59d0b6
-97226822-9b0f-4c86-b630-e8f98864b92f	3ea61c3c-03f4-40af-be15-366908384814
-97226822-9b0f-4c86-b630-e8f98864b92f	135a50b1-e796-4b2e-bae7-4e02f4baecfd
-97226822-9b0f-4c86-b630-e8f98864b92f	b40564c0-d695-4802-9127-074529f683fb
-9b7b127c-6f1e-4637-9e26-45ea1a159c9f	00cc5cb2-c2aa-4668-b1e9-44f7a458e3b5
-9b7b127c-6f1e-4637-9e26-45ea1a159c9f	c1ebeb0d-5e31-48af-a8e8-83387d5879c5
-9b7b127c-6f1e-4637-9e26-45ea1a159c9f	cf5fa5d4-e2d9-40d5-9a46-b23737533b02
-9b7b127c-6f1e-4637-9e26-45ea1a159c9f	7b4402ec-8574-4ce4-9bf4-ab1d586caf0f
-9b7b127c-6f1e-4637-9e26-45ea1a159c9f	9a20b1c7-eebc-4d8e-97cc-c4b181b67098
-9b7b127c-6f1e-4637-9e26-45ea1a159c9f	6c8feeb6-474e-44b5-8bd3-c5162f59d0b6
+5dc16cb3-f12c-4195-9c85-90563c17d927	7a71bbd5-3e2e-4d9f-a0ac-43563e7fb583
+36d65b9f-5927-487b-be37-943b03c16541	d8693266-66d8-4df3-964f-3b3c854155b9
+36d65b9f-5927-487b-be37-943b03c16541	e0e19340-ce43-46a4-b5b7-fb8622c2fdcd
+36d65b9f-5927-487b-be37-943b03c16541	cf811019-a242-4070-851b-3fbb11e88898
+36d65b9f-5927-487b-be37-943b03c16541	669ddf50-cf30-4822-8de0-96a7b2192a72
+36d65b9f-5927-487b-be37-943b03c16541	0adebdc6-0b0d-4dda-b217-5de5f3b5ed26
+926550ee-84bb-414a-99f6-e11673f3da0e	107a5e7f-39d7-4f91-8d6e-c68a866de6c8
+926550ee-84bb-414a-99f6-e11673f3da0e	79710646-175d-4aae-bdd1-ba9bc8d2844f
+926550ee-84bb-414a-99f6-e11673f3da0e	5bc3fe92-08d5-4857-b05b-c1b912418a6b
+926550ee-84bb-414a-99f6-e11673f3da0e	43ed1a83-e047-4c39-a3d5-effae8fa2470
+926550ee-84bb-414a-99f6-e11673f3da0e	0ca45dcb-baa7-4d64-89fe-da7e0d3e0387
+926550ee-84bb-414a-99f6-e11673f3da0e	bd93314d-9f7e-4048-b578-e518247f01b0
+926550ee-84bb-414a-99f6-e11673f3da0e	05e177b9-9c57-40a1-92c5-fe6e61dde134
+926550ee-84bb-414a-99f6-e11673f3da0e	d8693266-66d8-4df3-964f-3b3c854155b9
+926550ee-84bb-414a-99f6-e11673f3da0e	e0e19340-ce43-46a4-b5b7-fb8622c2fdcd
+926550ee-84bb-414a-99f6-e11673f3da0e	cf811019-a242-4070-851b-3fbb11e88898
+926550ee-84bb-414a-99f6-e11673f3da0e	669ddf50-cf30-4822-8de0-96a7b2192a72
+926550ee-84bb-414a-99f6-e11673f3da0e	578c6923-b261-4247-ab41-a11f61e98b6a
+926550ee-84bb-414a-99f6-e11673f3da0e	2c5b5e04-816b-4864-bf47-d7eff12f79d4
+926550ee-84bb-414a-99f6-e11673f3da0e	85e0875b-36cf-41ae-ac81-bab9cf0a5b14
+926550ee-84bb-414a-99f6-e11673f3da0e	7b44e006-b5f3-4800-94f8-c068828c2f2b
+926550ee-84bb-414a-99f6-e11673f3da0e	269ae629-3064-4e6d-8bd8-2fb2d7d8814d
+926550ee-84bb-414a-99f6-e11673f3da0e	ea11fbc5-c6c8-43c6-b013-66cebc87beba
+926550ee-84bb-414a-99f6-e11673f3da0e	b6151fdf-2507-4841-a50e-24668be1ea79
+926550ee-84bb-414a-99f6-e11673f3da0e	1d702124-962e-4d24-9a83-cbfb33b21b93
+926550ee-84bb-414a-99f6-e11673f3da0e	0adebdc6-0b0d-4dda-b217-5de5f3b5ed26
+926550ee-84bb-414a-99f6-e11673f3da0e	4ade7771-a344-4bcb-a7ee-4f079430104e
+926550ee-84bb-414a-99f6-e11673f3da0e	7a71bbd5-3e2e-4d9f-a0ac-43563e7fb583
+926550ee-84bb-414a-99f6-e11673f3da0e	1dcba78f-a3d7-496f-a2ba-ed6585be6b73
+926550ee-84bb-414a-99f6-e11673f3da0e	51062b59-ddd6-4ff8-ac4e-2f70f4cde409
+926550ee-84bb-414a-99f6-e11673f3da0e	8332b6b7-13cb-472f-a4b0-73cc50eea78e
+926550ee-84bb-414a-99f6-e11673f3da0e	55afa5c3-5076-4a94-a014-fa92c5fddb01
+926550ee-84bb-414a-99f6-e11673f3da0e	1c9d2a05-1853-4ace-bc60-e4156437384b
+926550ee-84bb-414a-99f6-e11673f3da0e	6a942717-6026-44e7-80e7-26858f8c3eb5
+926550ee-84bb-414a-99f6-e11673f3da0e	a629f498-ffea-40d3-b191-bb736eb424cf
+926550ee-84bb-414a-99f6-e11673f3da0e	664eb436-11ef-46e0-975d-9b30e7f6a127
+926550ee-84bb-414a-99f6-e11673f3da0e	ccaa881a-2690-41ec-aec9-c061f97c9b7d
+926550ee-84bb-414a-99f6-e11673f3da0e	29f643ad-529b-4b68-9932-1828b89c8fa1
+e4d44e14-47e2-4632-8c43-1ee84cd85eca	5bc3fe92-08d5-4857-b05b-c1b912418a6b
+e4d44e14-47e2-4632-8c43-1ee84cd85eca	bd93314d-9f7e-4048-b578-e518247f01b0
+e4d44e14-47e2-4632-8c43-1ee84cd85eca	d8693266-66d8-4df3-964f-3b3c854155b9
+e4d44e14-47e2-4632-8c43-1ee84cd85eca	e0e19340-ce43-46a4-b5b7-fb8622c2fdcd
+e4d44e14-47e2-4632-8c43-1ee84cd85eca	cf811019-a242-4070-851b-3fbb11e88898
+e4d44e14-47e2-4632-8c43-1ee84cd85eca	669ddf50-cf30-4822-8de0-96a7b2192a72
+e4d44e14-47e2-4632-8c43-1ee84cd85eca	578c6923-b261-4247-ab41-a11f61e98b6a
+e4d44e14-47e2-4632-8c43-1ee84cd85eca	2c5b5e04-816b-4864-bf47-d7eff12f79d4
+e4d44e14-47e2-4632-8c43-1ee84cd85eca	85e0875b-36cf-41ae-ac81-bab9cf0a5b14
+e4d44e14-47e2-4632-8c43-1ee84cd85eca	7b44e006-b5f3-4800-94f8-c068828c2f2b
+e4d44e14-47e2-4632-8c43-1ee84cd85eca	269ae629-3064-4e6d-8bd8-2fb2d7d8814d
+e4d44e14-47e2-4632-8c43-1ee84cd85eca	ea11fbc5-c6c8-43c6-b013-66cebc87beba
+e4d44e14-47e2-4632-8c43-1ee84cd85eca	b6151fdf-2507-4841-a50e-24668be1ea79
+e4d44e14-47e2-4632-8c43-1ee84cd85eca	1d702124-962e-4d24-9a83-cbfb33b21b93
+e4d44e14-47e2-4632-8c43-1ee84cd85eca	0adebdc6-0b0d-4dda-b217-5de5f3b5ed26
+e4d44e14-47e2-4632-8c43-1ee84cd85eca	4ade7771-a344-4bcb-a7ee-4f079430104e
+e4d44e14-47e2-4632-8c43-1ee84cd85eca	7a71bbd5-3e2e-4d9f-a0ac-43563e7fb583
+e4d44e14-47e2-4632-8c43-1ee84cd85eca	1dcba78f-a3d7-496f-a2ba-ed6585be6b73
+e4d44e14-47e2-4632-8c43-1ee84cd85eca	51062b59-ddd6-4ff8-ac4e-2f70f4cde409
+e4d44e14-47e2-4632-8c43-1ee84cd85eca	8332b6b7-13cb-472f-a4b0-73cc50eea78e
+e4d44e14-47e2-4632-8c43-1ee84cd85eca	55afa5c3-5076-4a94-a014-fa92c5fddb01
+e4d44e14-47e2-4632-8c43-1ee84cd85eca	1c9d2a05-1853-4ace-bc60-e4156437384b
+e4d44e14-47e2-4632-8c43-1ee84cd85eca	6a942717-6026-44e7-80e7-26858f8c3eb5
+e4d44e14-47e2-4632-8c43-1ee84cd85eca	a629f498-ffea-40d3-b191-bb736eb424cf
+e4d44e14-47e2-4632-8c43-1ee84cd85eca	664eb436-11ef-46e0-975d-9b30e7f6a127
+e4d44e14-47e2-4632-8c43-1ee84cd85eca	ccaa881a-2690-41ec-aec9-c061f97c9b7d
+f72b62cb-1ae0-4ba2-b178-12539e326c14	bd93314d-9f7e-4048-b578-e518247f01b0
+f72b62cb-1ae0-4ba2-b178-12539e326c14	e0e19340-ce43-46a4-b5b7-fb8622c2fdcd
+f72b62cb-1ae0-4ba2-b178-12539e326c14	2c5b5e04-816b-4864-bf47-d7eff12f79d4
+f72b62cb-1ae0-4ba2-b178-12539e326c14	ea11fbc5-c6c8-43c6-b013-66cebc87beba
+f72b62cb-1ae0-4ba2-b178-12539e326c14	4ade7771-a344-4bcb-a7ee-4f079430104e
+f72b62cb-1ae0-4ba2-b178-12539e326c14	ccaa881a-2690-41ec-aec9-c061f97c9b7d
 \.
 
 
 --
--- TOC entry 5524 (class 0 OID 18926)
--- Dependencies: 253
+-- TOC entry 5494 (class 0 OID 21053)
+-- Dependencies: 223
 -- Data for Name: admin_roles; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.admin_roles (id, slug, name, description, is_system, created_at, updated_at) FROM stdin;
-dfd57df9-1f27-4dd1-851b-29801b33cbd0	super-admin	Super Admin	Full platform access. Assign sparingly.	t	2026-06-15 11:33:44.899	2026-06-15 12:55:34.12
-97226822-9b0f-4c86-b630-e8f98864b92f	manager	Operations Manager	Day-to-day commerce operations without user/role administration.	t	2026-06-15 11:33:44.901	2026-06-15 12:55:34.122
-9b7b127c-6f1e-4637-9e26-45ea1a159c9f	support	Support	Read-heavy access for customer service.	t	2026-06-15 11:33:44.903	2026-06-15 12:55:34.124
+5dc16cb3-f12c-4195-9c85-90563c17d927	inventory-management	inventory management	update & manage inventory	f	2026-05-11 09:40:56.034	2026-05-11 09:40:56.034
+36d65b9f-5927-487b-be37-943b03c16541	products-management	products management	update and manage all products	f	2026-05-11 12:02:41.329	2026-05-11 12:02:41.329
+926550ee-84bb-414a-99f6-e11673f3da0e	super-admin	Super Admin	Full platform access. Assign sparingly.	t	2026-05-04 07:22:01.076	2026-06-17 13:22:50.961
+e4d44e14-47e2-4632-8c43-1ee84cd85eca	manager	Operations Manager	Day-to-day commerce operations without user/role administration.	t	2026-05-12 07:03:29.765	2026-06-17 13:22:50.965
+f72b62cb-1ae0-4ba2-b178-12539e326c14	support	Support	Read-heavy access for customer service.	t	2026-05-12 07:03:29.768	2026-06-17 13:22:50.967
 \.
 
 
 --
--- TOC entry 5527 (class 0 OID 18963)
--- Dependencies: 256
+-- TOC entry 5495 (class 0 OID 21066)
+-- Dependencies: 224
 -- Data for Name: admin_user_roles; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.admin_user_roles (user_id, role_id) FROM stdin;
+f4b18155-4045-41e5-8bfc-c9371013bbd3	926550ee-84bb-414a-99f6-e11673f3da0e
+20dd43d6-e741-4256-bf8d-8fef76fb7c47	926550ee-84bb-414a-99f6-e11673f3da0e
+f2579ef9-ed54-4bcc-a685-61f049bf38a0	5dc16cb3-f12c-4195-9c85-90563c17d927
+1988f799-1a91-49d9-8322-36d857c54915	36d65b9f-5927-487b-be37-943b03c16541
 \.
 
 
 --
--- TOC entry 5526 (class 0 OID 18948)
--- Dependencies: 255
+-- TOC entry 5496 (class 0 OID 21071)
+-- Dependencies: 225
 -- Data for Name: admin_users; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.admin_users (id, email, password_hash, first_name, last_name, is_active, last_login_at, created_at, updated_at) FROM stdin;
+1988f799-1a91-49d9-8322-36d857c54915	products@admin.com	$2b$10$VNC/Tyfa5JH/FI7DcGmwou5P0HlaXmZ3KA0T9dnAf8rQqhpeOdl3y	products	management	t	2026-05-11 17:03:42.621+05	2026-05-11 12:03:18.182	2026-05-11 12:03:42.624
+f2579ef9-ed54-4bcc-a685-61f049bf38a0	dummy@admin.com	$2b$10$I6FYLJt9Vs/JS0nK4iSX6eSV2UY5jpweG1kkFuWqxRoAy..ij18My	inventory	manager	t	2026-05-12 10:53:22.532+05	2026-05-11 09:41:54.067	2026-05-12 05:53:22.533
+20dd43d6-e741-4256-bf8d-8fef76fb7c47	a.wahab445@gmail.com	$2b$10$aYlaY6PZ6o.AKWYdUr775uZW9A0bfkp0mka65ej/BomKZsZmLkwei	abdul	wahab	t	2026-06-13 21:10:39.305+05	2026-05-11 09:21:52.545	2026-06-13 16:10:39.306
+f4b18155-4045-41e5-8bfc-c9371013bbd3	huzaifa@admin.com	$2b$10$b9eBNs4skCrh/Fy/70wta.64I6Z1w60vXENXBSnCf2qNEACEuoG2u	Super	Admin	t	2026-06-17 12:01:07.018+05	2026-05-04 07:22:01.201	2026-06-17 07:01:07.021
 \.
 
 
 --
--- TOC entry 5500 (class 0 OID 18478)
--- Dependencies: 229
+-- TOC entry 5497 (class 0 OID 21084)
+-- Dependencies: 226
 -- Data for Name: categories; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -1158,114 +1193,171 @@ COPY public.categories (id, name, slug, description, parent_id, "position", is_a
 
 
 --
--- TOC entry 5530 (class 0 OID 19002)
--- Dependencies: 259
+-- TOC entry 5498 (class 0 OID 21099)
+-- Dependencies: 227
 -- Data for Name: cms_banner_sliders; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.cms_banner_sliders (id, name, identifier, is_active, autoplay_ms, slide_width_px, slide_height_px, created_at, updated_at) FROM stdin;
-f9d65f49-463f-4418-80b2-c258ed1d2209	Home Hero Slider	home-hero	t	5000	1920	800	2026-06-15 11:33:58.676	2026-06-15 12:52:28.04
+COPY public.cms_banner_sliders (id, name, identifier, is_active, autoplay_ms, created_at, updated_at, slide_height_px, slide_width_px) FROM stdin;
+1bf78196-8e5c-416b-b0f4-e70a8396b3f4	Home Hero Slider	home-hero	t	5000	2026-05-06 11:10:43.589	2026-06-17 07:03:52.182	800	1920
 \.
 
 
 --
--- TOC entry 5531 (class 0 OID 19017)
--- Dependencies: 260
+-- TOC entry 5499 (class 0 OID 21112)
+-- Dependencies: 228
 -- Data for Name: cms_banner_slides; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.cms_banner_slides (id, slider_id, title, subtitle, image_url, cta_label, cta_href, sort_order, is_active, created_at, updated_at) FROM stdin;
-8ca981dc-f758-476a-8b17-397933e19623	f9d65f49-463f-4418-80b2-c258ed1d2209	Shop smarter with confidence	Curated essentials at fair prices.	/themes/mehfil-shereen/banner1.jpeg	Shop now	/products	0	t	2026-06-15 12:52:28.054	2026-06-15 12:52:28.054
-9f145c79-b91b-400c-9799-39da77400ac8	f9d65f49-463f-4418-80b2-c258ed1d2209	Track your orders anytime	Real-time updates from checkout to delivery.	/themes/mehfil-shereen/banner2.jpeg	Track order	/track-order	1	t	2026-06-15 12:52:28.054	2026-06-15 12:52:28.054
+e357bf3e-7830-41b6-9786-b777f7354b4a	1bf78196-8e5c-416b-b0f4-e70a8396b3f4	Shop smarter with confidence	Curated essentials at fair prices.	http://localhost:3000/uploads/cms-slides/7610248f-bd0d-466d-9814-6bbab495d269.png	Shop now	/products	0	t	2026-06-17 07:03:52.182	2026-06-17 07:03:52.182
+a3266cb3-1ebf-4410-a5f0-28b810b2603e	1bf78196-8e5c-416b-b0f4-e70a8396b3f4	Track your orders anytime	Real-time updates from checkout to delivery.	http://localhost:3000/uploads/cms-slides/46daff2d-8a55-42dd-8d12-0ea45f3b5a0f.png	Track order	/track-order	1	t	2026-06-17 07:03:52.182	2026-06-17 07:03:52.182
 \.
 
 
 --
--- TOC entry 5529 (class 0 OID 18986)
--- Dependencies: 258
+-- TOC entry 5500 (class 0 OID 21128)
+-- Dependencies: 229
 -- Data for Name: cms_blocks; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.cms_blocks (id, name, identifier, description, content_html, content_json, is_active, created_at, updated_at) FROM stdin;
-5c79a65b-6cab-47b3-8d80-33b2b5d25ded	Home inline teaser	home-inline-teaser	Example block embedded in homepage layout by identifier	<div class="rounded-2xl border border-border bg-card px-6 py-5 shadow-sm"><h2 class="text-lg font-semibold text-foreground">Managed as its own block</h2><p class="mt-2 text-sm text-muted-foreground">This copy lives in the <strong>home-inline-teaser</strong> CMS block. The home layout references it by identifier so you can edit it separately from the layout JSON.</p></div>	{}	t	2026-06-15 11:33:58.67	2026-06-15 12:52:28.033
-1674a825-08b2-4862-9b26-3cb2c434cf69	Home Page Layout	home-page-layout	Structured sections consumed by storefront homepage	<p>Home page layout JSON block.</p>	{"sections": [{"id": "hero-main", "type": "hero_slider", "slides": [{"id": "hero-1", "title": "Welcome to our store", "ctaHref": "/products", "ctaLabel": "Shop now", "imageUrl": "/themes/mehfil-shereen/banner1.jpeg", "subtitle": "Discover great products and fast delivery"}, {"id": "hero-2", "title": "New arrivals every week", "ctaHref": "/products", "ctaLabel": "Browse products", "imageUrl": "/themes/mehfil-shereen/banner2.jpeg", "subtitle": "Fresh picks and curated collections"}], "autoplayMs": 5000}, {"id": "promo-mid", "tone": "primary", "type": "promo_banner", "title": "Members save more", "ctaHref": "/register", "ctaLabel": "Create account", "subtitle": "Create your account for exclusive offers."}, {"id": "inline-teaser", "type": "cms_block_ref", "blockIdentifier": "home-inline-teaser"}, {"id": "shelf-featured", "type": "product_shelf", "title": "Featured picks", "source": {"kind": "latest", "limit": 8}, "subtitle": "Popular right now", "viewAllHref": "/products"}, {"id": "subscription", "type": "subscription_cta", "title": "Stay in the loop", "subtitle": "Get product drops and offers by email."}]}	t	2026-06-15 11:33:58.674	2026-06-15 12:52:28.036
+f0a06619-77d8-4341-be1c-5264e7b2114d	Home page lay out1	home-page-layout1	test run	Home page layout JSON block.	{"sections": [{"id": "hero-main", "type": "hero_slider", "slides": [{"id": "hero-1", "title": "Welcome to our store", "ctaHref": "/products", "ctaLabel": "Shop now", "imageUrl": "/themes/mehfil-shereen/banner1.jpeg", "subtitle": "Discover great products and fast delivery"}, {"id": "hero-2", "title": "New arrivals every week", "ctaHref": "/products", "ctaLabel": "Browse products", "imageUrl": "/themes/mehfil-shereen/banner2.jpeg", "subtitle": "Fresh picks and curated collections"}], "autoplayMs": 5000}, {"id": "promo-mid", "tone": "primary", "type": "promo_banner", "title": "test run ", "ctaHref": "/register", "ctaLabel": "Create account", "subtitle": "blocks test run."}, {"id": "shelf-featured", "type": "product_shelf", "title": "Featured picks", "source": {"kind": "latest", "limit": 8}, "subtitle": "Popular right now", "viewAllHref": "/products"}]}	t	2026-05-09 11:00:52.585	2026-05-09 11:13:53.205
+b1666ef1-3569-4837-bcc7-60da6b3e5aca	Home inline teaser	home-inline-teaser	Example block embedded in homepage layout by identifier	<div class="rounded-2xl border border-border bg-card px-6 py-5 shadow-sm"><h2 class="text-lg font-semibold text-foreground">Managed as its own block</h2><p class="mt-2 text-sm text-muted-foreground">This copy lives in the <strong>home-inline-teaser</strong> CMS block. The home layout references it by identifier so you can edit it separately from the layout JSON.</p></div>	{}	t	2026-05-09 15:06:31.808	2026-05-15 05:42:35.245
+5fd1a7da-ae28-4ea8-abeb-b3cbfca36dc3	Home Page Layout	home-page-layout	Structured sections consumed by storefront homepage	<p>Home page layout JSON block.</p>	{"sections": [{"id": "hero-main", "type": "hero_slider", "slides": [{"id": "hero-1", "title": "Welcome to our store", "ctaHref": "/products", "ctaLabel": "Shop now", "imageUrl": "/themes/mehfil-shereen/banner1.jpeg", "subtitle": "Discover great products and fast delivery"}, {"id": "hero-2", "title": "New arrivals every week", "ctaHref": "/products", "ctaLabel": "Browse products", "imageUrl": "/themes/mehfil-shereen/banner2.jpeg", "subtitle": "Fresh picks and curated collections"}], "autoplayMs": 5000}, {"id": "promo-mid", "tone": "primary", "type": "promo_banner", "title": "Members save more", "ctaHref": "/register", "ctaLabel": "Create account", "subtitle": "Create your account for exclusive offers."}, {"id": "inline-teaser", "type": "cms_block_ref", "blockIdentifier": "home-inline-teaser"}, {"id": "shelf-featured", "type": "product_shelf", "title": "Featured picks", "source": {"kind": "latest", "limit": 8}, "subtitle": "Popular right now", "viewAllHref": "/products"}, {"id": "subscription", "type": "subscription_cta", "title": "Stay in the loop", "subtitle": "Get product drops and offers by email."}]}	t	2026-05-06 11:10:43.581	2026-05-15 05:42:35.248
 \.
 
 
 --
--- TOC entry 5528 (class 0 OID 18970)
--- Dependencies: 257
+-- TOC entry 5501 (class 0 OID 21142)
+-- Dependencies: 230
 -- Data for Name: cms_pages; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.cms_pages (id, title, slug, status, excerpt, meta_title, meta_description, content_html, content_json, published_at, created_at, updated_at) FROM stdin;
-a0a93c96-0c3a-4528-89f6-72f52bb839e4	About Us	about-us	published	Learn more about our mission and team.	About Us	About our ecommerce store and what we stand for.	<h1>About Us</h1><p>We are building a modern ecommerce experience with trusted products and reliable delivery.</p><p>Our mission is simple: quality, transparency, and customer-first service.</p>	{}	2026-06-15 12:52:28.024	2026-06-15 11:33:58.664	2026-06-15 12:52:28.029
+55e2338a-d4d9-4dd9-96dd-f2c9a3d28fd8	Feedback	feed-back	published	give us your feedback	feedback	give us your feedback	<span style="color:rgb(0, 0, 0);font-family:ui-sans-serif, system-ui, sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;, &quot;Noto Color Emoji&quot;;font-size:16px;background-color:rgb(250, 250, 249)"><b><i>We value your feedback and are committed to providing the best service possible.</i></b></span>	{}	2026-06-13 16:11:44.645	2026-05-09 12:46:43.074	2026-06-13 16:11:44.646
+91a59ded-c6f8-48ad-8ad7-4710ce375b97	About Us	about-us	published	Learn more about our mission and team.	About Us	About our ecommerce store and what we stand for.	<h1>About Us</h1><p>We are building a modern ecommerce experience with trusted products and reliable delivery.</p><p>Our mission is simple: quality, transparency, and customer-first service.</p>	{}	2026-06-13 16:11:48.549	2026-05-06 11:10:43.576	2026-06-13 16:11:48.551
 \.
 
 
 --
--- TOC entry 5522 (class 0 OID 18892)
--- Dependencies: 251
+-- TOC entry 5502 (class 0 OID 21156)
+-- Dependencies: 231
 -- Data for Name: customer_addresses; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.customer_addresses (id, customer_id, label, first_name, last_name, company, address_line1, address_line2, city, state, postal_code, country, phone, is_default_billing, is_default_shipping, created_at, updated_at) FROM stdin;
+af19751a-b0d7-4e71-9bbe-5c134bc191a2	88eba4d4-b784-4d99-9c51-8ad1ac99f3fc	HOME A	SYED	HUZAIFA		SAEEDABAD		KARACHI	SINDH	74760	PK		t	t	2026-05-04 07:06:40.368	2026-05-04 07:06:43.125
 \.
 
 
 --
--- TOC entry 5519 (class 0 OID 18846)
--- Dependencies: 248
+-- TOC entry 5503 (class 0 OID 21177)
+-- Dependencies: 232
 -- Data for Name: customer_groups; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.customer_groups (id, name, description, is_default, tax_class_id, discount_percent, metadata, created_at, updated_at) FROM stdin;
+8a31ee2d-11fe-4e3d-91db-c03e5a79a6b8	default	Default customers	t	\N	10.00	{}	2026-05-04 06:53:26.01	2026-05-04 06:57:43.567
 \.
 
 
 --
--- TOC entry 5520 (class 0 OID 18862)
--- Dependencies: 249
+-- TOC entry 5504 (class 0 OID 21191)
+-- Dependencies: 233
 -- Data for Name: customers; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.customers (id, email, password_hash, first_name, last_name, phone, is_guest, customer_group_id, metadata, created_at, updated_at) FROM stdin;
+88eba4d4-b784-4d99-9c51-8ad1ac99f3fc	smhuzaifa525@gmail.com	$2b$10$Qde.kZ1dhoEE94b1cyjOPeDnGBxGdbHiFKCWR1CD0WgRPLbi55N.u	syed	huzaifa	+92 332 2272592	f	8a31ee2d-11fe-4e3d-91db-c03e5a79a6b8	{}	2026-05-04 06:58:33.211	2026-05-04 06:58:33.211
+8fbf3a74-9fd8-43db-8858-a0ec225cdb10	a.wahab445@gmail.com	\N	\N	\N	\N	t	8a31ee2d-11fe-4e3d-91db-c03e5a79a6b8	{}	2026-06-13 13:35:13.696	2026-06-13 13:35:13.696
 \.
 
 
 --
--- TOC entry 5502 (class 0 OID 18506)
--- Dependencies: 231
+-- TOC entry 5505 (class 0 OID 21206)
+-- Dependencies: 234
 -- Data for Name: inventory_items; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.inventory_items (id, product_id, variant_id, warehouse_id, quantity, reserved_quantity, available_quantity, low_stock_threshold, updated_at) FROM stdin;
+e57f5c78-ac0b-492e-9bdd-67d63a88d044	0019bc5a-cfda-423a-8033-04e19527878c	58daf9a0-a0ab-4273-b449-e6a076fc9acc	default-warehouse	0	0	0	10	2026-06-17 12:02:52.322
+da03eeb2-7a69-453b-ac43-d7ccf312e55d	eb72e342-64df-4566-8029-db2c63859130	fdf241e4-b0d0-456e-8da6-eef5c1124666	default-warehouse	0	0	0	10	2026-06-17 12:20:04.935
+d9d76782-cbfc-42e9-932a-e2d102a1a02e	c7b8e71d-3489-4bd7-8f88-2e541ee86e41	\N	default-warehouse	100	0	100	10	2026-05-04 07:01:30.851
+4bb64e24-e1d4-4fdb-a55c-d9294878bae1	eb72e342-64df-4566-8029-db2c63859130	663e25b8-ac9e-4892-b47c-c2e9514ef716	default-warehouse	0	0	0	10	2026-06-17 12:20:08.183
+0a4aa0ef-7ca5-411c-a43c-c490d1d47955	eb72e342-64df-4566-8029-db2c63859130	c36c179e-c2af-4e00-beea-dfd8a3cdec2c	default-warehouse	0	0	0	10	2026-06-17 12:20:08.184
+b090fcda-7fd0-491f-a568-eb88e441fdd6	64289463-e48b-4261-bfef-e59b622eb20e	\N	default-warehouse	99	14	85	10	2026-05-07 11:45:56.203
+4b2afae4-8cbd-46ee-b38a-2b1a653ccf06	72c84214-a05b-40e8-9093-d76177afd8d9	80c8d8b5-ebed-42d3-aca4-9611d4585f71	default-warehouse	0	0	0	10	2026-06-17 12:24:03.462
+8ecbf34f-6e3c-4a54-865c-96b2cfd61db3	eaacdf54-eaa9-4dcc-839e-a10a61588523	\N	default-warehouse	100	2	98	10	2026-05-07 06:55:48.037
+caf29d2a-ac95-41a5-a473-731481b1993f	0019bc5a-cfda-423a-8033-04e19527878c	\N	default-warehouse	100	1	99	10	2026-05-08 05:31:15.452
+ed00912f-f66e-422b-83d5-f881e8a5ac71	5eaf65df-0faa-4975-be7b-6a2554a04f13	b85f7fa3-cb5b-4754-8399-6f792a3bf635	default-warehouse	0	0	0	10	2026-06-17 12:24:03.468
+36ae4515-34fd-4626-abbc-67038eb0fd50	230f5c47-5d61-4da1-adfc-6aa5d46f7111	b0d59239-7b73-492b-8cf8-d0ddba9b5d2e	default-warehouse	0	0	0	10	2026-06-17 12:25:26.096
+31ed8490-3c95-4f4a-b6e3-5e4a8677ea22	b4366645-b14a-4de1-b621-e8776dc4f689	cd8e05c4-96f5-488b-aa34-74083d3e2978	default-warehouse	0	0	0	10	2026-06-17 12:31:39.974
+04e61e53-0d37-4e81-b2c6-827f8eb098b6	b4366645-b14a-4de1-b621-e8776dc4f689	3fcd3a63-0d69-4368-8078-4094c1f0d595	default-warehouse	0	0	0	10	2026-06-17 12:31:42.122
+4ec3b6cd-0c6e-44df-8f6f-08fd72684f89	b4366645-b14a-4de1-b621-e8776dc4f689	34eddf36-827a-4247-9037-4af9dae3a462	default-warehouse	0	0	0	10	2026-06-17 12:31:42.124
+1a6785e7-8938-48eb-82a9-987fa57ca3d5	b4366645-b14a-4de1-b621-e8776dc4f689	ad533fd1-8637-4268-bf5c-c8dcd1febdc6	default-warehouse	0	0	0	10	2026-06-17 12:31:42.125
+c53e3755-c61f-4843-9307-5374e5991fd2	1f87d70a-7fb5-43e9-a41c-87b29873a33b	f48488c2-d01c-47a1-98f2-8073d9f103db	default-warehouse	0	0	0	10	2026-06-17 12:48:01.047
+5ba9dfcb-be6f-4ee6-bef5-677669be5bb6	1f87d70a-7fb5-43e9-a41c-87b29873a33b	3ddee9a7-cbf0-4ce6-9f0a-1b71cf16d076	default-warehouse	0	0	0	10	2026-06-17 12:52:25.646
+f0586044-dd40-4ed1-a302-34bf601e6856	05268a8c-518a-4ff4-8691-3cfdff054382	e35461a9-65b7-4ab2-a26a-d1d3d46bfb9a	default-warehouse	0	0	0	10	2026-06-17 13:04:08.076
+2b2ce941-b199-499e-9b1d-bfd8257b8e95	90792798-2b85-4423-8eba-e7f12c64617d	dac44db9-52fe-47ef-bec9-80ebd2773cba	default-warehouse	0	0	0	10	2026-06-17 13:05:00.62
+5e5c6e02-c8c3-4ba6-a63d-73caae2086b5	2881ef70-d26b-4da5-af06-9e0c5795fee4	4e7ea113-5c3c-4315-96f5-357735682caa	default-warehouse	0	0	0	10	2026-06-17 13:05:00.624
+c77665cb-bfb9-4f9e-b6bf-5fa923f8abe5	09cfaa0d-9088-4e2d-823e-3ad80af8853b	480fc5fd-9198-4c2f-ae38-8a0b052a9313	default-warehouse	0	0	0	10	2026-06-17 13:05:55.656
+a5ca3c26-9814-4692-853b-b13bef9e1ef4	46ee9fc8-c21e-4b8c-9003-7337ea88ab68	cb0eb246-2ad0-45d8-9be8-07f10fcbf62d	default-warehouse	0	0	0	10	2026-06-17 13:05:55.656
+38352b5d-e67e-4109-9e8c-a8b195bd96fd	07b2bf6a-2585-42f2-a7fd-ecc432b11861	efbf85a4-a7b1-4ead-83db-4c7df04e3790	default-warehouse	0	0	0	10	2026-06-17 13:05:55.662
+c2dcd150-bdf3-494e-ba63-257e03c8fae1	df541ce1-98b2-49a0-8479-f5a9e1532a85	120f37f1-42aa-45c0-b801-4731330886e3	default-warehouse	0	0	0	10	2026-06-17 13:07:15.915
+82faa21f-b032-4dfa-a325-65ec02dd9035	03e5ef08-6883-4fd0-9583-94a2734aad9a	48de193f-546c-4de8-b665-15e8cab49584	default-warehouse	0	0	0	10	2026-06-17 13:07:15.916
+ca660625-6581-47a8-95ca-0c1d1fb3be9e	c7b8e71d-3489-4bd7-8f88-2e541ee86e41	81b62a2b-ca50-48c2-8ee7-3628ab91a7a1	default-warehouse	0	0	0	10	2026-06-17 13:09:49.016
+a036ecf0-ad5c-4e75-8d9f-9496a6fb9c7b	11920e18-2c21-473c-a201-54cfa6870a03	a0f519b2-b535-41bb-abae-c7bf57b39e4c	default-warehouse	0	0	0	10	2026-06-17 13:11:22.29
+4dcef264-f20d-4ed8-8e10-2f1669d1df37	2e6248be-15bb-45a8-8dc1-245118193c6f	5c75a449-39e0-4ec7-a6ff-d11dbb9f2d08	default-warehouse	0	0	0	10	2026-06-17 13:11:22.289
+d450eb12-9a89-4c8b-a976-be078712457a	fb39c7d5-a4c8-43b6-abed-24fa74046d1d	85511305-b97c-4697-9e60-1ebb4ef4e0de	default-warehouse	0	0	0	10	2026-06-17 13:11:22.291
+e53e6ec6-3dbf-486d-871e-569ec01a15aa	64289463-e48b-4261-bfef-e59b622eb20e	13f1d0a1-a21b-42e1-865b-51838688da07	default-warehouse	0	0	0	10	2026-06-17 11:53:06.668
+114ef54c-852c-4403-85d0-801b2dea6f8d	64289463-e48b-4261-bfef-e59b622eb20e	54baa2ca-a251-4b16-b691-80c365b3525d	default-warehouse	0	0	0	10	2026-06-17 11:53:10.335
+7d4da14a-0149-4a8e-8428-6255546aeb52	64289463-e48b-4261-bfef-e59b622eb20e	e976bacd-89cf-47a4-99d5-1c37c9eb3cdc	default-warehouse	0	0	0	10	2026-06-17 11:53:10.334
+ccd17825-328a-4be2-a352-fda4a3570b14	64289463-e48b-4261-bfef-e59b622eb20e	9f8d36e8-526e-43a8-8171-4d7f76d1ceb6	default-warehouse	0	0	0	10	2026-06-17 11:53:10.341
+32465cbd-17ef-4e6f-a815-8bf416a3eb5d	64289463-e48b-4261-bfef-e59b622eb20e	18f24f31-3013-4862-8624-96ead88caeee	default-warehouse	0	0	0	10	2026-06-17 11:53:10.341
+48d70064-02da-47a4-a24b-3842419350d1	eaacdf54-eaa9-4dcc-839e-a10a61588523	f44c87d3-ea38-4329-bad9-b0a72e4d955d	default-warehouse	0	0	0	10	2026-06-17 12:00:00.526
+eb4df3ab-56b6-4d47-b063-f96977b1e3df	eaacdf54-eaa9-4dcc-839e-a10a61588523	76e0bd60-36da-44ae-bff0-dd87635ce982	default-warehouse	0	0	0	10	2026-06-17 12:00:02.322
+de230c85-428b-4443-aea2-0cff949af90d	eaacdf54-eaa9-4dcc-839e-a10a61588523	ec4803c2-6aa6-452c-aa1a-e23d0271d115	default-warehouse	0	0	0	10	2026-06-17 12:00:02.323
 \.
 
 
 --
--- TOC entry 5503 (class 0 OID 18524)
--- Dependencies: 232
+-- TOC entry 5506 (class 0 OID 21222)
+-- Dependencies: 235
 -- Data for Name: inventory_reservations; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.inventory_reservations (id, inventory_item_id, reference_type, reference_id, quantity, expires_at, created_at) FROM stdin;
+2cfd0d11-0980-4669-82df-2cff55f1485f	8ecbf34f-6e3c-4a54-865c-96b2cfd61db3	cart	79c0b500-7796-402b-9ff3-82afe2a42441	1	2026-05-04 07:35:56.712	2026-05-04 07:05:56.713
+74297627-a7cd-45d8-aa18-0c3c9fd4dfb7	b090fcda-7fd0-491f-a568-eb88e441fdd6	cart	0fd997ac-e565-4c0f-9130-424d74939f6c	1	2026-05-04 11:21:53.488	2026-05-04 10:51:53.491
+5e7bd6a0-ddbc-46d9-8681-b67d4f24459d	b090fcda-7fd0-491f-a568-eb88e441fdd6	cart	025503af-fdab-4850-9c71-1d39d9996aa7	1	2026-05-06 06:49:09.658	2026-05-06 06:19:09.662
+895f9527-9ea1-421a-9a9a-a2f9c88021a1	b090fcda-7fd0-491f-a568-eb88e441fdd6	cart	9ef02794-b9d8-400b-8a94-549d3c87c94e	1	2026-05-06 08:15:20.36	2026-05-06 07:45:20.364
+c96b759c-d1bf-4ce1-b05b-934a15dce57f	b090fcda-7fd0-491f-a568-eb88e441fdd6	cart	10bbb443-f919-4f7c-aa39-a4b35ba104e8	1	2026-05-06 10:47:56.868	2026-05-06 10:17:56.871
+87c0fbc8-ac5a-469e-93c7-f9ba1a3ef7f0	b090fcda-7fd0-491f-a568-eb88e441fdd6	cart	150d1a50-9013-4ba0-adb6-58094cef72db	2	2026-05-06 12:24:14.194	2026-05-06 11:54:14.195
+0e7b7c61-8bc6-4fa4-ad41-0313d05e1ccd	8ecbf34f-6e3c-4a54-865c-96b2cfd61db3	cart	2530cc54-0f91-41c0-9fc1-96864b03edad	1	2026-05-07 07:25:48.014	2026-05-07 06:55:48.016
+9669e351-64e3-4088-9277-076955ae9228	b090fcda-7fd0-491f-a568-eb88e441fdd6	cart	91b43991-b632-47d0-9f35-4373b133aa30	1	2026-05-07 09:20:44.977	2026-05-07 08:50:44.984
+125f3ef6-6dec-4f50-b2d3-01241e9eae4d	b090fcda-7fd0-491f-a568-eb88e441fdd6	cart	126c6181-f879-461c-b0de-c439d5c9bb94	2	2026-05-07 11:38:19.365	2026-05-07 11:08:19.368
+13a8d4f4-e2ba-46c2-aec8-3c6bba89162c	b090fcda-7fd0-491f-a568-eb88e441fdd6	cart	cba8d941-a211-4bd6-97f6-aa37baa3ae97	5	2026-05-07 12:15:56.2	2026-05-07 11:45:56.201
+4fc033ba-bd20-460e-a5e4-d3cffc33c5cb	caf29d2a-ac95-41a5-a473-731481b1993f	cart	3b96cc19-ecf4-480b-b66e-c5bc03243169	1	2026-05-08 06:01:15.411	2026-05-08 05:31:15.418
 \.
 
 
 --
--- TOC entry 5505 (class 0 OID 18572)
--- Dependencies: 234
+-- TOC entry 5507 (class 0 OID 21235)
+-- Dependencies: 236
 -- Data for Name: order_items; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.order_items (id, order_id, product_id, variant_id, sku, name, attributes, quantity, unit_price, discount_amount, tax_amount, row_total, quantity_fulfilled, quantity_refunded, metadata, created_at) FROM stdin;
+21a18e0b-5bed-4136-ac04-678408542837	4263ac0a-4ea7-4a2b-8ad5-bbf68a2dc0fd	64289463-e48b-4261-bfef-e59b622eb20e	64289463-e48b-4261-bfef-e59b622eb20e	SKU-004	Test Product	{}	1	32.87	0.00	0.00	32.87	0	0	{}	2026-05-04 07:33:33.36
+8b64f088-d410-4ed8-a491-c2c79b21e28f	0aaf74b5-f65e-4019-9d3e-fbc88d4b2238	64289463-e48b-4261-bfef-e59b622eb20e	40973815-351e-42b2-99dc-e30539f21968	SKU-004-VANILA-1KG	Flavour: Vanila • Weight: 1kg	{"optionValues": {"weight": "1kg", "flavour": "Vanila"}, "optionValueIds": {"weight": "e86955c2-ebde-4ba0-9925-743eb1a2371e", "flavour": "c1ed8248-fa5f-4ed8-9b60-0534ee9cbfc4"}}	1	999.00	0.00	0.00	999.00	0	0	{}	2026-06-13 13:35:13.821
+48bccc19-cf33-4dbf-8c21-28d6c7a520f3	5bbb30ed-34a8-41d2-9d5b-da4510ff51bd	64289463-e48b-4261-bfef-e59b622eb20e	40973815-351e-42b2-99dc-e30539f21968	SKU-004-VANILA-1KG	Flavour: Vanila • Weight: 1kg	{"optionValues": {"weight": "1kg", "flavour": "Vanila"}, "optionValueIds": {"weight": "e86955c2-ebde-4ba0-9925-743eb1a2371e", "flavour": "c1ed8248-fa5f-4ed8-9b60-0534ee9cbfc4"}}	1	999.00	0.00	0.00	999.00	0	0	{}	2026-06-13 13:35:46.826
 \.
 
 
 --
--- TOC entry 5514 (class 0 OID 18753)
--- Dependencies: 243
+-- TOC entry 5508 (class 0 OID 21262)
+-- Dependencies: 237
 -- Data for Name: order_shipping; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -1274,8 +1366,8 @@ COPY public.order_shipping (id, order_id, shipping_method_id, cost, currency, st
 
 
 --
--- TOC entry 5518 (class 0 OID 18823)
--- Dependencies: 247
+-- TOC entry 5509 (class 0 OID 21280)
+-- Dependencies: 238
 -- Data for Name: order_taxes; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -1284,39 +1376,45 @@ COPY public.order_taxes (id, order_id, tax_id, tax_class_id, tax_class_code, tax
 
 
 --
--- TOC entry 5504 (class 0 OID 18539)
--- Dependencies: 233
+-- TOC entry 5510 (class 0 OID 21301)
+-- Dependencies: 239
 -- Data for Name: orders; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.orders (id, order_number, customer_id, customer_group_id, status, payment_status, fulfillment_status, customer_email, customer_name, billing_address, shipping_address, currency, subtotal, discount_total, shipping_total, tax_total, grand_total, applied_price_rules, ip_address, user_agent, notes, metadata, created_at, updated_at, cancelled_at, completed_at) FROM stdin;
+4263ac0a-4ea7-4a2b-8ad5-bbf68a2dc0fd	ORD-20260504-00001	88eba4d4-b784-4d99-9c51-8ad1ac99f3fc	8a31ee2d-11fe-4e3d-91db-c03e5a79a6b8	pending	pending	unfulfilled	smhuzaifa525@gmail.com	\N	{"city": "KARACHI", "label": "HOME A", "phone": "", "state": "SINDH", "company": "", "country": "PK", "lastName": "HUZAIFA", "firstName": "SYED", "postalCode": "74760", "addressLine1": "SAEEDABAD", "addressLine2": ""}	{"city": "KARACHI", "label": "HOME A", "phone": "", "state": "SINDH", "company": "", "country": "PK", "lastName": "HUZAIFA", "firstName": "SYED", "postalCode": "74760", "addressLine1": "SAEEDABAD", "addressLine2": ""}	USD	32.87	0.00	0.00	0.00	32.87	[]	\N	\N	\N	{"checkoutId": "55b4c288-998d-49f9-bd4b-ac10fae8f79f", "customerGroupSnapshot": {"id": "8a31ee2d-11fe-4e3d-91db-c03e5a79a6b8", "name": "default", "taxClassId": null, "discountPercent": 10}}	2026-05-04 07:33:33.36	2026-05-04 07:33:33.36	\N	\N
+0aaf74b5-f65e-4019-9d3e-fbc88d4b2238	ORD-20260613-00001	8fbf3a74-9fd8-43db-8858-a0ec225cdb10	8a31ee2d-11fe-4e3d-91db-c03e5a79a6b8	pending	pending	unfulfilled	a.wahab445@gmail.com	test	{"city": "Karachi", "label": "", "state": "Sindh", "country": "PK", "lastName": "Wahab", "firstName": "Abdul", "postalCode": "75760", "addressLine1": "House 12345"}	{"city": "Karachi", "label": "", "state": "Sindh", "country": "PK", "lastName": "Wahab", "firstName": "Abdul", "postalCode": "75760", "addressLine1": "House 12345"}	PKR	999.00	0.00	0.00	0.00	999.00	[]	\N	\N	\N	{"checkoutId": "77b158e9-8973-4b6a-936d-1ce7fed26a40", "customerGroupSnapshot": {"id": "8a31ee2d-11fe-4e3d-91db-c03e5a79a6b8", "name": "default", "taxClassId": null, "discountPercent": 10}}	2026-06-13 13:35:13.821	2026-06-13 13:35:13.821	\N	\N
+5bbb30ed-34a8-41d2-9d5b-da4510ff51bd	ORD-20260613-00002	8fbf3a74-9fd8-43db-8858-a0ec225cdb10	8a31ee2d-11fe-4e3d-91db-c03e5a79a6b8	processing	pending	unfulfilled	a.wahab445@gmail.com	\N	{"city": "Karachi", "label": "", "state": "Sindh", "country": "PK", "lastName": "Wahab", "firstName": "Abdul", "postalCode": "75760", "addressLine1": "House 12345"}	{"city": "Karachi", "label": "", "state": "Sindh", "country": "PK", "lastName": "Wahab", "firstName": "Abdul", "postalCode": "75760", "addressLine1": "House 12345"}	PKR	999.00	0.00	0.00	0.00	999.00	[]	\N	\N	\N	{"checkoutId": "6f672239-62af-4d88-acb8-d46d5fae96a6", "customerGroupSnapshot": {"id": "8a31ee2d-11fe-4e3d-91db-c03e5a79a6b8", "name": "default", "taxClassId": null, "discountPercent": 10}}	2026-06-13 13:35:46.826	2026-06-13 13:45:32.357	\N	\N
 \.
 
 
 --
--- TOC entry 5506 (class 0 OID 18601)
--- Dependencies: 235
+-- TOC entry 5511 (class 0 OID 21332)
+-- Dependencies: 240
 -- Data for Name: payment_methods; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.payment_methods (id, code, name, provider, flow_type, is_active, config, metadata, created_at, updated_at) FROM stdin;
-2ea164a1-8abe-43d6-8abb-7ee53eb99da4	cod	Cash on Delivery	cod	OFFLINE	t	{}	{}	2026-06-15 11:33:58.546	2026-06-15 12:52:27.889
+1f3e4b70-63ff-4b05-a95f-e7b3612dc405	cod	Cash on Delivery	cod	OFFLINE	t	{}	{"sortOrder": 10}	2026-05-04 07:33:12.787	2026-05-15 05:42:35.159
 \.
 
 
 --
--- TOC entry 5507 (class 0 OID 18622)
--- Dependencies: 236
+-- TOC entry 5512 (class 0 OID 21351)
+-- Dependencies: 241
 -- Data for Name: payments; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.payments (id, order_id, payment_method_id, status, flow_type, amount, currency, gateway_transaction_id, client_secret, redirect_url, gateway_response, captured_at, failed_at, refunded_at, created_at, updated_at) FROM stdin;
+d88b3cf9-218a-4f6f-bfcd-2fbf58f1909c	4263ac0a-4ea7-4a2b-8ad5-bbf68a2dc0fd	1f3e4b70-63ff-4b05-a95f-e7b3612dc405	pending	OFFLINE	32.87	USD	COD-f1a50684-3047-4c91-b51e-b2ae3b6b781c	\N	\N	{"orderId": "4263ac0a-4ea7-4a2b-8ad5-bbf68a2dc0fd", "orderNumber": "ORD-20260504-00001", "paymentMethod": "cod", "transactionId": "COD-f1a50684-3047-4c91-b51e-b2ae3b6b781c"}	\N	\N	\N	2026-05-04 07:33:33.411	2026-05-04 07:33:33.411
+38dd35c3-3cf1-4b4c-8d7e-5b7ae93138b9	0aaf74b5-f65e-4019-9d3e-fbc88d4b2238	1f3e4b70-63ff-4b05-a95f-e7b3612dc405	pending	OFFLINE	999.00	PKR	COD-089d01eb-fc7f-4dc6-a545-742c42cda4f2	\N	\N	{"orderId": "0aaf74b5-f65e-4019-9d3e-fbc88d4b2238", "orderNumber": "ORD-20260613-00001", "paymentMethod": "cod", "transactionId": "COD-089d01eb-fc7f-4dc6-a545-742c42cda4f2"}	\N	\N	\N	2026-06-13 13:35:13.835	2026-06-13 13:35:13.835
+d3941eb2-0019-46ff-b2b7-02d5ce7046f6	5bbb30ed-34a8-41d2-9d5b-da4510ff51bd	1f3e4b70-63ff-4b05-a95f-e7b3612dc405	pending	OFFLINE	999.00	PKR	COD-a15bf94a-2f52-49ec-9ca6-718708d5d874	\N	\N	{"orderId": "5bbb30ed-34a8-41d2-9d5b-da4510ff51bd", "orderNumber": "ORD-20260613-00002", "paymentMethod": "cod", "transactionId": "COD-a15bf94a-2f52-49ec-9ca6-718708d5d874"}	\N	\N	\N	2026-06-13 13:35:46.838	2026-06-13 13:35:46.838
 \.
 
 
 --
--- TOC entry 5501 (class 0 OID 18495)
--- Dependencies: 230
+-- TOC entry 5513 (class 0 OID 21368)
+-- Dependencies: 242
 -- Data for Name: product_categories; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -1325,78 +1423,273 @@ COPY public.product_categories (product_id, category_id, "position") FROM stdin;
 
 
 --
--- TOC entry 5499 (class 0 OID 18462)
--- Dependencies: 228
+-- TOC entry 5514 (class 0 OID 21377)
+-- Dependencies: 243
 -- Data for Name: product_images; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.product_images (id, product_id, variant_id, url, alt_text, "position", is_primary, created_at) FROM stdin;
+2ca56043-4926-4270-975c-8f69c3483331	64289463-e48b-4261-bfef-e59b622eb20e	\N	http://localhost:3000/uploads/products/124af3bb-9b89-4704-b707-c24e39c6b4ce.jpeg	Test Product	4	f	2026-06-17 11:54:37.479
+28fc9eeb-3b3d-40df-8168-815dfefcbcaf	64289463-e48b-4261-bfef-e59b622eb20e	\N	http://localhost:3000/uploads/products/eea4ad2d-e2e2-4c52-9ba9-9177c9d5a314.jpeg	Test Product	0	t	2026-06-17 11:48:36.078
+97035159-6006-4b3a-bd98-55ce711a3f32	64289463-e48b-4261-bfef-e59b622eb20e	\N	http://localhost:3000/uploads/products/20d73cc9-19d1-4a71-87b0-5e2c6effba46.jpeg	Test Product	1	f	2026-06-17 11:53:43.195
+cd48eabd-2434-42ae-9846-18043152b8d1	64289463-e48b-4261-bfef-e59b622eb20e	\N	http://localhost:3000/uploads/products/32f9933d-55ed-4d1b-ab48-2a2b109fada7.jpeg	Test Product	2	f	2026-06-17 11:54:29.437
+cc125aee-01b9-455a-94d7-36ac23b46384	64289463-e48b-4261-bfef-e59b622eb20e	\N	http://localhost:3000/uploads/products/d9ac872c-403e-4d37-83a9-b3ea0fb66368.jpeg	Test Product	3	f	2026-06-17 11:54:29.49
+a7f2a067-ff15-4cad-b86f-229f16c30b2b	64289463-e48b-4261-bfef-e59b622eb20e	\N	http://localhost:3000/uploads/products/6d5b97c9-1585-44a1-8d77-6ae16f7a74b9.jpeg	Test Product	5	f	2026-06-17 11:54:37.526
+1e5e50d7-5649-4ca9-9519-bc13d1bd0378	eaacdf54-eaa9-4dcc-839e-a10a61588523	\N	http://localhost:3000/uploads/products/36c2d557-9508-46cb-8d9e-66a810432851.jpeg	Hand Wash	0	t	2026-06-17 11:59:00.99
+4f7aadda-99ac-4437-a6d6-e6595a469823	eaacdf54-eaa9-4dcc-839e-a10a61588523	\N	http://localhost:3000/uploads/products/53b7909a-1f92-453c-8f07-c0a2fd947036.jpeg	Hand Wash	1	f	2026-06-17 11:59:53.188
+255dab1a-6444-44d0-8f83-4781d1001c93	eaacdf54-eaa9-4dcc-839e-a10a61588523	\N	http://localhost:3000/uploads/products/a932129a-8228-405a-8a1f-d0570efec49c.jpeg	Hand Wash	2	f	2026-06-17 11:59:53.232
+2c009e49-b8cd-444e-aff5-a6e0ba9f5d5f	eaacdf54-eaa9-4dcc-839e-a10a61588523	\N	http://localhost:3000/uploads/products/674d9cf2-3297-4b76-9ebf-e2099ad96212.jpeg	Hand Wash	3	f	2026-06-17 11:59:53.274
+d2c80601-4641-4c76-bb20-45252061f2e7	0019bc5a-cfda-423a-8033-04e19527878c	\N	http://localhost:3000/uploads/products/905c572b-3817-46d5-a6a9-5fdd0b8de7e9.jpeg	Tibet Beauty Soap	0	t	2026-06-17 12:03:00.728
+cc249ac8-0749-4b6c-8788-233588fd1656	0019bc5a-cfda-423a-8033-04e19527878c	\N	http://localhost:3000/uploads/products/f71e8fc7-e121-4340-b9a0-2f97acb35e1f.jpeg	Tibet Beauty Soap	1	f	2026-06-17 12:03:36.104
+bef610c7-fa9d-47cf-aad3-68c1a7e18808	c7b8e71d-3489-4bd7-8f88-2e541ee86e41	\N	http://localhost:3000/uploads/products/1e8bdd31-f201-49d6-8110-1dd5bbd8238b.jpeg	Euro Beauty Soap	0	t	2026-06-17 12:04:39.635
+99a05603-bfe5-4951-847c-f8050e8719b9	c7b8e71d-3489-4bd7-8f88-2e541ee86e41	\N	http://localhost:3000/uploads/products/fc8277ee-03f9-4d60-bb78-bc52f9ed2648.jpeg	Euro Beauty Soap	1	f	2026-06-17 12:05:04.791
+940e6aaf-e45e-4ed0-b593-65d801484cbd	2e6248be-15bb-45a8-8dc1-245118193c6f	\N	http://localhost:3000/uploads/products/e8c06101-66ec-4856-b5da-319ad1cc5169.jpeg	Khaleej Washing Soap	0	t	2026-06-17 12:08:05.931
+d04fb353-7634-4f5f-8e0d-ac85e602a207	2e6248be-15bb-45a8-8dc1-245118193c6f	\N	http://localhost:3000/uploads/products/126ed68b-b033-4e1d-b75e-379587ed87f2.jpeg	Khaleej Washing Soap	1	f	2026-06-17 12:08:17.108
+de658086-f967-4dd6-a9f1-92c2ce1f42b1	fb39c7d5-a4c8-43b6-abed-24fa74046d1d	\N	http://localhost:3000/uploads/products/ecde5d99-585d-470c-8f4f-37b0ecd7f6b6.jpeg	Misaal Washing Soap	0	t	2026-06-17 12:12:32.182
+8ea72bba-f4d1-488d-94ef-bdac93c198cd	fb39c7d5-a4c8-43b6-abed-24fa74046d1d	\N	http://localhost:3000/uploads/products/82d8decc-340d-44fe-80e7-ee9776cd9a54.jpeg	Misaal Washing Soap	1	f	2026-06-17 12:13:09.86
+2c938234-e056-4360-9298-bea6974c3a9d	11920e18-2c21-473c-a201-54cfa6870a03	\N	http://localhost:3000/uploads/products/88802a3a-bf0b-414c-ade3-a68534a94924.jpeg	Fatty Brown Washing Soap	0	t	2026-06-17 12:15:17.516
+97c8c94c-21b7-4d71-9366-9c70879e94e0	11920e18-2c21-473c-a201-54cfa6870a03	\N	http://localhost:3000/uploads/products/28d38daa-11c3-46a3-92d1-0465b11a9990.jpeg	Fatty Brown Washing Soap	1	f	2026-06-17 12:15:24.318
+c6b08523-db94-4349-9854-7aabf6588d60	eb72e342-64df-4566-8029-db2c63859130	\N	http://localhost:3000/uploads/products/71451c33-cbd4-4a30-83b5-3f4145a8d49a.jpeg	Perfume Phenyl	0	t	2026-06-17 12:17:15.72
+f0051af3-cf64-4513-a32f-9cde6f311d7e	eb72e342-64df-4566-8029-db2c63859130	\N	http://localhost:3000/uploads/products/38351eab-c533-4155-88e5-c3cb12ba13fa.jpeg	Perfume Phenyl	1	f	2026-06-17 12:18:41.938
+d83698f0-c4a7-4bcc-8db5-e90843a81674	eb72e342-64df-4566-8029-db2c63859130	\N	http://localhost:3000/uploads/products/edba298e-061d-4caf-891d-88f95b3b6e9d.jpeg	Perfume Phenyl	2	f	2026-06-17 12:18:41.985
+959dac31-b1ad-4f20-ae04-346419de033e	eb72e342-64df-4566-8029-db2c63859130	\N	http://localhost:3000/uploads/products/61521d6d-9278-4e54-a574-7d51fa91c4f8.jpeg	Perfume Phenyl	3	f	2026-06-17 12:18:42.03
+b9cf1be8-29e0-4bdd-b356-6e858bc64c56	72c84214-a05b-40e8-9093-d76177afd8d9	\N	http://localhost:3000/uploads/products/70986ee9-fdb9-43f1-9cf6-0d6e61250ca8.jpeg	Toilet Bowl Cleaner	0	t	2026-06-17 12:21:11.58
+93d9e533-28f4-413d-a800-393c2b0096e3	72c84214-a05b-40e8-9093-d76177afd8d9	\N	http://localhost:3000/uploads/products/12d4e364-6d9e-467f-b079-a6a36d129c92.jpeg	Toilet Bowl Cleaner	1	f	2026-06-17 12:21:32.633
+28166f83-fe31-433b-8813-4279d291fa1d	5eaf65df-0faa-4975-be7b-6a2554a04f13	\N	http://localhost:3000/uploads/products/e2efe486-c41b-4700-879c-f2debc87b3fd.jpeg	Tile Wash	0	t	2026-06-17 12:22:31.416
+55bf6489-92c8-4ea4-98f4-cd6fe59b0c47	5eaf65df-0faa-4975-be7b-6a2554a04f13	\N	http://localhost:3000/uploads/products/1e757918-a026-4b58-ae83-fbed6eb6e19b.jpeg	Tile Wash	1	f	2026-06-17 12:22:49.322
+3d151832-4cd2-47a5-b5df-cff38010888f	230f5c47-5d61-4da1-adfc-6aa5d46f7111	\N	http://localhost:3000/uploads/products/de9655a5-c074-41b3-a932-01cb5f1ed10e.jpeg	Bleach Cleaner	0	t	2026-06-17 12:23:50.226
+f7faaa6b-5348-480a-b3a6-6831b6cd0bab	230f5c47-5d61-4da1-adfc-6aa5d46f7111	\N	http://localhost:3000/uploads/products/b93b7fd3-0a20-4365-8a31-7743c041be78.jpeg	Bleach Cleaner	1	f	2026-06-17 12:24:48.093
+473040c0-738c-4015-958e-844472b8ef53	df541ce1-98b2-49a0-8479-f5a9e1532a85	\N	http://localhost:3000/uploads/products/f1d3659c-e8a6-4841-b2ba-16dcad409431.jpeg	Glass Cleaner (Clean 360)	0	t	2026-06-17 12:27:56.757
+f93f1914-0a7a-414c-9486-1dd6e6473604	df541ce1-98b2-49a0-8479-f5a9e1532a85	\N	http://localhost:3000/uploads/products/aa875cd4-2523-4a96-b0ef-537be7171948.jpeg	Glass Cleaner (Clean 360)	1	f	2026-06-17 12:28:09.307
+a0f33223-b30e-4ea2-b68d-98178948db8e	b4366645-b14a-4de1-b621-e8776dc4f689	\N	http://localhost:3000/uploads/products/85d40ec1-22b4-41b3-b485-ce02a3f10a7b.jpeg	Panda Perfume Phenyl	0	t	2026-06-17 12:30:01.514
+c22e7d14-910d-4ddd-9b2c-8c533c56e7f9	b4366645-b14a-4de1-b621-e8776dc4f689	\N	http://localhost:3000/uploads/products/5842750a-7a23-4618-aa15-28086e2637bf.jpeg	Panda Perfume Phenyl	1	f	2026-06-17 12:30:53.003
+cda3df0f-31e7-48f2-a65a-f5b76d0db6e1	b4366645-b14a-4de1-b621-e8776dc4f689	\N	http://localhost:3000/uploads/products/1f919fca-d879-4996-80db-e9bbe547077d.jpeg	Panda Perfume Phenyl	2	f	2026-06-17 12:30:53.053
+bd0d0ceb-c74c-4a6f-9e0a-7ce8c7399f6b	b4366645-b14a-4de1-b621-e8776dc4f689	\N	http://localhost:3000/uploads/products/866417a2-d561-4693-b4dc-de449ed6cce8.jpeg	Panda Perfume Phenyl	3	f	2026-06-17 12:30:53.097
+db4d5c37-b6b0-4a3a-81bc-9431605f3b4f	b4366645-b14a-4de1-b621-e8776dc4f689	\N	http://localhost:3000/uploads/products/01445165-2334-4ed3-ad6e-328174e601f5.jpeg	Panda Perfume Phenyl	4	f	2026-06-17 12:30:53.139
+02bf1856-c9ff-417d-afbe-ab67f884250f	03e5ef08-6883-4fd0-9583-94a2734aad9a	\N	http://localhost:3000/uploads/products/66da266a-d52b-46da-a138-77ad84696bef.jpeg	Panda Liquid Neel	0	t	2026-06-17 12:33:38.079
+3f731fae-25f8-4520-a9bc-9e0f45a9f50c	03e5ef08-6883-4fd0-9583-94a2734aad9a	\N	http://localhost:3000/uploads/products/ebd5d91b-44db-4d5d-80f1-a5c82ddcf14a.jpeg	Panda Liquid Neel	1	f	2026-06-17 12:33:46.027
+2396adb6-151b-4e8b-bbec-c2bccc61af94	07b2bf6a-2585-42f2-a7fd-ecc432b11861	\N	http://localhost:3000/uploads/products/251a93d2-b237-4bee-bdb3-07da60c6d035.jpeg	Cockroach Killer	0	t	2026-06-17 12:34:49.17
+0ec0bf14-1758-4ebe-a35c-3f2872e20a6e	07b2bf6a-2585-42f2-a7fd-ecc432b11861	\N	http://localhost:3000/uploads/products/3bbd6059-9dcb-4a47-9725-8abe84286714.jpeg	Cockroach Killer	1	f	2026-06-17 12:34:59.264
+b8e6e12b-bed3-4e90-8c1d-1a78f8088e99	46ee9fc8-c21e-4b8c-9003-7337ea88ab68	\N	http://localhost:3000/uploads/products/8e8d394e-aab0-4c74-8390-41ea4845f784.jpeg	Clean360 Bleach Exra Strong	0	t	2026-06-17 12:36:13.727
+4e24fb17-99ba-4d67-8c0d-54cebde0d617	46ee9fc8-c21e-4b8c-9003-7337ea88ab68	\N	http://localhost:3000/uploads/products/8c42fb20-dea6-43ee-a657-a107d153a0a7.jpeg	Clean360 Bleach Exra Strong	1	f	2026-06-17 12:36:19.344
+0073c047-db73-48d5-96fc-0c079c9424c2	09cfaa0d-9088-4e2d-823e-3ad80af8853b	\N	http://localhost:3000/uploads/products/0c2e39fe-26c3-416f-8cd0-72747aa624be.jpeg	Sweep-o Floor & Tile Cleaner	0	t	2026-06-17 12:37:49.904
+80e874da-6b48-4ca1-9f89-f8910de05d0d	09cfaa0d-9088-4e2d-823e-3ad80af8853b	\N	http://localhost:3000/uploads/products/9dfb637c-8990-4732-8746-6c5f754c10d9.jpeg	Sweep-o Floor & Tile Cleaner	1	f	2026-06-17 12:38:07.53
+557101a9-17a0-4a40-8fa3-7e0fb2415c2b	2881ef70-d26b-4da5-af06-9e0c5795fee4	\N	http://localhost:3000/uploads/products/2f73209e-0c72-4a77-ade9-8f2bbf5fa46a.jpeg	Dish Wash Liquid	0	t	2026-06-17 12:40:11.362
+46e3876c-15f0-4fa7-9ac0-7111fbf6c438	2881ef70-d26b-4da5-af06-9e0c5795fee4	\N	http://localhost:3000/uploads/products/27fd70c6-7bb4-4988-9add-db66559a77a7.jpeg	Dish Wash Liquid	1	f	2026-06-17 12:40:26.294
+257bbbf4-f00b-4266-9721-a78fb90433f5	1f87d70a-7fb5-43e9-a41c-87b29873a33b	\N	http://localhost:3000/uploads/products/f75f64db-05ba-4ef6-82b6-855acf3a2e68.jpeg	Super Sony	0	t	2026-06-17 12:42:28.871
+c079e621-3be1-4f13-8716-cf3e6fccc6ba	1f87d70a-7fb5-43e9-a41c-87b29873a33b	\N	http://localhost:3000/uploads/products/b02cb0cb-2939-47b3-a126-60dcc2dac186.jpeg	Super Sony	1	f	2026-06-17 12:42:41.98
+411d8c27-1331-4968-846b-d1bcf01a355c	1f87d70a-7fb5-43e9-a41c-87b29873a33b	\N	http://localhost:3000/uploads/products/f7768c74-fe25-4c4c-b389-7dbff39a9806.jpeg	Super Sony	2	f	2026-06-17 12:42:42.029
+13c767e6-e16f-4792-bd91-e52d5ee564e4	90792798-2b85-4423-8eba-e7f12c64617d	\N	http://localhost:3000/uploads/products/451ccb4f-99dc-408c-bd90-f5d75263afdf.jpeg	777 Sony Dish Wash Soap	0	t	2026-06-17 12:44:44.044
+7f54a276-f3f9-4fd2-93d2-fea01d6b6673	90792798-2b85-4423-8eba-e7f12c64617d	\N	http://localhost:3000/uploads/products/b1b1d873-2877-43b9-ad15-34a28ec2ca0a.jpeg	777 Sony Dish Wash Soap	1	f	2026-06-17 12:44:50.393
+7f3d6fcd-2d8f-4df1-a838-3f2f7a8912cf	05268a8c-518a-4ff4-8691-3cfdff054382	\N	http://localhost:3000/uploads/products/3e6b240a-52d2-4dfd-88b7-67de8376d54b.jpeg	Dish Wash Scourer	0	t	2026-06-17 12:46:19.191
+4fa3401b-150f-40f0-975e-2cffa4800a85	05268a8c-518a-4ff4-8691-3cfdff054382	\N	http://localhost:3000/uploads/products/77ecf402-9549-4c21-9695-e028c8d6b830.jpeg	Dish Wash Scourer	1	f	2026-06-17 12:46:26.557
 \.
 
 
 --
--- TOC entry 5495 (class 0 OID 18412)
--- Dependencies: 224
+-- TOC entry 5515 (class 0 OID 21391)
+-- Dependencies: 244
 -- Data for Name: product_option_values; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.product_option_values (id, option_id, value, code, sort_order, is_active, created_at, updated_at) FROM stdin;
+98acf219-fadc-4e60-88f9-3b660145230d	a39db598-111e-4007-bf54-f564b2c1f587	Family pack	family pack	1	t	2026-05-08 06:44:01.979	2026-05-08 06:44:01.979
+e2ca73f9-da0c-4357-ad26-0a3b5234734c	a39db598-111e-4007-bf54-f564b2c1f587	Pack of 2	pack of 2	2	t	2026-05-08 06:44:35.317	2026-05-08 06:44:35.317
+d79e5779-4b44-422c-bcb0-43743dba8196	a39db598-111e-4007-bf54-f564b2c1f587	Pack of 3	pack of 3	3	t	2026-05-08 06:46:44.189	2026-05-08 06:46:44.189
+0888e912-f7f3-466c-9603-d8958d9b139f	59574408-864b-4fb3-a08f-5ee2211a8ba1	Pink Lily	\N	0	t	2026-06-17 07:36:00.466	2026-06-17 07:36:00.466
+fcdd232c-7426-4e25-b32f-df5103b7f511	59574408-864b-4fb3-a08f-5ee2211a8ba1	Cucumber	\N	1	t	2026-06-17 07:36:12.173	2026-06-17 07:36:12.173
+5c00a20f-7157-4e94-9797-eb233b0f8c48	59574408-864b-4fb3-a08f-5ee2211a8ba1	Orchid	\N	2	t	2026-06-17 07:36:26.071	2026-06-17 07:36:26.071
+e86955c2-ebde-4ba0-9925-743eb1a2371e	906abee1-8c7f-4645-8193-973989132503	1Ltr	1ltr	1	t	2026-05-08 06:41:49.12	2026-06-17 07:38:35.38
+f56ce2c9-7e87-4eaf-8588-d6c8822a106e	906abee1-8c7f-4645-8193-973989132503	1.5Ltr	1.5ltr	2	t	2026-05-08 06:42:02.481	2026-06-17 07:38:51.805
+0f01dc86-2798-4ffb-9902-663a759b845e	906abee1-8c7f-4645-8193-973989132503	2Ltr	2ltr	3	t	2026-05-08 06:42:18.355	2026-06-17 07:39:05.79
+4a6d58f7-9b22-4f4c-8705-50e82bac2c1b	40b86c40-f78a-4c90-9fab-1eb3a477e214	Tile Wash	\N	0	t	2026-06-17 07:39:42.677	2026-06-17 07:39:42.677
+5c9cc638-ce29-4993-a519-c62940e11359	40b86c40-f78a-4c90-9fab-1eb3a477e214	Toilet Bowl Cleaner	\N	1	t	2026-06-17 07:39:59.964	2026-06-17 07:39:59.964
+30d60dcc-867c-4fbd-a208-4aef88480725	59574408-864b-4fb3-a08f-5ee2211a8ba1	Rose	rose	0	t	2026-05-08 06:40:33.172	2026-06-17 07:45:02.356
+0bb4c7bc-d181-4c9a-869e-4aeae5df4031	59574408-864b-4fb3-a08f-5ee2211a8ba1	Camay	camay	1	t	2026-06-17 07:45:18.707	2026-06-17 07:45:18.707
+b033714c-5f8e-4478-a69c-ef52d7313422	59574408-864b-4fb3-a08f-5ee2211a8ba1	Lemon	lemon	3	t	2026-06-17 07:45:29.071	2026-06-17 07:45:29.071
+19de1996-4f10-4589-95f8-06a01d8a61cb	40b86c40-f78a-4c90-9fab-1eb3a477e214	Dish wash liquid	dish wash liquid	0	t	2026-06-17 07:47:03.436	2026-06-17 07:47:03.436
+46b3d7e5-286f-4b3e-8418-8094a0676e3f	40b86c40-f78a-4c90-9fab-1eb3a477e214	Dish Wash Saop	dish wash saop	1	t	2026-06-17 07:49:02.206	2026-06-17 07:49:02.206
+f34de9c0-5dd7-48b1-bef4-9b8f72f95a86	59574408-864b-4fb3-a08f-5ee2211a8ba1	Honey almond	honey almond	4	t	2026-06-17 11:50:09.772	2026-06-17 11:50:09.772
+11eca007-82d2-44d8-b07c-b9aad4ed0ec4	59574408-864b-4fb3-a08f-5ee2211a8ba1	White Rose	white rose	3	t	2026-06-17 11:50:32.325	2026-06-17 11:50:32.325
+0c67d0de-3c86-4047-b10c-fea938d735d5	59574408-864b-4fb3-a08f-5ee2211a8ba1	Blue	blue	2	t	2026-06-17 11:59:15.806	2026-06-17 11:59:15.806
+edcb2d16-3ef8-46ed-84c0-b55925836025	59574408-864b-4fb3-a08f-5ee2211a8ba1	Levander	\N	1	t	2026-06-17 12:19:05.847	2026-06-17 12:19:05.847
+adda47fd-5c46-4ebf-8a6e-133548aba59e	59574408-864b-4fb3-a08f-5ee2211a8ba1	White	white	2	t	2026-06-17 12:19:27.034	2026-06-17 12:19:27.034
+d1f00583-8325-4de2-8d03-13e550682edd	59574408-864b-4fb3-a08f-5ee2211a8ba1	Jasmine	jasmine	3	t	2026-06-17 12:19:40.403	2026-06-17 12:19:40.403
+82b87405-7303-4194-8470-0b74022faa4c	906abee1-8c7f-4645-8193-973989132503	3Ltr	3ltr	3	t	2026-06-17 12:31:16.13	2026-06-17 12:31:16.13
+12e6652f-be05-405f-8647-8cc760628251	a39db598-111e-4007-bf54-f564b2c1f587	Small	small	4	t	2026-06-17 12:43:11.905	2026-06-17 12:43:11.905
+b7624b89-1245-4380-936f-3ec1cc995001	a39db598-111e-4007-bf54-f564b2c1f587	Long Bar	long bar	5	t	2026-06-17 12:43:24.898	2026-06-17 12:43:24.898
+08b9ab65-eba3-4875-a761-485f6196f74e	a39db598-111e-4007-bf54-f564b2c1f587	1Pcs	1pcs	0	t	2026-06-17 13:03:55.272	2026-06-17 13:03:55.272
+a2203e30-f48b-48d9-8a20-f17b52937ced	a39db598-111e-4007-bf54-f564b2c1f587	1Bottle	1bottle	0	t	2026-06-17 13:06:28.529	2026-06-17 13:06:28.529
 \.
 
 
 --
--- TOC entry 5497 (class 0 OID 18442)
--- Dependencies: 226
+-- TOC entry 5516 (class 0 OID 21406)
+-- Dependencies: 245
 -- Data for Name: product_option_values_on_products; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.product_option_values_on_products (product_id, option_id, value_id) FROM stdin;
+1f87d70a-7fb5-43e9-a41c-87b29873a33b	a39db598-111e-4007-bf54-f564b2c1f587	12e6652f-be05-405f-8647-8cc760628251
+1f87d70a-7fb5-43e9-a41c-87b29873a33b	a39db598-111e-4007-bf54-f564b2c1f587	b7624b89-1245-4380-936f-3ec1cc995001
+05268a8c-518a-4ff4-8691-3cfdff054382	a39db598-111e-4007-bf54-f564b2c1f587	08b9ab65-eba3-4875-a761-485f6196f74e
+90792798-2b85-4423-8eba-e7f12c64617d	a39db598-111e-4007-bf54-f564b2c1f587	08b9ab65-eba3-4875-a761-485f6196f74e
+2881ef70-d26b-4da5-af06-9e0c5795fee4	906abee1-8c7f-4645-8193-973989132503	f56ce2c9-7e87-4eaf-8588-d6c8822a106e
+09cfaa0d-9088-4e2d-823e-3ad80af8853b	906abee1-8c7f-4645-8193-973989132503	0f01dc86-2798-4ffb-9902-663a759b845e
+46ee9fc8-c21e-4b8c-9003-7337ea88ab68	906abee1-8c7f-4645-8193-973989132503	0f01dc86-2798-4ffb-9902-663a759b845e
+07b2bf6a-2585-42f2-a7fd-ecc432b11861	a39db598-111e-4007-bf54-f564b2c1f587	08b9ab65-eba3-4875-a761-485f6196f74e
+03e5ef08-6883-4fd0-9583-94a2734aad9a	a39db598-111e-4007-bf54-f564b2c1f587	a2203e30-f48b-48d9-8a20-f17b52937ced
+df541ce1-98b2-49a0-8479-f5a9e1532a85	a39db598-111e-4007-bf54-f564b2c1f587	a2203e30-f48b-48d9-8a20-f17b52937ced
+c7b8e71d-3489-4bd7-8f88-2e541ee86e41	a39db598-111e-4007-bf54-f564b2c1f587	08b9ab65-eba3-4875-a761-485f6196f74e
+2e6248be-15bb-45a8-8dc1-245118193c6f	a39db598-111e-4007-bf54-f564b2c1f587	08b9ab65-eba3-4875-a761-485f6196f74e
+fb39c7d5-a4c8-43b6-abed-24fa74046d1d	a39db598-111e-4007-bf54-f564b2c1f587	08b9ab65-eba3-4875-a761-485f6196f74e
+11920e18-2c21-473c-a201-54cfa6870a03	a39db598-111e-4007-bf54-f564b2c1f587	08b9ab65-eba3-4875-a761-485f6196f74e
+64289463-e48b-4261-bfef-e59b622eb20e	59574408-864b-4fb3-a08f-5ee2211a8ba1	0888e912-f7f3-466c-9603-d8958d9b139f
+64289463-e48b-4261-bfef-e59b622eb20e	59574408-864b-4fb3-a08f-5ee2211a8ba1	fcdd232c-7426-4e25-b32f-df5103b7f511
+64289463-e48b-4261-bfef-e59b622eb20e	59574408-864b-4fb3-a08f-5ee2211a8ba1	5c00a20f-7157-4e94-9797-eb233b0f8c48
+64289463-e48b-4261-bfef-e59b622eb20e	59574408-864b-4fb3-a08f-5ee2211a8ba1	f34de9c0-5dd7-48b1-bef4-9b8f72f95a86
+64289463-e48b-4261-bfef-e59b622eb20e	59574408-864b-4fb3-a08f-5ee2211a8ba1	11eca007-82d2-44d8-b07c-b9aad4ed0ec4
+eaacdf54-eaa9-4dcc-839e-a10a61588523	59574408-864b-4fb3-a08f-5ee2211a8ba1	0bb4c7bc-d181-4c9a-869e-4aeae5df4031
+eaacdf54-eaa9-4dcc-839e-a10a61588523	59574408-864b-4fb3-a08f-5ee2211a8ba1	30d60dcc-867c-4fbd-a208-4aef88480725
+eaacdf54-eaa9-4dcc-839e-a10a61588523	59574408-864b-4fb3-a08f-5ee2211a8ba1	0c67d0de-3c86-4047-b10c-fea938d735d5
+0019bc5a-cfda-423a-8033-04e19527878c	a39db598-111e-4007-bf54-f564b2c1f587	d79e5779-4b44-422c-bcb0-43743dba8196
+eb72e342-64df-4566-8029-db2c63859130	59574408-864b-4fb3-a08f-5ee2211a8ba1	30d60dcc-867c-4fbd-a208-4aef88480725
+eb72e342-64df-4566-8029-db2c63859130	59574408-864b-4fb3-a08f-5ee2211a8ba1	adda47fd-5c46-4ebf-8a6e-133548aba59e
+eb72e342-64df-4566-8029-db2c63859130	59574408-864b-4fb3-a08f-5ee2211a8ba1	edcb2d16-3ef8-46ed-84c0-b55925836025
+72c84214-a05b-40e8-9093-d76177afd8d9	906abee1-8c7f-4645-8193-973989132503	f56ce2c9-7e87-4eaf-8588-d6c8822a106e
+5eaf65df-0faa-4975-be7b-6a2554a04f13	906abee1-8c7f-4645-8193-973989132503	f56ce2c9-7e87-4eaf-8588-d6c8822a106e
+230f5c47-5d61-4da1-adfc-6aa5d46f7111	906abee1-8c7f-4645-8193-973989132503	f56ce2c9-7e87-4eaf-8588-d6c8822a106e
+b4366645-b14a-4de1-b621-e8776dc4f689	59574408-864b-4fb3-a08f-5ee2211a8ba1	30d60dcc-867c-4fbd-a208-4aef88480725
+b4366645-b14a-4de1-b621-e8776dc4f689	59574408-864b-4fb3-a08f-5ee2211a8ba1	adda47fd-5c46-4ebf-8a6e-133548aba59e
+b4366645-b14a-4de1-b621-e8776dc4f689	59574408-864b-4fb3-a08f-5ee2211a8ba1	edcb2d16-3ef8-46ed-84c0-b55925836025
+b4366645-b14a-4de1-b621-e8776dc4f689	59574408-864b-4fb3-a08f-5ee2211a8ba1	d1f00583-8325-4de2-8d03-13e550682edd
+b4366645-b14a-4de1-b621-e8776dc4f689	906abee1-8c7f-4645-8193-973989132503	82b87405-7303-4194-8470-0b74022faa4c
 \.
 
 
 --
--- TOC entry 5494 (class 0 OID 18397)
--- Dependencies: 223
+-- TOC entry 5517 (class 0 OID 21414)
+-- Dependencies: 246
 -- Data for Name: product_options; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.product_options (id, name, code, is_active, created_at, updated_at) FROM stdin;
+59574408-864b-4fb3-a08f-5ee2211a8ba1	Flavour	flavour	t	2026-05-08 06:39:04.167	2026-05-08 06:39:04.167
+906abee1-8c7f-4645-8193-973989132503	Weight	weight	t	2026-05-08 06:41:25.572	2026-05-08 06:41:25.572
+a39db598-111e-4007-bf54-f564b2c1f587	Pack	pack	t	2026-05-08 06:43:46.941	2026-05-08 06:43:46.941
+40b86c40-f78a-4c90-9fab-1eb3a477e214	Item	item	t	2026-06-17 07:39:30.545	2026-06-17 07:39:30.545
 \.
 
 
 --
--- TOC entry 5496 (class 0 OID 18429)
--- Dependencies: 225
+-- TOC entry 5518 (class 0 OID 21427)
+-- Dependencies: 247
 -- Data for Name: product_options_on_products; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.product_options_on_products (product_id, option_id, is_required, "position") FROM stdin;
+64289463-e48b-4261-bfef-e59b622eb20e	59574408-864b-4fb3-a08f-5ee2211a8ba1	f	0
+eaacdf54-eaa9-4dcc-839e-a10a61588523	59574408-864b-4fb3-a08f-5ee2211a8ba1	f	0
+0019bc5a-cfda-423a-8033-04e19527878c	a39db598-111e-4007-bf54-f564b2c1f587	f	0
+eb72e342-64df-4566-8029-db2c63859130	59574408-864b-4fb3-a08f-5ee2211a8ba1	t	0
+72c84214-a05b-40e8-9093-d76177afd8d9	906abee1-8c7f-4645-8193-973989132503	f	0
+5eaf65df-0faa-4975-be7b-6a2554a04f13	906abee1-8c7f-4645-8193-973989132503	t	0
+230f5c47-5d61-4da1-adfc-6aa5d46f7111	906abee1-8c7f-4645-8193-973989132503	t	0
+b4366645-b14a-4de1-b621-e8776dc4f689	59574408-864b-4fb3-a08f-5ee2211a8ba1	t	0
+b4366645-b14a-4de1-b621-e8776dc4f689	906abee1-8c7f-4645-8193-973989132503	t	1
+1f87d70a-7fb5-43e9-a41c-87b29873a33b	a39db598-111e-4007-bf54-f564b2c1f587	t	0
+05268a8c-518a-4ff4-8691-3cfdff054382	a39db598-111e-4007-bf54-f564b2c1f587	t	0
+90792798-2b85-4423-8eba-e7f12c64617d	a39db598-111e-4007-bf54-f564b2c1f587	t	0
+2881ef70-d26b-4da5-af06-9e0c5795fee4	906abee1-8c7f-4645-8193-973989132503	t	0
+09cfaa0d-9088-4e2d-823e-3ad80af8853b	906abee1-8c7f-4645-8193-973989132503	t	0
+46ee9fc8-c21e-4b8c-9003-7337ea88ab68	906abee1-8c7f-4645-8193-973989132503	t	0
+07b2bf6a-2585-42f2-a7fd-ecc432b11861	a39db598-111e-4007-bf54-f564b2c1f587	t	0
+03e5ef08-6883-4fd0-9583-94a2734aad9a	a39db598-111e-4007-bf54-f564b2c1f587	t	0
+df541ce1-98b2-49a0-8479-f5a9e1532a85	a39db598-111e-4007-bf54-f564b2c1f587	t	0
+c7b8e71d-3489-4bd7-8f88-2e541ee86e41	a39db598-111e-4007-bf54-f564b2c1f587	t	0
+2e6248be-15bb-45a8-8dc1-245118193c6f	a39db598-111e-4007-bf54-f564b2c1f587	t	0
+fb39c7d5-a4c8-43b6-abed-24fa74046d1d	a39db598-111e-4007-bf54-f564b2c1f587	t	0
+11920e18-2c21-473c-a201-54cfa6870a03	a39db598-111e-4007-bf54-f564b2c1f587	t	0
 \.
 
 
 --
--- TOC entry 5493 (class 0 OID 18377)
--- Dependencies: 222
+-- TOC entry 5519 (class 0 OID 21438)
+-- Dependencies: 248
 -- Data for Name: product_variants; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.product_variants (id, product_id, sku, name, price, cost, weight, attributes, "position", is_active, created_at, updated_at) FROM stdin;
+f44c87d3-ea38-4329-bad9-b0a72e4d955d	eaacdf54-eaa9-4dcc-839e-a10a61588523	SKU-003-ROSE	Flavour: Rose	200.00	\N	\N	{"optionValues": {"flavour": "Rose"}, "optionValueIds": {"flavour": "30d60dcc-867c-4fbd-a208-4aef88480725"}}	0	t	2026-06-17 11:59:30.488	2026-06-17 11:59:30.488
+76e0bd60-36da-44ae-bff0-dd87635ce982	eaacdf54-eaa9-4dcc-839e-a10a61588523	SKU-003-CAMAY	Flavour: Camay	200.00	\N	\N	{"optionValues": {"flavour": "Camay"}, "optionValueIds": {"flavour": "0bb4c7bc-d181-4c9a-869e-4aeae5df4031"}}	1	t	2026-06-17 11:59:30.503	2026-06-17 11:59:30.503
+ec4803c2-6aa6-452c-aa1a-e23d0271d115	eaacdf54-eaa9-4dcc-839e-a10a61588523	SKU-003-BLUE	Flavour: Blue	200.00	\N	\N	{"optionValues": {"flavour": "Blue"}, "optionValueIds": {"flavour": "0c67d0de-3c86-4047-b10c-fea938d735d5"}}	2	t	2026-06-17 11:59:30.51	2026-06-17 11:59:30.51
+fdf241e4-b0d0-456e-8da6-eef5c1124666	eb72e342-64df-4566-8029-db2c63859130	SKU-008-ROSE	Flavour: Rose	120.00	\N	\N	{"optionValues": {"flavour": "Rose"}, "optionValueIds": {"flavour": "30d60dcc-867c-4fbd-a208-4aef88480725"}}	0	t	2026-06-17 12:19:55.8	2026-06-17 12:19:55.8
+c36c179e-c2af-4e00-beea-dfd8a3cdec2c	eb72e342-64df-4566-8029-db2c63859130	SKU-008-LEVANDER	Flavour: Levander	120.00	\N	\N	{"optionValues": {"flavour": "Levander"}, "optionValueIds": {"flavour": "edcb2d16-3ef8-46ed-84c0-b55925836025"}}	1	t	2026-06-17 12:19:55.815	2026-06-17 12:19:55.815
+663e25b8-ac9e-4892-b47c-c2e9514ef716	eb72e342-64df-4566-8029-db2c63859130	SKU-008-WHITE	Flavour: White	120.00	\N	\N	{"optionValues": {"flavour": "White"}, "optionValueIds": {"flavour": "adda47fd-5c46-4ebf-8a6e-133548aba59e"}}	2	t	2026-06-17 12:19:55.821	2026-06-17 12:19:55.821
+b0d59239-7b73-492b-8cf8-d0ddba9b5d2e	230f5c47-5d61-4da1-adfc-6aa5d46f7111	SKU-011-1-5LTR	Weight: 1.5Ltr	80.00	\N	\N	{"optionValues": {"weight": "1.5Ltr"}, "optionValueIds": {"weight": "f56ce2c9-7e87-4eaf-8588-d6c8822a106e"}}	0	t	2026-06-17 12:25:21.533	2026-06-17 12:25:21.533
+f48488c2-d01c-47a1-98f2-8073d9f103db	1f87d70a-7fb5-43e9-a41c-87b29873a33b	SKU-019-SMALL	Pack: Small	20.00	\N	\N	{"optionValues": {"pack": "Small"}, "optionValueIds": {"pack": "12e6652f-be05-405f-8647-8cc760628251"}}	0	t	2026-06-17 12:43:52.656	2026-06-17 12:43:52.656
+3ddee9a7-cbf0-4ce6-9f0a-1b71cf16d076	1f87d70a-7fb5-43e9-a41c-87b29873a33b	SKU-019-LONG-BAR	Pack: Long Bar	50.00	\N	\N	{"optionValues": {"pack": "Long Bar"}, "optionValueIds": {"pack": "b7624b89-1245-4380-936f-3ec1cc995001"}}	1	t	2026-06-17 12:43:52.67	2026-06-17 12:44:02.44
+dac44db9-52fe-47ef-bec9-80ebd2773cba	90792798-2b85-4423-8eba-e7f12c64617d	SKU-020-1PCS	Pack: 1Pcs	10.00	\N	\N	{"optionValues": {"pack": "1Pcs"}, "optionValueIds": {"pack": "08b9ab65-eba3-4875-a761-485f6196f74e"}}	0	t	2026-06-17 13:04:37.719	2026-06-17 13:04:37.719
+480fc5fd-9198-4c2f-ae38-8a0b052a9313	09cfaa0d-9088-4e2d-823e-3ad80af8853b	SKU-017-2LTR	Weight: 2Ltr	159.00	\N	\N	{"optionValues": {"weight": "2Ltr"}, "optionValueIds": {"weight": "0f01dc86-2798-4ffb-9902-663a759b845e"}}	0	t	2026-06-17 13:05:19.644	2026-06-17 13:05:19.644
+81b62a2b-ca50-48c2-8ee7-3628ab91a7a1	c7b8e71d-3489-4bd7-8f88-2e541ee86e41	SKU-001-1PCS	Pack: 1Pcs	110.00	\N	\N	{"optionValues": {"pack": "1Pcs"}, "optionValueIds": {"pack": "08b9ab65-eba3-4875-a761-485f6196f74e"}}	0	t	2026-06-17 13:09:42.151	2026-06-17 13:09:42.151
+a0f519b2-b535-41bb-abae-c7bf57b39e4c	11920e18-2c21-473c-a201-54cfa6870a03	SKU-007-1PCS	Pack: 1Pcs	79.98	\N	\N	{"optionValues": {"pack": "1Pcs"}, "optionValueIds": {"pack": "08b9ab65-eba3-4875-a761-485f6196f74e"}}	0	t	2026-06-17 13:10:33.453	2026-06-17 13:10:33.453
+58daf9a0-a0ab-4273-b449-e6a076fc9acc	0019bc5a-cfda-423a-8033-04e19527878c	SKU-002-PACK-OF-3	Pack: Pack of 3	80.00	\N	\N	{"optionValues": {"pack": "Pack of 3"}, "optionValueIds": {"pack": "d79e5779-4b44-422c-bcb0-43743dba8196"}}	0	t	2026-06-17 12:02:33.213	2026-06-17 12:02:33.213
+80c8d8b5-ebed-42d3-aca4-9611d4585f71	72c84214-a05b-40e8-9093-d76177afd8d9	SKU-009-1-5LTR	Weight: 1.5Ltr	200.00	\N	\N	{"optionValues": {"weight": "1.5Ltr"}, "optionValueIds": {"weight": "f56ce2c9-7e87-4eaf-8588-d6c8822a106e"}}	0	t	2026-06-17 12:21:22.498	2026-06-17 12:21:22.498
+b85f7fa3-cb5b-4754-8399-6f792a3bf635	5eaf65df-0faa-4975-be7b-6a2554a04f13	SKU-010-1-5LTR	Weight: 1.5Ltr	80.00	\N	\N	{"optionValues": {"weight": "1.5Ltr"}, "optionValueIds": {"weight": "f56ce2c9-7e87-4eaf-8588-d6c8822a106e"}}	0	t	2026-06-17 12:22:41.869	2026-06-17 12:22:41.869
+cd8e05c4-96f5-488b-aa34-74083d3e2978	b4366645-b14a-4de1-b621-e8776dc4f689	SKU-013-ROSE-3LTR	Flavour: Rose • Weight: 3Ltr	370.00	\N	\N	{"optionValues": {"weight": "3Ltr", "flavour": "Rose"}, "optionValueIds": {"weight": "82b87405-7303-4194-8470-0b74022faa4c", "flavour": "30d60dcc-867c-4fbd-a208-4aef88480725"}}	0	t	2026-06-17 12:31:36.385	2026-06-17 12:31:36.385
+ad533fd1-8637-4268-bf5c-c8dcd1febdc6	b4366645-b14a-4de1-b621-e8776dc4f689	SKU-013-LEVANDER-3LTR	Flavour: Levander • Weight: 3Ltr	370.00	\N	\N	{"optionValues": {"weight": "3Ltr", "flavour": "Levander"}, "optionValueIds": {"weight": "82b87405-7303-4194-8470-0b74022faa4c", "flavour": "edcb2d16-3ef8-46ed-84c0-b55925836025"}}	1	t	2026-06-17 12:31:36.402	2026-06-17 12:31:36.402
+34eddf36-827a-4247-9037-4af9dae3a462	b4366645-b14a-4de1-b621-e8776dc4f689	SKU-013-WHITE-3LTR	Flavour: White • Weight: 3Ltr	370.00	\N	\N	{"optionValues": {"weight": "3Ltr", "flavour": "White"}, "optionValueIds": {"weight": "82b87405-7303-4194-8470-0b74022faa4c", "flavour": "adda47fd-5c46-4ebf-8a6e-133548aba59e"}}	2	t	2026-06-17 12:31:36.41	2026-06-17 12:31:36.41
+3fcd3a63-0d69-4368-8078-4094c1f0d595	b4366645-b14a-4de1-b621-e8776dc4f689	SKU-013-JASMINE-3LTR	Flavour: Jasmine • Weight: 3Ltr	370.00	\N	\N	{"optionValues": {"weight": "3Ltr", "flavour": "Jasmine"}, "optionValueIds": {"weight": "82b87405-7303-4194-8470-0b74022faa4c", "flavour": "d1f00583-8325-4de2-8d03-13e550682edd"}}	3	t	2026-06-17 12:31:36.418	2026-06-17 12:31:36.418
+e35461a9-65b7-4ab2-a26a-d1d3d46bfb9a	05268a8c-518a-4ff4-8691-3cfdff054382	SKU-021-1PCS	Pack: 1Pcs	50.00	\N	\N	{"optionValues": {"pack": "1Pcs"}, "optionValueIds": {"pack": "08b9ab65-eba3-4875-a761-485f6196f74e"}}	0	t	2026-06-17 13:04:05.605	2026-06-17 13:04:05.605
+4e7ea113-5c3c-4315-96f5-357735682caa	2881ef70-d26b-4da5-af06-9e0c5795fee4	SKU-018-1-5LTR	Weight: 1.5Ltr	79.98	\N	\N	{"optionValues": {"weight": "1.5Ltr"}, "optionValueIds": {"weight": "f56ce2c9-7e87-4eaf-8588-d6c8822a106e"}}	0	t	2026-06-17 13:04:53.64	2026-06-17 13:04:53.64
+cb0eb246-2ad0-45d8-9be8-07f10fcbf62d	46ee9fc8-c21e-4b8c-9003-7337ea88ab68	SKU-016-2LTR	Weight: 2Ltr	180.00	\N	\N	{"optionValues": {"weight": "2Ltr"}, "optionValueIds": {"weight": "0f01dc86-2798-4ffb-9902-663a759b845e"}}	0	t	2026-06-17 13:05:37.299	2026-06-17 13:05:37.299
+efbf85a4-a7b1-4ead-83db-4c7df04e3790	07b2bf6a-2585-42f2-a7fd-ecc432b11861	SKU-015-1PCS	Pack: 1Pcs	100.00	\N	\N	{"optionValues": {"pack": "1Pcs"}, "optionValueIds": {"pack": "08b9ab65-eba3-4875-a761-485f6196f74e"}}	0	t	2026-06-17 13:05:50.637	2026-06-17 13:05:50.637
+48de193f-546c-4de8-b665-15e8cab49584	03e5ef08-6883-4fd0-9583-94a2734aad9a	SKU-014-1BOTTLE	Pack: 1Bottle	100.00	\N	\N	{"optionValues": {"pack": "1Bottle"}, "optionValueIds": {"pack": "a2203e30-f48b-48d9-8a20-f17b52937ced"}}	0	t	2026-06-17 13:06:45.46	2026-06-17 13:06:45.46
+120f37f1-42aa-45c0-b801-4731330886e3	df541ce1-98b2-49a0-8479-f5a9e1532a85	SKU-012-1BOTTLE	Pack: 1Bottle	200.00	\N	\N	{"optionValues": {"pack": "1Bottle"}, "optionValueIds": {"pack": "a2203e30-f48b-48d9-8a20-f17b52937ced"}}	0	t	2026-06-17 13:07:10.025	2026-06-17 13:07:10.025
+5c75a449-39e0-4ec7-a6ff-d11dbb9f2d08	2e6248be-15bb-45a8-8dc1-245118193c6f	SKU-005-1PCS	Pack: 1Pcs	50.00	\N	\N	{"optionValues": {"pack": "1Pcs"}, "optionValueIds": {"pack": "08b9ab65-eba3-4875-a761-485f6196f74e"}}	0	t	2026-06-17 13:10:05.209	2026-06-17 13:10:05.209
+85511305-b97c-4697-9e60-1ebb4ef4e0de	fb39c7d5-a4c8-43b6-abed-24fa74046d1d	SKU-006-1PCS	Pack: 1Pcs	60.00	\N	\N	{"optionValues": {"pack": "1Pcs"}, "optionValueIds": {"pack": "08b9ab65-eba3-4875-a761-485f6196f74e"}}	0	t	2026-06-17 13:10:16.459	2026-06-17 13:10:16.459
+13f1d0a1-a21b-42e1-865b-51838688da07	64289463-e48b-4261-bfef-e59b622eb20e	SKU-004-PINK-LILY	Flavour: Pink Lily	100.00	\N	\N	{"optionValues": {"flavour": "Pink Lily"}, "optionValueIds": {"flavour": "0888e912-f7f3-466c-9603-d8958d9b139f"}}	0	t	2026-06-17 11:51:34.506	2026-06-17 11:51:34.506
+18f24f31-3013-4862-8624-96ead88caeee	64289463-e48b-4261-bfef-e59b622eb20e	SKU-004-CUCUMBER	Flavour: Cucumber	100.00	\N	\N	{"optionValues": {"flavour": "Cucumber"}, "optionValueIds": {"flavour": "fcdd232c-7426-4e25-b32f-df5103b7f511"}}	1	t	2026-06-17 11:51:34.518	2026-06-17 11:51:34.518
+54baa2ca-a251-4b16-b691-80c365b3525d	64289463-e48b-4261-bfef-e59b622eb20e	SKU-004-ORCHID	Flavour: Orchid	100.00	\N	\N	{"optionValues": {"flavour": "Orchid"}, "optionValueIds": {"flavour": "5c00a20f-7157-4e94-9797-eb233b0f8c48"}}	2	t	2026-06-17 11:51:34.524	2026-06-17 11:51:34.524
+9f8d36e8-526e-43a8-8171-4d7f76d1ceb6	64289463-e48b-4261-bfef-e59b622eb20e	SKU-004-WHITE-ROSE	Flavour: White Rose	100.00	\N	\N	{"optionValues": {"flavour": "White Rose"}, "optionValueIds": {"flavour": "11eca007-82d2-44d8-b07c-b9aad4ed0ec4"}}	3	t	2026-06-17 11:51:34.53	2026-06-17 11:51:34.53
+e976bacd-89cf-47a4-99d5-1c37c9eb3cdc	64289463-e48b-4261-bfef-e59b622eb20e	SKU-004-HONEY-ALMOND	Flavour: Honey almond	100.00	\N	\N	{"optionValues": {"flavour": "Honey almond"}, "optionValueIds": {"flavour": "f34de9c0-5dd7-48b1-bef4-9b8f72f95a86"}}	4	t	2026-06-17 11:51:34.536	2026-06-17 11:51:34.536
 \.
 
 
 --
--- TOC entry 5492 (class 0 OID 18355)
--- Dependencies: 221
+-- TOC entry 5520 (class 0 OID 21456)
+-- Dependencies: 249
 -- Data for Name: products; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.products (id, sku, name, slug, type, description, short_description, base_price, cost, weight, status, visibility, tax_class_id, attributes, meta_data, created_at, updated_at, deleted_at) FROM stdin;
+df541ce1-98b2-49a0-8479-f5a9e1532a85	SKU-012	Glass Cleaner (Clean 360)	glass-cleaner-clean-360	configurable	\N	\N	200.00	\N	\N	active	both	\N	{}	{}	2026-06-17 12:27:56.663	2026-06-17 12:27:56.663	\N
+b4366645-b14a-4de1-b621-e8776dc4f689	SKU-013	Panda Perfume Phenyl	panda-perfume-phenyl	configurable	\N	\N	370.00	\N	\N	active	both	\N	{}	{}	2026-06-17 12:30:01.373	2026-06-17 12:30:01.373	\N
+03e5ef08-6883-4fd0-9583-94a2734aad9a	SKU-014	Panda Liquid Neel	panda-liquid-neel	configurable	\N	\N	100.00	\N	\N	active	both	\N	{}	{}	2026-06-17 12:33:37.963	2026-06-17 12:33:37.963	\N
+07b2bf6a-2585-42f2-a7fd-ecc432b11861	SKU-015	Cockroach Killer	cockroach-killer	configurable	\N	\N	100.00	\N	\N	active	both	\N	{}	{}	2026-06-17 12:34:49.065	2026-06-17 12:34:49.065	\N
+09cfaa0d-9088-4e2d-823e-3ad80af8853b	SKU-017	Sweep-o Floor & Tile Cleaner	sweep-o-floor-tile-cleaner	configurable	\N	\N	159.00	\N	\N	active	both	\N	{}	{}	2026-06-17 12:37:49.797	2026-06-17 12:37:59.673	\N
+46ee9fc8-c21e-4b8c-9003-7337ea88ab68	SKU-016	Clean360 Bleach Exra Strong	clean360-bleach-exra-strong	configurable	\N	\N	180.00	\N	\N	active	both	\N	{}	{}	2026-06-17 12:36:13.619	2026-06-17 12:38:22.075	\N
+2881ef70-d26b-4da5-af06-9e0c5795fee4	SKU-018	Dish Wash Liquid	dish-wash-liquid	configurable	\N	\N	79.98	\N	\N	active	both	\N	{}	{}	2026-06-17 12:40:11.279	2026-06-17 12:40:11.279	\N
+1f87d70a-7fb5-43e9-a41c-87b29873a33b	SKU-019	Super Sony Dish Wash Soap	super-sony	configurable	\N	\N	20.00	\N	\N	active	both	\N	{}	{}	2026-06-17 12:42:28.802	2026-06-17 12:45:08.124	\N
+90792798-2b85-4423-8eba-e7f12c64617d	SKU-020	777 Sony Dish Wash Soap	777-sony-dish-wash-soap	configurable	\N	\N	10.00	\N	\N	active	both	\N	{}	{}	2026-06-17 12:44:43.939	2026-06-17 12:45:22.394	\N
+05268a8c-518a-4ff4-8691-3cfdff054382	SKU-021	Dish Wash Scourer	dish-wash-scourer	configurable	\N	\N	50.00	\N	\N	active	both	\N	{}	{}	2026-06-17 12:46:19.087	2026-06-17 12:46:19.087	\N
+72c84214-a05b-40e8-9093-d76177afd8d9	SKU-009	Toilet Bowl Cleaner	toilet-bowl-cleaner	configurable	\N	\N	200.00	\N	\N	active	both	\N	{}	{}	2026-06-17 12:21:11.493	2026-06-17 13:07:58.153	\N
+64289463-e48b-4261-bfef-e59b622eb20e	SKU-004	Viva Soap	test-product-3	configurable	\N	\N	100.00	\N	\N	active	both	\N	{}	{}	2026-05-04 06:50:26.021	2026-06-17 11:55:19.842	\N
+eaacdf54-eaa9-4dcc-839e-a10a61588523	SKU-003	Hand Wash	test-product-2	configurable	\N	\N	200.00	\N	\N	active	both	\N	{}	{}	2026-05-04 06:49:51.979	2026-06-17 11:59:00.877	\N
+0019bc5a-cfda-423a-8033-04e19527878c	SKU-002	Tibet Beauty Soap	test-product-1	configurable	\N	\N	80.00	\N	\N	active	both	\N	{}	{}	2026-05-04 06:49:39.284	2026-06-17 12:03:00.601	\N
+c7b8e71d-3489-4bd7-8f88-2e541ee86e41	SKU-001	Euro Beauty Soap	test-product	configurable	\N	\N	110.00	\N	\N	active	both	\N	{}	{}	2026-05-04 06:49:27.174	2026-06-17 12:04:39.516	\N
+2e6248be-15bb-45a8-8dc1-245118193c6f	SKU-005	Khaleej Washing Soap	test-product-4	configurable	\N	\N	50.00	\N	\N	active	both	\N	{}	{}	2026-06-17 12:08:05.816	2026-06-17 12:13:55.671	\N
+fb39c7d5-a4c8-43b6-abed-24fa74046d1d	SKU-006	Misaal Washing Soap	test-product-5	configurable	\N	\N	60.00	\N	\N	active	both	\N	{}	{}	2026-06-17 12:12:32.073	2026-06-17 12:14:14.048	\N
+11920e18-2c21-473c-a201-54cfa6870a03	SKU-007	Fatty Brown Washing Soap	fatty-brown-washing-soap	configurable	\N	\N	79.98	\N	\N	active	both	\N	{}	{}	2026-06-17 12:15:17.43	2026-06-17 12:15:17.43	\N
+eb72e342-64df-4566-8029-db2c63859130	SKU-008	Perfume Phenyl	perfume-phenyl	configurable	\N	\N	120.00	\N	\N	active	both	\N	{}	{}	2026-06-17 12:17:15.615	2026-06-17 12:17:15.615	\N
+5eaf65df-0faa-4975-be7b-6a2554a04f13	SKU-010	Tile Wash	tile-wash	configurable	\N	\N	80.00	\N	\N	active	both	\N	{}	{}	2026-06-17 12:22:31.314	2026-06-17 12:22:31.314	\N
+230f5c47-5d61-4da1-adfc-6aa5d46f7111	SKU-011	Bleach Strong	bleach-cleaner	configurable	\N	\N	80.00	\N	\N	active	both	\N	{}	{}	2026-06-17 12:23:50.124	2026-06-17 12:25:14.97	\N
 \.
 
 
 --
--- TOC entry 5510 (class 0 OID 18680)
--- Dependencies: 239
+-- TOC entry 5521 (class 0 OID 21476)
+-- Dependencies: 250
 -- Data for Name: promotion_customer_groups; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -1405,8 +1698,8 @@ COPY public.promotion_customer_groups (id, promotion_id, customer_group_id, is_e
 
 
 --
--- TOC entry 5511 (class 0 OID 18692)
--- Dependencies: 240
+-- TOC entry 5522 (class 0 OID 21486)
+-- Dependencies: 251
 -- Data for Name: promotion_logs; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -1415,8 +1708,8 @@ COPY public.promotion_logs (id, promotion_id, cart_id, checkout_id, order_id, cu
 
 
 --
--- TOC entry 5509 (class 0 OID 18671)
--- Dependencies: 238
+-- TOC entry 5523 (class 0 OID 21501)
+-- Dependencies: 252
 -- Data for Name: promotion_products; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -1425,18 +1718,19 @@ COPY public.promotion_products (id, promotion_id, product_id, variant_id, catego
 
 
 --
--- TOC entry 5508 (class 0 OID 18641)
--- Dependencies: 237
+-- TOC entry 5524 (class 0 OID 21508)
+-- Dependencies: 253
 -- Data for Name: promotions; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.promotions (id, code, name, description, type, status, discount_value, discount_type, scope, is_stackable, is_exclusive, applies_to_all_groups, conditions, usage_limit, usage_limit_per_user, current_usage, start_date, end_date, metadata, created_at, updated_at) FROM stdin;
+e7fc56cd-648e-4d62-8a07-784dfe89a278	5255	may discount offer	10% off on every product	percentage	active	10.00	percentage	cart	f	t	t	{}	\N	\N	0	\N	\N	{}	2026-05-12 08:15:49.738	2026-05-12 08:16:19.666
 \.
 
 
 --
--- TOC entry 5515 (class 0 OID 18773)
--- Dependencies: 244
+-- TOC entry 5525 (class 0 OID 21536)
+-- Dependencies: 254
 -- Data for Name: shipping_method_customer_groups; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -1445,40 +1739,48 @@ COPY public.shipping_method_customer_groups (id, shipping_method_id, customer_gr
 
 
 --
--- TOC entry 5513 (class 0 OID 18729)
--- Dependencies: 242
+-- TOC entry 5526 (class 0 OID 21549)
+-- Dependencies: 255
 -- Data for Name: shipping_methods; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.shipping_methods (id, zone_id, code, name, description, type, config, min_order_amount, max_order_amount, min_weight, max_weight, priority, is_active, courier_config, metadata, created_at, updated_at) FROM stdin;
-00000000-0000-0000-0000-000000000002	00000000-0000-0000-0000-000000000001	standard	Standard Shipping	Standard delivery	flat_rate	{"cost": 99}	\N	\N	\N	\N	0	t	{}	{}	2026-06-15 11:33:58.538	2026-06-15 12:52:27.877
+67b1cc73-d1a5-4f53-acd2-a3489f62c963	5c1fd339-aed0-4bdb-9b4c-d6444fb5a6d5	flat-standard	Standard Shipping	\N	flat_rate	{"cost": 100}	\N	\N	\N	\N	0	t	{}	{}	2026-05-04 07:04:16.157	2026-05-04 07:04:16.157
+00000000-0000-0000-0000-000000000002	00000000-0000-0000-0000-000000000001	standard	Standard Shipping	Standard delivery	flat_rate	{"cost": 99}	\N	\N	\N	\N	0	t	{}	{}	2026-05-06 11:10:43.414	2026-05-15 05:42:35.156
 \.
 
 
 --
--- TOC entry 5512 (class 0 OID 18709)
--- Dependencies: 241
+-- TOC entry 5527 (class 0 OID 21571)
+-- Dependencies: 256
 -- Data for Name: shipping_zones; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.shipping_zones (id, name, description, coverage, priority, is_active, metadata, created_at, updated_at) FROM stdin;
-00000000-0000-0000-0000-000000000001	Default	Default zone for all addresses	{}	0	t	{}	2026-06-15 11:33:58.521	2026-06-15 11:33:58.521
+5c1fd339-aed0-4bdb-9b4c-d6444fb5a6d5	STANDARD	standard zone	{"countries": ["PK"]}	10	t	{}	2026-05-04 07:03:53.831	2026-05-04 07:03:53.831
+00000000-0000-0000-0000-000000000001	Default	Default zone for all addresses	{}	0	t	{}	2026-05-06 11:10:43.28	2026-05-06 11:10:43.28
 \.
 
 
 --
--- TOC entry 5534 (class 0 OID 19065)
--- Dependencies: 263
+-- TOC entry 5528 (class 0 OID 21589)
+-- Dependencies: 257
 -- Data for Name: storefront_filter_options; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.storefront_filter_options (id, filter_id, value, label, sort_order, is_active, created_at, updated_at) FROM stdin;
+e34eac23-420a-4bb3-b085-ebebfc53b391	80fee301-d334-438f-9137-6bf3095754c4	250g	\N	1	t	2026-05-13 13:29:04.136	2026-05-13 13:38:15.519
+87fd742c-10c0-4fdd-b79e-a4b184689a91	80fee301-d334-438f-9137-6bf3095754c4	500g	\N	2	t	2026-05-13 13:28:58.586	2026-05-13 13:38:18.286
+7067e462-eaea-4917-b996-27f10488944e	80fee301-d334-438f-9137-6bf3095754c4	1kg	\N	3	t	2026-05-13 13:28:34.311	2026-05-13 13:38:22.516
+07fc4a04-49f9-4f3b-bd7a-eeb890ed469c	4fdd559f-69b8-4404-afcc-94fe93667d82	Chocolate	\N	1	t	2026-05-14 06:46:41.256	2026-05-14 06:46:41.256
+a7040cbc-aeec-4c04-b694-f6d6b5c202b7	4fdd559f-69b8-4404-afcc-94fe93667d82	Vanila	\N	0	t	2026-05-14 06:47:08.763	2026-05-14 06:47:08.763
+a726ebec-b292-49e7-a7ba-005153221537	4fdd559f-69b8-4404-afcc-94fe93667d82	Strawberry	\N	2	t	2026-05-14 06:47:20.886	2026-05-14 06:47:20.886
 \.
 
 
 --
--- TOC entry 5533 (class 0 OID 19051)
--- Dependencies: 262
+-- TOC entry 5529 (class 0 OID 21604)
+-- Dependencies: 258
 -- Data for Name: storefront_filter_tree_nodes; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -1487,46 +1789,66 @@ COPY public.storefront_filter_tree_nodes (id, filter_id, parent_id, nav_link_id,
 
 
 --
--- TOC entry 5532 (class 0 OID 19035)
--- Dependencies: 261
+-- TOC entry 5530 (class 0 OID 21616)
+-- Dependencies: 259
 -- Data for Name: storefront_filters; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.storefront_filters (id, code, name, kind, sort_order, is_active, created_at, updated_at) FROM stdin;
-08ed08f5-7ac7-4626-824f-97c8756e9896	category	Category	CATEGORY	0	t	2026-06-15 11:33:58.645	2026-06-15 11:33:58.645
-8aa1a209-8869-4df7-ba02-acd6496ae334	price	Price	PRICE	1	t	2026-06-15 11:33:58.65	2026-06-15 11:33:58.65
-863e8b72-e2ce-4a74-866d-9b0c96dd5cee	brand	Brand	ATTRIBUTE	2	t	2026-06-15 11:33:58.654	2026-06-15 11:33:58.654
-6f202b5d-3919-411a-a6da-f1fbeb09ced1	size	Size	ATTRIBUTE	3	t	2026-06-15 11:33:58.657	2026-06-15 11:33:58.657
+4635a7d1-abb9-47c1-9f26-bbb9bc26a5d0	price	Price	PRICE	1	t	2026-05-12 13:16:46.699	2026-05-13 11:23:36.946
+80fee301-d334-438f-9137-6bf3095754c4	weight	Weight	ATTRIBUTE	2	t	2026-05-12 13:16:46.705	2026-05-14 06:41:35.414
+4fdd559f-69b8-4404-afcc-94fe93667d82	flavour	Flavour	ATTRIBUTE	0	t	2026-05-14 06:44:11.2	2026-05-14 06:46:15.082
+dc4b5e29-0e13-4ade-bc60-42bfc27d5f23	category	Category	CATEGORY	0	t	2026-05-15 05:42:35.228	2026-05-15 05:42:35.228
+329944c8-c6b8-41f4-978f-42a057f16a15	brand	Brand	ATTRIBUTE	2	t	2026-05-15 05:42:35.236	2026-05-15 05:42:35.236
+27a5ae6c-f6d1-4de0-abf1-73c15268b2c0	size	Size	ATTRIBUTE	3	t	2026-05-15 05:42:35.238	2026-05-15 05:42:35.238
 \.
 
 
 --
--- TOC entry 5535 (class 0 OID 19082)
--- Dependencies: 264
+-- TOC entry 5531 (class 0 OID 21630)
+-- Dependencies: 260
 -- Data for Name: storefront_nav_links; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.storefront_nav_links (id, label, secondary_label, href, sort_order, is_active, kind, zone, parent_id, category_id, open_mega_menu, banner_image_url, banner_href, banner_alt, created_at, updated_at) FROM stdin;
-00000000-0000-0000-0000-00000000e001	Home	\N	/	0	t	LINK	header	\N	\N	f	\N	\N	\N	2026-06-15 12:52:28.005	2026-06-15 12:52:28.005
-00000000-0000-0000-0000-00000000e002	Products	Categories	/products	10	t	MEGA_CATEGORIES	header	\N	\N	t	\N	\N	\N	2026-06-15 12:52:28.014	2026-06-15 12:52:28.014
-00000000-0000-0000-0000-00000000e003	Track order	\N	/track-order	20	t	LINK	header	\N	\N	f	\N	\N	\N	2026-06-15 12:52:28.018	2026-06-15 12:52:28.018
-00000000-0000-0000-0000-00000000e005	Cart	\N	/cart	40	t	LINK	header	\N	\N	f	\N	\N	\N	2026-06-15 12:52:28.022	2026-06-15 12:52:28.022
+COPY public.storefront_nav_links (id, label, secondary_label, href, sort_order, is_active, kind, created_at, updated_at, zone, parent_id, category_id, open_mega_menu, banner_image_url, banner_href, banner_alt) FROM stdin;
+00000000-0000-0000-0000-00000000e001	Home	\N	/	0	t	LINK	2026-05-13 11:15:47.684	2026-05-13 11:15:47.684	header	\N	\N	f	\N	\N	\N
+00000000-0000-0000-0000-00000000e003	Track order	\N	/track-order	20	t	LINK	2026-05-13 11:15:47.684	2026-05-13 11:15:47.684	header	\N	\N	f	\N	\N	\N
+00000000-0000-0000-0000-00000000e005	Cart	\N	/cart	40	t	LINK	2026-05-13 11:15:47.684	2026-05-13 11:15:47.684	header	\N	\N	f	\N	\N	\N
+e32719a8-318c-4128-95d2-e7a3fd2114b7	Viva Beauty Soap	\N	http://localhost:3001/products/test-product-3	0	t	LINK	2026-05-14 06:10:17.76	2026-06-17 12:49:28.016	mega	3509717e-86ed-4d2b-967d-a05d27ce9803	\N	f	\N	\N	\N
+81d8f5e2-1c54-491f-ab15-66531ce3d9f3	Tibet Beauty Soap	\N	http://localhost:3001/products/test-product-1	1	t	LINK	2026-05-14 06:10:32.81	2026-06-17 12:49:59.618	mega	3509717e-86ed-4d2b-967d-a05d27ce9803	\N	f	\N	\N	\N
+4c2bb66a-2a63-4131-9f8c-3d3bebf60a1c	Euro Beauty Soap	\N	http://localhost:3001/products/test-product	2	t	LINK	2026-05-14 06:10:44.534	2026-06-17 12:50:30.683	mega	3509717e-86ed-4d2b-967d-a05d27ce9803	\N	f	\N	\N	\N
+6f6c4165-e162-4ebd-ad78-987a42165c3a	Dish Wash Items	\N	/	1	t	LINK	2026-05-13 10:44:23.917	2026-06-17 12:51:29.87	mega	\N	\N	f	\N	\N	\N
+e470e2bf-0acb-4cc6-8651-49b7154e25fe	Dish Wash Liquid	\N	http://localhost:3001/products/dish-wash-liquid	0	t	LINK	2026-05-13 10:44:41.631	2026-06-17 12:51:58.608	mega	6f6c4165-e162-4ebd-ad78-987a42165c3a	\N	f	\N	\N	\N
+8a0a4887-c075-4284-819d-3c2d6b0c4832	Super Sony Dish Wash Soap	\N	http://localhost:3001/products/super-sony	1	t	LINK	2026-05-14 06:12:00.063	2026-06-17 12:52:31.49	mega	6f6c4165-e162-4ebd-ad78-987a42165c3a	\N	f	\N	\N	\N
+fd7d6120-89fa-4ce4-a7d7-17bbf97a945c	777 Sony Dish Wash Soap	\N	http://localhost:3001/products/777-sony-dish-wash-soap	2	t	LINK	2026-06-17 12:53:21.876	2026-06-17 12:53:21.876	mega	6f6c4165-e162-4ebd-ad78-987a42165c3a	\N	f	\N	\N	\N
+129d7bfb-c80b-4796-ab26-992b09bc02f1	Dish Wash Steel Scourer	\N	http://localhost:3001/products/dish-wash-scourer	3	t	LINK	2026-06-17 12:54:09.14	2026-06-17 12:54:09.14	mega	6f6c4165-e162-4ebd-ad78-987a42165c3a	\N	f	\N	\N	\N
+2c47212c-1930-4afc-b697-68c49aa95b8b	Home Cleaning Items	\N	/	2	t	LINK	2026-05-13 10:40:56.931	2026-06-17 12:55:26.355	mega	\N	\N	f	\N	\N	\N
+c321a5fa-2fdb-4370-be83-1898acfb9828	Perfume Phenyl	\N	http://localhost:3001/products/perfume-phenyl	0	t	LINK	2026-05-13 10:41:15.89	2026-06-17 12:56:15.729	mega	2c47212c-1930-4afc-b697-68c49aa95b8b	\N	f	\N	\N	\N
+18280818-a3d3-4764-8a0d-b5952e04db68	Panda Perfume Phenyl	\N	http://localhost:3001/products/panda-perfume-phenyl	1	t	LINK	2026-05-13 10:41:43.833	2026-06-17 12:57:03.247	mega	2c47212c-1930-4afc-b697-68c49aa95b8b	\N	f	\N	\N	\N
+fb69a8e5-27c1-4293-ba49-c190a5f3c738	Hand Wash	\N	http://localhost:3001/products/test-product-2	2	t	LINK	2026-05-13 10:41:59.442	2026-06-17 12:57:25.555	mega	2c47212c-1930-4afc-b697-68c49aa95b8b	\N	f	\N	\N	\N
+11324017-cb95-4c53-ac73-809dbc28c0f7	Clean 360 Glass Cleaner	\N	http://localhost:3001/products/glass-cleaner-clean-360	3	t	LINK	2026-06-17 12:58:02.228	2026-06-17 12:58:02.228	mega	2c47212c-1930-4afc-b697-68c49aa95b8b	\N	f	\N	\N	\N
+787a22e1-6bda-4dc3-b405-ebde165b4a73	Cockroach Killer	\N	http://localhost:3001/products/cockroach-killer	4	t	LINK	2026-06-17 12:59:09.457	2026-06-17 12:59:09.457	mega	2c47212c-1930-4afc-b697-68c49aa95b8b	\N	f	\N	\N	\N
+3509717e-86ed-4d2b-967d-a05d27ce9803	Soaps	\N	/	0	t	LINK	2026-05-14 06:09:17.438	2026-06-17 12:59:23.925	mega	\N	\N	f	\N	\N	\N
+51f9b104-db07-42e4-aa66-6b65e56b01d6	Khaleej Washing Soap	\N	http://localhost:3001/products/test-product-4	3	t	LINK	2026-06-17 13:00:06.696	2026-06-17 13:00:06.696	mega	3509717e-86ed-4d2b-967d-a05d27ce9803	\N	f	\N	\N	\N
+6dd5c856-46c7-475b-a145-664ec5fbc134	Misaal Washing Soap	\N	http://localhost:3001/products/test-product-5	4	t	LINK	2026-06-17 13:00:29.486	2026-06-17 13:00:29.486	mega	3509717e-86ed-4d2b-967d-a05d27ce9803	\N	f	\N	\N	\N
+00000000-0000-0000-0000-00000000e002	Products	Categories	/products	10	t	LINK	2026-05-13 11:15:47.684	2026-06-17 13:01:32.48	header	\N	\N	t	http://localhost:3000/uploads/storefront-nav/19b2798d-0bbc-4873-885a-40364c3023c2.jpeg	\N	\N
 \.
 
 
 --
--- TOC entry 5491 (class 0 OID 18343)
--- Dependencies: 220
+-- TOC entry 5532 (class 0 OID 21652)
+-- Dependencies: 261
 -- Data for Name: subscribers; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.subscribers (id, email, source, created_at, updated_at) FROM stdin;
+a250fe70-372b-4bb2-95cc-da0e7154c67f	smhuzaifa525@gmail.com	account	2026-05-12 07:44:19.981	2026-05-12 07:44:19.981
 \.
 
 
 --
--- TOC entry 5516 (class 0 OID 18788)
--- Dependencies: 245
+-- TOC entry 5533 (class 0 OID 21660)
+-- Dependencies: 262
 -- Data for Name: tax_classes; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -1535,8 +1857,8 @@ COPY public.tax_classes (id, code, name, description, metadata, created_at, upda
 
 
 --
--- TOC entry 5517 (class 0 OID 18803)
--- Dependencies: 246
+-- TOC entry 5534 (class 0 OID 21673)
+-- Dependencies: 263
 -- Data for Name: taxes; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -1545,17 +1867,54 @@ COPY public.taxes (id, tax_class_id, country, region, rate, is_inclusive, is_act
 
 
 --
--- TOC entry 5498 (class 0 OID 18452)
--- Dependencies: 227
+-- TOC entry 5535 (class 0 OID 21691)
+-- Dependencies: 264
 -- Data for Name: variant_option_values; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.variant_option_values (variant_id, option_id, value_id) FROM stdin;
+58daf9a0-a0ab-4273-b449-e6a076fc9acc	a39db598-111e-4007-bf54-f564b2c1f587	d79e5779-4b44-422c-bcb0-43743dba8196
+fdf241e4-b0d0-456e-8da6-eef5c1124666	59574408-864b-4fb3-a08f-5ee2211a8ba1	30d60dcc-867c-4fbd-a208-4aef88480725
+c36c179e-c2af-4e00-beea-dfd8a3cdec2c	59574408-864b-4fb3-a08f-5ee2211a8ba1	edcb2d16-3ef8-46ed-84c0-b55925836025
+663e25b8-ac9e-4892-b47c-c2e9514ef716	59574408-864b-4fb3-a08f-5ee2211a8ba1	adda47fd-5c46-4ebf-8a6e-133548aba59e
+80c8d8b5-ebed-42d3-aca4-9611d4585f71	906abee1-8c7f-4645-8193-973989132503	f56ce2c9-7e87-4eaf-8588-d6c8822a106e
+b85f7fa3-cb5b-4754-8399-6f792a3bf635	906abee1-8c7f-4645-8193-973989132503	f56ce2c9-7e87-4eaf-8588-d6c8822a106e
+b0d59239-7b73-492b-8cf8-d0ddba9b5d2e	906abee1-8c7f-4645-8193-973989132503	f56ce2c9-7e87-4eaf-8588-d6c8822a106e
+cd8e05c4-96f5-488b-aa34-74083d3e2978	59574408-864b-4fb3-a08f-5ee2211a8ba1	30d60dcc-867c-4fbd-a208-4aef88480725
+cd8e05c4-96f5-488b-aa34-74083d3e2978	906abee1-8c7f-4645-8193-973989132503	82b87405-7303-4194-8470-0b74022faa4c
+ad533fd1-8637-4268-bf5c-c8dcd1febdc6	59574408-864b-4fb3-a08f-5ee2211a8ba1	edcb2d16-3ef8-46ed-84c0-b55925836025
+ad533fd1-8637-4268-bf5c-c8dcd1febdc6	906abee1-8c7f-4645-8193-973989132503	82b87405-7303-4194-8470-0b74022faa4c
+34eddf36-827a-4247-9037-4af9dae3a462	59574408-864b-4fb3-a08f-5ee2211a8ba1	adda47fd-5c46-4ebf-8a6e-133548aba59e
+34eddf36-827a-4247-9037-4af9dae3a462	906abee1-8c7f-4645-8193-973989132503	82b87405-7303-4194-8470-0b74022faa4c
+3fcd3a63-0d69-4368-8078-4094c1f0d595	59574408-864b-4fb3-a08f-5ee2211a8ba1	d1f00583-8325-4de2-8d03-13e550682edd
+3fcd3a63-0d69-4368-8078-4094c1f0d595	906abee1-8c7f-4645-8193-973989132503	82b87405-7303-4194-8470-0b74022faa4c
+f48488c2-d01c-47a1-98f2-8073d9f103db	a39db598-111e-4007-bf54-f564b2c1f587	12e6652f-be05-405f-8647-8cc760628251
+3ddee9a7-cbf0-4ce6-9f0a-1b71cf16d076	a39db598-111e-4007-bf54-f564b2c1f587	b7624b89-1245-4380-936f-3ec1cc995001
+e35461a9-65b7-4ab2-a26a-d1d3d46bfb9a	a39db598-111e-4007-bf54-f564b2c1f587	08b9ab65-eba3-4875-a761-485f6196f74e
+dac44db9-52fe-47ef-bec9-80ebd2773cba	a39db598-111e-4007-bf54-f564b2c1f587	08b9ab65-eba3-4875-a761-485f6196f74e
+4e7ea113-5c3c-4315-96f5-357735682caa	906abee1-8c7f-4645-8193-973989132503	f56ce2c9-7e87-4eaf-8588-d6c8822a106e
+480fc5fd-9198-4c2f-ae38-8a0b052a9313	906abee1-8c7f-4645-8193-973989132503	0f01dc86-2798-4ffb-9902-663a759b845e
+cb0eb246-2ad0-45d8-9be8-07f10fcbf62d	906abee1-8c7f-4645-8193-973989132503	0f01dc86-2798-4ffb-9902-663a759b845e
+efbf85a4-a7b1-4ead-83db-4c7df04e3790	a39db598-111e-4007-bf54-f564b2c1f587	08b9ab65-eba3-4875-a761-485f6196f74e
+48de193f-546c-4de8-b665-15e8cab49584	a39db598-111e-4007-bf54-f564b2c1f587	a2203e30-f48b-48d9-8a20-f17b52937ced
+120f37f1-42aa-45c0-b801-4731330886e3	a39db598-111e-4007-bf54-f564b2c1f587	a2203e30-f48b-48d9-8a20-f17b52937ced
+81b62a2b-ca50-48c2-8ee7-3628ab91a7a1	a39db598-111e-4007-bf54-f564b2c1f587	08b9ab65-eba3-4875-a761-485f6196f74e
+5c75a449-39e0-4ec7-a6ff-d11dbb9f2d08	a39db598-111e-4007-bf54-f564b2c1f587	08b9ab65-eba3-4875-a761-485f6196f74e
+85511305-b97c-4697-9e60-1ebb4ef4e0de	a39db598-111e-4007-bf54-f564b2c1f587	08b9ab65-eba3-4875-a761-485f6196f74e
+a0f519b2-b535-41bb-abae-c7bf57b39e4c	a39db598-111e-4007-bf54-f564b2c1f587	08b9ab65-eba3-4875-a761-485f6196f74e
+13f1d0a1-a21b-42e1-865b-51838688da07	59574408-864b-4fb3-a08f-5ee2211a8ba1	0888e912-f7f3-466c-9603-d8958d9b139f
+18f24f31-3013-4862-8624-96ead88caeee	59574408-864b-4fb3-a08f-5ee2211a8ba1	fcdd232c-7426-4e25-b32f-df5103b7f511
+54baa2ca-a251-4b16-b691-80c365b3525d	59574408-864b-4fb3-a08f-5ee2211a8ba1	5c00a20f-7157-4e94-9797-eb233b0f8c48
+9f8d36e8-526e-43a8-8171-4d7f76d1ceb6	59574408-864b-4fb3-a08f-5ee2211a8ba1	11eca007-82d2-44d8-b07c-b9aad4ed0ec4
+e976bacd-89cf-47a4-99d5-1c37c9eb3cdc	59574408-864b-4fb3-a08f-5ee2211a8ba1	f34de9c0-5dd7-48b1-bef4-9b8f72f95a86
+f44c87d3-ea38-4329-bad9-b0a72e4d955d	59574408-864b-4fb3-a08f-5ee2211a8ba1	30d60dcc-867c-4fbd-a208-4aef88480725
+76e0bd60-36da-44ae-bff0-dd87635ce982	59574408-864b-4fb3-a08f-5ee2211a8ba1	0bb4c7bc-d181-4c9a-869e-4aeae5df4031
+ec4803c2-6aa6-452c-aa1a-e23d0271d115	59574408-864b-4fb3-a08f-5ee2211a8ba1	0c67d0de-3c86-4047-b10c-fea938d735d5
 \.
 
 
 --
--- TOC entry 5068 (class 2606 OID 18342)
+-- TOC entry 5068 (class 2606 OID 21700)
 -- Name: _prisma_migrations _prisma_migrations_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1564,7 +1923,7 @@ ALTER TABLE ONLY public._prisma_migrations
 
 
 --
--- TOC entry 5241 (class 2606 OID 18891)
+-- TOC entry 5072 (class 2606 OID 21702)
 -- Name: account_creation_tokens account_creation_tokens_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1573,7 +1932,7 @@ ALTER TABLE ONLY public.account_creation_tokens
 
 
 --
--- TOC entry 5249 (class 2606 OID 18925)
+-- TOC entry 5077 (class 2606 OID 21704)
 -- Name: admin_permissions admin_permissions_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1582,7 +1941,7 @@ ALTER TABLE ONLY public.admin_permissions
 
 
 --
--- TOC entry 5254 (class 2606 OID 18947)
+-- TOC entry 5079 (class 2606 OID 21706)
 -- Name: admin_role_permissions admin_role_permissions_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1591,7 +1950,7 @@ ALTER TABLE ONLY public.admin_role_permissions
 
 
 --
--- TOC entry 5251 (class 2606 OID 18940)
+-- TOC entry 5081 (class 2606 OID 21708)
 -- Name: admin_roles admin_roles_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1600,7 +1959,7 @@ ALTER TABLE ONLY public.admin_roles
 
 
 --
--- TOC entry 5261 (class 2606 OID 18969)
+-- TOC entry 5084 (class 2606 OID 21710)
 -- Name: admin_user_roles admin_user_roles_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1609,7 +1968,7 @@ ALTER TABLE ONLY public.admin_user_roles
 
 
 --
--- TOC entry 5259 (class 2606 OID 18962)
+-- TOC entry 5089 (class 2606 OID 21712)
 -- Name: admin_users admin_users_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1618,7 +1977,7 @@ ALTER TABLE ONLY public.admin_users
 
 
 --
--- TOC entry 5119 (class 2606 OID 18494)
+-- TOC entry 5093 (class 2606 OID 21714)
 -- Name: categories categories_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1627,7 +1986,7 @@ ALTER TABLE ONLY public.categories
 
 
 --
--- TOC entry 5274 (class 2606 OID 19016)
+-- TOC entry 5099 (class 2606 OID 21716)
 -- Name: cms_banner_sliders cms_banner_sliders_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1636,7 +1995,7 @@ ALTER TABLE ONLY public.cms_banner_sliders
 
 
 --
--- TOC entry 5276 (class 2606 OID 19034)
+-- TOC entry 5101 (class 2606 OID 21718)
 -- Name: cms_banner_slides cms_banner_slides_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1645,7 +2004,7 @@ ALTER TABLE ONLY public.cms_banner_slides
 
 
 --
--- TOC entry 5270 (class 2606 OID 19001)
+-- TOC entry 5107 (class 2606 OID 21720)
 -- Name: cms_blocks cms_blocks_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1654,7 +2013,7 @@ ALTER TABLE ONLY public.cms_blocks
 
 
 --
--- TOC entry 5263 (class 2606 OID 18985)
+-- TOC entry 5109 (class 2606 OID 21722)
 -- Name: cms_pages cms_pages_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1663,7 +2022,7 @@ ALTER TABLE ONLY public.cms_pages
 
 
 --
--- TOC entry 5246 (class 2606 OID 18914)
+-- TOC entry 5115 (class 2606 OID 21724)
 -- Name: customer_addresses customer_addresses_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1672,7 +2031,7 @@ ALTER TABLE ONLY public.customer_addresses
 
 
 --
--- TOC entry 5230 (class 2606 OID 18861)
+-- TOC entry 5118 (class 2606 OID 21726)
 -- Name: customer_groups customer_groups_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1681,7 +2040,7 @@ ALTER TABLE ONLY public.customer_groups
 
 
 --
--- TOC entry 5237 (class 2606 OID 18878)
+-- TOC entry 5125 (class 2606 OID 21728)
 -- Name: customers customers_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1690,7 +2049,7 @@ ALTER TABLE ONLY public.customers
 
 
 --
--- TOC entry 5128 (class 2606 OID 18523)
+-- TOC entry 5128 (class 2606 OID 21730)
 -- Name: inventory_items inventory_items_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1699,7 +2058,7 @@ ALTER TABLE ONLY public.inventory_items
 
 
 --
--- TOC entry 5134 (class 2606 OID 18538)
+-- TOC entry 5134 (class 2606 OID 21732)
 -- Name: inventory_reservations inventory_reservations_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1708,7 +2067,7 @@ ALTER TABLE ONLY public.inventory_reservations
 
 
 --
--- TOC entry 5145 (class 2606 OID 18600)
+-- TOC entry 5138 (class 2606 OID 21734)
 -- Name: order_items order_items_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1717,7 +2076,7 @@ ALTER TABLE ONLY public.order_items
 
 
 --
--- TOC entry 5202 (class 2606 OID 18772)
+-- TOC entry 5144 (class 2606 OID 21736)
 -- Name: order_shipping order_shipping_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1726,7 +2085,7 @@ ALTER TABLE ONLY public.order_shipping
 
 
 --
--- TOC entry 5225 (class 2606 OID 18845)
+-- TOC entry 5151 (class 2606 OID 21738)
 -- Name: order_taxes order_taxes_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1735,7 +2094,7 @@ ALTER TABLE ONLY public.order_taxes
 
 
 --
--- TOC entry 5141 (class 2606 OID 18571)
+-- TOC entry 5159 (class 2606 OID 21740)
 -- Name: orders orders_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1744,7 +2103,7 @@ ALTER TABLE ONLY public.orders
 
 
 --
--- TOC entry 5151 (class 2606 OID 18621)
+-- TOC entry 5165 (class 2606 OID 21742)
 -- Name: payment_methods payment_methods_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1753,7 +2112,7 @@ ALTER TABLE ONLY public.payment_methods
 
 
 --
--- TOC entry 5158 (class 2606 OID 18640)
+-- TOC entry 5172 (class 2606 OID 21744)
 -- Name: payments payments_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1762,7 +2121,7 @@ ALTER TABLE ONLY public.payments
 
 
 --
--- TOC entry 5124 (class 2606 OID 18505)
+-- TOC entry 5176 (class 2606 OID 21746)
 -- Name: product_categories product_categories_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1771,7 +2130,7 @@ ALTER TABLE ONLY public.product_categories
 
 
 --
--- TOC entry 5111 (class 2606 OID 18477)
+-- TOC entry 5179 (class 2606 OID 21748)
 -- Name: product_images product_images_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1780,7 +2139,7 @@ ALTER TABLE ONLY public.product_images
 
 
 --
--- TOC entry 5102 (class 2606 OID 18451)
+-- TOC entry 5190 (class 2606 OID 21750)
 -- Name: product_option_values_on_products product_option_values_on_products_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1789,7 +2148,7 @@ ALTER TABLE ONLY public.product_option_values_on_products
 
 
 --
--- TOC entry 5096 (class 2606 OID 18428)
+-- TOC entry 5188 (class 2606 OID 21752)
 -- Name: product_option_values product_option_values_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1798,7 +2157,7 @@ ALTER TABLE ONLY public.product_option_values
 
 
 --
--- TOC entry 5099 (class 2606 OID 18441)
+-- TOC entry 5200 (class 2606 OID 21754)
 -- Name: product_options_on_products product_options_on_products_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1807,7 +2166,7 @@ ALTER TABLE ONLY public.product_options_on_products
 
 
 --
--- TOC entry 5091 (class 2606 OID 18411)
+-- TOC entry 5197 (class 2606 OID 21756)
 -- Name: product_options product_options_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1816,7 +2175,7 @@ ALTER TABLE ONLY public.product_options
 
 
 --
--- TOC entry 5083 (class 2606 OID 18396)
+-- TOC entry 5204 (class 2606 OID 21758)
 -- Name: product_variants product_variants_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1825,7 +2184,7 @@ ALTER TABLE ONLY public.product_variants
 
 
 --
--- TOC entry 5074 (class 2606 OID 18376)
+-- TOC entry 5209 (class 2606 OID 21760)
 -- Name: products products_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1834,7 +2193,7 @@ ALTER TABLE ONLY public.products
 
 
 --
--- TOC entry 5175 (class 2606 OID 18691)
+-- TOC entry 5218 (class 2606 OID 21762)
 -- Name: promotion_customer_groups promotion_customer_groups_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1843,7 +2202,7 @@ ALTER TABLE ONLY public.promotion_customer_groups
 
 
 --
--- TOC entry 5186 (class 2606 OID 18708)
+-- TOC entry 5229 (class 2606 OID 21764)
 -- Name: promotion_logs promotion_logs_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1852,7 +2211,7 @@ ALTER TABLE ONLY public.promotion_logs
 
 
 --
--- TOC entry 5169 (class 2606 OID 18679)
+-- TOC entry 5233 (class 2606 OID 21766)
 -- Name: promotion_products promotion_products_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1861,7 +2220,7 @@ ALTER TABLE ONLY public.promotion_products
 
 
 --
--- TOC entry 5163 (class 2606 OID 18670)
+-- TOC entry 5240 (class 2606 OID 21768)
 -- Name: promotions promotions_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1870,7 +2229,7 @@ ALTER TABLE ONLY public.promotions
 
 
 --
--- TOC entry 5209 (class 2606 OID 18787)
+-- TOC entry 5246 (class 2606 OID 21770)
 -- Name: shipping_method_customer_groups shipping_method_customer_groups_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1879,7 +2238,7 @@ ALTER TABLE ONLY public.shipping_method_customer_groups
 
 
 --
--- TOC entry 5195 (class 2606 OID 18752)
+-- TOC entry 5252 (class 2606 OID 21772)
 -- Name: shipping_methods shipping_methods_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1888,7 +2247,7 @@ ALTER TABLE ONLY public.shipping_methods
 
 
 --
--- TOC entry 5190 (class 2606 OID 18728)
+-- TOC entry 5257 (class 2606 OID 21774)
 -- Name: shipping_zones shipping_zones_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1897,7 +2256,7 @@ ALTER TABLE ONLY public.shipping_zones
 
 
 --
--- TOC entry 5291 (class 2606 OID 19081)
+-- TOC entry 5262 (class 2606 OID 21776)
 -- Name: storefront_filter_options storefront_filter_options_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1906,7 +2265,7 @@ ALTER TABLE ONLY public.storefront_filter_options
 
 
 --
--- TOC entry 5287 (class 2606 OID 19064)
+-- TOC entry 5267 (class 2606 OID 21778)
 -- Name: storefront_filter_tree_nodes storefront_filter_tree_nodes_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1915,7 +2274,7 @@ ALTER TABLE ONLY public.storefront_filter_tree_nodes
 
 
 --
--- TOC entry 5282 (class 2606 OID 19050)
+-- TOC entry 5271 (class 2606 OID 21780)
 -- Name: storefront_filters storefront_filters_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1924,7 +2283,7 @@ ALTER TABLE ONLY public.storefront_filters
 
 
 --
--- TOC entry 5294 (class 2606 OID 19105)
+-- TOC entry 5274 (class 2606 OID 21782)
 -- Name: storefront_nav_links storefront_nav_links_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1933,7 +2292,7 @@ ALTER TABLE ONLY public.storefront_nav_links
 
 
 --
--- TOC entry 5072 (class 2606 OID 18352)
+-- TOC entry 5279 (class 2606 OID 21784)
 -- Name: subscribers subscribers_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1942,7 +2301,7 @@ ALTER TABLE ONLY public.subscribers
 
 
 --
--- TOC entry 5215 (class 2606 OID 18802)
+-- TOC entry 5283 (class 2606 OID 21786)
 -- Name: tax_classes tax_classes_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1951,7 +2310,7 @@ ALTER TABLE ONLY public.tax_classes
 
 
 --
--- TOC entry 5220 (class 2606 OID 18822)
+-- TOC entry 5288 (class 2606 OID 21788)
 -- Name: taxes taxes_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1960,7 +2319,7 @@ ALTER TABLE ONLY public.taxes
 
 
 --
--- TOC entry 5107 (class 2606 OID 18461)
+-- TOC entry 5293 (class 2606 OID 21790)
 -- Name: variant_option_values variant_option_values_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1969,7 +2328,7 @@ ALTER TABLE ONLY public.variant_option_values
 
 
 --
--- TOC entry 5238 (class 1259 OID 19214)
+-- TOC entry 5069 (class 1259 OID 21791)
 -- Name: account_creation_tokens_email_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -1977,7 +2336,7 @@ CREATE INDEX account_creation_tokens_email_idx ON public.account_creation_tokens
 
 
 --
--- TOC entry 5239 (class 1259 OID 19216)
+-- TOC entry 5070 (class 1259 OID 21792)
 -- Name: account_creation_tokens_expires_at_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -1985,7 +2344,7 @@ CREATE INDEX account_creation_tokens_expires_at_idx ON public.account_creation_t
 
 
 --
--- TOC entry 5242 (class 1259 OID 19215)
+-- TOC entry 5073 (class 1259 OID 21793)
 -- Name: account_creation_tokens_token_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -1993,7 +2352,7 @@ CREATE INDEX account_creation_tokens_token_idx ON public.account_creation_tokens
 
 
 --
--- TOC entry 5243 (class 1259 OID 19213)
+-- TOC entry 5074 (class 1259 OID 21794)
 -- Name: account_creation_tokens_token_key; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2001,7 +2360,7 @@ CREATE UNIQUE INDEX account_creation_tokens_token_key ON public.account_creation
 
 
 --
--- TOC entry 5247 (class 1259 OID 19218)
+-- TOC entry 5075 (class 1259 OID 21795)
 -- Name: admin_permissions_key_key; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2009,7 +2368,7 @@ CREATE UNIQUE INDEX admin_permissions_key_key ON public.admin_permissions USING 
 
 
 --
--- TOC entry 5252 (class 1259 OID 19219)
+-- TOC entry 5082 (class 1259 OID 21796)
 -- Name: admin_roles_slug_key; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2017,7 +2376,7 @@ CREATE UNIQUE INDEX admin_roles_slug_key ON public.admin_roles USING btree (slug
 
 
 --
--- TOC entry 5255 (class 1259 OID 19221)
+-- TOC entry 5085 (class 1259 OID 21797)
 -- Name: admin_users_email_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2025,7 +2384,7 @@ CREATE INDEX admin_users_email_idx ON public.admin_users USING btree (email);
 
 
 --
--- TOC entry 5256 (class 1259 OID 19220)
+-- TOC entry 5086 (class 1259 OID 21798)
 -- Name: admin_users_email_key; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2033,7 +2392,7 @@ CREATE UNIQUE INDEX admin_users_email_key ON public.admin_users USING btree (ema
 
 
 --
--- TOC entry 5257 (class 1259 OID 19222)
+-- TOC entry 5087 (class 1259 OID 21799)
 -- Name: admin_users_is_active_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2041,7 +2400,7 @@ CREATE INDEX admin_users_is_active_idx ON public.admin_users USING btree (is_act
 
 
 --
--- TOC entry 5116 (class 1259 OID 19136)
+-- TOC entry 5090 (class 1259 OID 21800)
 -- Name: categories_is_active_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2049,7 +2408,7 @@ CREATE INDEX categories_is_active_idx ON public.categories USING btree (is_activ
 
 
 --
--- TOC entry 5117 (class 1259 OID 19135)
+-- TOC entry 5091 (class 1259 OID 21801)
 -- Name: categories_parent_id_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2057,7 +2416,7 @@ CREATE INDEX categories_parent_id_idx ON public.categories USING btree (parent_i
 
 
 --
--- TOC entry 5120 (class 1259 OID 19134)
+-- TOC entry 5094 (class 1259 OID 21802)
 -- Name: categories_slug_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2065,7 +2424,7 @@ CREATE INDEX categories_slug_idx ON public.categories USING btree (slug);
 
 
 --
--- TOC entry 5121 (class 1259 OID 19133)
+-- TOC entry 5095 (class 1259 OID 21803)
 -- Name: categories_slug_key; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2073,7 +2432,7 @@ CREATE UNIQUE INDEX categories_slug_key ON public.categories USING btree (slug);
 
 
 --
--- TOC entry 5271 (class 1259 OID 19229)
+-- TOC entry 5096 (class 1259 OID 21804)
 -- Name: cms_banner_sliders_identifier_is_active_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2081,7 +2440,7 @@ CREATE INDEX cms_banner_sliders_identifier_is_active_idx ON public.cms_banner_sl
 
 
 --
--- TOC entry 5272 (class 1259 OID 19228)
+-- TOC entry 5097 (class 1259 OID 21805)
 -- Name: cms_banner_sliders_identifier_key; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2089,7 +2448,7 @@ CREATE UNIQUE INDEX cms_banner_sliders_identifier_key ON public.cms_banner_slide
 
 
 --
--- TOC entry 5277 (class 1259 OID 19231)
+-- TOC entry 5102 (class 1259 OID 21806)
 -- Name: cms_banner_slides_slider_id_is_active_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2097,7 +2456,7 @@ CREATE INDEX cms_banner_slides_slider_id_is_active_idx ON public.cms_banner_slid
 
 
 --
--- TOC entry 5278 (class 1259 OID 19230)
+-- TOC entry 5103 (class 1259 OID 21807)
 -- Name: cms_banner_slides_slider_id_sort_order_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2105,7 +2464,7 @@ CREATE INDEX cms_banner_slides_slider_id_sort_order_idx ON public.cms_banner_sli
 
 
 --
--- TOC entry 5267 (class 1259 OID 19227)
+-- TOC entry 5104 (class 1259 OID 21808)
 -- Name: cms_blocks_identifier_is_active_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2113,7 +2472,7 @@ CREATE INDEX cms_blocks_identifier_is_active_idx ON public.cms_blocks USING btre
 
 
 --
--- TOC entry 5268 (class 1259 OID 19226)
+-- TOC entry 5105 (class 1259 OID 21809)
 -- Name: cms_blocks_identifier_key; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2121,7 +2480,7 @@ CREATE UNIQUE INDEX cms_blocks_identifier_key ON public.cms_blocks USING btree (
 
 
 --
--- TOC entry 5264 (class 1259 OID 19223)
+-- TOC entry 5110 (class 1259 OID 21810)
 -- Name: cms_pages_slug_key; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2129,7 +2488,7 @@ CREATE UNIQUE INDEX cms_pages_slug_key ON public.cms_pages USING btree (slug);
 
 
 --
--- TOC entry 5265 (class 1259 OID 19224)
+-- TOC entry 5111 (class 1259 OID 21811)
 -- Name: cms_pages_slug_status_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2137,7 +2496,7 @@ CREATE INDEX cms_pages_slug_status_idx ON public.cms_pages USING btree (slug, st
 
 
 --
--- TOC entry 5266 (class 1259 OID 19225)
+-- TOC entry 5112 (class 1259 OID 21812)
 -- Name: cms_pages_status_updated_at_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2145,7 +2504,7 @@ CREATE INDEX cms_pages_status_updated_at_idx ON public.cms_pages USING btree (st
 
 
 --
--- TOC entry 5244 (class 1259 OID 19217)
+-- TOC entry 5113 (class 1259 OID 21813)
 -- Name: customer_addresses_customer_id_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2153,7 +2512,7 @@ CREATE INDEX customer_addresses_customer_id_idx ON public.customer_addresses USI
 
 
 --
--- TOC entry 5228 (class 1259 OID 19207)
+-- TOC entry 5116 (class 1259 OID 21814)
 -- Name: customer_groups_is_default_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2161,7 +2520,7 @@ CREATE INDEX customer_groups_is_default_idx ON public.customer_groups USING btre
 
 
 --
--- TOC entry 5231 (class 1259 OID 19208)
+-- TOC entry 5119 (class 1259 OID 21815)
 -- Name: customer_groups_tax_class_id_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2169,7 +2528,7 @@ CREATE INDEX customer_groups_tax_class_id_idx ON public.customer_groups USING bt
 
 
 --
--- TOC entry 5232 (class 1259 OID 19211)
+-- TOC entry 5120 (class 1259 OID 21816)
 -- Name: customers_customer_group_id_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2177,7 +2536,7 @@ CREATE INDEX customers_customer_group_id_idx ON public.customers USING btree (cu
 
 
 --
--- TOC entry 5233 (class 1259 OID 19210)
+-- TOC entry 5121 (class 1259 OID 21817)
 -- Name: customers_email_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2185,7 +2544,7 @@ CREATE INDEX customers_email_idx ON public.customers USING btree (email);
 
 
 --
--- TOC entry 5234 (class 1259 OID 19209)
+-- TOC entry 5122 (class 1259 OID 21818)
 -- Name: customers_email_key; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2193,7 +2552,7 @@ CREATE UNIQUE INDEX customers_email_key ON public.customers USING btree (email);
 
 
 --
--- TOC entry 5235 (class 1259 OID 19212)
+-- TOC entry 5123 (class 1259 OID 21819)
 -- Name: customers_is_guest_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2201,7 +2560,7 @@ CREATE INDEX customers_is_guest_idx ON public.customers USING btree (is_guest);
 
 
 --
--- TOC entry 5126 (class 1259 OID 19141)
+-- TOC entry 5126 (class 1259 OID 21820)
 -- Name: inventory_items_available_quantity_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2209,7 +2568,7 @@ CREATE INDEX inventory_items_available_quantity_idx ON public.inventory_items US
 
 
 --
--- TOC entry 5129 (class 1259 OID 19139)
+-- TOC entry 5129 (class 1259 OID 21821)
 -- Name: inventory_items_product_id_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2217,7 +2576,7 @@ CREATE INDEX inventory_items_product_id_idx ON public.inventory_items USING btre
 
 
 --
--- TOC entry 5130 (class 1259 OID 19142)
+-- TOC entry 5130 (class 1259 OID 21822)
 -- Name: inventory_items_product_id_variant_id_warehouse_id_key; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2225,7 +2584,7 @@ CREATE UNIQUE INDEX inventory_items_product_id_variant_id_warehouse_id_key ON pu
 
 
 --
--- TOC entry 5131 (class 1259 OID 19140)
+-- TOC entry 5131 (class 1259 OID 21823)
 -- Name: inventory_items_variant_id_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2233,7 +2592,7 @@ CREATE INDEX inventory_items_variant_id_idx ON public.inventory_items USING btre
 
 
 --
--- TOC entry 5132 (class 1259 OID 19144)
+-- TOC entry 5132 (class 1259 OID 21824)
 -- Name: inventory_reservations_expires_at_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2241,7 +2600,7 @@ CREATE INDEX inventory_reservations_expires_at_idx ON public.inventory_reservati
 
 
 --
--- TOC entry 5135 (class 1259 OID 19143)
+-- TOC entry 5135 (class 1259 OID 21825)
 -- Name: inventory_reservations_reference_type_reference_id_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2249,7 +2608,7 @@ CREATE INDEX inventory_reservations_reference_type_reference_id_idx ON public.in
 
 
 --
--- TOC entry 5143 (class 1259 OID 19150)
+-- TOC entry 5136 (class 1259 OID 21826)
 -- Name: order_items_order_id_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2257,7 +2616,7 @@ CREATE INDEX order_items_order_id_idx ON public.order_items USING btree (order_i
 
 
 --
--- TOC entry 5146 (class 1259 OID 19151)
+-- TOC entry 5139 (class 1259 OID 21827)
 -- Name: order_items_product_id_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2265,7 +2624,7 @@ CREATE INDEX order_items_product_id_idx ON public.order_items USING btree (produ
 
 
 --
--- TOC entry 5198 (class 1259 OID 19192)
+-- TOC entry 5140 (class 1259 OID 21828)
 -- Name: order_shipping_courier_code_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2273,7 +2632,7 @@ CREATE INDEX order_shipping_courier_code_idx ON public.order_shipping USING btre
 
 
 --
--- TOC entry 5199 (class 1259 OID 19188)
+-- TOC entry 5141 (class 1259 OID 21829)
 -- Name: order_shipping_order_id_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2281,7 +2640,7 @@ CREATE INDEX order_shipping_order_id_idx ON public.order_shipping USING btree (o
 
 
 --
--- TOC entry 5200 (class 1259 OID 19187)
+-- TOC entry 5142 (class 1259 OID 21830)
 -- Name: order_shipping_order_id_key; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2289,7 +2648,7 @@ CREATE UNIQUE INDEX order_shipping_order_id_key ON public.order_shipping USING b
 
 
 --
--- TOC entry 5203 (class 1259 OID 19193)
+-- TOC entry 5145 (class 1259 OID 21831)
 -- Name: order_shipping_shipped_at_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2297,7 +2656,7 @@ CREATE INDEX order_shipping_shipped_at_idx ON public.order_shipping USING btree 
 
 
 --
--- TOC entry 5204 (class 1259 OID 19189)
+-- TOC entry 5146 (class 1259 OID 21832)
 -- Name: order_shipping_shipping_method_id_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2305,7 +2664,7 @@ CREATE INDEX order_shipping_shipping_method_id_idx ON public.order_shipping USIN
 
 
 --
--- TOC entry 5205 (class 1259 OID 19190)
+-- TOC entry 5147 (class 1259 OID 21833)
 -- Name: order_shipping_status_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2313,7 +2672,7 @@ CREATE INDEX order_shipping_status_idx ON public.order_shipping USING btree (sta
 
 
 --
--- TOC entry 5206 (class 1259 OID 19191)
+-- TOC entry 5148 (class 1259 OID 21834)
 -- Name: order_shipping_tracking_number_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2321,7 +2680,7 @@ CREATE INDEX order_shipping_tracking_number_idx ON public.order_shipping USING b
 
 
 --
--- TOC entry 5223 (class 1259 OID 19204)
+-- TOC entry 5149 (class 1259 OID 21835)
 -- Name: order_taxes_order_id_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2329,7 +2688,7 @@ CREATE INDEX order_taxes_order_id_idx ON public.order_taxes USING btree (order_i
 
 
 --
--- TOC entry 5226 (class 1259 OID 19206)
+-- TOC entry 5152 (class 1259 OID 21836)
 -- Name: order_taxes_tax_class_id_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2337,7 +2696,7 @@ CREATE INDEX order_taxes_tax_class_id_idx ON public.order_taxes USING btree (tax
 
 
 --
--- TOC entry 5227 (class 1259 OID 19205)
+-- TOC entry 5153 (class 1259 OID 21837)
 -- Name: order_taxes_tax_id_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2345,7 +2704,7 @@ CREATE INDEX order_taxes_tax_id_idx ON public.order_taxes USING btree (tax_id);
 
 
 --
--- TOC entry 5136 (class 1259 OID 19149)
+-- TOC entry 5154 (class 1259 OID 21838)
 -- Name: orders_created_at_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2353,7 +2712,7 @@ CREATE INDEX orders_created_at_idx ON public.orders USING btree (created_at DESC
 
 
 --
--- TOC entry 5137 (class 1259 OID 19147)
+-- TOC entry 5155 (class 1259 OID 21839)
 -- Name: orders_customer_id_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2361,7 +2720,7 @@ CREATE INDEX orders_customer_id_idx ON public.orders USING btree (customer_id);
 
 
 --
--- TOC entry 5138 (class 1259 OID 19146)
+-- TOC entry 5156 (class 1259 OID 21840)
 -- Name: orders_order_number_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2369,7 +2728,7 @@ CREATE INDEX orders_order_number_idx ON public.orders USING btree (order_number)
 
 
 --
--- TOC entry 5139 (class 1259 OID 19145)
+-- TOC entry 5157 (class 1259 OID 21841)
 -- Name: orders_order_number_key; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2377,7 +2736,7 @@ CREATE UNIQUE INDEX orders_order_number_key ON public.orders USING btree (order_
 
 
 --
--- TOC entry 5142 (class 1259 OID 19148)
+-- TOC entry 5160 (class 1259 OID 21842)
 -- Name: orders_status_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2385,7 +2744,7 @@ CREATE INDEX orders_status_idx ON public.orders USING btree (status);
 
 
 --
--- TOC entry 5147 (class 1259 OID 19153)
+-- TOC entry 5161 (class 1259 OID 21843)
 -- Name: payment_methods_code_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2393,7 +2752,7 @@ CREATE INDEX payment_methods_code_idx ON public.payment_methods USING btree (cod
 
 
 --
--- TOC entry 5148 (class 1259 OID 19152)
+-- TOC entry 5162 (class 1259 OID 21844)
 -- Name: payment_methods_code_key; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2401,7 +2760,7 @@ CREATE UNIQUE INDEX payment_methods_code_key ON public.payment_methods USING btr
 
 
 --
--- TOC entry 5149 (class 1259 OID 19155)
+-- TOC entry 5163 (class 1259 OID 21845)
 -- Name: payment_methods_is_active_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2409,7 +2768,7 @@ CREATE INDEX payment_methods_is_active_idx ON public.payment_methods USING btree
 
 
 --
--- TOC entry 5152 (class 1259 OID 19154)
+-- TOC entry 5166 (class 1259 OID 21846)
 -- Name: payment_methods_provider_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2417,7 +2776,7 @@ CREATE INDEX payment_methods_provider_idx ON public.payment_methods USING btree 
 
 
 --
--- TOC entry 5153 (class 1259 OID 19160)
+-- TOC entry 5167 (class 1259 OID 21847)
 -- Name: payments_created_at_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2425,7 +2784,7 @@ CREATE INDEX payments_created_at_idx ON public.payments USING btree (created_at 
 
 
 --
--- TOC entry 5154 (class 1259 OID 19159)
+-- TOC entry 5168 (class 1259 OID 21848)
 -- Name: payments_gateway_transaction_id_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2433,7 +2792,7 @@ CREATE INDEX payments_gateway_transaction_id_idx ON public.payments USING btree 
 
 
 --
--- TOC entry 5155 (class 1259 OID 19156)
+-- TOC entry 5169 (class 1259 OID 21849)
 -- Name: payments_order_id_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2441,7 +2800,7 @@ CREATE INDEX payments_order_id_idx ON public.payments USING btree (order_id);
 
 
 --
--- TOC entry 5156 (class 1259 OID 19157)
+-- TOC entry 5170 (class 1259 OID 21850)
 -- Name: payments_payment_method_id_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2449,7 +2808,7 @@ CREATE INDEX payments_payment_method_id_idx ON public.payments USING btree (paym
 
 
 --
--- TOC entry 5159 (class 1259 OID 19158)
+-- TOC entry 5173 (class 1259 OID 21851)
 -- Name: payments_status_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2457,7 +2816,7 @@ CREATE INDEX payments_status_idx ON public.payments USING btree (status);
 
 
 --
--- TOC entry 5122 (class 1259 OID 19137)
+-- TOC entry 5174 (class 1259 OID 21852)
 -- Name: product_categories_category_id_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2465,7 +2824,7 @@ CREATE INDEX product_categories_category_id_idx ON public.product_categories USI
 
 
 --
--- TOC entry 5125 (class 1259 OID 19138)
+-- TOC entry 5177 (class 1259 OID 21853)
 -- Name: product_categories_product_id_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2473,7 +2832,7 @@ CREATE INDEX product_categories_product_id_idx ON public.product_categories USIN
 
 
 --
--- TOC entry 5112 (class 1259 OID 19129)
+-- TOC entry 5180 (class 1259 OID 21854)
 -- Name: product_images_product_id_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2481,7 +2840,7 @@ CREATE INDEX product_images_product_id_idx ON public.product_images USING btree 
 
 
 --
--- TOC entry 5113 (class 1259 OID 19131)
+-- TOC entry 5181 (class 1259 OID 21855)
 -- Name: product_images_product_id_is_primary_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2489,7 +2848,7 @@ CREATE INDEX product_images_product_id_is_primary_idx ON public.product_images U
 
 
 --
--- TOC entry 5114 (class 1259 OID 19130)
+-- TOC entry 5182 (class 1259 OID 21856)
 -- Name: product_images_variant_id_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2497,7 +2856,7 @@ CREATE INDEX product_images_variant_id_idx ON public.product_images USING btree 
 
 
 --
--- TOC entry 5115 (class 1259 OID 19132)
+-- TOC entry 5183 (class 1259 OID 21857)
 -- Name: product_images_variant_id_is_primary_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2505,7 +2864,7 @@ CREATE INDEX product_images_variant_id_is_primary_idx ON public.product_images U
 
 
 --
--- TOC entry 5092 (class 1259 OID 19120)
+-- TOC entry 5184 (class 1259 OID 21858)
 -- Name: product_option_values_is_active_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2513,7 +2872,7 @@ CREATE INDEX product_option_values_is_active_idx ON public.product_option_values
 
 
 --
--- TOC entry 5103 (class 1259 OID 19124)
+-- TOC entry 5191 (class 1259 OID 21859)
 -- Name: product_option_values_on_products_product_id_option_id_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2521,7 +2880,7 @@ CREATE INDEX product_option_values_on_products_product_id_option_id_idx ON publi
 
 
 --
--- TOC entry 5104 (class 1259 OID 19125)
+-- TOC entry 5192 (class 1259 OID 21860)
 -- Name: product_option_values_on_products_value_id_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2529,7 +2888,7 @@ CREATE INDEX product_option_values_on_products_value_id_idx ON public.product_op
 
 
 --
--- TOC entry 5093 (class 1259 OID 19119)
+-- TOC entry 5185 (class 1259 OID 21861)
 -- Name: product_option_values_option_id_sort_order_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2537,7 +2896,7 @@ CREATE INDEX product_option_values_option_id_sort_order_idx ON public.product_op
 
 
 --
--- TOC entry 5094 (class 1259 OID 19121)
+-- TOC entry 5186 (class 1259 OID 21862)
 -- Name: product_option_values_option_id_value_key; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2545,7 +2904,7 @@ CREATE UNIQUE INDEX product_option_values_option_id_value_key ON public.product_
 
 
 --
--- TOC entry 5087 (class 1259 OID 19118)
+-- TOC entry 5193 (class 1259 OID 21863)
 -- Name: product_options_code_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2553,7 +2912,7 @@ CREATE INDEX product_options_code_idx ON public.product_options USING btree (cod
 
 
 --
--- TOC entry 5088 (class 1259 OID 19116)
+-- TOC entry 5194 (class 1259 OID 21864)
 -- Name: product_options_code_key; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2561,7 +2920,7 @@ CREATE UNIQUE INDEX product_options_code_key ON public.product_options USING btr
 
 
 --
--- TOC entry 5089 (class 1259 OID 19117)
+-- TOC entry 5195 (class 1259 OID 21865)
 -- Name: product_options_is_active_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2569,7 +2928,7 @@ CREATE INDEX product_options_is_active_idx ON public.product_options USING btree
 
 
 --
--- TOC entry 5097 (class 1259 OID 19123)
+-- TOC entry 5198 (class 1259 OID 21866)
 -- Name: product_options_on_products_option_id_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2577,7 +2936,7 @@ CREATE INDEX product_options_on_products_option_id_idx ON public.product_options
 
 
 --
--- TOC entry 5100 (class 1259 OID 19122)
+-- TOC entry 5201 (class 1259 OID 21867)
 -- Name: product_options_on_products_product_id_position_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2585,7 +2944,7 @@ CREATE INDEX product_options_on_products_product_id_position_idx ON public.produ
 
 
 --
--- TOC entry 5081 (class 1259 OID 19115)
+-- TOC entry 5202 (class 1259 OID 21868)
 -- Name: product_variants_is_active_product_id_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2593,7 +2952,7 @@ CREATE INDEX product_variants_is_active_product_id_idx ON public.product_variant
 
 
 --
--- TOC entry 5084 (class 1259 OID 19113)
+-- TOC entry 5205 (class 1259 OID 21869)
 -- Name: product_variants_product_id_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2601,7 +2960,7 @@ CREATE INDEX product_variants_product_id_idx ON public.product_variants USING bt
 
 
 --
--- TOC entry 5085 (class 1259 OID 19114)
+-- TOC entry 5206 (class 1259 OID 21870)
 -- Name: product_variants_sku_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2609,7 +2968,7 @@ CREATE INDEX product_variants_sku_idx ON public.product_variants USING btree (sk
 
 
 --
--- TOC entry 5086 (class 1259 OID 19112)
+-- TOC entry 5207 (class 1259 OID 21871)
 -- Name: product_variants_sku_key; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2617,7 +2976,7 @@ CREATE UNIQUE INDEX product_variants_sku_key ON public.product_variants USING bt
 
 
 --
--- TOC entry 5075 (class 1259 OID 19110)
+-- TOC entry 5210 (class 1259 OID 21872)
 -- Name: products_sku_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2625,7 +2984,7 @@ CREATE INDEX products_sku_idx ON public.products USING btree (sku);
 
 
 --
--- TOC entry 5076 (class 1259 OID 19106)
+-- TOC entry 5211 (class 1259 OID 21873)
 -- Name: products_sku_key; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2633,7 +2992,7 @@ CREATE UNIQUE INDEX products_sku_key ON public.products USING btree (sku);
 
 
 --
--- TOC entry 5077 (class 1259 OID 19109)
+-- TOC entry 5212 (class 1259 OID 21874)
 -- Name: products_slug_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2641,7 +3000,7 @@ CREATE INDEX products_slug_idx ON public.products USING btree (slug);
 
 
 --
--- TOC entry 5078 (class 1259 OID 19107)
+-- TOC entry 5213 (class 1259 OID 21875)
 -- Name: products_slug_key; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2649,7 +3008,7 @@ CREATE UNIQUE INDEX products_slug_key ON public.products USING btree (slug);
 
 
 --
--- TOC entry 5079 (class 1259 OID 19108)
+-- TOC entry 5214 (class 1259 OID 21876)
 -- Name: products_status_deleted_at_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2657,7 +3016,7 @@ CREATE INDEX products_status_deleted_at_idx ON public.products USING btree (stat
 
 
 --
--- TOC entry 5080 (class 1259 OID 19111)
+-- TOC entry 5215 (class 1259 OID 21877)
 -- Name: products_visibility_status_deleted_at_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2665,7 +3024,7 @@ CREATE INDEX products_visibility_status_deleted_at_idx ON public.products USING 
 
 
 --
--- TOC entry 5173 (class 1259 OID 19171)
+-- TOC entry 5216 (class 1259 OID 21878)
 -- Name: promotion_customer_groups_customer_group_id_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2673,7 +3032,7 @@ CREATE INDEX promotion_customer_groups_customer_group_id_idx ON public.promotion
 
 
 --
--- TOC entry 5176 (class 1259 OID 19173)
+-- TOC entry 5219 (class 1259 OID 21879)
 -- Name: promotion_customer_groups_promotion_id_customer_group_id_key; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2681,7 +3040,7 @@ CREATE UNIQUE INDEX promotion_customer_groups_promotion_id_customer_group_id_key
 
 
 --
--- TOC entry 5177 (class 1259 OID 19170)
+-- TOC entry 5220 (class 1259 OID 21880)
 -- Name: promotion_customer_groups_promotion_id_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2689,7 +3048,7 @@ CREATE INDEX promotion_customer_groups_promotion_id_idx ON public.promotion_cust
 
 
 --
--- TOC entry 5178 (class 1259 OID 19172)
+-- TOC entry 5221 (class 1259 OID 21881)
 -- Name: promotion_customer_groups_promotion_id_is_excluded_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2697,7 +3056,7 @@ CREATE INDEX promotion_customer_groups_promotion_id_is_excluded_idx ON public.pr
 
 
 --
--- TOC entry 5179 (class 1259 OID 19175)
+-- TOC entry 5222 (class 1259 OID 21882)
 -- Name: promotion_logs_cart_id_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2705,7 +3064,7 @@ CREATE INDEX promotion_logs_cart_id_idx ON public.promotion_logs USING btree (ca
 
 
 --
--- TOC entry 5180 (class 1259 OID 19176)
+-- TOC entry 5223 (class 1259 OID 21883)
 -- Name: promotion_logs_checkout_id_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2713,7 +3072,7 @@ CREATE INDEX promotion_logs_checkout_id_idx ON public.promotion_logs USING btree
 
 
 --
--- TOC entry 5181 (class 1259 OID 19179)
+-- TOC entry 5224 (class 1259 OID 21884)
 -- Name: promotion_logs_coupon_code_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2721,7 +3080,7 @@ CREATE INDEX promotion_logs_coupon_code_idx ON public.promotion_logs USING btree
 
 
 --
--- TOC entry 5182 (class 1259 OID 19180)
+-- TOC entry 5225 (class 1259 OID 21885)
 -- Name: promotion_logs_created_at_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2729,7 +3088,7 @@ CREATE INDEX promotion_logs_created_at_idx ON public.promotion_logs USING btree 
 
 
 --
--- TOC entry 5183 (class 1259 OID 19178)
+-- TOC entry 5226 (class 1259 OID 21886)
 -- Name: promotion_logs_customer_id_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2737,7 +3096,7 @@ CREATE INDEX promotion_logs_customer_id_idx ON public.promotion_logs USING btree
 
 
 --
--- TOC entry 5184 (class 1259 OID 19177)
+-- TOC entry 5227 (class 1259 OID 21887)
 -- Name: promotion_logs_order_id_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2745,7 +3104,7 @@ CREATE INDEX promotion_logs_order_id_idx ON public.promotion_logs USING btree (o
 
 
 --
--- TOC entry 5187 (class 1259 OID 19174)
+-- TOC entry 5230 (class 1259 OID 21888)
 -- Name: promotion_logs_promotion_id_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2753,7 +3112,7 @@ CREATE INDEX promotion_logs_promotion_id_idx ON public.promotion_logs USING btre
 
 
 --
--- TOC entry 5167 (class 1259 OID 19169)
+-- TOC entry 5231 (class 1259 OID 21889)
 -- Name: promotion_products_category_id_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2761,7 +3120,7 @@ CREATE INDEX promotion_products_category_id_idx ON public.promotion_products USI
 
 
 --
--- TOC entry 5170 (class 1259 OID 19167)
+-- TOC entry 5234 (class 1259 OID 21890)
 -- Name: promotion_products_product_id_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2769,7 +3128,7 @@ CREATE INDEX promotion_products_product_id_idx ON public.promotion_products USIN
 
 
 --
--- TOC entry 5171 (class 1259 OID 19166)
+-- TOC entry 5235 (class 1259 OID 21891)
 -- Name: promotion_products_promotion_id_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2777,7 +3136,7 @@ CREATE INDEX promotion_products_promotion_id_idx ON public.promotion_products US
 
 
 --
--- TOC entry 5172 (class 1259 OID 19168)
+-- TOC entry 5236 (class 1259 OID 21892)
 -- Name: promotion_products_variant_id_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2785,7 +3144,7 @@ CREATE INDEX promotion_products_variant_id_idx ON public.promotion_products USIN
 
 
 --
--- TOC entry 5160 (class 1259 OID 19162)
+-- TOC entry 5237 (class 1259 OID 21893)
 -- Name: promotions_code_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2793,7 +3152,7 @@ CREATE INDEX promotions_code_idx ON public.promotions USING btree (code);
 
 
 --
--- TOC entry 5161 (class 1259 OID 19161)
+-- TOC entry 5238 (class 1259 OID 21894)
 -- Name: promotions_code_key; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2801,7 +3160,7 @@ CREATE UNIQUE INDEX promotions_code_key ON public.promotions USING btree (code);
 
 
 --
--- TOC entry 5164 (class 1259 OID 19164)
+-- TOC entry 5241 (class 1259 OID 21895)
 -- Name: promotions_start_date_end_date_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2809,7 +3168,7 @@ CREATE INDEX promotions_start_date_end_date_idx ON public.promotions USING btree
 
 
 --
--- TOC entry 5165 (class 1259 OID 19163)
+-- TOC entry 5242 (class 1259 OID 21896)
 -- Name: promotions_status_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2817,7 +3176,7 @@ CREATE INDEX promotions_status_idx ON public.promotions USING btree (status);
 
 
 --
--- TOC entry 5166 (class 1259 OID 19165)
+-- TOC entry 5243 (class 1259 OID 21897)
 -- Name: promotions_status_start_date_end_date_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2825,7 +3184,7 @@ CREATE INDEX promotions_status_start_date_end_date_idx ON public.promotions USIN
 
 
 --
--- TOC entry 5207 (class 1259 OID 19195)
+-- TOC entry 5244 (class 1259 OID 21898)
 -- Name: shipping_method_customer_groups_customer_group_id_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2833,7 +3192,7 @@ CREATE INDEX shipping_method_customer_groups_customer_group_id_idx ON public.shi
 
 
 --
--- TOC entry 5210 (class 1259 OID 19196)
+-- TOC entry 5247 (class 1259 OID 21899)
 -- Name: shipping_method_customer_groups_shipping_method_id_customer_key; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2841,7 +3200,7 @@ CREATE UNIQUE INDEX shipping_method_customer_groups_shipping_method_id_customer_
 
 
 --
--- TOC entry 5211 (class 1259 OID 19194)
+-- TOC entry 5248 (class 1259 OID 21900)
 -- Name: shipping_method_customer_groups_shipping_method_id_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2849,7 +3208,7 @@ CREATE INDEX shipping_method_customer_groups_shipping_method_id_idx ON public.sh
 
 
 --
--- TOC entry 5192 (class 1259 OID 19184)
+-- TOC entry 5249 (class 1259 OID 21901)
 -- Name: shipping_methods_code_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2857,7 +3216,7 @@ CREATE INDEX shipping_methods_code_idx ON public.shipping_methods USING btree (c
 
 
 --
--- TOC entry 5193 (class 1259 OID 19185)
+-- TOC entry 5250 (class 1259 OID 21902)
 -- Name: shipping_methods_is_active_priority_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2865,7 +3224,7 @@ CREATE INDEX shipping_methods_is_active_priority_idx ON public.shipping_methods 
 
 
 --
--- TOC entry 5196 (class 1259 OID 19186)
+-- TOC entry 5253 (class 1259 OID 21903)
 -- Name: shipping_methods_type_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2873,7 +3232,7 @@ CREATE INDEX shipping_methods_type_idx ON public.shipping_methods USING btree (t
 
 
 --
--- TOC entry 5197 (class 1259 OID 19183)
+-- TOC entry 5254 (class 1259 OID 21904)
 -- Name: shipping_methods_zone_id_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2881,7 +3240,7 @@ CREATE INDEX shipping_methods_zone_id_idx ON public.shipping_methods USING btree
 
 
 --
--- TOC entry 5188 (class 1259 OID 19181)
+-- TOC entry 5255 (class 1259 OID 21905)
 -- Name: shipping_zones_is_active_priority_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2889,7 +3248,7 @@ CREATE INDEX shipping_zones_is_active_priority_idx ON public.shipping_zones USIN
 
 
 --
--- TOC entry 5191 (class 1259 OID 19182)
+-- TOC entry 5258 (class 1259 OID 21906)
 -- Name: shipping_zones_priority_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2897,7 +3256,7 @@ CREATE INDEX shipping_zones_priority_idx ON public.shipping_zones USING btree (p
 
 
 --
--- TOC entry 5288 (class 1259 OID 19237)
+-- TOC entry 5259 (class 1259 OID 21907)
 -- Name: storefront_filter_options_filter_id_is_active_sort_order_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2905,7 +3264,7 @@ CREATE INDEX storefront_filter_options_filter_id_is_active_sort_order_idx ON pub
 
 
 --
--- TOC entry 5289 (class 1259 OID 19238)
+-- TOC entry 5260 (class 1259 OID 21908)
 -- Name: storefront_filter_options_filter_id_value_key; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2913,7 +3272,7 @@ CREATE UNIQUE INDEX storefront_filter_options_filter_id_value_key ON public.stor
 
 
 --
--- TOC entry 5283 (class 1259 OID 19235)
+-- TOC entry 5263 (class 1259 OID 21909)
 -- Name: storefront_filter_tree_nodes_filter_id_is_active_sort_order_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2921,7 +3280,7 @@ CREATE INDEX storefront_filter_tree_nodes_filter_id_is_active_sort_order_idx ON 
 
 
 --
--- TOC entry 5284 (class 1259 OID 19236)
+-- TOC entry 5264 (class 1259 OID 21910)
 -- Name: storefront_filter_tree_nodes_filter_id_nav_link_id_key; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2929,7 +3288,7 @@ CREATE UNIQUE INDEX storefront_filter_tree_nodes_filter_id_nav_link_id_key ON pu
 
 
 --
--- TOC entry 5285 (class 1259 OID 19234)
+-- TOC entry 5265 (class 1259 OID 21911)
 -- Name: storefront_filter_tree_nodes_filter_id_parent_id_sort_order_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2937,7 +3296,7 @@ CREATE INDEX storefront_filter_tree_nodes_filter_id_parent_id_sort_order_idx ON 
 
 
 --
--- TOC entry 5279 (class 1259 OID 19232)
+-- TOC entry 5268 (class 1259 OID 21912)
 -- Name: storefront_filters_code_key; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2945,7 +3304,7 @@ CREATE UNIQUE INDEX storefront_filters_code_key ON public.storefront_filters USI
 
 
 --
--- TOC entry 5280 (class 1259 OID 19233)
+-- TOC entry 5269 (class 1259 OID 21913)
 -- Name: storefront_filters_is_active_sort_order_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2953,7 +3312,7 @@ CREATE INDEX storefront_filters_is_active_sort_order_idx ON public.storefront_fi
 
 
 --
--- TOC entry 5292 (class 1259 OID 19239)
+-- TOC entry 5272 (class 1259 OID 21914)
 -- Name: storefront_nav_links_is_active_sort_order_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2961,7 +3320,7 @@ CREATE INDEX storefront_nav_links_is_active_sort_order_idx ON public.storefront_
 
 
 --
--- TOC entry 5295 (class 1259 OID 19240)
+-- TOC entry 5275 (class 1259 OID 21915)
 -- Name: storefront_nav_links_zone_parent_id_sort_order_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2969,7 +3328,7 @@ CREATE INDEX storefront_nav_links_zone_parent_id_sort_order_idx ON public.storef
 
 
 --
--- TOC entry 5069 (class 1259 OID 18354)
+-- TOC entry 5276 (class 1259 OID 21916)
 -- Name: subscribers_created_at_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2977,7 +3336,7 @@ CREATE INDEX subscribers_created_at_idx ON public.subscribers USING btree (creat
 
 
 --
--- TOC entry 5070 (class 1259 OID 18353)
+-- TOC entry 5277 (class 1259 OID 21917)
 -- Name: subscribers_email_key; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2985,7 +3344,7 @@ CREATE UNIQUE INDEX subscribers_email_key ON public.subscribers USING btree (ema
 
 
 --
--- TOC entry 5212 (class 1259 OID 19198)
+-- TOC entry 5280 (class 1259 OID 21918)
 -- Name: tax_classes_code_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2993,7 +3352,7 @@ CREATE INDEX tax_classes_code_idx ON public.tax_classes USING btree (code);
 
 
 --
--- TOC entry 5213 (class 1259 OID 19197)
+-- TOC entry 5281 (class 1259 OID 21919)
 -- Name: tax_classes_code_key; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -3001,7 +3360,7 @@ CREATE UNIQUE INDEX tax_classes_code_key ON public.tax_classes USING btree (code
 
 
 --
--- TOC entry 5216 (class 1259 OID 19200)
+-- TOC entry 5284 (class 1259 OID 21920)
 -- Name: taxes_country_region_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -3009,7 +3368,7 @@ CREATE INDEX taxes_country_region_idx ON public.taxes USING btree (country, regi
 
 
 --
--- TOC entry 5217 (class 1259 OID 19203)
+-- TOC entry 5285 (class 1259 OID 21921)
 -- Name: taxes_country_region_tax_class_id_is_active_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -3017,7 +3376,7 @@ CREATE INDEX taxes_country_region_tax_class_id_is_active_idx ON public.taxes USI
 
 
 --
--- TOC entry 5218 (class 1259 OID 19201)
+-- TOC entry 5286 (class 1259 OID 21922)
 -- Name: taxes_is_active_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -3025,7 +3384,7 @@ CREATE INDEX taxes_is_active_idx ON public.taxes USING btree (is_active);
 
 
 --
--- TOC entry 5221 (class 1259 OID 19202)
+-- TOC entry 5289 (class 1259 OID 21923)
 -- Name: taxes_start_date_end_date_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -3033,7 +3392,7 @@ CREATE INDEX taxes_start_date_end_date_idx ON public.taxes USING btree (start_da
 
 
 --
--- TOC entry 5222 (class 1259 OID 19199)
+-- TOC entry 5290 (class 1259 OID 21924)
 -- Name: taxes_tax_class_id_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -3041,7 +3400,7 @@ CREATE INDEX taxes_tax_class_id_idx ON public.taxes USING btree (tax_class_id);
 
 
 --
--- TOC entry 5105 (class 1259 OID 19127)
+-- TOC entry 5291 (class 1259 OID 21925)
 -- Name: variant_option_values_option_id_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -3049,7 +3408,7 @@ CREATE INDEX variant_option_values_option_id_idx ON public.variant_option_values
 
 
 --
--- TOC entry 5108 (class 1259 OID 19128)
+-- TOC entry 5294 (class 1259 OID 21926)
 -- Name: variant_option_values_value_id_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -3057,7 +3416,7 @@ CREATE INDEX variant_option_values_value_id_idx ON public.variant_option_values 
 
 
 --
--- TOC entry 5109 (class 1259 OID 19126)
+-- TOC entry 5295 (class 1259 OID 21927)
 -- Name: variant_option_values_variant_id_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -3065,7 +3424,7 @@ CREATE INDEX variant_option_values_variant_id_idx ON public.variant_option_value
 
 
 --
--- TOC entry 5332 (class 2606 OID 19426)
+-- TOC entry 5296 (class 2606 OID 21928)
 -- Name: admin_role_permissions admin_role_permissions_permission_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3074,7 +3433,7 @@ ALTER TABLE ONLY public.admin_role_permissions
 
 
 --
--- TOC entry 5333 (class 2606 OID 19421)
+-- TOC entry 5297 (class 2606 OID 21933)
 -- Name: admin_role_permissions admin_role_permissions_role_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3083,7 +3442,7 @@ ALTER TABLE ONLY public.admin_role_permissions
 
 
 --
--- TOC entry 5334 (class 2606 OID 19436)
+-- TOC entry 5298 (class 2606 OID 21938)
 -- Name: admin_user_roles admin_user_roles_role_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3092,7 +3451,7 @@ ALTER TABLE ONLY public.admin_user_roles
 
 
 --
--- TOC entry 5335 (class 2606 OID 19431)
+-- TOC entry 5299 (class 2606 OID 21943)
 -- Name: admin_user_roles admin_user_roles_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3101,7 +3460,7 @@ ALTER TABLE ONLY public.admin_user_roles
 
 
 --
--- TOC entry 5309 (class 2606 OID 19306)
+-- TOC entry 5300 (class 2606 OID 21948)
 -- Name: categories categories_parent_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3110,7 +3469,7 @@ ALTER TABLE ONLY public.categories
 
 
 --
--- TOC entry 5336 (class 2606 OID 19441)
+-- TOC entry 5301 (class 2606 OID 21953)
 -- Name: cms_banner_slides cms_banner_slides_slider_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3119,7 +3478,7 @@ ALTER TABLE ONLY public.cms_banner_slides
 
 
 --
--- TOC entry 5331 (class 2606 OID 19416)
+-- TOC entry 5302 (class 2606 OID 21958)
 -- Name: customer_addresses customer_addresses_customer_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3128,7 +3487,7 @@ ALTER TABLE ONLY public.customer_addresses
 
 
 --
--- TOC entry 5330 (class 2606 OID 19411)
+-- TOC entry 5303 (class 2606 OID 21963)
 -- Name: customers customers_customer_group_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3137,7 +3496,7 @@ ALTER TABLE ONLY public.customers
 
 
 --
--- TOC entry 5312 (class 2606 OID 19321)
+-- TOC entry 5304 (class 2606 OID 21968)
 -- Name: inventory_items inventory_items_product_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3146,7 +3505,7 @@ ALTER TABLE ONLY public.inventory_items
 
 
 --
--- TOC entry 5313 (class 2606 OID 19326)
+-- TOC entry 5305 (class 2606 OID 21973)
 -- Name: inventory_items inventory_items_variant_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3155,7 +3514,7 @@ ALTER TABLE ONLY public.inventory_items
 
 
 --
--- TOC entry 5314 (class 2606 OID 19331)
+-- TOC entry 5306 (class 2606 OID 21978)
 -- Name: inventory_reservations inventory_reservations_inventory_item_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3164,7 +3523,7 @@ ALTER TABLE ONLY public.inventory_reservations
 
 
 --
--- TOC entry 5316 (class 2606 OID 19341)
+-- TOC entry 5307 (class 2606 OID 21983)
 -- Name: order_items order_items_order_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3173,7 +3532,7 @@ ALTER TABLE ONLY public.order_items
 
 
 --
--- TOC entry 5323 (class 2606 OID 19376)
+-- TOC entry 5308 (class 2606 OID 21988)
 -- Name: order_shipping order_shipping_order_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3182,7 +3541,7 @@ ALTER TABLE ONLY public.order_shipping
 
 
 --
--- TOC entry 5324 (class 2606 OID 19381)
+-- TOC entry 5309 (class 2606 OID 21993)
 -- Name: order_shipping order_shipping_shipping_method_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3191,7 +3550,7 @@ ALTER TABLE ONLY public.order_shipping
 
 
 --
--- TOC entry 5328 (class 2606 OID 19401)
+-- TOC entry 5310 (class 2606 OID 21998)
 -- Name: order_taxes order_taxes_order_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3200,7 +3559,7 @@ ALTER TABLE ONLY public.order_taxes
 
 
 --
--- TOC entry 5329 (class 2606 OID 19406)
+-- TOC entry 5311 (class 2606 OID 22003)
 -- Name: order_taxes order_taxes_tax_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3209,7 +3568,7 @@ ALTER TABLE ONLY public.order_taxes
 
 
 --
--- TOC entry 5315 (class 2606 OID 19336)
+-- TOC entry 5312 (class 2606 OID 22008)
 -- Name: orders orders_customer_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3218,7 +3577,7 @@ ALTER TABLE ONLY public.orders
 
 
 --
--- TOC entry 5317 (class 2606 OID 19346)
+-- TOC entry 5313 (class 2606 OID 22013)
 -- Name: payments payments_payment_method_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3227,7 +3586,7 @@ ALTER TABLE ONLY public.payments
 
 
 --
--- TOC entry 5310 (class 2606 OID 19316)
+-- TOC entry 5314 (class 2606 OID 22018)
 -- Name: product_categories product_categories_category_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3236,7 +3595,7 @@ ALTER TABLE ONLY public.product_categories
 
 
 --
--- TOC entry 5311 (class 2606 OID 19311)
+-- TOC entry 5315 (class 2606 OID 22023)
 -- Name: product_categories product_categories_product_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3245,7 +3604,7 @@ ALTER TABLE ONLY public.product_categories
 
 
 --
--- TOC entry 5307 (class 2606 OID 19296)
+-- TOC entry 5316 (class 2606 OID 22028)
 -- Name: product_images product_images_product_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3254,7 +3613,7 @@ ALTER TABLE ONLY public.product_images
 
 
 --
--- TOC entry 5308 (class 2606 OID 19301)
+-- TOC entry 5317 (class 2606 OID 22033)
 -- Name: product_images product_images_variant_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3263,7 +3622,7 @@ ALTER TABLE ONLY public.product_images
 
 
 --
--- TOC entry 5300 (class 2606 OID 19266)
+-- TOC entry 5319 (class 2606 OID 22038)
 -- Name: product_option_values_on_products product_option_values_on_products_option_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3272,7 +3631,7 @@ ALTER TABLE ONLY public.product_option_values_on_products
 
 
 --
--- TOC entry 5301 (class 2606 OID 19261)
+-- TOC entry 5320 (class 2606 OID 22043)
 -- Name: product_option_values_on_products product_option_values_on_products_product_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3281,7 +3640,7 @@ ALTER TABLE ONLY public.product_option_values_on_products
 
 
 --
--- TOC entry 5302 (class 2606 OID 19276)
+-- TOC entry 5321 (class 2606 OID 22048)
 -- Name: product_option_values_on_products product_option_values_on_products_product_id_option_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3290,7 +3649,7 @@ ALTER TABLE ONLY public.product_option_values_on_products
 
 
 --
--- TOC entry 5303 (class 2606 OID 19271)
+-- TOC entry 5322 (class 2606 OID 22053)
 -- Name: product_option_values_on_products product_option_values_on_products_value_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3299,7 +3658,7 @@ ALTER TABLE ONLY public.product_option_values_on_products
 
 
 --
--- TOC entry 5297 (class 2606 OID 19246)
+-- TOC entry 5318 (class 2606 OID 22058)
 -- Name: product_option_values product_option_values_option_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3308,7 +3667,7 @@ ALTER TABLE ONLY public.product_option_values
 
 
 --
--- TOC entry 5298 (class 2606 OID 19256)
+-- TOC entry 5323 (class 2606 OID 22063)
 -- Name: product_options_on_products product_options_on_products_option_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3317,7 +3676,7 @@ ALTER TABLE ONLY public.product_options_on_products
 
 
 --
--- TOC entry 5299 (class 2606 OID 19251)
+-- TOC entry 5324 (class 2606 OID 22068)
 -- Name: product_options_on_products product_options_on_products_product_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3326,7 +3685,7 @@ ALTER TABLE ONLY public.product_options_on_products
 
 
 --
--- TOC entry 5296 (class 2606 OID 19241)
+-- TOC entry 5325 (class 2606 OID 22073)
 -- Name: product_variants product_variants_product_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3335,7 +3694,7 @@ ALTER TABLE ONLY public.product_variants
 
 
 --
--- TOC entry 5319 (class 2606 OID 19361)
+-- TOC entry 5326 (class 2606 OID 22078)
 -- Name: promotion_customer_groups promotion_customer_groups_customer_group_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3344,7 +3703,7 @@ ALTER TABLE ONLY public.promotion_customer_groups
 
 
 --
--- TOC entry 5320 (class 2606 OID 19356)
+-- TOC entry 5327 (class 2606 OID 22083)
 -- Name: promotion_customer_groups promotion_customer_groups_promotion_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3353,7 +3712,7 @@ ALTER TABLE ONLY public.promotion_customer_groups
 
 
 --
--- TOC entry 5321 (class 2606 OID 19366)
+-- TOC entry 5328 (class 2606 OID 22088)
 -- Name: promotion_logs promotion_logs_promotion_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3362,7 +3721,7 @@ ALTER TABLE ONLY public.promotion_logs
 
 
 --
--- TOC entry 5318 (class 2606 OID 19351)
+-- TOC entry 5329 (class 2606 OID 22093)
 -- Name: promotion_products promotion_products_promotion_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3371,7 +3730,7 @@ ALTER TABLE ONLY public.promotion_products
 
 
 --
--- TOC entry 5325 (class 2606 OID 19391)
+-- TOC entry 5330 (class 2606 OID 22098)
 -- Name: shipping_method_customer_groups shipping_method_customer_groups_customer_group_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3380,7 +3739,7 @@ ALTER TABLE ONLY public.shipping_method_customer_groups
 
 
 --
--- TOC entry 5326 (class 2606 OID 19386)
+-- TOC entry 5331 (class 2606 OID 22103)
 -- Name: shipping_method_customer_groups shipping_method_customer_groups_shipping_method_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3389,7 +3748,7 @@ ALTER TABLE ONLY public.shipping_method_customer_groups
 
 
 --
--- TOC entry 5322 (class 2606 OID 19371)
+-- TOC entry 5332 (class 2606 OID 22108)
 -- Name: shipping_methods shipping_methods_zone_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3398,7 +3757,7 @@ ALTER TABLE ONLY public.shipping_methods
 
 
 --
--- TOC entry 5340 (class 2606 OID 19461)
+-- TOC entry 5333 (class 2606 OID 22113)
 -- Name: storefront_filter_options storefront_filter_options_filter_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3407,7 +3766,7 @@ ALTER TABLE ONLY public.storefront_filter_options
 
 
 --
--- TOC entry 5337 (class 2606 OID 19446)
+-- TOC entry 5334 (class 2606 OID 22118)
 -- Name: storefront_filter_tree_nodes storefront_filter_tree_nodes_filter_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3416,7 +3775,7 @@ ALTER TABLE ONLY public.storefront_filter_tree_nodes
 
 
 --
--- TOC entry 5338 (class 2606 OID 19456)
+-- TOC entry 5335 (class 2606 OID 22123)
 -- Name: storefront_filter_tree_nodes storefront_filter_tree_nodes_nav_link_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3425,7 +3784,7 @@ ALTER TABLE ONLY public.storefront_filter_tree_nodes
 
 
 --
--- TOC entry 5339 (class 2606 OID 19451)
+-- TOC entry 5336 (class 2606 OID 22128)
 -- Name: storefront_filter_tree_nodes storefront_filter_tree_nodes_parent_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3434,7 +3793,7 @@ ALTER TABLE ONLY public.storefront_filter_tree_nodes
 
 
 --
--- TOC entry 5341 (class 2606 OID 19471)
+-- TOC entry 5337 (class 2606 OID 22133)
 -- Name: storefront_nav_links storefront_nav_links_category_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3443,7 +3802,7 @@ ALTER TABLE ONLY public.storefront_nav_links
 
 
 --
--- TOC entry 5342 (class 2606 OID 19466)
+-- TOC entry 5338 (class 2606 OID 22138)
 -- Name: storefront_nav_links storefront_nav_links_parent_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3452,7 +3811,7 @@ ALTER TABLE ONLY public.storefront_nav_links
 
 
 --
--- TOC entry 5327 (class 2606 OID 19396)
+-- TOC entry 5339 (class 2606 OID 22143)
 -- Name: taxes taxes_tax_class_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3461,7 +3820,7 @@ ALTER TABLE ONLY public.taxes
 
 
 --
--- TOC entry 5304 (class 2606 OID 19286)
+-- TOC entry 5340 (class 2606 OID 22148)
 -- Name: variant_option_values variant_option_values_option_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3470,7 +3829,7 @@ ALTER TABLE ONLY public.variant_option_values
 
 
 --
--- TOC entry 5305 (class 2606 OID 19291)
+-- TOC entry 5341 (class 2606 OID 22153)
 -- Name: variant_option_values variant_option_values_value_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3479,7 +3838,7 @@ ALTER TABLE ONLY public.variant_option_values
 
 
 --
--- TOC entry 5306 (class 2606 OID 19281)
+-- TOC entry 5342 (class 2606 OID 22158)
 -- Name: variant_option_values variant_option_values_variant_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3487,11 +3846,20 @@ ALTER TABLE ONLY public.variant_option_values
     ADD CONSTRAINT variant_option_values_variant_id_fkey FOREIGN KEY (variant_id) REFERENCES public.product_variants(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
--- Completed on 2026-06-15 18:17:45
+--
+-- TOC entry 5542 (class 0 OID 0)
+-- Dependencies: 5
+-- Name: SCHEMA public; Type: ACL; Schema: -; Owner: postgres
+--
+
+REVOKE USAGE ON SCHEMA public FROM PUBLIC;
+
+
+-- Completed on 2026-06-17 18:27:58
 
 --
 -- PostgreSQL database dump complete
 --
 
-\unrestrict V40PtDrJPuPAur8PaA2d5NKYjG1oL4vZIZgAa0dAspCxLcJ1t2TjJ43vl06ew2b
+\unrestrict 5PO2d0mvvwgmc0kBe2dYyZsX0p1IOhSAM8Cc59vXqSP1AAVeoVSArYajE2SNnt3
 

@@ -10,6 +10,7 @@ import {
   PaymentStatus,
   PaymentProviderCode,
 } from '../types/payment.types';
+import { APP_CURRENCY } from '../../common/currency';
 
 @Injectable()
 export class JazzCashProvider implements PaymentProvider {
@@ -52,7 +53,7 @@ export class JazzCashProvider implements PaymentProvider {
       pp_Password: jazzcashConfig.password,
       pp_TxnRefNo: gatewayTransactionId,
       pp_Amount: params.amount.toFixed(2),
-      pp_TxnCurrency: params.currency === 'PKR' ? 'PKR' : 'PKR', // JazzCash typically uses PKR
+      pp_TxnCurrency: params.currency || APP_CURRENCY,
       pp_TxnDateTime: new Date().toISOString().replace(/[-:]/g, '').split('.')[0],
       pp_BillReference: params.orderId,
       pp_Description: `Order ${params.orderId}`,
@@ -163,7 +164,7 @@ export class JazzCashProvider implements PaymentProvider {
           paymentId: pp_BillReference || '',
           gatewayTransactionId: pp_TxnRefNo || '',
           amount: parseFloat(pp_Amount || '0'),
-          currency: pp_TxnCurrency || 'PKR',
+          currency: pp_TxnCurrency || APP_CURRENCY,
           status: PaymentStatus.FAILED,
           gatewayResponse: callbackData,
           error: 'Hash verification failed',
@@ -182,7 +183,7 @@ export class JazzCashProvider implements PaymentProvider {
         paymentId: pp_BillReference || '',
         gatewayTransactionId: pp_TxnRefNo || '',
         amount: parseFloat(pp_Amount || '0'),
-        currency: pp_TxnCurrency || 'PKR',
+        currency: pp_TxnCurrency || APP_CURRENCY,
         status: isSuccess ? PaymentStatus.CAPTURED : PaymentStatus.FAILED,
         gatewayResponse: callbackData,
         error: isSuccess ? undefined : pp_ResponseMessage || 'Payment failed',
@@ -194,7 +195,7 @@ export class JazzCashProvider implements PaymentProvider {
         paymentId: callbackData.pp_BillReference || '',
         gatewayTransactionId: callbackData.pp_TxnRefNo || '',
         amount: parseFloat(callbackData.pp_Amount || '0'),
-        currency: callbackData.pp_TxnCurrency || 'PKR',
+        currency: callbackData.pp_TxnCurrency || APP_CURRENCY,
         status: PaymentStatus.FAILED,
         gatewayResponse: callbackData,
         error: error.message,

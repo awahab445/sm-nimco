@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useCheckout } from '@/lib/checkout-context';
 import { shippingApi } from '@/lib/api-client';
-import { DEFAULT_CURRENCY } from '@/lib/config';
+import { formatPrice } from '@/lib/currency';
 import { storefrontUi } from '@/lib/storefront-ui';
 
 interface ShippingStepProps {
@@ -148,10 +148,7 @@ export function ShippingStep({ onNext, onBack }: ShippingStepProps) {
                         )}
                       </div>
                       <div className="ml-4 text-lg font-semibold text-foreground">
-                        {new Intl.NumberFormat('en-US', {
-                          style: 'currency',
-                          currency: DEFAULT_CURRENCY,
-                        }).format(option.cost)}
+                        {formatPrice(option.cost, option.currency)}
                       </div>
                     </div>
                   </div>

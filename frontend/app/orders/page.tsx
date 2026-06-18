@@ -9,6 +9,10 @@ import {
   orderStatusBadgeClass,
   paymentStatusBadgeClass,
 } from '@/lib/order-status-badges';
+import { formatPrice } from '@/lib/currency';
+import { getOrderItemProductName } from '@/lib/order-line-item';
+import { normalizeOrderTotals } from '@/lib/order-totals';
+import { OrderSummaryTotals } from '@/components/order/order-summary-totals';
 import Link from 'next/link';
 import { storefrontUi } from '@/lib/storefront-ui';
 
@@ -35,6 +39,10 @@ interface Order {
     rowTotal: number;
     productId?: string;
     variantId?: string | null;
+    attributes?: Record<string, unknown>;
+    metadata?: Record<string, unknown>;
+    productName?: string;
+    product?: { name?: string };
   }>;
 }
 
@@ -157,13 +165,7 @@ export default function OrdersPage() {
                       </p>
                     </div>
                     <div className="text-right">
-                      <div className="text-lg font-semibold text-brand-text">
-                        {new Intl.NumberFormat('en-US', {
-                          style: 'currency',
-                          currency: order.currency,
-                        }).format(order.grandTotal)}
-                      </div>
-                      <div className="flex gap-2 mt-2 justify-end">
+                      <div className="flex gap-2 justify-end">
                         <span
                           className={`rounded px-2 py-1 text-xs font-medium ${orderStatusBadgeClass(
                             order.status,
@@ -199,17 +201,22 @@ export default function OrdersPage() {
                       {order.items.map((item) => (
                         <div key={item.id} className="flex justify-between text-sm">
                           <span className="text-muted-foreground">
-                            {item.name} × {item.quantity}
+                            {getOrderItemProductName(item)} × {item.quantity}
                           </span>
                           <span className="text-brand-text">
-                            {new Intl.NumberFormat('en-US', {
-                              style: 'currency',
-                              currency: order.currency,
-                            }).format(item.rowTotal)}
+                            {formatPrice(item.rowTotal, order.currency)}
                           </span>
                         </div>
                       ))}
                     </div>
+                  </div>
+
+                  <div className="mt-4 border-t border-border pt-4">
+                    <h4 className="mb-2 text-sm font-medium text-brand-text">Order summary</h4>
+                    <OrderSummaryTotals
+                      totals={normalizeOrderTotals(order as unknown as Record<string, unknown>)}
+                      currency={order.currency}
+                    />
                   </div>
 
                   {/* Order Actions */}

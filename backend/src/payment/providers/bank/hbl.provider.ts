@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { BankHostedBaseProvider } from './bank-hosted.base';
 import { PaymentProviderCode, PaymentStatus } from '../../types/payment.types';
 import { CreateIntentParams, PaymentMethodConfig } from '../../types/payment.types';
+import { APP_CURRENCY } from '../../../common/currency';
 import * as crypto from 'crypto';
 
 /**
@@ -104,7 +105,7 @@ export class HblProvider extends BankHostedBaseProvider {
       orderId: params.orderId,
       transactionId: gatewayTransactionId,
       amount: amount,
-      currency: params.currency || 'PKR',
+      currency: params.currency || APP_CURRENCY,
       customerEmail: params.customerEmail,
       customerName: params.customerName || '',
       successUrl: params.returnUrl || '',
@@ -152,7 +153,7 @@ export class HblProvider extends BankHostedBaseProvider {
         callbackData.hash ||
         callbackData.checksum ||
         '',
-      currency: callbackData.currency || 'PKR',
+      currency: callbackData.currency || APP_CURRENCY,
       message:
         callbackData.message ||
         callbackData.responseMessage ||

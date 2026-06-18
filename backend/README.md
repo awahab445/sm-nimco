@@ -40,7 +40,7 @@ Create a `.env` file in the backend root. Required and common variables:
 | `CORS_ORIGIN` | No | Allowed frontend origin (default `http://localhost:3001`) |
 | `REDIS_ENABLED` | No | Set `false` to run without Redis (cart/checkout use in-memory; data lost on restart) |
 | `REDIS_HOST`, `REDIS_PORT` | If Redis | Redis connection (default `localhost`, `6379`) |
-| `DEFAULT_CURRENCY` | No | Default currency for carts (e.g. `USD`, `PKR`) |
+| `APP_CURRENCY` / `DEFAULT_CURRENCY` | No | Default currency for carts, shipping, and payments (e.g. `PKR`, `USD`). `APP_CURRENCY` takes precedence. |
 | `FRONTEND_URL` | No | Frontend URL for “create account” email links (default `http://localhost:3001`) |
 
 For Stripe payments, configure your Stripe keys in env as required by the payment module.

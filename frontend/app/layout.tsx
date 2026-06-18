@@ -7,6 +7,7 @@ import { AuthProvider } from "@/components/auth-provider";
 import { CartProvider } from "@/components/cart-provider";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
+import { WhatsAppWidget } from "@/components/whatsapp-widget";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -48,6 +49,7 @@ export default function RootLayout({
             </div>
           </CartProvider>
         </AuthProvider>
+        <WhatsAppWidget />
       </body>
     </html>
   );

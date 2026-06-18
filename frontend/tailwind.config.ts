@@ -17,6 +17,15 @@ const config = {
         'product-card':
           '0 1px 3px 0 color-mix(in srgb, #1A2E40 7%, transparent), 0 4px 14px -2px color-mix(in srgb, #4f90f1 10%, transparent)',
       },
+      keyframes: {
+        'whatsapp-bounce': {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-6px)' },
+        },
+      },
+      animation: {
+        'whatsapp-bounce': 'whatsapp-bounce 2.5s ease-in-out infinite',
+      },
     },
   },
 } satisfies Config;

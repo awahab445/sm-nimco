@@ -2,6 +2,9 @@
  * Shared semantic Tailwind classes for storefront forms and alerts.
  * Keeps inputs, labels, and messages aligned with styles/store-themes.css tokens.
  */
+const btnPrimaryBlue =
+  'rounded-md bg-blue-600 text-sm font-semibold text-white transition-all duration-200 hover:bg-blue-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100';
+
 export const storefrontUi = {
   input:
     'w-full rounded-md border border-input bg-card px-3 py-2 text-brand-text placeholder:text-muted-foreground shadow-sm focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/25 sm:text-sm',
@@ -20,8 +23,12 @@ export const storefrontUi = {
     'btn-brand-primary px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/30 focus:ring-offset-2 focus:ring-offset-brand-bg disabled:cursor-not-allowed disabled:opacity-50',
   btnPrimaryLg:
     'btn-brand-primary mt-6 w-full py-3 text-base font-medium disabled:cursor-not-allowed disabled:opacity-50',
-  btnPrimaryBlock:
-    'btn-brand-primary w-full py-2 text-sm disabled:opacity-50',
+  btnPrimaryCheckout:
+    'mt-6 w-full rounded-md bg-blue-600 px-8 py-3 text-base font-semibold tracking-wide text-white shadow-md transition-all duration-200 hover:bg-blue-700 hover:shadow-lg active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70',
+  btnPrimarySubmit:
+    'rounded-md bg-blue-600 px-8 py-3 text-base font-semibold tracking-wide text-white shadow-md transition-all duration-200 hover:bg-blue-700 hover:shadow-lg active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70',
+  btnPrimaryBlock: `${btnPrimaryBlue} w-full py-2.5`,
+  btnPrimaryInline: `${btnPrimaryBlue} px-6 py-2`,
   link: 'font-medium text-brand-primary transition-colors hover:text-brand-accent',
   btnSecondary:
     'rounded-md border border-brand-primary bg-card px-4 py-2 text-sm font-medium text-brand-primary transition-colors hover:bg-brand-secondary/40 focus:outline-none focus:ring-2 focus:ring-brand-primary/30 focus:ring-offset-2 focus:ring-offset-brand-bg disabled:cursor-not-allowed disabled:opacity-50',

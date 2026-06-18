@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { productApi } from '@/lib/api-client';
-import { DEFAULT_CURRENCY } from '@/lib/config';
+import { formatPrice } from '@/lib/currency';
 
 const DEBOUNCE_MS = 300;
 const MIN_QUERY_LENGTH = 2;
@@ -89,9 +89,9 @@ export function SearchBar({ variant = 'default' }: { variant?: 'default' | 'head
     }
   };
 
-  const formatPrice = (value: string | number) => {
+  const formatSuggestionPrice = (value: string | number) => {
     const n = typeof value === 'string' ? parseFloat(value) : value;
-    return Number.isNaN(n) ? '' : new Intl.NumberFormat(undefined, { style: 'currency', currency: DEFAULT_CURRENCY }).format(n);
+    return Number.isNaN(n) ? '' : formatPrice(n);
   };
 
   const isHeader = variant === 'header';
@@ -170,7 +170,7 @@ export function SearchBar({ variant = 'default' }: { variant?: 'default' | 'head
                       </div>
                       <div className="min-w-0 flex-1">
                         <span className="block truncate font-medium text-foreground">{item.name}</span>
-                        <span className="text-sm text-muted-foreground">{formatPrice(item.basePrice)}</span>
+                        <span className="text-sm text-muted-foreground">{formatSuggestionPrice(item.basePrice)}</span>
                       </div>
                     </Link>
                   </li>

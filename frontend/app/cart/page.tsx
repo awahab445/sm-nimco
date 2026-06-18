@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useCartStore } from '@/lib/cart.store';
 import { useAuthStore } from '@/lib/auth.store';
 import { productApi } from '@/lib/api-client';
-import { DEFAULT_CURRENCY } from '@/lib/config';
+import { formatPrice, APP_CURRENCY } from '@/lib/currency';
 import { resolveImageUrl } from '@/lib/resolve-image-url';
 import { CouponApplySection } from '@/components/coupon/coupon-apply-section';
 import { ShoppingBagIcon } from '@/components/icons/shopping-bag-icon';
@@ -18,10 +18,6 @@ import {
 } from '@/lib/coupon-sync';
 import { formatVariantAttributes } from '@/lib/format-variant-attributes';
 import { storefrontUi } from '@/lib/storefront-ui';
-
-function formatPrice(value: number, currency = DEFAULT_CURRENCY): string {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(value);
-}
 
 export default function CartPage() {
   const { cart, isLoading, error, refreshCart, updateItem, removeItem, clearCart } =
@@ -96,6 +92,7 @@ export default function CartPage() {
   const items = cart?.items ?? [];
   const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
   const cartId = cart?.id ?? null;
+  const displayCurrency = cart?.currency ?? APP_CURRENCY;
 
   useEffect(() => {
     const lineItems = cart?.items ?? [];
@@ -232,7 +229,7 @@ export default function CartPage() {
                       <p className="text-sm text-muted-foreground">{item.variantName}</p>
                     ) : null}
                     <p className="text-sm text-muted-foreground mt-0.5">
-                      {formatPrice(item.price, DEFAULT_CURRENCY)} × {item.quantity} = {formatPrice(rowTotal, DEFAULT_CURRENCY)}
+                      {formatPrice(item.price, displayCurrency)} × {item.quantity} = {formatPrice(rowTotal, displayCurrency)}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
@@ -274,11 +271,11 @@ export default function CartPage() {
                 Summary
               </h2>
               <p className="mt-2 text-muted-foreground">
-                Subtotal: {formatPrice(subtotal, DEFAULT_CURRENCY)}
+                Subtotal: {formatPrice(subtotal, displayCurrency)}
               </p>
               {couponMeta.discountAmount > 0 && (
                 <p className="mt-1 text-sm font-medium text-emerald-700 dark:text-emerald-400">
-                  Discount applied: −{formatPrice(couponMeta.discountAmount, DEFAULT_CURRENCY)}
+                  Discount applied: −{formatPrice(couponMeta.discountAmount, displayCurrency)}
                 </p>
               )}
               {couponMeta.isFreeShipping && couponMeta.discountAmount <= 0 && couponMeta.code && (
@@ -289,7 +286,7 @@ export default function CartPage() {
               {(couponMeta.discountAmount > 0 || (couponMeta.isFreeShipping && couponMeta.code)) && (
                 <p className="mt-2 text-sm font-semibold text-foreground">
                   Estimated total (before shipping):{' '}
-                  {formatPrice(Math.max(0, subtotal - couponMeta.discountAmount), DEFAULT_CURRENCY)}
+                  {formatPrice(Math.max(0, subtotal - couponMeta.discountAmount), displayCurrency)}
                 </p>
               )}
               <div className="mt-4">
@@ -316,7 +313,7 @@ export default function CartPage() {
               </div>
               <Link
                 href={cartId ? `/checkout?cartId=${cartId}` : '/cart'}
-                className={`mt-4 block w-full py-2.5 text-center text-sm ${storefrontUi.btnPrimary}`}
+                className={`mt-4 block text-center ${storefrontUi.btnPrimaryCheckout}`}
               >
                 Proceed to checkout
               </Link>

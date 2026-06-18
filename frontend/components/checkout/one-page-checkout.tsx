@@ -5,9 +5,9 @@ import { useRouter } from 'next/navigation';
 import { useCheckout } from '@/lib/checkout-context';
 import { useAuthStore } from '@/lib/auth.store';
 import { useCartStore } from '@/lib/cart.store';
-import { DEFAULT_CURRENCY } from '@/lib/config';
+import { formatPrice, APP_CURRENCY } from '@/lib/currency';
 import { storefrontUi } from '@/lib/storefront-ui';
-import { Address, AddressWithId, addressApi, shippingApi, paymentApi, productApi } from '@/lib/api-client';
+import { Address, AddressWithId, addressApi, shippingApi, paymentApi, productApi, type CartItem } from '@/lib/api-client';
 import { resolveImageUrl } from '@/lib/resolve-image-url';
 import { CouponApplySection } from '@/components/coupon/coupon-apply-section';
 import {
@@ -16,6 +16,8 @@ import {
   setPendingCouponCode,
 } from '@/lib/coupon-sync';
 import { formatVariantAttributes } from '@/lib/format-variant-attributes';
+
+const EMPTY_CART_ITEMS: CartItem[] = [];
 
 const emptyAddress: Address = {
   firstName: '',
@@ -49,10 +51,6 @@ function formatAddressLine(a: AddressWithId): string {
   return parts.join(', ') || `${a.firstName} ${a.lastName}`;
 }
 
-function formatPrice(value: number, currency: string) {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(value);
-}
-
 function validateAddress(addr: Address): boolean {
   return !!(
     addr.firstName?.trim() &&
@@ -82,7 +80,7 @@ export function OnePageCheckout() {
     clearError,
   } = useCheckout();
   const clearCart = useCartStore((s) => s.clearCart);
-  const cartItems = useCartStore((s) => s.cart?.items ?? []);
+  const cartItems = useCartStore((s) => s.cart?.items ?? EMPTY_CART_ITEMS);
 
   const [localQty, setLocalQty] = useState<Record<string, number>>({});
   const [updatingVariantId, setUpdatingVariantId] = useState<string | null>(null);
@@ -348,11 +346,21 @@ export function OnePageCheckout() {
     [shippingOptions, selectedShippingId]
   );
 
-  const displayCurrency = DEFAULT_CURRENCY;
-  const displaySubtotal = checkout?.subtotal ?? 0;
-  const displayDiscountTotal = checkout?.discountTotal ?? 0;
-  const displayShippingTotal = checkout?.shippingTotal ?? selectedShipping?.cost ?? 0;
-  const displayGrandTotal = checkout?.grandTotal ?? Math.max(0, displaySubtotal - displayDiscountTotal + displayShippingTotal);
+  const displayCurrency = checkout?.currency ?? APP_CURRENCY;
+  const parsedSubtotal = Number(checkout?.subtotal ?? 0);
+  const parsedDiscount = Number(checkout?.discountTotal ?? 0);
+  const parsedTax = Number(checkout?.taxTotal ?? 0);
+  // Prefer the live shipping selection — checkout.shippingTotal is 0 until saved server-side
+  const shippingFee = Number(
+    selectedShipping != null ? selectedShipping.cost : checkout?.shippingTotal ?? 0,
+  );
+  const displaySubtotal = parsedSubtotal;
+  const displayDiscountTotal = parsedDiscount;
+  const displayShippingTotal = Number.isFinite(shippingFee) ? shippingFee : 0;
+  const displayGrandTotal = Math.max(
+    0,
+    parsedSubtotal - parsedDiscount + displayShippingTotal + parsedTax,
+  );
 
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -411,7 +419,7 @@ export function OnePageCheckout() {
       await updateShippingMethod({
         methodId: selectedShipping.methodId,
         methodName: selectedShipping.methodName,
-        cost: selectedShipping.cost,
+        cost: Number(selectedShipping.cost),
         currency: selectedShipping.currency,
         estimatedDays: selectedShipping.estimatedDays ?? 0,
       });
@@ -899,7 +907,7 @@ export function OnePageCheckout() {
                       )}
                     </div>
                     <span className="font-medium text-foreground">
-                      {formatPrice(opt.cost, DEFAULT_CURRENCY)}
+                      {formatPrice(Number(opt.cost), opt.currency || displayCurrency)}
                     </span>
                   </label>
                 ))}
@@ -1075,7 +1083,7 @@ export function OnePageCheckout() {
                             })()}
                           </div>
                           <p className="shrink-0 text-sm font-medium text-foreground">
-                            {formatPrice(rowTotal, DEFAULT_CURRENCY)}
+                            {formatPrice(rowTotal, displayCurrency)}
                           </p>
                         </div>
                         <div className="flex items-center gap-2 mt-2">
@@ -1187,7 +1195,7 @@ export function OnePageCheckout() {
                 !validateAddress(effectiveShippingAddress) ||
                 !customerEmail?.includes('@')
               }
-              className={storefrontUi.btnPrimaryLg}
+              className={storefrontUi.btnPrimaryCheckout}
             >
               {isLoading ? 'Processing…' : 'Place order'}
             </button>

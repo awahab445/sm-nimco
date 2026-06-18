@@ -299,7 +299,7 @@ export class CheckoutService {
     const shippingMethod: CheckoutShippingMethod = {
       methodId: shippingMethodDto.methodId,
       methodName: shippingMethodDto.methodName,
-      cost: shippingMethodDto.cost,
+      cost: Number(shippingMethodDto.cost),
       currency: shippingMethodDto.currency,
       estimatedDays: shippingMethodDto.estimatedDays,
     };
@@ -504,11 +504,19 @@ export class CheckoutService {
         customerGroupId: customerGroupId, // Snapshot customer group ID
         billingAddress: updated.billingAddress!,
         shippingAddress: updated.shippingAddress!,
+        totals: {
+          subtotal: updated.subtotal,
+          discountTotal: updated.discountTotal,
+          shippingTotal: updated.shippingTotal,
+          taxTotal: updated.taxTotal,
+          grandTotal: updated.grandTotal,
+        },
         notes: confirmCheckoutDto.notes,
         metadata: {
           ...confirmCheckoutDto.metadata,
           checkoutId: checkoutId,
           customerGroupSnapshot, // Include group snapshot in metadata
+          shippingMethod: updated.shippingMethod ?? null,
         },
       },
       {

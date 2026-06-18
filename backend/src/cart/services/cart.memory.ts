@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import type { Cart } from './cart.redis';
+import { APP_CURRENCY } from '../../common/currency';
 
 /**
  * In-memory cart storage for development when Redis is not available.
@@ -19,7 +20,7 @@ export class InMemoryCartService {
     return this.store.get(cartId) ?? null;
   }
 
-  async createCart(cartId: string, currency: string = 'USD'): Promise<Cart> {
+  async createCart(cartId: string, currency: string = APP_CURRENCY): Promise<Cart> {
     const cart: Cart = {
       id: cartId,
       items: [],

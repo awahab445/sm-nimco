@@ -118,7 +118,8 @@ export class CheckoutTotalsService {
     if (!shippingMethod) {
       return 0;
     }
-    return shippingMethod.cost;
+    const cost = Number(shippingMethod.cost);
+    return Number.isFinite(cost) ? Math.max(0, cost) : 0;
   }
 
   /**

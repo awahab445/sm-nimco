@@ -1,4 +1,13 @@
-import { IsString, IsOptional, IsObject, IsEmail, ValidateNested, IsUUID } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsObject,
+  IsEmail,
+  ValidateNested,
+  IsUUID,
+  IsNumber,
+  Min,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class AddressDto {
@@ -36,6 +45,29 @@ export class AddressDto {
   phone?: string;
 }
 
+/** Pre-calculated totals from checkout (shipping, discounts, tax). */
+export class OrderTotalsDto {
+  @IsNumber()
+  @Min(0)
+  subtotal: number;
+
+  @IsNumber()
+  @Min(0)
+  discountTotal: number;
+
+  @IsNumber()
+  @Min(0)
+  shippingTotal: number;
+
+  @IsNumber()
+  @Min(0)
+  taxTotal: number;
+
+  @IsNumber()
+  @Min(0)
+  grandTotal: number;
+}
+
 export class CreateOrderDto {
   @IsString()
   @IsUUID()
@@ -70,6 +102,11 @@ export class CreateOrderDto {
   @IsString()
   @IsOptional()
   notes?: string;
+
+  @ValidateNested()
+  @Type(() => OrderTotalsDto)
+  @IsOptional()
+  totals?: OrderTotalsDto;
 
   @IsObject()
   @IsOptional()

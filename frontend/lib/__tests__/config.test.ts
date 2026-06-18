@@ -1,4 +1,4 @@
-import { DEFAULT_CURRENCY } from '../config';
+import { APP_CURRENCY, DEFAULT_CURRENCY } from '../currency';
 
 describe('config', () => {
   it('DEFAULT_CURRENCY should be a non-empty string', () => {
@@ -6,8 +6,11 @@ describe('config', () => {
     expect(DEFAULT_CURRENCY.length).toBeGreaterThan(0);
   });
 
-  it('DEFAULT_CURRENCY should default to USD when NEXT_PUBLIC_CURRENCY is not set', () => {
-    // In test env NEXT_PUBLIC_CURRENCY is usually unset; then fallback is USD
-    expect(['USD', 'PKR']).toContain(DEFAULT_CURRENCY);
+  it('DEFAULT_CURRENCY should match APP_CURRENCY', () => {
+    expect(DEFAULT_CURRENCY).toBe(APP_CURRENCY);
+  });
+
+  it('APP_CURRENCY should be USD or PKR in typical envs', () => {
+    expect(['USD', 'PKR']).toContain(APP_CURRENCY);
   });
 });

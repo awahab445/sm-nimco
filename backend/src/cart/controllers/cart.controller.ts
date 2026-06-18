@@ -12,6 +12,7 @@ import {
 import { CartService } from '../services/cart.service';
 import { AddToCartDto } from '../dto/add-to-cart.dto';
 import { UpdateCartItemDto } from '../dto/update-cart-item.dto';
+import { CreateCartDto } from '../dto/create-cart.dto';
 
 @Controller('cart')
 export class CartController {
@@ -23,8 +24,8 @@ export class CartController {
    */
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  async createCart() {
-    return await this.cartService.createCart();
+  async createCart(@Body() body: CreateCartDto = {}) {
+    return await this.cartService.createCart(body.currency);
   }
 
   /**

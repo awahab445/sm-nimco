@@ -9,8 +9,12 @@ import {
   orderStatusBadgeClass,
   paymentStatusBadgeClass,
 } from '@/lib/order-status-badges';
+import { formatPrice } from '@/lib/currency';
 import Link from 'next/link';
 import { storefrontUi } from '@/lib/storefront-ui';
+import { OrderLineItem } from '@/components/order/order-line-item';
+import { OrderSummaryTotals } from '@/components/order/order-summary-totals';
+import { normalizeOrderTotals } from '@/lib/order-totals';
 
 interface OrderItem {
   id: string;
@@ -22,8 +26,13 @@ interface OrderItem {
   taxAmount: number;
   rowTotal: number;
   attributes?: Record<string, unknown>;
+  metadata?: Record<string, unknown>;
   productId?: string;
   variantId?: string | null;
+  productName?: string;
+  productImage?: string | null;
+  variantLabel?: string | null;
+  product?: { name?: string; image?: string | null };
 }
 
 interface Address {
@@ -254,49 +263,26 @@ export default function OrderDetailPage() {
                 {order.items.map((item) => (
                   <div
                     key={item.id}
-                    className="flex items-start justify-between border-b border-border pb-4 last:border-0 last:pb-0"
+                    className="border-b border-border pb-4 last:border-0 last:pb-0"
                   >
-                    <div className="flex-1">
-                      <h3 className="font-medium text-brand-text">
-                        {item.name}
-                      </h3>
-                      <p className="text-sm text-muted-foreground">SKU: {item.sku}</p>
-                      {item.attributes && Object.keys(item.attributes).length > 0 && (
-                        <div className="mt-1 text-sm text-muted-foreground">
-                          {Object.entries(item.attributes).map(([key, value]) => (
-                            <span key={key} className="mr-3">
-                              {key}: {String(value)}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        Quantity: {item.quantity}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-medium text-brand-text">
-                        {new Intl.NumberFormat('en-US', {
-                          style: 'currency',
-                          currency: order.currency,
-                        }).format(item.rowTotal)}
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        {new Intl.NumberFormat('en-US', {
-                          style: 'currency',
-                          currency: order.currency,
-                        }).format(item.unitPrice)}{' '}
-                        each
-                      </div>
-                      {item.discountAmount > 0 && (
-                        <div className="text-sm text-success">
-                          Discount: -{new Intl.NumberFormat('en-US', {
-                            style: 'currency',
-                            currency: order.currency,
-                          }).format(item.discountAmount)}
-                        </div>
-                      )}
-                    </div>
+                    <OrderLineItem
+                      item={item}
+                      trailing={
+                        <>
+                          <div className="font-medium text-brand-text">
+                            {formatPrice(item.rowTotal, order.currency)}
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            {formatPrice(item.unitPrice, order.currency)} each
+                          </div>
+                          {item.discountAmount > 0 && (
+                            <div className="text-sm text-success">
+                              Discount: -{formatPrice(item.discountAmount, order.currency)}
+                            </div>
+                          )}
+                        </>
+                      }
+                    />
                   </div>
                 ))}
               </div>
@@ -320,57 +306,10 @@ export default function OrderDetailPage() {
               <h2 className="mb-4 text-xl font-semibold text-brand-text">
                 Order Summary
               </h2>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between text-muted-foreground">
-                  <span>Subtotal</span>
-                  <span>
-                    {new Intl.NumberFormat('en-US', {
-                      style: 'currency',
-                      currency: order.currency,
-                    }).format(order.subtotal)}
-                  </span>
-                </div>
-                {order.discountTotal > 0 && (
-                  <div className="flex justify-between text-success">
-                    <span>Discount</span>
-                    <span>
-                      -{new Intl.NumberFormat('en-US', {
-                        style: 'currency',
-                        currency: order.currency,
-                      }).format(order.discountTotal)}
-                    </span>
-                  </div>
-                )}
-                <div className="flex justify-between text-muted-foreground">
-                  <span>Shipping</span>
-                  <span>
-                    {new Intl.NumberFormat('en-US', {
-                      style: 'currency',
-                      currency: order.currency,
-                    }).format(order.shippingTotal)}
-                  </span>
-                </div>
-                <div className="flex justify-between text-muted-foreground">
-                  <span>Tax</span>
-                  <span>
-                    {new Intl.NumberFormat('en-US', {
-                      style: 'currency',
-                      currency: order.currency,
-                    }).format(order.taxTotal)}
-                  </span>
-                </div>
-                <div className="mt-2 border-t border-border pt-2">
-                  <div className="flex justify-between text-lg font-semibold text-brand-text">
-                    <span>Total</span>
-                    <span>
-                      {new Intl.NumberFormat('en-US', {
-                        style: 'currency',
-                        currency: order.currency,
-                      }).format(order.grandTotal)}
-                    </span>
-                  </div>
-                </div>
-              </div>
+              <OrderSummaryTotals
+                totals={normalizeOrderTotals(order as unknown as Record<string, unknown>)}
+                currency={order.currency}
+              />
             </div>
 
             {/* Actions */}

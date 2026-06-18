@@ -1,11 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { DEFAULT_CURRENCY } from '@/lib/config';
-
-function fmt(n: number) {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: DEFAULT_CURRENCY, maximumFractionDigits: 0 }).format(n);
-}
+import { formatPriceWhole } from '@/lib/currency';
 
 /** Allow typing empty / partial numbers in Min/Max fields; commit on blur. */
 const PARTIAL_NUM = /^\d*\.?\d*$/;
@@ -66,7 +62,7 @@ export function PlpDualRangePrice({ boundsMin, boundsMax, valueMin, valueMax, on
   return (
     <div className="space-y-3">
       <p className="text-xs text-muted-foreground">
-        {fmt(lo)} – {fmt(hi)}
+        {formatPriceWhole(lo)} – {formatPriceWhole(hi)}
       </p>
       <div className="grid grid-cols-2 gap-2">
         <label className="text-xs text-muted-foreground">

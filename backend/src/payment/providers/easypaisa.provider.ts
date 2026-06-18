@@ -10,6 +10,7 @@ import {
   PaymentStatus,
   PaymentProviderCode,
 } from '../types/payment.types';
+import { APP_CURRENCY } from '../../common/currency';
 
 /**
  * EasyPaisa Payment Gateway Provider
@@ -104,7 +105,7 @@ export class EasyPaisaProvider implements PaymentProvider {
       transactionId: gatewayTransactionId,
       orderId: params.orderId,
       amount: amount,
-      currency: params.currency || 'PKR',
+      currency: params.currency || APP_CURRENCY,
       customerEmail: params.customerEmail,
       customerName: params.customerName || '',
       description: `Order ${params.metadata?.orderNumber || params.orderId}`,
@@ -178,7 +179,7 @@ export class EasyPaisaProvider implements PaymentProvider {
           paymentId: orderId,
           gatewayTransactionId: transactionId,
           amount: parseFloat(amount) || 0,
-          currency: callbackData.currency || 'PKR',
+          currency: callbackData.currency || APP_CURRENCY,
           status: PaymentStatus.FAILED,
           gatewayResponse: callbackData,
           error: 'Missing required callback fields',
@@ -206,7 +207,7 @@ export class EasyPaisaProvider implements PaymentProvider {
           paymentId: orderId,
           gatewayTransactionId: transactionId,
           amount: parseFloat(amount) || 0,
-          currency: callbackData.currency || 'PKR',
+          currency: callbackData.currency || APP_CURRENCY,
           status: PaymentStatus.FAILED,
           gatewayResponse: callbackData,
           error: 'Checksum verification failed',
@@ -235,7 +236,7 @@ export class EasyPaisaProvider implements PaymentProvider {
         paymentId: orderId,
         gatewayTransactionId: transactionId,
         amount: parseFloat(amount),
-        currency: callbackData.currency || 'PKR',
+        currency: callbackData.currency || APP_CURRENCY,
         status: paymentStatus,
         gatewayResponse: callbackData,
         error: paymentStatus === PaymentStatus.FAILED ? (responseMessage || 'Payment failed') : undefined,
@@ -250,7 +251,7 @@ export class EasyPaisaProvider implements PaymentProvider {
         paymentId: callbackData.orderId || callbackData.billReference || '',
         gatewayTransactionId: callbackData.transactionId || callbackData.transactionRefNumber || '',
         amount: parseFloat(callbackData.amount || callbackData.orderAmount || '0'),
-        currency: callbackData.currency || 'PKR',
+        currency: callbackData.currency || APP_CURRENCY,
         status: PaymentStatus.FAILED,
         gatewayResponse: callbackData,
         error: error.message || 'Callback verification error',

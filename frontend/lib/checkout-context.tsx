@@ -53,6 +53,14 @@ interface CheckoutContextType extends CheckoutState {
 
 const CheckoutContext = createContext<CheckoutContextType | undefined>(undefined);
 
+function isCartNotFoundError(error: unknown): error is ApiError {
+  return (
+    error instanceof ApiError &&
+    error.status === 404 &&
+    /cart.*not found/i.test(error.message)
+  );
+}
+
 function mergeCheckoutWithCartImages(checkout: CheckoutSession): CheckoutSession {
   const cartItems = useCartStore.getState().cart?.items ?? [];
   if (!checkout.items?.length || !cartItems.length) return checkout;
@@ -146,6 +154,28 @@ export function CheckoutProvider({ children }: { children: React.ReactNode }) {
           error: null,
         }));
     } catch (error) {
+      if (isCartNotFoundError(error)) {
+        try {
+          await useCartStore.getState().recoverFromNotFound();
+          setState((prev) => ({
+            ...prev,
+            isLoading: false,
+            error: null,
+          }));
+          if (typeof window !== 'undefined') {
+            window.location.replace('/cart');
+          }
+          return;
+        } catch {
+          setState((prev) => ({
+            ...prev,
+            error: 'Your cart expired and we could not create a new one. Please try again.',
+            isLoading: false,
+          }));
+          return;
+        }
+      }
+
       const message = error instanceof ApiError ? error.message : 'Failed to start checkout';
       setState((prev) => ({
         ...prev,

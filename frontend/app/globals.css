@@ -137,6 +137,12 @@ details.mega-menu-mobile-root[open] > summary .header-nav-trigger__chevron {
   box-shadow: var(--mega-menu-shadow, 0 12px 32px -8px color-mix(in srgb, var(--foreground) 18%, transparent));
 }
 
+/* Dropdown sits inside .site-header nav — reset navbar link color for readable menu items */
+.site-header nav .header-user-menu a,
+.site-header nav .header-user-menu button {
+  color: inherit;
+}
+
 .header-user-menu__item {
   display: block;
   padding: 0.5rem 1rem;

@@ -4,6 +4,7 @@
  */
 
 import { getToken, clearSession } from './auth-token';
+import { APP_CURRENCY } from './currency';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
@@ -396,8 +397,11 @@ export interface Cart {
 }
 
 export const cartApi = {
-  createCart: () =>
-    fetchApi<{ cartId: string }>('/cart', { method: 'POST' }),
+  createCart: (currency: string = APP_CURRENCY) =>
+    fetchApi<{ cartId: string }>('/cart', {
+      method: 'POST',
+      body: JSON.stringify({ currency }),
+    }),
 
   getCart: (cartId: string) => fetchApi<Cart>(`/cart/${encodeURIComponent(cartId)}`),
 

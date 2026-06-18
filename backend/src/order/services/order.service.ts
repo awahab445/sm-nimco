@@ -32,6 +32,62 @@ export class OrderService {
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
+  private async enrichItemsWithProductDetails(items: any[]): Promise<any[]> {
+    if (!items?.length) return items ?? [];
+
+    const productIds = [...new Set(items.map((item) => item.productId).filter(Boolean))];
+    const products =
+      productIds.length > 0
+        ? await this.prisma.product.findMany({
+            where: { id: { in: productIds } },
+            select: {
+              id: true,
+              name: true,
+              images: {
+                where: { isPrimary: true },
+                take: 1,
+                select: { url: true },
+              },
+            },
+          })
+        : [];
+
+    const productById = new Map(products.map((product) => [product.id, product]));
+
+    return items.map((item) => {
+      const metadata =
+        item.metadata && typeof item.metadata === 'object' && !Array.isArray(item.metadata)
+          ? (item.metadata as Record<string, unknown>)
+          : {};
+      const product = productById.get(item.productId);
+      const productName = (metadata.productName as string) || product?.name || item.name;
+      const productImage =
+        (metadata.productImage as string) || product?.images?.[0]?.url || null;
+      let variantLabel = (metadata.variantLabel as string) || null;
+      if (!variantLabel && item.name && item.name !== productName) {
+        variantLabel = item.name;
+      }
+
+      return {
+        ...item,
+        productName,
+        productImage,
+        variantLabel,
+        product: {
+          name: product?.name ?? productName,
+          image: productImage,
+        },
+      };
+    });
+  }
+
+  private async enrichOrder<T extends { items?: any[] }>(order: T): Promise<T> {
+    return {
+      ...order,
+      items: await this.enrichItemsWithProductDetails(order.items ?? []),
+    };
+  }
+
   /**
    * Create order from cart
    */
@@ -110,7 +166,7 @@ export class OrderService {
 
     this.logger.log(`Order created: ${order.orderNumber} (${order.id})`);
 
-    return order;
+    return this.enrichOrder(order);
   }
 
   /**
@@ -133,7 +189,7 @@ export class OrderService {
       throw new ForbiddenException('You do not have access to this order');
     }
 
-    return order;
+    return this.enrichOrder(order);
   }
 
   /**
@@ -156,7 +212,7 @@ export class OrderService {
       throw new ForbiddenException('You do not have access to this order');
     }
 
-    return order;
+    return this.enrichOrder(order);
   }
 
   /**
@@ -178,7 +234,7 @@ export class OrderService {
     if ((order.customerEmail || '').trim().toLowerCase() !== normalizedEmail) {
       throw new ForbiddenException('You do not have access to this order');
     }
-    return order;
+    return this.enrichOrder(order);
   }
 
   /**
@@ -231,7 +287,7 @@ export class OrderService {
     ]);
 
     return {
-      data: orders,
+      data: await Promise.all(orders.map((order) => this.enrichOrder(order))),
       meta: {
         total,
         page,

@@ -9,6 +9,7 @@ import {
   PaymentMethodConfig,
   PaymentStatus,
 } from '../../types/payment.types';
+import { APP_CURRENCY } from '../../../common/currency';
 
 /**
  * Base configuration interface for bank-hosted payment providers
@@ -121,7 +122,7 @@ export abstract class BankHostedBaseProvider implements PaymentProvider {
       orderId: params.orderId,
       transactionId: gatewayTransactionId,
       amount: amount,
-      currency: params.currency || 'PKR',
+      currency: params.currency || APP_CURRENCY,
       customerEmail: params.customerEmail,
       customerName: params.customerName || '',
       successUrl: params.returnUrl || '',
@@ -171,7 +172,7 @@ export abstract class BankHostedBaseProvider implements PaymentProvider {
         callbackData.checksum ||
         callbackData.authCode ||
         '',
-      currency: callbackData.currency || 'PKR',
+      currency: callbackData.currency || APP_CURRENCY,
       message:
         callbackData.message ||
         callbackData.responseMessage ||
@@ -354,7 +355,7 @@ export abstract class BankHostedBaseProvider implements PaymentProvider {
         paymentId: callbackData.orderId || callbackData.orderRef || '',
         gatewayTransactionId: callbackData.transactionId || callbackData.transactionRef || '',
         amount: parseFloat(callbackData.amount || callbackData.orderAmount || '0'),
-        currency: callbackData.currency || 'PKR',
+        currency: callbackData.currency || APP_CURRENCY,
         status: PaymentStatus.FAILED,
         gatewayResponse: callbackData,
         error: error.message || 'Callback verification error',

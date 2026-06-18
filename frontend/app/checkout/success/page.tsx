@@ -7,6 +7,9 @@ import { orderApi, paymentApi } from '@/lib/api-client';
 import { authService } from '@/lib/auth.service';
 import { useAuthStore } from '@/lib/auth.store';
 import { useCartStore } from '@/lib/cart.store';
+import { formatPrice } from '@/lib/currency';
+import { OrderSummaryTotals } from '@/components/order/order-summary-totals';
+import { normalizeOrderTotals } from '@/lib/order-totals';
 import { storefrontUi } from '@/lib/storefront-ui';
 
 interface OrderPayment {
@@ -21,6 +24,12 @@ interface Order {
   id: string;
   orderNumber: string;
   status: string;
+  subtotal?: number;
+  discountTotal?: number;
+  shippingTotal?: number;
+  shippingFee?: number;
+  shippingPrice?: number;
+  taxTotal?: number;
   grandTotal: number;
   currency: string;
   customerEmail: string;
@@ -228,52 +237,49 @@ function CheckoutSuccessContent() {
                 <span className="text-muted-foreground">Order Status:</span>
                 <span className="font-medium capitalize">{order.status.toLowerCase()}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Total Amount:</span>
-                <span className="font-medium">
-                  {new Intl.NumberFormat('en-US', {
-                    style: 'currency',
-                    currency: order.currency,
-                  }).format(order.grandTotal)}
-                </span>
-              </div>
-              {payment && (
-                <>
-                  {payment.paymentMethod?.name && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Payment Method:</span>
-                      <span className="font-medium">{payment.paymentMethod.name}</span>
-                    </div>
-                  )}
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Payment Status:</span>
-                    <span
-                      className={`font-medium ${
-                        isPaymentCompleted || isCODPending
-                          ? 'text-success'
-                          : isPaymentPending
-                            ? 'text-warning'
-                            : 'text-destructive'
-                      }`}
-                    >
-                      {isCODPending
-                        ? 'Pay on delivery'
-                        : paymentStatus.toLowerCase()}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Payment Amount:</span>
-                    <span className="font-medium">
-                      {new Intl.NumberFormat('en-US', {
-                        style: 'currency',
-                        currency: payment.currency,
-                      }).format(payment.amount)}
-                    </span>
-                  </div>
-                </>
-              )}
             </div>
           </div>
+
+          <div className="mb-6 border-t border-border pt-6">
+            <h2 className="mb-4 text-lg font-semibold text-foreground">Order Summary</h2>
+            <OrderSummaryTotals
+              totals={normalizeOrderTotals(order as unknown as Record<string, unknown>)}
+              currency={order.currency}
+            />
+          </div>
+
+          {payment && (
+            <div className="mb-6 space-y-2 border-t border-border pt-6 text-sm">
+              {payment.paymentMethod?.name && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Payment Method:</span>
+                  <span className="font-medium">{payment.paymentMethod.name}</span>
+                </div>
+              )}
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Payment Status:</span>
+                <span
+                  className={`font-medium ${
+                    isPaymentCompleted || isCODPending
+                      ? 'text-success'
+                      : isPaymentPending
+                        ? 'text-warning'
+                        : 'text-destructive'
+                  }`}
+                >
+                  {isCODPending
+                    ? 'Pay on delivery'
+                    : paymentStatus.toLowerCase()}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Payment Amount:</span>
+                <span className="font-medium">
+                  {formatPrice(payment.amount, payment.currency)}
+                </span>
+              </div>
+            </div>
+          )}
 
           {/* Customer Email */}
           {order.customerEmail && (

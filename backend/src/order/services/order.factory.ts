@@ -3,7 +3,7 @@ import { PrismaService } from '../../catalog/services/prisma.service';
 import { CartRedisService, Cart } from '../../cart/services/cart.redis';
 import { VariantService } from '../../catalog/services/variant.service';
 import { TaxCalculationService } from '../../tax/services/calculation.service';
-import { CreateOrderDto, AddressDto } from '../dto/create-order.dto';
+import { CreateOrderDto, OrderTotalsDto } from '../dto/create-order.dto';
 import { TaxCalculationItem } from '../../tax/dto/calculate-tax.dto';
 
 @Injectable()
@@ -56,8 +56,8 @@ export class OrderFactory {
    */
   private async calculateTotals(
     cart: Cart,
-    billingAddress: AddressDto,
     taxCalculationResult?: { taxTotal: number; itemTaxes: Map<string, number> },
+    checkoutTotals?: OrderTotalsDto,
   ): Promise<{
     subtotal: number;
     discountTotal: number;
@@ -65,17 +65,32 @@ export class OrderFactory {
     taxTotal: number;
     grandTotal: number;
   }> {
-    // Calculate subtotal from cart items
     const subtotal = cart.items.reduce((sum, item) => {
       return sum + Number(item.price) * item.quantity;
     }, 0);
 
-    // For now, discount and shipping are 0
-    // These can be calculated from price rules and shipping methods
+    if (checkoutTotals) {
+      const discountTotal = Number(checkoutTotals.discountTotal) || 0;
+      const shippingTotal = Number(checkoutTotals.shippingTotal) || 0;
+      const taxTotal = Number(checkoutTotals.taxTotal) || 0;
+      const resolvedSubtotal =
+        Number(checkoutTotals.subtotal) > 0 ? Number(checkoutTotals.subtotal) : subtotal;
+      const grandTotal =
+        Number(checkoutTotals.grandTotal) > 0
+          ? Number(checkoutTotals.grandTotal)
+          : Math.max(0, resolvedSubtotal - discountTotal + shippingTotal + taxTotal);
+
+      return {
+        subtotal: resolvedSubtotal,
+        discountTotal,
+        shippingTotal,
+        taxTotal,
+        grandTotal,
+      };
+    }
+
     const discountTotal = 0;
     const shippingTotal = 0;
-    
-    // Tax total from tax calculation result
     const taxTotal = taxCalculationResult?.taxTotal || 0;
     const grandTotal = subtotal - discountTotal + shippingTotal + taxTotal;
 
@@ -157,10 +172,14 @@ export class OrderFactory {
     }
 
     // Calculate totals
-    const totals = await this.calculateTotals(cart, createOrderDto.billingAddress, {
-      taxTotal: taxCalculation.taxTotal,
-      itemTaxes: itemTaxMap,
-    });
+    const totals = await this.calculateTotals(
+      cart,
+      {
+        taxTotal: taxCalculation.taxTotal,
+        itemTaxes: itemTaxMap,
+      },
+      createOrderDto.totals,
+    );
 
     // Fetch product/variant information for each cart item to create immutable snapshots
     const orderItemsData: any[] = [];
@@ -174,12 +193,23 @@ export class OrderFactory {
       );
       const product = await this.prisma.product.findUnique({
         where: { id: cartItem.productId },
-        select: { name: true },
+        select: {
+          name: true,
+          images: {
+            where: { isPrimary: true },
+            take: 1,
+            select: { url: true },
+          },
+        },
       });
 
       if (!product) {
         throw new NotFoundException(`Product ${cartItem.productId} not found`);
       }
+
+      const productImage = product.images?.[0]?.url ?? null;
+      const variantLabel =
+        variant.name && variant.name !== product.name ? variant.name : null;
 
       // Calculate row totals with tax
       const unitPrice = Number(cartItem.price);
@@ -193,7 +223,7 @@ export class OrderFactory {
         productId: cartItem.productId,
         variantId: cartItem.variantId,
         sku: variant.sku,
-        name: variant.name || product.name,
+        name: product.name,
         attributes: cartItem.attributes || {},
         quantity,
         unitPrice,
@@ -202,7 +232,11 @@ export class OrderFactory {
         rowTotal,
         quantityFulfilled: 0,
         quantityRefunded: 0,
-        metadata: {},
+        metadata: {
+          productName: product.name,
+          variantLabel,
+          productImage,
+        },
       });
 
       if (cartItem.reservationId) {

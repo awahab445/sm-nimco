@@ -8,6 +8,9 @@ import { useAuthStore } from '@/lib/auth.store';
 
 const CLOSE_MS = 160;
 
+const guestMenuItemClass =
+  'block w-full px-4 py-2 text-left text-sm text-zinc-800 transition-all duration-200';
+
 export function UserMenuDropdown() {
   const router = useRouter();
   const { isAuthenticated, logout } = useAuthStore();
@@ -87,7 +90,7 @@ export function UserMenuDropdown() {
               <Link
                 href="/login"
                 role="menuitem"
-                className="header-user-menu__item"
+                className={guestMenuItemClass}
                 onClick={() => setOpen(false)}
               >
                 Log in
@@ -95,7 +98,7 @@ export function UserMenuDropdown() {
               <Link
                 href="/register"
                 role="menuitem"
-                className="header-user-menu__item header-user-menu__item--emphasis"
+                className={`${guestMenuItemClass} font-semibold`}
                 onClick={() => setOpen(false)}
               >
                 Sign up

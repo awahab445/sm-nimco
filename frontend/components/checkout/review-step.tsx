@@ -3,7 +3,7 @@
 import { useCheckout } from '@/lib/checkout-context';
 import { useRouter } from 'next/navigation';
 import { useCartStore } from '@/lib/cart.store';
-import { DEFAULT_CURRENCY } from '@/lib/config';
+import { formatPrice } from '@/lib/currency';
 import { storefrontUi } from '@/lib/storefront-ui';
 
 interface ReviewStepProps {
@@ -95,10 +95,7 @@ export function ReviewStep({ onBack }: ReviewStepProps) {
                   </div>
                   <div className="text-right">
                     <div className="font-medium text-foreground">
-                      {new Intl.NumberFormat('en-US', {
-                        style: 'currency',
-                        currency: DEFAULT_CURRENCY,
-                      }).format(item.price * item.quantity)}
+                      {formatPrice(item.price * item.quantity, checkout.currency)}
                     </div>
                   </div>
                 </div>
@@ -176,50 +173,35 @@ export function ReviewStep({ onBack }: ReviewStepProps) {
             <div className="flex justify-between text-sm">
               <span>Subtotal</span>
               <span>
-                {new Intl.NumberFormat('en-US', {
-                  style: 'currency',
-                  currency: DEFAULT_CURRENCY,
-                }).format(checkout.subtotal)}
+                {formatPrice(checkout.subtotal, checkout.currency)}
               </span>
             </div>
             {checkout.discountTotal > 0 && (
               <div className="flex justify-between text-sm text-success">
                 <span>Discount</span>
                 <span>
-                  -{new Intl.NumberFormat('en-US', {
-                    style: 'currency',
-                    currency: DEFAULT_CURRENCY,
-                  }).format(checkout.discountTotal)}
+                  -{formatPrice(checkout.discountTotal, checkout.currency)}
                 </span>
               </div>
             )}
             <div className="flex justify-between text-sm">
               <span>Shipping</span>
               <span>
-                {new Intl.NumberFormat('en-US', {
-                  style: 'currency',
-                  currency: DEFAULT_CURRENCY,
-                }).format(checkout.shippingTotal)}
+                {formatPrice(checkout.shippingTotal, checkout.currency)}
               </span>
             </div>
             {checkout.taxTotal > 0 && (
               <div className="flex justify-between text-sm">
                 <span>Tax</span>
                 <span>
-                  {new Intl.NumberFormat('en-US', {
-                    style: 'currency',
-                    currency: DEFAULT_CURRENCY,
-                  }).format(checkout.taxTotal)}
+                  {formatPrice(checkout.taxTotal, checkout.currency)}
                 </span>
               </div>
             )}
             <div className="flex justify-between border-t border-border pt-2 text-lg font-semibold">
               <span>Total</span>
               <span>
-                {new Intl.NumberFormat('en-US', {
-                  style: 'currency',
-                  currency: DEFAULT_CURRENCY,
-                }).format(checkout.grandTotal)}
+                {formatPrice(checkout.grandTotal, checkout.currency)}
               </span>
             </div>
           </div>
@@ -239,7 +221,7 @@ export function ReviewStep({ onBack }: ReviewStepProps) {
           type="button"
           onClick={handlePlaceOrder}
           disabled={isLoading}
-          className={`${storefrontUi.btnPrimary} px-6 py-2`}
+          className={storefrontUi.btnPrimarySubmit}
         >
           {isLoading ? 'Processing...' : paymentRedirectUrl ? 'Proceed to Payment' : 'Place Order'}
         </button>

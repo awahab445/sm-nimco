@@ -23,6 +23,7 @@ import {
   CartItemDto,
 } from '../dto/calculate-shipping.dto';
 import { AssignShippingDto } from '../dto/assign-shipping.dto';
+import { APP_CURRENCY } from '../../common/currency';
 import {
   ShippingAssignedEvent,
   ShippingUpdatedEvent,
@@ -444,7 +445,7 @@ export class ShippingService {
       shippingAddress,
       items,
       subtotal = 0,
-      currency = 'USD',
+      currency = APP_CURRENCY,
       customerGroupId,
     } = dto;
 
@@ -522,11 +523,12 @@ export class ShippingService {
         if (eligibility.groupPricing) {
           if (eligibility.groupPricing.fixedCost !== null) {
             // Fixed cost override
-            cost = eligibility.groupPricing.fixedCost;
+            cost = this.parseShippingAmount(eligibility.groupPricing.fixedCost);
           } else if (eligibility.groupPricing.discountPercent !== null) {
             // Apply percentage discount
             const discount =
-              (cost * eligibility.groupPricing.discountPercent) / 100;
+              (cost * this.parseShippingAmount(eligibility.groupPricing.discountPercent)) /
+              100;
             cost = cost - discount;
             this.logger.debug(
               `Applied ${eligibility.groupPricing.discountPercent}% discount to method ${method.id} for group ${customerGroupId}`,
@@ -660,6 +662,12 @@ export class ShippingService {
   /**
    * Calculate shipping cost based on method type
    */
+  private parseShippingAmount(value: unknown): number {
+    const amount =
+      typeof value === 'number' ? value : parseFloat(String(value ?? ''));
+    return Number.isFinite(amount) ? amount : 0;
+  }
+
   private calculateCost(
     method: any,
     orderAmount: number,
@@ -670,24 +678,27 @@ export class ShippingService {
 
     switch (method.type) {
       case 'flat_rate':
-        return config.cost || 0;
+        return this.parseShippingAmount(config.cost);
 
       case 'weight_based':
-        const baseCost = config.baseCost || 0;
-        const costPerKg = config.costPerKg || 0;
+        const baseCost = this.parseShippingAmount(config.baseCost);
+        const costPerKg = this.parseShippingAmount(config.costPerKg);
         const weightCost = orderWeight * costPerKg;
         return baseCost + weightCost;
 
       case 'amount_based':
-        if (config.freeAbove && orderAmount >= config.freeAbove) {
+        if (
+          config.freeAbove != null &&
+          orderAmount >= this.parseShippingAmount(config.freeAbove)
+        ) {
           return 0;
         }
-        return config.costBelow || 0;
+        return this.parseShippingAmount(config.costBelow);
 
       case 'courier_api':
         // For courier API, return a default cost or 0
         // Actual cost should be calculated via courier service
-        return config.cost || 0;
+        return this.parseShippingAmount(config.cost);
 
       default:
         return 0;

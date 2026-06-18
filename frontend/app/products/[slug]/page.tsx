@@ -5,16 +5,11 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { productApi, inventoryApi, type Product, type ProductVariant } from '@/lib/api-client';
 import { useCartStore } from '@/lib/cart.store';
-import { DEFAULT_CURRENCY } from '@/lib/config';
+import { formatPrice } from '@/lib/currency';
 import { storefrontUi } from '@/lib/storefront-ui';
 import { ProductImageGallery } from '@/components/product/product-image-gallery';
 
 type OptionDefinition = { code: string; label: string; values: string[] };
-
-function formatPrice(value: string | number, currency = DEFAULT_CURRENCY): string {
-  const n = typeof value === 'string' ? parseFloat(value) : value;
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(isNaN(n) ? 0 : n);
-}
 
 /** Normalize variant from API (handles camelCase or snake_case and price as number/string/object). */
 function normalizeVariant(raw: Record<string, unknown>): ProductVariant | null {
@@ -376,19 +371,37 @@ export default function ProductDetailPage() {
             </div>
           )}
 
-          <div className="mt-6 flex flex-wrap items-center gap-4">
-            <div className="flex items-center gap-2">
-              <label htmlFor="qty" className="text-sm font-medium text-foreground/90">
-                Quantity
-              </label>
-              <input
-                id="qty"
-                type="number"
-                min={1}
-                value={quantity}
-                onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value, 10) || 1))}
-                className="w-20 rounded-md border border-input bg-card px-2 py-1.5 text-center text-foreground"
-              />
+          <div className="mt-6 space-y-3">
+            <div className="flex flex-wrap items-center gap-4">
+              <div className="flex items-center gap-2">
+                <label htmlFor="qty" className="text-sm font-medium text-foreground/90">
+                  Quantity
+                </label>
+                <input
+                  id="qty"
+                  type="number"
+                  min={1}
+                  value={quantity}
+                  onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                  className="w-20 rounded-md border border-input bg-card px-2 py-2 text-center text-foreground"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={handleAddToCart}
+                disabled={adding || !hasVariant || !currentVariant || !inStock}
+                className={storefrontUi.btnPrimaryInline}
+              >
+                {added ? 'Added to cart' : adding ? 'Adding…' : hasVariant ? (inStock ? 'Add to cart' : 'Out of stock') : 'Unavailable'}
+              </button>
+              {added && (
+                <Link
+                  href="/cart"
+                  className={`text-sm font-medium ${storefrontUi.link}`}
+                >
+                  View cart →
+                </Link>
+              )}
             </div>
             {!hasVariant && (
               <p className="text-sm text-warning">
@@ -399,22 +412,6 @@ export default function ProductDetailPage() {
               <p className="text-sm font-medium text-warning">
                 Stock unavailable for this product.
               </p>
-            )}
-            <button
-              type="button"
-              onClick={handleAddToCart}
-              disabled={adding || !hasVariant || !currentVariant || !inStock}
-              className={`px-6 py-2.5 ${storefrontUi.btnPrimary}`}
-            >
-              {added ? 'Added to cart' : adding ? 'Adding…' : hasVariant ? (inStock ? 'Add to cart' : 'Out of stock') : 'Unavailable'}
-            </button>
-            {added && (
-              <Link
-                href="/cart"
-                className={`text-sm font-medium ${storefrontUi.link}`}
-              >
-                View cart →
-              </Link>
             )}
           </div>
         </div>

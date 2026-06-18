@@ -5,14 +5,9 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Product } from '@/lib/api-client';
 import { useCartStore } from '@/lib/cart.store';
-import { DEFAULT_CURRENCY } from '@/lib/config';
+import { formatPrice } from '@/lib/currency';
 import { resolveImageUrl } from '@/lib/resolve-image-url';
 import { storefrontUi } from '@/lib/storefront-ui';
-
-function formatPrice(value: string | number, currency = DEFAULT_CURRENCY): string {
-  const n = typeof value === 'string' ? parseFloat(value) : value;
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(isNaN(n) ? 0 : n);
-}
 
 /** Matches primary actions elsewhere on product cards (same as Add to cart). */
 const productCardPrimaryCtaClass = storefrontUi.btnPrimaryBlock;
@@ -98,7 +93,7 @@ export function ProductCard({ product, showViewOnly = false, availableQuantity }
               type="button"
               onClick={handleAddToCart}
               disabled={adding}
-              className={`${productCardPrimaryCtaClass} disabled:opacity-50`}
+              className={productCardPrimaryCtaClass}
             >
               {added ? 'Added' : adding ? 'Adding…' : 'Add to cart'}
             </button>

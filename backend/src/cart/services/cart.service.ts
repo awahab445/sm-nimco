@@ -15,6 +15,7 @@ import { ProductService } from '../../catalog/services/product.service';
 import { PromotionsService } from '../../promotions/services/promotions.service';
 import { AddToCartDto } from '../dto/add-to-cart.dto';
 import { UpdateCartItemDto } from '../dto/update-cart-item.dto';
+import { APP_CURRENCY } from '../../common/currency';
 import {
   CartCreatedEvent,
   CartItemAddedEvent,
@@ -25,7 +26,6 @@ import {
 @Injectable()
 export class CartService {
   private readonly logger = new Logger(CartService.name);
-  private readonly DEFAULT_CURRENCY = process.env.DEFAULT_CURRENCY || 'USD';
   private readonly CART_RESERVATION_EXPIRY_MINUTES = 30; // Match cart TTL
 
   constructor(
@@ -43,7 +43,7 @@ export class CartService {
    */
   async createCart(currency?: string): Promise<{ cartId: string }> {
     const cartId = randomUUID();
-    const cartCurrency = currency || this.DEFAULT_CURRENCY;
+    const cartCurrency = currency || APP_CURRENCY;
 
     await this.cartRedis.createCart(cartId, cartCurrency);
 
@@ -134,7 +134,7 @@ export class CartService {
     // Get or create cart
     let cart = await this.cartRedis.getCart(cartId);
     if (!cart) {
-      cart = await this.cartRedis.createCart(cartId, this.DEFAULT_CURRENCY);
+      cart = await this.cartRedis.createCart(cartId, APP_CURRENCY);
     }
 
     // Fetch variant (or synthetic variant for simple product when variantId === productId)

@@ -50,6 +50,9 @@ interface CartState {
   /** Clear cart and remove cartId from storage. */
   clearCart: () => Promise<void>;
 
+  /** Clear stale cart id from storage and create a fresh empty cart (e.g. after 404). */
+  recoverFromNotFound: () => Promise<string>;
+
   /**
    * Reorder: create a new cart, add all given items, update storage and state.
    * variantId can be null (use productId for simple products).
@@ -176,6 +179,21 @@ export const useCartStore = create<CartState>((set, get) => ({
       clearPendingCouponCode();
       setStoredCartId(null);
       set({ cartId: null, cart: null, isLoading: false, error: null });
+    }
+  },
+
+  recoverFromNotFound: async () => {
+    setStoredCartId(null);
+    set({ cartId: null, cart: null, error: null, isLoading: true });
+    try {
+      const { cartId: newId } = await cartApi.createCart();
+      setStoredCartId(newId);
+      set({ cartId: newId, cart: null, isLoading: false, error: null });
+      return newId;
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to create cart';
+      set({ isLoading: false, error: message });
+      throw err;
     }
   },
 

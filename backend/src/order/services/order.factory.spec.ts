@@ -101,5 +101,52 @@ describe('OrderFactory', () => {
         'Cannot create order from empty cart',
       );
     });
+
+    it('persists checkout shipping and grand total when totals are provided', async () => {
+      mockCartRedis.getCart.mockResolvedValue({
+        id: validCreateOrderDto.cartId,
+        items: [
+          {
+            productId: 'prod-1',
+            variantId: 'var-1',
+            quantity: 1,
+            price: 1000,
+            attributes: {},
+          },
+        ],
+        currency: 'PKR',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+      mockPrisma.order.findFirst.mockResolvedValue(null);
+      mockPrisma.product.findMany.mockResolvedValue([{ id: 'prod-1', taxClassId: null }]);
+      mockPrisma.product.findUnique.mockResolvedValue({
+        name: 'Test Product',
+        images: [],
+      });
+      mockVariantService.findOneOrForSimpleProduct.mockResolvedValue({
+        sku: 'SKU-1',
+        name: 'Test Product',
+      });
+      mockTaxCalculationService.calculate.mockResolvedValue({
+        taxTotal: 0,
+        items: [{ productId: 'prod-1', variantId: 'var-1', taxAmount: 0 }],
+      });
+
+      const { orderData } = await factory.createOrderData({
+        ...validCreateOrderDto,
+        totals: {
+          subtotal: 1000,
+          discountTotal: 0,
+          shippingTotal: 99,
+          taxTotal: 0,
+          grandTotal: 1099,
+        },
+      });
+
+      expect(orderData.shippingTotal).toBe(99);
+      expect(orderData.grandTotal).toBe(1099);
+      expect(orderData.subtotal).toBe(1000);
+    });
   });
 });
