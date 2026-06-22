@@ -20,13 +20,10 @@ interface PaymentMethod {
 }
 
 export function PaymentStep({ onNext, onBack }: PaymentStepProps) {
-  const { setPaymentInfo, isLoading, error } = useCheckout();
+  const { checkout, setPaymentInfo, isLoading, error } = useCheckout();
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [loadingMethods, setLoadingMethods] = useState(true);
   const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
-  const [customerEmail, setCustomerEmail] = useState('');
-  const [customerName, setCustomerName] = useState('');
-  const [notes, setNotes] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -59,17 +56,15 @@ export function PaymentStep({ onNext, onBack }: PaymentStepProps) {
       return;
     }
 
-    if (!customerEmail || !customerEmail.includes('@')) {
-      setFormError('Please enter a valid email address');
+    const email = checkout?.customerEmail?.trim() ?? '';
+    if (!email || !email.includes('@')) {
+      setFormError('A valid email is required. Please go back and enter your email.');
       return;
     }
 
-    // Store payment info in context and proceed to review step
     setPaymentInfo({
       paymentMethodCode: selectedMethod,
-      customerEmail,
-      customerName: customerName || undefined,
-      notes: notes || undefined,
+      customerEmail: email,
     });
     onNext();
   };
@@ -109,50 +104,6 @@ export function PaymentStep({ onNext, onBack }: PaymentStepProps) {
             ))}
           </div>
         )}
-      </div>
-
-      <div>
-        <h2 className="mb-4 text-2xl font-semibold text-foreground">Contact Information</h2>
-        <div className="space-y-4">
-          <div>
-            <label htmlFor="customer-email" className={storefrontUi.labelMb}>
-              Email Address *
-            </label>
-            <input
-              id="customer-email"
-              type="email"
-              required
-              value={customerEmail}
-              onChange={(e) => setCustomerEmail(e.target.value)}
-              className={storefrontUi.input}
-            />
-          </div>
-          <div>
-            <label htmlFor="customer-name" className={storefrontUi.labelMb}>
-              Full Name (optional)
-            </label>
-            <input
-              id="customer-name"
-              type="text"
-              value={customerName}
-              onChange={(e) => setCustomerName(e.target.value)}
-              className={storefrontUi.input}
-            />
-          </div>
-          <div>
-            <label htmlFor="notes" className={storefrontUi.labelMb}>
-              Order Notes (optional)
-            </label>
-            <textarea
-              id="notes"
-              rows={3}
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              className={storefrontUi.input}
-              placeholder="Special delivery instructions, etc."
-            />
-          </div>
-        </div>
       </div>
 
       {(error || formError) && (

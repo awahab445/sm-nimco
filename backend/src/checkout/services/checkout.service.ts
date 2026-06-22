@@ -332,7 +332,10 @@ export class CheckoutService {
     }
     this.checkoutValidator.validateCheckoutState(checkout, ['pending']);
 
-    const customer = await this.customerService.getOrCreateByEmail(dto.customerEmail, true);
+    const customer = await this.customerService.getOrCreateByEmail(
+      dto.customerEmail.trim().toLowerCase(),
+      true,
+    );
     checkout.customerId = customer.id;
     checkout.customerGroupId = customer.customerGroupId;
     checkout.customerEmail = customer.email;
@@ -421,9 +424,10 @@ export class CheckoutService {
     // Resolve customer - prefer checkout session customer, then DTO, then create guest
     let customerId = checkout.customerId || confirmCheckoutDto.customerId;
     let customerGroupId = checkout.customerGroupId || confirmCheckoutDto.customerGroupId;
-    let customerEmail = checkout.customerEmail || confirmCheckoutDto.customerEmail;
+    let customerEmail = (confirmCheckoutDto.customerEmail || checkout.customerEmail || '')
+      .trim()
+      .toLowerCase();
 
-    // Ensure we have customer email (required for order)
     if (!customerEmail) {
       throw new BadRequestException('Customer email is required to confirm checkout');
     }

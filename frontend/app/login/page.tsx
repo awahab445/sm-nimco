@@ -7,6 +7,7 @@ import { useAuthStore } from '@/lib/auth.store';
 import Link from 'next/link';
 import { safeRedirectPath } from '@/lib/safe-redirect';
 import { storefrontUi } from '@/lib/storefront-ui';
+import { showStorefrontToast } from '@/lib/storefront-toast';
 
 function LoginContent() {
   const router = useRouter();
@@ -27,6 +28,15 @@ function LoginContent() {
       router.push(redirectTo);
     }
   }, [isAuthenticated, redirectTo, router]);
+
+  useEffect(() => {
+    if (searchParams.get('reset') === 'success') {
+      showStorefrontToast('Your password has been reset. You can now sign in.', 'success');
+    }
+    if (searchParams.get('verified') === 'true') {
+      showStorefrontToast('Your email has been verified. You can now sign in.', 'success');
+    }
+  }, [searchParams]);
 
   const validate = () => {
     const errors: { email?: string; password?: string } = {};
@@ -124,9 +134,14 @@ function LoginContent() {
             </div>
 
             <div>
-              <label htmlFor="password" className={storefrontUi.label}>
-                Password
-              </label>
+              <div className="flex items-center justify-between">
+                <label htmlFor="password" className={storefrontUi.label}>
+                  Password
+                </label>
+                <Link href="/forgot-password" className={`text-sm ${storefrontUi.link}`}>
+                  Forgot password?
+                </Link>
+              </div>
               <input
                 id="password"
                 name="password"

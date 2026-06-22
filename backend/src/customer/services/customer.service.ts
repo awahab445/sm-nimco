@@ -291,6 +291,7 @@ export class CustomerService {
       lastName: customer.lastName,
       phone: customer.phone,
       isGuest: customer.isGuest,
+      isEmailVerified: customer.isEmailVerified ?? false,
       customerGroupId: customer.customerGroupId,
       customerGroup: customer.customerGroup
         ? {

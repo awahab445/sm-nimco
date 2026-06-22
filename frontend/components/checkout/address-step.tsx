@@ -5,6 +5,15 @@ import { useCheckout } from '@/lib/checkout-context';
 import { Address } from '@/lib/api-client';
 import { storefrontUi } from '@/lib/storefront-ui';
 
+const PAKISTAN_PROVINCES = [
+  'Sindh',
+  'Punjab',
+  'Khyber Pakhtunkhwa',
+  'Balochistan',
+  'Azad Kashmir',
+  'Gilgit-Baltistan',
+] as const;
+
 interface AddressStepProps {
   onNext: () => void;
 }
@@ -20,7 +29,7 @@ export function AddressStep({ onNext }: AddressStepProps) {
       city: '',
       state: '',
       postalCode: '',
-      country: '',
+      country: 'PK',
     },
   );
   const [shippingAddress, setShippingAddress] = useState<Address>(
@@ -31,12 +40,13 @@ export function AddressStep({ onNext }: AddressStepProps) {
       city: '',
       state: '',
       postalCode: '',
-      country: '',
+      country: 'PK',
     },
   );
   const [formError, setFormError] = useState<string | null>(null);
 
   const validateAddress = (addr: Address): boolean => {
+    const country = addr.country?.trim() || 'PK';
     return !!(
       addr.firstName &&
       addr.lastName &&
@@ -44,7 +54,7 @@ export function AddressStep({ onNext }: AddressStepProps) {
       addr.city &&
       addr.state &&
       addr.postalCode &&
-      addr.country
+      country
     );
   };
 
@@ -52,20 +62,26 @@ export function AddressStep({ onNext }: AddressStepProps) {
     e.preventDefault();
     setFormError(null);
 
-    if (!validateAddress(billingAddress)) {
+    const billingWithCountry = { ...billingAddress, country: 'PK' };
+    const shippingWithCountry = {
+      ...(useSameAddress ? billingWithCountry : shippingAddress),
+      country: 'PK',
+    };
+
+    if (!validateAddress(billingWithCountry)) {
       setFormError('Please fill in all required billing address fields');
       return;
     }
 
-    if (!validateAddress(shippingAddress)) {
+    if (!validateAddress(shippingWithCountry)) {
       setFormError('Please fill in all required shipping address fields');
       return;
     }
 
     try {
       await updateAddresses({
-        billingAddress,
-        shippingAddress: useSameAddress ? billingAddress : shippingAddress,
+        billingAddress: billingWithCountry,
+        shippingAddress: shippingWithCountry,
       });
       onNext();
     } catch (err) {
@@ -170,16 +186,22 @@ export function AddressStep({ onNext }: AddressStepProps) {
             <label htmlFor="billing-state" className={storefrontUi.labelMb}>
               State/Province *
             </label>
-            <input
+            <select
               id="billing-state"
-              type="text"
               required
               value={billingAddress.state}
               onChange={(e) =>
                 setBillingAddress({ ...billingAddress, state: e.target.value })
               }
-              className={storefrontUi.input}
-            />
+              className={storefrontUi.select}
+            >
+              <option value="">Select province</option>
+              {PAKISTAN_PROVINCES.map((province) => (
+                <option key={province} value={province}>
+                  {province}
+                </option>
+              ))}
+            </select>
           </div>
           <div>
             <label htmlFor="billing-postalCode" className={storefrontUi.labelMb}>
@@ -203,12 +225,9 @@ export function AddressStep({ onNext }: AddressStepProps) {
             <input
               id="billing-country"
               type="text"
-              required
-              value={billingAddress.country}
-              onChange={(e) =>
-                setBillingAddress({ ...billingAddress, country: e.target.value })
-              }
-              className={storefrontUi.input}
+              readOnly
+              value="PK"
+              className={`${storefrontUi.input} bg-gray-100 cursor-not-allowed`}
             />
           </div>
           <div className="md:col-span-2">
@@ -309,16 +328,22 @@ export function AddressStep({ onNext }: AddressStepProps) {
               <label htmlFor="shipping-state" className={storefrontUi.labelMb}>
                 State/Province *
               </label>
-              <input
+              <select
                 id="shipping-state"
-                type="text"
                 required
                 value={shippingAddress.state}
                 onChange={(e) =>
                   setShippingAddress({ ...shippingAddress, state: e.target.value })
                 }
-                className={storefrontUi.input}
-              />
+                className={storefrontUi.select}
+              >
+                <option value="">Select province</option>
+                {PAKISTAN_PROVINCES.map((province) => (
+                  <option key={province} value={province}>
+                    {province}
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
               <label htmlFor="shipping-postalCode" className={storefrontUi.labelMb}>
@@ -342,12 +367,9 @@ export function AddressStep({ onNext }: AddressStepProps) {
               <input
                 id="shipping-country"
                 type="text"
-                required
-                value={shippingAddress.country}
-                onChange={(e) =>
-                  setShippingAddress({ ...shippingAddress, country: e.target.value })
-                }
-                className={storefrontUi.input}
+                readOnly
+                value="PK"
+                className={`${storefrontUi.input} bg-gray-100 cursor-not-allowed`}
               />
             </div>
           </div>

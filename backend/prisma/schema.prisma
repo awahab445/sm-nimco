@@ -609,24 +609,30 @@ model CustomerGroup {
 }
 
 model Customer {
-  id              String            @id @default(uuid()) @db.Uuid
-  email           String            @unique @db.VarChar(255)
-  passwordHash    String?           @map("password_hash") @db.VarChar(255)
-  firstName       String?           @map("first_name") @db.VarChar(255)
-  lastName        String?           @map("last_name") @db.VarChar(255)
-  phone           String?           @db.VarChar(50)
-  isGuest         Boolean           @default(false) @map("is_guest")
-  customerGroupId String            @map("customer_group_id") @db.Uuid
-  metadata        Json              @default("{}")
-  createdAt       DateTime          @default(now()) @map("created_at")
-  updatedAt       DateTime          @updatedAt @map("updated_at")
-  addresses       CustomerAddress[]
-  customerGroup   CustomerGroup     @relation(fields: [customerGroupId], references: [id])
-  orders          Order[]
+  id                     String            @id @default(uuid()) @db.Uuid
+  email                  String            @unique @db.VarChar(255)
+  passwordHash           String?           @map("password_hash") @db.VarChar(255)
+  firstName              String?           @map("first_name") @db.VarChar(255)
+  lastName               String?           @map("last_name") @db.VarChar(255)
+  phone                  String?           @db.VarChar(50)
+  isGuest                Boolean           @default(false) @map("is_guest")
+  isEmailVerified        Boolean           @default(false) @map("is_email_verified")
+  emailVerificationToken String?           @unique @map("email_verification_token") @db.VarChar(255)
+  resetPasswordToken     String?           @unique @map("reset_password_token") @db.VarChar(255)
+  resetPasswordExpires   DateTime?         @map("reset_password_expires") @db.Timestamptz(6)
+  customerGroupId        String            @map("customer_group_id") @db.Uuid
+  metadata               Json              @default("{}")
+  createdAt              DateTime          @default(now()) @map("created_at")
+  updatedAt              DateTime          @updatedAt @map("updated_at")
+  addresses              CustomerAddress[]
+  customerGroup          CustomerGroup     @relation(fields: [customerGroupId], references: [id])
+  orders                 Order[]
 
   @@index([email])
   @@index([customerGroupId])
   @@index([isGuest])
+  @@index([emailVerificationToken])
+  @@index([resetPasswordToken])
   @@map("customers")
 }
 

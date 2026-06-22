@@ -19,6 +19,15 @@ import { formatVariantAttributes } from '@/lib/format-variant-attributes';
 
 const EMPTY_CART_ITEMS: CartItem[] = [];
 
+const PAKISTAN_PROVINCES = [
+  'Sindh',
+  'Punjab',
+  'Khyber Pakhtunkhwa',
+  'Balochistan',
+  'Azad Kashmir',
+  'Gilgit-Baltistan',
+] as const;
+
 const emptyAddress: Address = {
   firstName: '',
   lastName: '',
@@ -26,7 +35,7 @@ const emptyAddress: Address = {
   city: '',
   state: '',
   postalCode: '',
-  country: '',
+  country: 'PK',
   label: '',
 };
 
@@ -52,6 +61,7 @@ function formatAddressLine(a: AddressWithId): string {
 }
 
 function validateAddress(addr: Address): boolean {
+  const country = addr.country?.trim() || 'PK';
   return !!(
     addr.firstName?.trim() &&
     addr.lastName?.trim() &&
@@ -59,7 +69,7 @@ function validateAddress(addr: Address): boolean {
     addr.city?.trim() &&
     addr.state?.trim() &&
     addr.postalCode?.trim() &&
-    addr.country?.trim()
+    country
   );
 }
 
@@ -94,8 +104,6 @@ export function OnePageCheckout() {
     () => checkout?.shippingAddress || { ...emptyAddress }
   );
   const [customerEmail, setCustomerEmail] = useState(checkout?.customerEmail || '');
-  const [customerName, setCustomerName] = useState(checkout?.customerName || '');
-  const [notes, setNotes] = useState('');
 
   const [paymentMethods, setPaymentMethods] = useState<Array<{
     code: string;
@@ -124,7 +132,7 @@ export function OnePageCheckout() {
 
   const [formError, setFormError] = useState<string | null>(null);
 
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
   const [savedAddresses, setSavedAddresses] = useState<AddressWithId[]>([]);
   const [loadingAddresses, setLoadingAddresses] = useState(false);
   const [selectedBillingAddressId, setSelectedBillingAddressId] = useState<string | null>(null);
@@ -202,11 +210,19 @@ export function OnePageCheckout() {
   // Sync from checkout when it loads/updates (only if we don't have saved-address selection)
   useEffect(() => {
     if (checkout?.customerEmail) setCustomerEmail(checkout.customerEmail);
-    if (checkout?.customerName) setCustomerName(checkout.customerName || '');
+    else if (isAuthenticated && user?.email) {
+      setCustomerEmail((prev) => prev || user.email);
+    }
     if (checkout?.shippingMethod?.methodId) setSelectedShippingId(checkout.shippingMethod.methodId);
-    if (showAddressForm && checkout?.billingAddress) setBillingAddress(checkout.billingAddress);
-    if (showAddressForm && checkout?.shippingAddress) setShippingAddress(checkout.shippingAddress);
-  }, [checkout?.id, showAddressForm]);
+    if (showAddressForm && checkout?.billingAddress) {
+      setBillingAddress({ ...checkout.billingAddress, country: 'PK' });
+    }
+    if (showAddressForm && checkout?.shippingAddress) {
+      setShippingAddress({ ...checkout.shippingAddress, country: 'PK' });
+    }
+  }, [checkout?.id, showAddressForm, isAuthenticated, user?.email]);
+
+  const isEmailValid = (email: string) => !!email.trim() && email.includes('@');
 
   // Keep local quantity in sync with checkout items
   useEffect(() => {
@@ -294,7 +310,7 @@ export function OnePageCheckout() {
     shippingApi
       .calculateShipping({
         shippingAddress: {
-          country: effectiveShippingAddress.country,
+          country: effectiveShippingAddress.country || 'PK',
           region: effectiveShippingAddress.state,
           city: effectiveShippingAddress.city,
           postalCode: effectiveShippingAddress.postalCode,
@@ -383,34 +399,36 @@ export function OnePageCheckout() {
       setFormError('Please select a payment method.');
       return;
     }
-    if (!customerEmail?.trim() || !customerEmail.includes('@')) {
+    if (!isEmailValid(customerEmail)) {
       setFormError('Please enter a valid email address.');
       return;
     }
 
+    const billingWithCountry = { ...billingAddress, country: 'PK' };
+    const shippingWithCountry = { ...effectiveShippingAddress, country: 'PK' };
+
     try {
-      // For guest checkout: set customer on session so confirm receives customerId/customerGroupId
-      if (checkoutId && !checkout?.customerId && customerEmail?.trim()) {
-        await setGuestCustomer(customerEmail.trim());
+      if (checkoutId && !checkout?.customerId && customerEmail.trim()) {
+        await setGuestCustomer(customerEmail.trim().toLowerCase());
       }
 
       await updateAddresses({
-        billingAddress,
-        shippingAddress: effectiveShippingAddress,
+        billingAddress: billingWithCountry,
+        shippingAddress: shippingWithCountry,
       });
 
       if (isAuthenticated) {
         const setAsDefault = savedAddresses.length === 0;
         if (saveBillingAddress) {
           await addressApi.createAddress({
-            ...billingAddress,
+            ...billingWithCountry,
             isDefaultBilling: setAsDefault,
             isDefaultShipping: useSameAddress && setAsDefault,
           });
         }
         if (saveShippingAddress && !useSameAddress) {
           await addressApi.createAddress({
-            ...effectiveShippingAddress,
+            ...shippingWithCountry,
             isDefaultShipping: setAsDefault,
           });
         }
@@ -426,9 +444,7 @@ export function OnePageCheckout() {
 
       const paymentPayload = {
         paymentMethodCode: selectedPaymentCode,
-        customerEmail: customerEmail.trim(),
-        customerName: customerName.trim() || undefined,
-        notes: notes.trim() || undefined,
+        customerEmail: customerEmail.trim().toLowerCase(),
         ...(checkout?.customerId && { customerId: checkout.customerId }),
         ...(checkout?.customerGroupId && { customerGroupId: checkout.customerGroupId }),
       };
@@ -444,7 +460,7 @@ export function OnePageCheckout() {
       const sp = new URLSearchParams({
         orderId: result.orderId,
         orderNumber: result.orderNumber,
-        email: customerEmail.trim(),
+        email: customerEmail.trim().toLowerCase(),
       });
       router.push(`/checkout/success?${sp.toString()}`);
     } catch {
@@ -456,6 +472,22 @@ export function OnePageCheckout() {
 
   const inputClass = storefrontUi.input;
   const labelClass = storefrontUi.labelMb;
+
+  const emailField = (
+    <div className="sm:col-span-2">
+      <label htmlFor="customer-email" className={labelClass}>Email *</label>
+      <input
+        id="customer-email"
+        type="email"
+        required
+        autoComplete="email"
+        value={customerEmail}
+        onChange={(e) => setCustomerEmail(e.target.value)}
+        className={inputClass}
+        placeholder="you@example.com"
+      />
+    </div>
+  );
 
   return (
     <form onSubmit={handlePlaceOrder} className="space-y-8">
@@ -508,6 +540,7 @@ export function OnePageCheckout() {
                   Billing address
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {emailField}
                   <div>
                     <label htmlFor="billing-firstName" className={labelClass}>First name *</label>
                     <input
@@ -568,14 +601,20 @@ export function OnePageCheckout() {
                   </div>
                   <div>
                     <label htmlFor="billing-state" className={labelClass}>State / Province *</label>
-                    <input
+                    <select
                       id="billing-state"
-                      type="text"
                       required
                       value={billingAddress.state}
                       onChange={(e) => setBillingAddress({ ...billingAddress, state: e.target.value })}
-                      className={inputClass}
-                    />
+                      className={storefrontUi.select}
+                    >
+                      <option value="">Select province</option>
+                      {PAKISTAN_PROVINCES.map((province) => (
+                        <option key={province} value={province}>
+                          {province}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                   <div>
                     <label htmlFor="billing-postalCode" className={labelClass}>Postal code *</label>
@@ -595,12 +634,9 @@ export function OnePageCheckout() {
                     <input
                       id="billing-country"
                       type="text"
-                      required
-                      value={billingAddress.country}
-                      onChange={(e) =>
-                        setBillingAddress({ ...billingAddress, country: e.target.value })
-                      }
-                      className={inputClass}
+                      readOnly
+                      value="PK"
+                      className={`${inputClass} bg-gray-100 cursor-not-allowed`}
                     />
                   </div>
                   <div className="sm:col-span-2">
@@ -722,16 +758,22 @@ export function OnePageCheckout() {
                     </div>
                     <div>
                       <label htmlFor="shipping-state" className={labelClass}>State / Province *</label>
-                      <input
+                      <select
                         id="shipping-state"
-                        type="text"
                         required
                         value={shippingAddress.state}
                         onChange={(e) =>
                           setShippingAddress({ ...shippingAddress, state: e.target.value })
                         }
-                        className={inputClass}
-                      />
+                        className={storefrontUi.select}
+                      >
+                        <option value="">Select province</option>
+                        {PAKISTAN_PROVINCES.map((province) => (
+                          <option key={province} value={province}>
+                            {province}
+                          </option>
+                        ))}
+                      </select>
                     </div>
                     <div>
                       <label htmlFor="shipping-postalCode" className={labelClass}>Postal code *</label>
@@ -751,12 +793,9 @@ export function OnePageCheckout() {
                       <input
                         id="shipping-country"
                         type="text"
-                        required
-                        value={shippingAddress.country}
-                        onChange={(e) =>
-                          setShippingAddress({ ...shippingAddress, country: e.target.value })
-                        }
-                        className={inputClass}
+                        readOnly
+                        value="PK"
+                        className={`${inputClass} bg-gray-100 cursor-not-allowed`}
                       />
                     </div>
                   </div>
@@ -770,6 +809,9 @@ export function OnePageCheckout() {
                 <h2 className="mb-4 text-xl font-semibold text-foreground">
                   Billing address
                 </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                  {emailField}
+                </div>
                 <label htmlFor="saved-billing" className="sr-only">Choose billing address</label>
                 <select
                   id="saved-billing"
@@ -915,15 +957,15 @@ export function OnePageCheckout() {
             )}
           </section>
 
-          {/* Payment & Contact */}
+          {/* Payment */}
           <section>
             <h2 className="mb-4 text-xl font-semibold text-foreground">
-              Payment & contact
+              Payment
             </h2>
             {loadingPaymentMethods ? (
               <p className="text-sm text-muted-foreground">Loading payment methods…</p>
             ) : (
-              <div className="space-y-2 mb-6">
+              <div className="space-y-2">
                 {paymentMethods.map((m) => (
                   <label
                     key={m.code}
@@ -946,41 +988,6 @@ export function OnePageCheckout() {
                 ))}
               </div>
             )}
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="customer-email" className={labelClass}>Email *</label>
-                <input
-                  id="customer-email"
-                  type="email"
-                  required
-                  value={customerEmail}
-                  onChange={(e) => setCustomerEmail(e.target.value)}
-                  className={inputClass}
-                  placeholder="you@example.com"
-                />
-              </div>
-              <div>
-                <label htmlFor="customer-name" className={labelClass}>Full name (optional)</label>
-                <input
-                  id="customer-name"
-                  type="text"
-                  value={customerName}
-                  onChange={(e) => setCustomerName(e.target.value)}
-                  className={inputClass}
-                />
-              </div>
-              <div>
-                <label htmlFor="notes" className={labelClass}>Order notes (optional)</label>
-                <textarea
-                  id="notes"
-                  rows={2}
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  className={inputClass}
-                  placeholder="Delivery instructions, etc."
-                />
-              </div>
-            </div>
           </section>
         </div>
 
@@ -1193,7 +1200,7 @@ export function OnePageCheckout() {
                 !selectedPaymentCode ||
                 !validateAddress(billingAddress) ||
                 !validateAddress(effectiveShippingAddress) ||
-                !customerEmail?.includes('@')
+                !isEmailValid(customerEmail)
               }
               className={storefrontUi.btnPrimaryCheckout}
             >

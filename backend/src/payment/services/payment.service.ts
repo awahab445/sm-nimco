@@ -374,12 +374,24 @@ export class PaymentService {
     }
     const order = await this.prisma.order.findUnique({
       where: { orderNumber: normalizedOrderNumber },
-      select: { id: true, customerEmail: true },
+      select: { id: true, customerEmail: true, customerId: true },
     });
     if (!order) {
       throw new NotFoundException(`Order ${normalizedOrderNumber} not found`);
     }
-    if ((order.customerEmail || '').trim().toLowerCase() !== normalizedEmail) {
+
+    let emailMatches =
+      (order.customerEmail || '').trim().toLowerCase() === normalizedEmail;
+    if (!emailMatches && order.customerId) {
+      const customer = await this.prisma.customer.findUnique({
+        where: { id: order.customerId },
+        select: { email: true },
+      });
+      emailMatches =
+        (customer?.email || '').trim().toLowerCase() === normalizedEmail;
+    }
+
+    if (!emailMatches) {
       throw new ForbiddenException('You do not have access to this order');
     }
     return this.getPaymentsByOrder(order.id);

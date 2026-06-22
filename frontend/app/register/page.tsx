@@ -6,10 +6,37 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/lib/auth.store';
 import Link from 'next/link';
 import { storefrontUi } from '@/lib/storefront-ui';
+import { useHydrated } from '@/lib/use-hydrated';
+
+function RegisterFormSkeleton() {
+  const field = (labelWidth = 'w-24') => (
+    <div>
+      <div className={`mb-2 h-4 ${labelWidth} rounded bg-muted`} />
+      <div className={`${storefrontUi.inputMt} h-10 animate-pulse bg-muted/60`} />
+    </div>
+  );
+
+  return (
+    <div className="mt-8 space-y-6" aria-hidden>
+      <div className="space-y-4 rounded-md shadow-sm">
+        <div className="grid grid-cols-2 gap-4">
+          {field('w-20')}
+          {field('w-20')}
+        </div>
+        {field('w-28')}
+        {field('w-32')}
+        {field('w-20')}
+        {field('w-32')}
+      </div>
+      <div className="h-10 w-full animate-pulse rounded-md bg-muted" />
+    </div>
+  );
+}
 
 function RegisterContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const hydrated = useHydrated();
   const redirectTo = searchParams.get('redirect') || '/account';
   const { register, isAuthenticated, isLoading, error, clearError } = useAuthStore();
   const [formData, setFormData] = useState({
@@ -121,6 +148,9 @@ function RegisterContent() {
           </p>
         </div>
 
+        {!hydrated ? (
+          <RegisterFormSkeleton />
+        ) : (
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {error && (
             <div className={storefrontUi.alertErrorSm} role="alert">
@@ -261,6 +291,7 @@ function RegisterContent() {
             </button>
           </div>
         </form>
+        )}
       </div>
     </div>
   );

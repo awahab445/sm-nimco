@@ -218,9 +218,37 @@ export class OrderService {
   /**
    * Public-safe order tracking by order number + customer email.
    */
+  private normalizeEmail(email: string): string {
+    return (email || '').trim().toLowerCase();
+  }
+
+  private async emailMatchesOrder(
+    order: { customerEmail: string | null; customerId: string | null },
+    email: string,
+  ): Promise<boolean> {
+    const normalized = this.normalizeEmail(email);
+    if (!normalized) return false;
+
+    if (this.normalizeEmail(order.customerEmail || '') === normalized) {
+      return true;
+    }
+
+    if (order.customerId) {
+      const customer = await this.prisma.customer.findUnique({
+        where: { id: order.customerId },
+        select: { email: true },
+      });
+      if (customer && this.normalizeEmail(customer.email) === normalized) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   async trackByOrderNumberAndEmail(orderNumber: string, email: string) {
     const normalizedOrderNumber = (orderNumber || '').trim();
-    const normalizedEmail = (email || '').trim().toLowerCase();
+    const normalizedEmail = this.normalizeEmail(email);
     if (!normalizedOrderNumber || !normalizedEmail) {
       throw new BadRequestException('orderNumber and email are required');
     }
@@ -231,7 +259,7 @@ export class OrderService {
     if (!order) {
       throw new NotFoundException(`Order ${normalizedOrderNumber} not found`);
     }
-    if ((order.customerEmail || '').trim().toLowerCase() !== normalizedEmail) {
+    if (!(await this.emailMatchesOrder(order, normalizedEmail))) {
       throw new ForbiddenException('You do not have access to this order');
     }
     return this.enrichOrder(order);

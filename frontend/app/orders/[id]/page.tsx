@@ -99,19 +99,30 @@ export default function OrderDetailPage() {
   const [reorderError, setReorderError] = useState<string | null>(null);
 
   useEffect(() => {
-    loadOrder();
+    void loadOrder();
   }, [orderId, searchParams]);
 
   const loadOrder = async () => {
     try {
       setLoading(true);
       setError(null);
-      const guestOrderNumber = searchParams.get('orderNumber')?.trim();
-      const guestEmail = searchParams.get('email')?.trim();
-      const orderData =
-        guestOrderNumber && guestEmail
-          ? await orderApi.trackOrder(guestOrderNumber, guestEmail)
-          : await orderApi.getOrder(orderId);
+
+      const guestOrderNumber = searchParams.get('orderNumber')?.trim() ?? '';
+      const guestEmail = searchParams.get('email')?.trim() ?? '';
+
+      // Fallback when useSearchParams is briefly empty after client navigation
+      const urlParams =
+        typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+      const resolvedOrderNumber =
+        guestOrderNumber || urlParams?.get('orderNumber')?.trim() || '';
+      const resolvedEmail = guestEmail || urlParams?.get('email')?.trim() || '';
+
+      let orderData: unknown;
+      if (resolvedOrderNumber && resolvedEmail) {
+        orderData = await orderApi.trackOrder(resolvedOrderNumber, resolvedEmail);
+      } else {
+        orderData = await orderApi.getOrder(orderId);
+      }
       setOrder(orderData as unknown as Order);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to load order');

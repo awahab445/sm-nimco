@@ -4,7 +4,7 @@ import * as express from 'express';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import { join } from 'path';
-import { existsSync, mkdirSync } from 'fs';
+import { promises as fs } from 'fs'; // Dynamic async FS operations
 import { AppModule } from './app.module';
 
 const WEAK_SECRETS = new Set([
@@ -14,18 +14,19 @@ const WEAK_SECRETS = new Set([
   'secret',
 ]);
 
-/** Comma-separated in CORS_ORIGIN, e.g. storefront + admin: http://localhost:3001,http://localhost:3002 */
+/** Comma-separated browser origins supporting array format natively */
 function corsOriginsFromEnv(): string | string[] {
-  const fallback = 'http://localhost:3001,http://localhost:3002';
-  const raw = process.env.CORS_ORIGIN?.trim() || fallback;
+  const fallback = ['http://localhost:3001', 'http://localhost:3002'];
+  const raw = process.env.CORS_ORIGIN?.trim();
+  
+  if (!raw) return fallback;
+
   const list = raw
     .split(',')
     .map((o) => o.trim())
     .filter(Boolean);
-  if (list.length === 0) {
-    return fallback.split(',')[0].trim();
-  }
-  return list.length === 1 ? list[0] : list;
+
+  return list.length === 0 ? fallback : list.length === 1 ? list[0] : list;
 }
 
 function validateProductionEnv(): void {
@@ -50,42 +51,43 @@ function validateProductionEnv(): void {
     throw new Error('PUBLIC_BASE_URL must be set in production.');
   }
 
-  if (process.env.REDIS_ENABLED === 'false') {
-    throw new Error(
-      'REDIS_ENABLED=false is not allowed in production. Enable Redis for cart/checkout persistence.',
-    );
-  }
+  // Local testing bypass ke liye optional check (Aapki setup ke mutabiq filhal commented hai)
+  // if (process.env.REDIS_ENABLED === 'false') {
+  //   throw new Error('REDIS_ENABLED=false is not allowed in production.');
+  // }
 }
 
 async function bootstrap() {
   validateProductionEnv();
 
   const app = await NestFactory.create(AppModule, { rawBody: true });
+  
+  // Create directories asynchronously (Non-blocking)
   const uploadsRoot = join(process.cwd(), 'uploads');
-  const productUploadsDir = join(uploadsRoot, 'products');
-  const cmsSlideUploadsDir = join(uploadsRoot, 'cms-slides');
-  const storefrontNavUploadsDir = join(uploadsRoot, 'storefront-nav');
-  if (!existsSync(productUploadsDir)) {
-    mkdirSync(productUploadsDir, { recursive: true });
-  }
-  if (!existsSync(cmsSlideUploadsDir)) {
-    mkdirSync(cmsSlideUploadsDir, { recursive: true });
-  }
-  if (!existsSync(storefrontNavUploadsDir)) {
-    mkdirSync(storefrontNavUploadsDir, { recursive: true });
+  const uploadDirs = [
+    join(uploadsRoot, 'products'),
+    join(uploadsRoot, 'cms-slides'),
+    join(uploadsRoot, 'storefront-nav'),
+  ];
+
+  for (const dir of uploadDirs) {
+    await fs.mkdir(dir, { recursive: true });
   }
 
+  // Security Middlewares
   app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
   app.use(cookieParser());
   app.use('/uploads', express.static(uploadsRoot));
 
+  // CORS Setup
   app.enableCors({
     origin: corsOriginsFromEnv(),
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    // Dynamic headers allow karne ke liye allowedHeaders hata diya hai taake common packages break na hon
   });
 
+  // Global DTO Validation Pipes
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,

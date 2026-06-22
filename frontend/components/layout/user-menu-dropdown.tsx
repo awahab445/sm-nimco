@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useRef, useState } from 'react';
 import { UserIcon } from '@/components/icons/user-icon';
 import { useAuthStore } from '@/lib/auth.store';
+import { useHydrated } from '@/lib/use-hydrated';
 
 const CLOSE_MS = 160;
 
@@ -13,6 +14,7 @@ const guestMenuItemClass =
 
 export function UserMenuDropdown() {
   const router = useRouter();
+  const hydrated = useHydrated();
   const { isAuthenticated, logout } = useAuthStore();
   const [open, setOpen] = useState(false);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -46,19 +48,28 @@ export function UserMenuDropdown() {
       onMouseEnter={openMenu}
       onMouseLeave={scheduleClose}
     >
-      <button
-        type="button"
-        className="inline-flex h-full items-center justify-center text-white transition-colors hover:text-blue-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200/50 focus-visible:ring-offset-2 focus-visible:ring-offset-blue-800"
-        aria-label={isAuthenticated ? 'Account menu' : 'Sign in menu'}
-        aria-expanded={open}
-        aria-haspopup="menu"
-        onMouseEnter={openMenu}
-        onFocus={openMenu}
-      >
-        <UserIcon className="h-6 w-6" strokeWidth={2} aria-hidden />
-      </button>
+      {hydrated ? (
+        <button
+          type="button"
+          className="inline-flex h-full items-center justify-center text-white transition-colors hover:text-blue-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200/50 focus-visible:ring-offset-2 focus-visible:ring-offset-blue-800"
+          aria-label={isAuthenticated ? 'Account menu' : 'Sign in menu'}
+          aria-expanded={open}
+          aria-haspopup="menu"
+          onMouseEnter={openMenu}
+          onFocus={openMenu}
+        >
+          <UserIcon className="h-6 w-6" strokeWidth={2} aria-hidden />
+        </button>
+      ) : (
+        <span
+          className="inline-flex h-full items-center justify-center text-white"
+          aria-hidden
+        >
+          <UserIcon className="h-6 w-6" strokeWidth={2} />
+        </span>
+      )}
 
-      {open ? (
+      {hydrated && open ? (
         <div
           role="menu"
           aria-label={isAuthenticated ? 'Account' : 'Sign in'}

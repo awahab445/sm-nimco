@@ -75,5 +75,33 @@ describe('inventory API', () => {
       method: 'POST',
       body,
     });
+  it('bulkAdjustInventoryStock POST', async () => {
+    const body = {
+      warehouseId: 'default-warehouse',
+      items: [{ variantId: 'v1', quantity: 5 }],
+    };
+    fetchMock.mockResolvedValue(
+      resJson({
+        success: true,
+        data: {
+          warehouseId: 'default-warehouse',
+          updated: [
+            {
+              variantId: 'v1',
+              previousQuantity: 0,
+              newQuantity: 5,
+              availableQuantity: 5,
+              reservedQuantity: 0,
+            },
+          ],
+        },
+      }),
+    );
+    await api.bulkAdjustInventoryStock(body);
+    expectLastFetch(fetchMock, {
+      path: '/admin/inventory/bulk-adjust',
+      method: 'POST',
+      body,
+    });
   });
 });

@@ -20,6 +20,7 @@ import { AddressModule } from './address/address.module';
 import { AdminModule } from './admin/admin.module';
 import { CmsModule } from './cms/cms.module';
 import { SubscriptionModule } from './subscription/subscription.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { SubscriptionModule } from './subscription/subscription.module';
     AddressModule,
     CmsModule,
     SubscriptionModule,
+    MailModule,
   ],
   controllers: [AppController],
   providers: [

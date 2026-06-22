@@ -1,4 +1,5 @@
-import { fetchApi } from '../api-client';
+import { fetchApi, ApiError } from '../api-client';
+import { getToken } from '../auth-token';
 
 export const DEFAULT_WAREHOUSE_ID = 'default-warehouse';
 
@@ -107,4 +108,94 @@ export async function setProductInventoryQuantities(
       body: JSON.stringify(body),
     },
   );
+}
+
+export type BulkAdjustStockItem = {
+  variantId: string;
+  quantity: number;
+  reason?: string;
+};
+
+export type BulkAdjustStockResponse = {
+  success: boolean;
+  data: {
+    warehouseId: string;
+    updated: Array<{
+      variantId: string;
+      previousQuantity: number;
+      newQuantity: number;
+      availableQuantity: number;
+      reservedQuantity: number;
+      reason?: string;
+    }>;
+  };
+};
+
+export async function bulkAdjustInventoryStock(body: {
+  warehouseId?: string;
+  defaultReason?: string;
+  items: BulkAdjustStockItem[];
+}) {
+  return fetchApi<BulkAdjustStockResponse>('/admin/inventory/bulk-adjust', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+}
+
+export type BulkImportStockResponse = {
+  success: boolean;
+  data: {
+    warehouseId: string;
+    importedRows: number;
+    updated: BulkAdjustStockResponse['data']['updated'];
+  };
+};
+
+export async function bulkImportInventoryStock(file: File, warehouseId?: string, defaultReason?: string) {
+  const formData = new FormData();
+  formData.append('file', file);
+  const sp = new URLSearchParams();
+  const wh = warehouseId?.trim();
+  if (wh) sp.set('warehouseId', wh);
+  if (defaultReason?.trim()) sp.set('defaultReason', defaultReason.trim());
+  const qs = sp.toString();
+  const path = `/admin/inventory/bulk-import${qs ? `?${qs}` : ''}`;
+
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+  const token = getToken();
+  const headers: HeadersInit = {};
+  if (token) headers.Authorization = `Bearer ${token}`;
+
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method: 'POST',
+    credentials: 'include',
+    headers,
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new ApiError(
+      (errorData as { message?: string })?.message || `Request failed: ${response.statusText}`,
+      response.status,
+      errorData,
+    );
+  }
+
+  return response.json() as Promise<BulkImportStockResponse>;
+}
+
+export const INVENTORY_IMPORT_TEMPLATE_CSV = `variant_id,quantity_delta,reason
+00000000-0000-0000-0000-000000000001,10,Received shipment
+00000000-0000-0000-0000-000000000002,-2,Cycle count correction
+`;
+
+export function downloadInventoryImportTemplate() {
+  const blob = new Blob([INVENTORY_IMPORT_TEMPLATE_CSV], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = 'inventory-import-template.csv';
+  anchor.click();
+  URL.revokeObjectURL(url);
 }

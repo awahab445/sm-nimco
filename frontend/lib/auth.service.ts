@@ -5,7 +5,7 @@
 
 import { clearSession } from './auth-token';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://api.messa-chemicals.local';
 
 export interface LoginCredentials {
   email: string;
@@ -135,6 +135,18 @@ export const authService = {
   },
 
   /**
+   * Verify email using token from registration email link.
+   */
+  verifyEmail: async (
+    token: string,
+  ): Promise<AuthResponse & { message: string; verified: true }> => {
+    return fetchAuth<AuthResponse & { message: string; verified: true }>(
+      `/auth/verify-email?token=${encodeURIComponent(token)}`,
+      { method: 'GET' },
+    );
+  },
+
+  /**
    * Request account creation for guest (same email as order).
    * Backend sends email with set-password link. Returns generic success message.
    */
@@ -150,6 +162,26 @@ export const authService = {
    */
   setPassword: async (token: string, password: string): Promise<AuthResponse> => {
     return fetchAuth<AuthResponse>('/auth/set-password', {
+      method: 'POST',
+      body: JSON.stringify({ token, password }),
+    });
+  },
+
+  /**
+   * Request a password reset link for a registered account.
+   */
+  forgotPassword: async (email: string): Promise<{ message: string }> => {
+    return fetchAuth<{ message: string }>('/auth/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
+  },
+
+  /**
+   * Reset password using token from email link.
+   */
+  resetPassword: async (token: string, password: string): Promise<{ message: string }> => {
+    return fetchAuth<{ message: string }>('/auth/reset-password', {
       method: 'POST',
       body: JSON.stringify({ token, password }),
     });

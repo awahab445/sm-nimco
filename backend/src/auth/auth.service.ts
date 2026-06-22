@@ -10,7 +10,7 @@ import * as crypto from 'crypto';
 import { PrismaService } from '../catalog/services/prisma.service';
 import { CustomerService } from '../customer/services/customer.service';
 import { CustomerGroupService } from '../customer-group/services/customer-group.service';
-import { MailService } from './mail.service';
+import { EmailService } from '../mail/email.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 
@@ -32,6 +32,7 @@ export interface AuthResponse {
     lastName?: string;
     phone?: string;
     isGuest: boolean;
+    isEmailVerified: boolean;
     customerGroupId: string;
     customerGroup?: {
       id: string;
@@ -45,6 +46,17 @@ export interface AuthResponse {
   };
 }
 
+export interface RegisterPendingResponse {
+  message: string;
+  email: string;
+  requiresEmailVerification: true;
+}
+
+export interface VerifyEmailResponse extends AuthResponse {
+  message: string;
+  verified: true;
+}
+
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
@@ -54,10 +66,38 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly customerService: CustomerService,
     private readonly customerGroupService: CustomerGroupService,
-    private readonly mailService: MailService,
+    private readonly emailService: EmailService,
   ) {}
 
   private readonly SALT_ROUNDS = 10;
+
+  private generateVerificationToken(): string {
+    return crypto.randomBytes(32).toString('hex');
+  }
+
+  private displayName(customer: {
+    firstName?: string | null;
+    lastName?: string | null;
+    email: string;
+  }): string {
+    return [customer.firstName, customer.lastName].filter(Boolean).join(' ') || customer.email;
+  }
+
+  private async sendVerificationForCustomer(
+    customerId: string,
+    email: string,
+    userName: string,
+  ): Promise<void> {
+    const token = this.generateVerificationToken();
+    await this.prisma.customer.update({
+      where: { id: customerId },
+      data: {
+        isEmailVerified: false,
+        emailVerificationToken: token,
+      },
+    });
+    await this.emailService.sendEmailVerificationEmail(email, userName, token);
+  }
 
   /**
    * Validate customer by email and password. Returns customer entity or null.
@@ -90,14 +130,20 @@ export class AuthService {
       throw new UnauthorizedException('Invalid email or password');
     }
 
+    if (!customer.isEmailVerified) {
+      throw new UnauthorizedException(
+        'Please verify your email before signing in. Check your inbox for the verification link.',
+      );
+    }
+
     return this.buildAuthResponse(customer);
   }
 
   /**
    * Register: create new customer with password, or convert guest to registered.
-   * Returns JWT + user profile.
+   * Sends a verification email; account is activated after email is confirmed.
    */
-  async register(registerDto: RegisterDto): Promise<AuthResponse> {
+  async register(registerDto: RegisterDto): Promise<RegisterPendingResponse> {
     const email = registerDto.email.toLowerCase().trim();
     const existing = await this.prisma.customer.findUnique({
       where: { email },
@@ -110,7 +156,6 @@ export class AuthService {
           'An account with this email already exists. Please sign in.',
         );
       }
-      // Guest without password: convert to registered
       const passwordHash = await bcrypt.hash(
         registerDto.password,
         this.SALT_ROUNDS,
@@ -123,19 +168,27 @@ export class AuthService {
           firstName: registerDto.firstName ?? existing.firstName,
           lastName: registerDto.lastName ?? existing.lastName,
           phone: registerDto.phone ?? existing.phone,
+          isEmailVerified: false,
+          emailVerificationToken: null,
         },
         include: { customerGroup: true },
       });
-      this.logger.log(`Converted guest to registered: ${updated.id} (${email})`);
-      return this.buildAuthResponse(updated);
+      this.logger.log(`Converted guest to registered (pending verification): ${updated.id} (${email})`);
+      await this.sendVerificationForCustomer(updated.id, email, this.displayName(updated));
+      return {
+        message:
+          'Registration successful. Please check your email to verify your account before signing in.',
+        email,
+        requiresEmailVerification: true,
+      };
     }
 
-    // New customer
     const defaultGroup = await this.customerGroupService.findDefault();
     const passwordHash = await bcrypt.hash(
       registerDto.password,
       this.SALT_ROUNDS,
     );
+    const verificationToken = this.generateVerificationToken();
     const customer = await this.prisma.customer.create({
       data: {
         email,
@@ -144,13 +197,72 @@ export class AuthService {
         lastName: registerDto.lastName ?? null,
         phone: registerDto.phone ?? null,
         isGuest: false,
+        isEmailVerified: false,
+        emailVerificationToken: verificationToken,
         customerGroupId: defaultGroup.id,
         metadata: {},
       },
       include: { customerGroup: true },
     });
-    this.logger.log(`Registered customer: ${customer.id} (${email})`);
-    return this.buildAuthResponse(customer);
+    this.logger.log(`Registered customer (pending verification): ${customer.id} (${email})`);
+    await this.emailService.sendEmailVerificationEmail(
+      email,
+      this.displayName(customer),
+      verificationToken,
+    );
+    return {
+      message:
+        'Registration successful. Please check your email to verify your account before signing in.',
+      email,
+      requiresEmailVerification: true,
+    };
+  }
+
+  /**
+   * Verify email using the token from the verification link.
+   */
+  async verifyEmail(token: string): Promise<VerifyEmailResponse> {
+    const normalizedToken = token?.trim();
+    if (!normalizedToken) {
+      throw new BadRequestException('Verification token is required.');
+    }
+
+    const customer = await this.prisma.customer.findFirst({
+      where: { emailVerificationToken: normalizedToken },
+      include: { customerGroup: true },
+    });
+
+    if (!customer) {
+      throw new BadRequestException('Invalid or expired verification token.');
+    }
+
+    if (customer.isEmailVerified) {
+      const auth = this.buildAuthResponse(customer);
+      return {
+        message: 'Email is already verified. Your account is active.',
+        verified: true,
+        ...auth,
+      };
+    }
+
+    const updated = await this.prisma.customer.update({
+      where: { id: customer.id },
+      data: {
+        isEmailVerified: true,
+        emailVerificationToken: null,
+      },
+      include: { customerGroup: true },
+    });
+
+    this.logger.log(`Email verified for customer: ${updated.id} (${updated.email})`);
+    void this.emailService.sendWelcomeEmail(updated.email, this.displayName(updated));
+
+    const auth = this.buildAuthResponse(updated);
+    return {
+      message: 'Email verified successfully. Your account is now active.',
+      verified: true,
+      ...auth,
+    };
   }
 
   /**
@@ -190,7 +302,7 @@ export class AuthService {
       data: { email: normalized, token, expiresAt },
     });
 
-    await this.mailService.sendAccountCreationLink(normalized, token);
+    await this.emailService.sendAccountCreationLink(normalized, token);
     this.logger.log(`Account creation token created for ${normalized}`);
     return { message: 'If an order was placed with this email, you will receive a link to create your password.' };
   }
@@ -225,7 +337,12 @@ export class AuthService {
     const passwordHash = await bcrypt.hash(password, this.SALT_ROUNDS);
     const updated = await this.prisma.customer.update({
       where: { id: customer.id },
-      data: { passwordHash, isGuest: false },
+      data: {
+        passwordHash,
+        isGuest: false,
+        isEmailVerified: true,
+        emailVerificationToken: null,
+      },
       include: { customerGroup: true },
     });
 
@@ -233,6 +350,81 @@ export class AuthService {
 
     this.logger.log(`Guest converted to registered via set-password: ${updated.id} (${record.email})`);
     return this.buildAuthResponse(updated);
+  }
+
+  /**
+   * Request a password reset link for a registered customer.
+   * Always returns a generic message to avoid email enumeration.
+   */
+  async forgotPassword(email: string): Promise<{ message: string }> {
+    const normalized = email.toLowerCase().trim();
+    const genericMessage =
+      'If an account exists with this email, you will receive a password reset link shortly.';
+
+    const customer = await this.prisma.customer.findUnique({
+      where: { email: normalized },
+    });
+
+    if (!customer || !customer.passwordHash) {
+      this.logger.warn(`forgotPassword: no registered account for ${normalized}`);
+      return { message: genericMessage };
+    }
+
+    const token = this.generateVerificationToken();
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
+
+    await this.prisma.customer.update({
+      where: { id: customer.id },
+      data: {
+        resetPasswordToken: token,
+        resetPasswordExpires: expiresAt,
+      },
+    });
+
+    await this.emailService.sendPasswordResetEmail(
+      normalized,
+      this.displayName(customer),
+      token,
+    );
+    this.logger.log(`Password reset token created for ${normalized}`);
+
+    return { message: genericMessage };
+  }
+
+  /**
+   * Reset password using a valid, non-expired token from the email link.
+   */
+  async resetPassword(token: string, password: string): Promise<{ message: string }> {
+    const normalizedToken = token?.trim();
+    if (!normalizedToken) {
+      throw new BadRequestException('Reset token is required.');
+    }
+
+    const customer = await this.prisma.customer.findFirst({
+      where: {
+        resetPasswordToken: normalizedToken,
+        resetPasswordExpires: { gt: new Date() },
+      },
+    });
+
+    if (!customer) {
+      throw new BadRequestException('Token invalid or expired.');
+    }
+
+    const passwordHash = await bcrypt.hash(password, this.SALT_ROUNDS);
+
+    await this.prisma.customer.update({
+      where: { id: customer.id },
+      data: {
+        passwordHash,
+        resetPasswordToken: null,
+        resetPasswordExpires: null,
+      },
+    });
+
+    this.logger.log(`Password reset for customer: ${customer.id} (${customer.email})`);
+
+    return { message: 'Your password has been reset successfully. You can now sign in.' };
   }
 
   /**
@@ -259,6 +451,7 @@ export class AuthService {
         lastName: customer.lastName ?? undefined,
         phone: customer.phone ?? undefined,
         isGuest: customer.isGuest,
+        isEmailVerified: customer.isEmailVerified ?? false,
         customerGroupId: customer.customerGroupId,
         customerGroup: customer.customerGroup
           ? {

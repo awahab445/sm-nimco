@@ -5,9 +5,11 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { productApi, inventoryApi, type Product, type ProductVariant } from '@/lib/api-client';
 import { useCartStore } from '@/lib/cart.store';
+import { getInlineStockAlertMessage } from '@/lib/cart-errors';
 import { formatPrice } from '@/lib/currency';
 import { storefrontUi } from '@/lib/storefront-ui';
 import { ProductImageGallery } from '@/components/product/product-image-gallery';
+import { ProductStockAlert } from '@/components/product/product-stock-alert';
 
 type OptionDefinition = { code: string; label: string; values: string[] };
 
@@ -124,6 +126,7 @@ export default function ProductDetailPage() {
   const [adding, setAdding] = useState(false);
   const [added, setAdded] = useState(false);
   const [availability, setAvailability] = useState<Record<string, number>>({});
+  const [stockAlert, setStockAlert] = useState<string | null>(null);
 
   const addToCart = useCartStore((s) => s.addToCart);
 
@@ -248,17 +251,28 @@ export default function ProductDetailPage() {
     }
   }, [currentVariantId, product?.id, orderedGalleryImages.length]);
 
+  useEffect(() => {
+    setStockAlert(null);
+  }, [currentVariantId, quantity]);
+
   const handleAddToCart = async () => {
     const v = selectedVariant ?? variants[0];
     if (!product || !v || adding) return;
     setAdding(true);
+    setStockAlert(null);
     try {
       await addToCart(product.id, v.id, quantity);
       setAdded(true);
       setTimeout(() => setAdded(false), 2500);
       router.push('/cart');
-    } catch {
-      // Error in store
+    } catch (err) {
+      const stockMessage = getInlineStockAlertMessage(err);
+      setStockAlert(
+        stockMessage ??
+          (err instanceof Error && err.message.trim()
+            ? err.message
+            : 'Failed to add item to cart. Please try again.'),
+      );
     } finally {
       setAdding(false);
     }
@@ -372,7 +386,7 @@ export default function ProductDetailPage() {
           )}
 
           <div className="mt-6 space-y-3">
-            <div className="flex flex-wrap items-center gap-4">
+            <div className="flex flex-wrap items-start gap-4">
               <div className="flex items-center gap-2">
                 <label htmlFor="qty" className="text-sm font-medium text-foreground/90">
                   Quantity
@@ -386,14 +400,17 @@ export default function ProductDetailPage() {
                   className="w-20 rounded-md border border-input bg-card px-2 py-2 text-center text-foreground"
                 />
               </div>
-              <button
-                type="button"
-                onClick={handleAddToCart}
-                disabled={adding || !hasVariant || !currentVariant || !inStock}
-                className={storefrontUi.btnPrimaryInline}
-              >
-                {added ? 'Added to cart' : adding ? 'Adding…' : hasVariant ? (inStock ? 'Add to cart' : 'Out of stock') : 'Unavailable'}
-              </button>
+              <div className="flex flex-col items-end gap-1">
+                <button
+                  type="button"
+                  onClick={handleAddToCart}
+                  disabled={adding || !hasVariant || !currentVariant || !inStock}
+                  className={storefrontUi.btnPrimaryInline}
+                >
+                  {added ? 'Added to cart' : adding ? 'Adding…' : hasVariant ? (inStock ? 'Add to cart' : 'Out of stock') : 'Unavailable'}
+                </button>
+                {stockAlert && <ProductStockAlert message={stockAlert} />}
+              </div>
               {added && (
                 <Link
                   href="/cart"

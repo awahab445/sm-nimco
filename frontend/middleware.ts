@@ -14,7 +14,7 @@ const protectedRoutes = [
   '/orders',
 ];
 
-const authRoutes = ['/login', '/register'];
+const authRoutes = ['/login', '/register', '/forgot-password', '/reset-password'];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;

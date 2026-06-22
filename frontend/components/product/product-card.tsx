@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Product } from '@/lib/api-client';
 import { useCartStore } from '@/lib/cart.store';
+import { notifyAddToCartError } from '@/lib/notify-add-to-cart';
 import { formatPrice } from '@/lib/currency';
 import { resolveImageUrl } from '@/lib/resolve-image-url';
 import { storefrontUi } from '@/lib/storefront-ui';
@@ -56,8 +57,8 @@ export function ProductCard({ product, showViewOnly = false, availableQuantity }
       setAdded(true);
       setTimeout(() => setAdded(false), 2000);
       router.push('/cart');
-    } catch {
-      // Error shown in store / could add toast
+    } catch (err) {
+      notifyAddToCartError(err);
     } finally {
       setAdding(false);
     }

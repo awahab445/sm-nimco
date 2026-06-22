@@ -1,9 +1,14 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../catalog/services/prisma.service';
 import { AdjustStockDto, DEFAULT_WAREHOUSE_ID } from '../dto/adjust-stock.dto';
+import { BulkAdjustStockItemDto } from '../dto/bulk-adjust-stock.dto';
 import { StockAdjustedEvent } from '../events/inventory.events';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SetProductInventoryItemDto } from '../dto/set-product-inventory.dto';
+import { parseInventoryImportFile } from '../utils/inventory-import.parser';
+
+type TransactionClient = Prisma.TransactionClient;
 
 @Injectable()
 export class InventoryService {
@@ -15,10 +20,11 @@ export class InventoryService {
   /**
    * Resolve variant or simple product. For simple products, variantId === productId and there is no product_variants row.
    */
-  private async resolveVariantOrSimpleProduct(variantId: string): Promise<
-    { productId: string; variantId: string | null; isSimple: boolean }
-  > {
-    const variant = await this.prisma.productVariant.findUnique({
+  private async resolveVariantOrSimpleProduct(
+    variantId: string,
+    tx: TransactionClient | PrismaService = this.prisma,
+  ): Promise<{ productId: string; variantId: string | null; isSimple: boolean }> {
+    const variant = await tx.productVariant.findUnique({
       where: { id: variantId },
       include: { product: true },
     });
@@ -31,7 +37,7 @@ export class InventoryService {
       };
     }
 
-    const product = await this.prisma.product.findFirst({
+    const product = await tx.product.findFirst({
       where: { id: variantId, deletedAt: null },
     });
 
@@ -45,6 +51,41 @@ export class InventoryService {
     }
 
     throw new NotFoundException(`Product variant with ID ${variantId} not found`);
+  }
+
+  private async getOrCreateInventoryItemInTx(
+    tx: TransactionClient,
+    variantId: string,
+    warehouseId: string,
+  ) {
+    const { productId, variantId: resolvedVariantId } = await this.resolveVariantOrSimpleProduct(
+      variantId,
+      tx,
+    );
+
+    const composite = {
+      productId,
+      variantId: resolvedVariantId,
+      warehouseId,
+    };
+
+    let inventoryItem = await tx.inventoryItem.findFirst({
+      where: composite,
+    });
+
+    if (!inventoryItem) {
+      inventoryItem = await tx.inventoryItem.create({
+        data: {
+          ...composite,
+          quantity: 0,
+          reservedQuantity: 0,
+          availableQuantity: 0,
+          lowStockThreshold: 10,
+        },
+      });
+    }
+
+    return inventoryItem;
   }
 
   /**
@@ -342,6 +383,102 @@ export class InventoryService {
         updated: results,
       };
     });
+  }
+
+  /**
+   * Apply signed quantity deltas to multiple variants in a single transaction.
+   */
+  async bulkAdjustStock(
+    items: BulkAdjustStockItemDto[],
+    warehouseId: string = DEFAULT_WAREHOUSE_ID,
+    defaultReason?: string,
+  ) {
+    if (!items.length) {
+      throw new BadRequestException('At least one adjustment is required');
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      const updated: Array<{
+        variantId: string;
+        previousQuantity: number;
+        newQuantity: number;
+        availableQuantity: number;
+        reservedQuantity: number;
+        reason?: string;
+      }> = [];
+
+      for (const item of items) {
+        const inventoryItem = await this.getOrCreateInventoryItemInTx(
+          tx,
+          item.variantId,
+          warehouseId,
+        );
+
+        const previousQuantity = inventoryItem.quantity;
+        const newQuantity = previousQuantity + item.quantity;
+
+        if (newQuantity < 0) {
+          throw new BadRequestException(
+            `Cannot adjust stock to negative value for ${item.variantId}. Current: ${previousQuantity}, Adjustment: ${item.quantity}`,
+          );
+        }
+
+        const updatedItem = await tx.inventoryItem.update({
+          where: { id: inventoryItem.id },
+          data: {
+            quantity: newQuantity,
+            availableQuantity: newQuantity - inventoryItem.reservedQuantity,
+          },
+        });
+
+        const reason = item.reason?.trim() || defaultReason?.trim() || undefined;
+
+        this.eventEmitter.emit(
+          'stock.adjusted',
+          new StockAdjustedEvent(
+            updatedItem.id,
+            item.variantId,
+            previousQuantity,
+            newQuantity,
+            reason,
+          ),
+        );
+
+        updated.push({
+          variantId: item.variantId,
+          previousQuantity,
+          newQuantity: updatedItem.quantity,
+          availableQuantity: updatedItem.availableQuantity,
+          reservedQuantity: updatedItem.reservedQuantity,
+          reason,
+        });
+      }
+
+      return { warehouseId, updated };
+    });
+  }
+
+  /**
+   * Parse a CSV/XLSX upload and apply stock deltas in one transaction.
+   */
+  async bulkImportStock(
+    file: { buffer: Buffer; originalname: string; mimetype?: string },
+    warehouseId: string = DEFAULT_WAREHOUSE_ID,
+    defaultReason?: string,
+  ) {
+    const rows = parseInventoryImportFile(file.buffer, file.originalname, file.mimetype);
+    const items: BulkAdjustStockItemDto[] = rows.map((row) => ({
+      variantId: row.variantId,
+      quantity: row.quantityDelta,
+      reason: row.reason,
+    }));
+
+    const result = await this.bulkAdjustStock(items, warehouseId, defaultReason);
+
+    return {
+      ...result,
+      importedRows: rows.length,
+    };
   }
 }
 

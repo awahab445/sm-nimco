@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { productApi } from '@/lib/api-client';
 import { formatPrice } from '@/lib/currency';
+import { useHydrated } from '@/lib/use-hydrated';
 
 const DEBOUNCE_MS = 300;
 const MIN_QUERY_LENGTH = 2;
@@ -20,6 +21,7 @@ type SuggestionItem = {
 
 export function SearchBar({ variant = 'default' }: { variant?: 'default' | 'header' }) {
   const router = useRouter();
+  const hydrated = useHydrated();
   const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState<SuggestionItem[]>([]);
   const [total, setTotal] = useState(0);
@@ -98,40 +100,51 @@ export function SearchBar({ variant = 'default' }: { variant?: 'default' | 'head
 
   return (
     <div ref={containerRef} className="relative w-full max-w-xl">
-      <form onSubmit={handleSubmit} role="search">
-        <label htmlFor="header-search" className="sr-only">
-          Search products
-        </label>
-        <div className="relative">
-          <input
-            id="header-search"
-            type="search"
-            autoComplete="off"
-            placeholder="Search products..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onFocus={() => query.trim().length >= MIN_QUERY_LENGTH && setOpen(true)}
-            className={
-              isHeader
-                ? 'w-full rounded-lg border border-white/30 bg-white/15 py-2 pl-4 pr-10 text-sm text-white placeholder:text-blue-100/80 focus:border-blue-200 focus:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/25'
-                : 'w-full rounded-lg border border-input bg-card py-2 pl-4 pr-10 text-sm text-brand-text placeholder:text-brand-accent/70 focus:border-brand-primary focus:bg-card focus:outline-none focus:ring-2 focus:ring-brand-primary/25'
-            }
-            aria-expanded={open}
-            aria-controls="search-suggestions"
-            aria-autocomplete="list"
-          />
-          <span
-            className={`pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 ${isHeader ? 'text-blue-100' : 'text-muted-foreground'}`}
-            aria-hidden
-          >
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </span>
-        </div>
-      </form>
+      {hydrated ? (
+        <form onSubmit={handleSubmit} role="search">
+          <label htmlFor="header-search" className="sr-only">
+            Search products
+          </label>
+          <div className="relative">
+            <input
+              id="header-search"
+              type="search"
+              autoComplete="off"
+              placeholder="Search products..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onFocus={() => query.trim().length >= MIN_QUERY_LENGTH && setOpen(true)}
+              className={
+                isHeader
+                  ? 'w-full rounded-lg border border-white/30 bg-white/15 py-2 pl-4 pr-10 text-sm text-white placeholder:text-blue-100/80 focus:border-blue-200 focus:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/25'
+                  : 'w-full rounded-lg border border-input bg-card py-2 pl-4 pr-10 text-sm text-brand-text placeholder:text-brand-accent/70 focus:border-brand-primary focus:bg-card focus:outline-none focus:ring-2 focus:ring-brand-primary/25'
+              }
+              aria-expanded={open}
+              aria-controls="search-suggestions"
+              aria-autocomplete="list"
+            />
+            <span
+              className={`pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 ${isHeader ? 'text-blue-100' : 'text-muted-foreground'}`}
+              aria-hidden
+            >
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </span>
+          </div>
+        </form>
+      ) : (
+        <div
+          className={
+            isHeader
+              ? 'h-[38px] w-full rounded-lg border border-white/30 bg-white/15'
+              : 'h-[38px] w-full rounded-lg border border-input bg-card'
+          }
+          aria-hidden
+        />
+      )}
 
-      {open && (query.trim().length >= MIN_QUERY_LENGTH || suggestions.length > 0) && (
+      {hydrated && open && (query.trim().length >= MIN_QUERY_LENGTH || suggestions.length > 0) && (
         <div
           id="search-suggestions"
           role="listbox"

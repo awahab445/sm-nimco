@@ -2,7 +2,6 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
-  ConflictException,
   Logger,
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -22,6 +21,7 @@ import {
   CartItemRemovedEvent,
   CartExpiredEvent,
 } from '../events/cart.events';
+import { InsufficientStockException } from '../errors/insufficient-stock.exception';
 
 @Injectable()
 export class CartService {
@@ -124,6 +124,21 @@ export class CartService {
     return reservationId.startsWith(CartService.SIMPLE_PRODUCT_RESERVATION_PREFIX);
   }
 
+  private async assertSufficientStock(variantId: string, requestedQuantity: number): Promise<void> {
+    const hasStock = await this.inventoryService.hasSufficientStock(
+      variantId,
+      requestedQuantity,
+      'default-warehouse',
+    );
+    if (hasStock) return;
+
+    const available = await this.inventoryService.getAvailableQuantity(
+      variantId,
+      'default-warehouse',
+    );
+    throw new InsufficientStockException(available);
+  }
+
   /**
    * Add item to cart
    * Supports both configurable products (variantId) and simple products (variantId === productId, no variants).
@@ -148,22 +163,7 @@ export class CartService {
       const existingItem = cart.items[existingItemIndex];
       const newQuantity = existingItem.quantity + quantity;
 
-      const hasStock = await this.inventoryService.hasSufficientStock(
-        variantId,
-        newQuantity,
-        'default-warehouse',
-      );
-      if (!hasStock) {
-        const available = await this.inventoryService.getAvailableQuantity(
-          variantId,
-          'default-warehouse',
-        );
-        throw new ConflictException(
-          available === 0
-            ? 'This product is currently out of stock.'
-            : `Insufficient stock. Requested: ${newQuantity}, Available: ${available}`,
-        );
-      }
+      await this.assertSufficientStock(variantId, newQuantity);
       if (existingItem.reservationId && !this.isSimpleProductReservation(existingItem.reservationId)) {
         await this.reservationService.releaseStock({
           reservationId: existingItem.reservationId,
@@ -186,22 +186,7 @@ export class CartService {
         reservationId,
       };
     } else {
-      const hasStock = await this.inventoryService.hasSufficientStock(
-        variantId,
-        quantity,
-        'default-warehouse',
-      );
-      if (!hasStock) {
-        const available = await this.inventoryService.getAvailableQuantity(
-          variantId,
-          'default-warehouse',
-        );
-        throw new ConflictException(
-          available === 0
-            ? 'This product is currently out of stock.'
-            : `Insufficient stock. Requested: ${quantity}, Available: ${available}`,
-        );
-      }
+      await this.assertSufficientStock(variantId, quantity);
 
       const reservationId = (
         await this.reservationService.reserveStock({
@@ -265,22 +250,7 @@ export class CartService {
     const isSimpleProduct = this.isSimpleProductReservation(existingItem.reservationId ?? '');
 
     if (newQuantity > 0) {
-      const hasStock = await this.inventoryService.hasSufficientStock(
-        variantId,
-        newQuantity,
-        'default-warehouse',
-      );
-      if (!hasStock) {
-        const available = await this.inventoryService.getAvailableQuantity(
-          variantId,
-          'default-warehouse',
-        );
-        throw new ConflictException(
-          available === 0
-            ? 'This product is currently out of stock.'
-            : `Insufficient stock. Requested: ${newQuantity}, Available: ${available}`,
-        );
-      }
+      await this.assertSufficientStock(variantId, newQuantity);
     }
     if (existingItem.reservationId) {
       await this.reservationService.releaseStock({

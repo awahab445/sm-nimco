@@ -2,12 +2,12 @@
 -- PostgreSQL database dump
 --
 
-\restrict 5PO2d0mvvwgmc0kBe2dYyZsX0p1IOhSAM8Cc59vXqSP1AAVeoVSArYajE2SNnt3
+\restrict s0SzmIMFFKbRD8GdrXyJDmLrDUpRQSyIaT3frLdjWjSiOudaMjeHwot4HqMSuLX
 
 -- Dumped from database version 18.3
 -- Dumped by pg_dump version 18.3
 
--- Started on 2026-06-17 18:27:49
+-- Started on 2026-06-18 19:18:26
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -1024,7 +1024,6 @@ COPY public.account_creation_tokens (id, email, token, expires_at, created_at) F
 --
 
 COPY public.admin_permissions (id, key, description, created_at) FROM stdin;
-107a5e7f-39d7-4f91-8d6e-c68a866de6c8	admin.access.full	Full administrative access (implies all permissions).	2026-05-04 07:22:01.029
 79710646-175d-4aae-bdd1-ba9bc8d2844f	admin.users.create	Create staff admin users	2026-05-04 07:22:01.042
 5bc3fe92-08d5-4857-b05b-c1b912418a6b	admin.users.read	View admin users	2026-05-04 07:22:01.043
 43ed1a83-e047-4c39-a3d5-effae8fa2470	admin.users.update	Update admin users	2026-05-04 07:22:01.044
@@ -1056,6 +1055,7 @@ a629f498-ffea-40d3-b191-bb736eb424cf	cms.manage	Manage CMS pages, blocks, and sl
 664eb436-11ef-46e0-975d-9b30e7f6a127	subscriptions.manage	View storefront email subscriptions (subscriber list)	2026-05-12 07:40:14.805
 ccaa881a-2690-41ec-aec9-c061f97c9b7d	reports.read	Access reports and exports	2026-05-04 07:22:01.072
 29f643ad-529b-4b68-9932-1828b89c8fa1	settings.manage	Platform settings	2026-05-04 07:22:01.074
+107a5e7f-39d7-4f91-8d6e-c68a866de6c8	admin.access.full	Full administrative access (implies all permissions).	2026-05-04 07:22:01.029
 \.
 
 
@@ -1072,7 +1072,6 @@ COPY public.admin_role_permissions (role_id, permission_id) FROM stdin;
 36d65b9f-5927-487b-be37-943b03c16541	cf811019-a242-4070-851b-3fbb11e88898
 36d65b9f-5927-487b-be37-943b03c16541	669ddf50-cf30-4822-8de0-96a7b2192a72
 36d65b9f-5927-487b-be37-943b03c16541	0adebdc6-0b0d-4dda-b217-5de5f3b5ed26
-926550ee-84bb-414a-99f6-e11673f3da0e	107a5e7f-39d7-4f91-8d6e-c68a866de6c8
 926550ee-84bb-414a-99f6-e11673f3da0e	79710646-175d-4aae-bdd1-ba9bc8d2844f
 926550ee-84bb-414a-99f6-e11673f3da0e	5bc3fe92-08d5-4857-b05b-c1b912418a6b
 926550ee-84bb-414a-99f6-e11673f3da0e	43ed1a83-e047-4c39-a3d5-effae8fa2470
@@ -1104,6 +1103,7 @@ COPY public.admin_role_permissions (role_id, permission_id) FROM stdin;
 926550ee-84bb-414a-99f6-e11673f3da0e	664eb436-11ef-46e0-975d-9b30e7f6a127
 926550ee-84bb-414a-99f6-e11673f3da0e	ccaa881a-2690-41ec-aec9-c061f97c9b7d
 926550ee-84bb-414a-99f6-e11673f3da0e	29f643ad-529b-4b68-9932-1828b89c8fa1
+926550ee-84bb-414a-99f6-e11673f3da0e	107a5e7f-39d7-4f91-8d6e-c68a866de6c8
 e4d44e14-47e2-4632-8c43-1ee84cd85eca	5bc3fe92-08d5-4857-b05b-c1b912418a6b
 e4d44e14-47e2-4632-8c43-1ee84cd85eca	bd93314d-9f7e-4048-b578-e518247f01b0
 e4d44e14-47e2-4632-8c43-1ee84cd85eca	d8693266-66d8-4df3-964f-3b3c854155b9
@@ -1148,9 +1148,9 @@ f72b62cb-1ae0-4ba2-b178-12539e326c14	ccaa881a-2690-41ec-aec9-c061f97c9b7d
 COPY public.admin_roles (id, slug, name, description, is_system, created_at, updated_at) FROM stdin;
 5dc16cb3-f12c-4195-9c85-90563c17d927	inventory-management	inventory management	update & manage inventory	f	2026-05-11 09:40:56.034	2026-05-11 09:40:56.034
 36d65b9f-5927-487b-be37-943b03c16541	products-management	products management	update and manage all products	f	2026-05-11 12:02:41.329	2026-05-11 12:02:41.329
-926550ee-84bb-414a-99f6-e11673f3da0e	super-admin	Super Admin	Full platform access. Assign sparingly.	t	2026-05-04 07:22:01.076	2026-06-17 13:22:50.961
-e4d44e14-47e2-4632-8c43-1ee84cd85eca	manager	Operations Manager	Day-to-day commerce operations without user/role administration.	t	2026-05-12 07:03:29.765	2026-06-17 13:22:50.965
-f72b62cb-1ae0-4ba2-b178-12539e326c14	support	Support	Read-heavy access for customer service.	t	2026-05-12 07:03:29.768	2026-06-17 13:22:50.967
+926550ee-84bb-414a-99f6-e11673f3da0e	super-admin	Super Admin	Full platform access. Assign sparingly.	t	2026-05-04 07:22:01.076	2026-06-18 13:29:12.282
+e4d44e14-47e2-4632-8c43-1ee84cd85eca	manager	Operations Manager	Day-to-day commerce operations without user/role administration.	t	2026-05-12 07:03:29.765	2026-06-18 13:29:12.285
+f72b62cb-1ae0-4ba2-b178-12539e326c14	support	Support	Read-heavy access for customer service.	t	2026-05-12 07:03:29.768	2026-06-18 13:29:12.287
 \.
 
 
@@ -1281,36 +1281,26 @@ COPY public.customers (id, email, password_hash, first_name, last_name, phone, i
 --
 
 COPY public.inventory_items (id, product_id, variant_id, warehouse_id, quantity, reserved_quantity, available_quantity, low_stock_threshold, updated_at) FROM stdin;
-e57f5c78-ac0b-492e-9bdd-67d63a88d044	0019bc5a-cfda-423a-8033-04e19527878c	58daf9a0-a0ab-4273-b449-e6a076fc9acc	default-warehouse	0	0	0	10	2026-06-17 12:02:52.322
-da03eeb2-7a69-453b-ac43-d7ccf312e55d	eb72e342-64df-4566-8029-db2c63859130	fdf241e4-b0d0-456e-8da6-eef5c1124666	default-warehouse	0	0	0	10	2026-06-17 12:20:04.935
 d9d76782-cbfc-42e9-932a-e2d102a1a02e	c7b8e71d-3489-4bd7-8f88-2e541ee86e41	\N	default-warehouse	100	0	100	10	2026-05-04 07:01:30.851
 4bb64e24-e1d4-4fdb-a55c-d9294878bae1	eb72e342-64df-4566-8029-db2c63859130	663e25b8-ac9e-4892-b47c-c2e9514ef716	default-warehouse	0	0	0	10	2026-06-17 12:20:08.183
 0a4aa0ef-7ca5-411c-a43c-c490d1d47955	eb72e342-64df-4566-8029-db2c63859130	c36c179e-c2af-4e00-beea-dfd8a3cdec2c	default-warehouse	0	0	0	10	2026-06-17 12:20:08.184
 b090fcda-7fd0-491f-a568-eb88e441fdd6	64289463-e48b-4261-bfef-e59b622eb20e	\N	default-warehouse	99	14	85	10	2026-05-07 11:45:56.203
-4b2afae4-8cbd-46ee-b38a-2b1a653ccf06	72c84214-a05b-40e8-9093-d76177afd8d9	80c8d8b5-ebed-42d3-aca4-9611d4585f71	default-warehouse	0	0	0	10	2026-06-17 12:24:03.462
 8ecbf34f-6e3c-4a54-865c-96b2cfd61db3	eaacdf54-eaa9-4dcc-839e-a10a61588523	\N	default-warehouse	100	2	98	10	2026-05-07 06:55:48.037
 caf29d2a-ac95-41a5-a473-731481b1993f	0019bc5a-cfda-423a-8033-04e19527878c	\N	default-warehouse	100	1	99	10	2026-05-08 05:31:15.452
-ed00912f-f66e-422b-83d5-f881e8a5ac71	5eaf65df-0faa-4975-be7b-6a2554a04f13	b85f7fa3-cb5b-4754-8399-6f792a3bf635	default-warehouse	0	0	0	10	2026-06-17 12:24:03.468
-36ae4515-34fd-4626-abbc-67038eb0fd50	230f5c47-5d61-4da1-adfc-6aa5d46f7111	b0d59239-7b73-492b-8cf8-d0ddba9b5d2e	default-warehouse	0	0	0	10	2026-06-17 12:25:26.096
-31ed8490-3c95-4f4a-b6e3-5e4a8677ea22	b4366645-b14a-4de1-b621-e8776dc4f689	cd8e05c4-96f5-488b-aa34-74083d3e2978	default-warehouse	0	0	0	10	2026-06-17 12:31:39.974
 04e61e53-0d37-4e81-b2c6-827f8eb098b6	b4366645-b14a-4de1-b621-e8776dc4f689	3fcd3a63-0d69-4368-8078-4094c1f0d595	default-warehouse	0	0	0	10	2026-06-17 12:31:42.122
 4ec3b6cd-0c6e-44df-8f6f-08fd72684f89	b4366645-b14a-4de1-b621-e8776dc4f689	34eddf36-827a-4247-9037-4af9dae3a462	default-warehouse	0	0	0	10	2026-06-17 12:31:42.124
 1a6785e7-8938-48eb-82a9-987fa57ca3d5	b4366645-b14a-4de1-b621-e8776dc4f689	ad533fd1-8637-4268-bf5c-c8dcd1febdc6	default-warehouse	0	0	0	10	2026-06-17 12:31:42.125
-c53e3755-c61f-4843-9307-5374e5991fd2	1f87d70a-7fb5-43e9-a41c-87b29873a33b	f48488c2-d01c-47a1-98f2-8073d9f103db	default-warehouse	0	0	0	10	2026-06-17 12:48:01.047
 5ba9dfcb-be6f-4ee6-bef5-677669be5bb6	1f87d70a-7fb5-43e9-a41c-87b29873a33b	3ddee9a7-cbf0-4ce6-9f0a-1b71cf16d076	default-warehouse	0	0	0	10	2026-06-17 12:52:25.646
-f0586044-dd40-4ed1-a302-34bf601e6856	05268a8c-518a-4ff4-8691-3cfdff054382	e35461a9-65b7-4ab2-a26a-d1d3d46bfb9a	default-warehouse	0	0	0	10	2026-06-17 13:04:08.076
-2b2ce941-b199-499e-9b1d-bfd8257b8e95	90792798-2b85-4423-8eba-e7f12c64617d	dac44db9-52fe-47ef-bec9-80ebd2773cba	default-warehouse	0	0	0	10	2026-06-17 13:05:00.62
-5e5c6e02-c8c3-4ba6-a63d-73caae2086b5	2881ef70-d26b-4da5-af06-9e0c5795fee4	4e7ea113-5c3c-4315-96f5-357735682caa	default-warehouse	0	0	0	10	2026-06-17 13:05:00.624
-c77665cb-bfb9-4f9e-b6bf-5fa923f8abe5	09cfaa0d-9088-4e2d-823e-3ad80af8853b	480fc5fd-9198-4c2f-ae38-8a0b052a9313	default-warehouse	0	0	0	10	2026-06-17 13:05:55.656
-a5ca3c26-9814-4692-853b-b13bef9e1ef4	46ee9fc8-c21e-4b8c-9003-7337ea88ab68	cb0eb246-2ad0-45d8-9be8-07f10fcbf62d	default-warehouse	0	0	0	10	2026-06-17 13:05:55.656
-38352b5d-e67e-4109-9e8c-a8b195bd96fd	07b2bf6a-2585-42f2-a7fd-ecc432b11861	efbf85a4-a7b1-4ead-83db-4c7df04e3790	default-warehouse	0	0	0	10	2026-06-17 13:05:55.662
-c2dcd150-bdf3-494e-ba63-257e03c8fae1	df541ce1-98b2-49a0-8479-f5a9e1532a85	120f37f1-42aa-45c0-b801-4731330886e3	default-warehouse	0	0	0	10	2026-06-17 13:07:15.915
-82faa21f-b032-4dfa-a325-65ec02dd9035	03e5ef08-6883-4fd0-9583-94a2734aad9a	48de193f-546c-4de8-b665-15e8cab49584	default-warehouse	0	0	0	10	2026-06-17 13:07:15.916
-ca660625-6581-47a8-95ca-0c1d1fb3be9e	c7b8e71d-3489-4bd7-8f88-2e541ee86e41	81b62a2b-ca50-48c2-8ee7-3628ab91a7a1	default-warehouse	0	0	0	10	2026-06-17 13:09:49.016
-a036ecf0-ad5c-4e75-8d9f-9496a6fb9c7b	11920e18-2c21-473c-a201-54cfa6870a03	a0f519b2-b535-41bb-abae-c7bf57b39e4c	default-warehouse	0	0	0	10	2026-06-17 13:11:22.29
-4dcef264-f20d-4ed8-8e10-2f1669d1df37	2e6248be-15bb-45a8-8dc1-245118193c6f	5c75a449-39e0-4ec7-a6ff-d11dbb9f2d08	default-warehouse	0	0	0	10	2026-06-17 13:11:22.289
-d450eb12-9a89-4c8b-a976-be078712457a	fb39c7d5-a4c8-43b6-abed-24fa74046d1d	85511305-b97c-4697-9e60-1ebb4ef4e0de	default-warehouse	0	0	0	10	2026-06-17 13:11:22.291
-e53e6ec6-3dbf-486d-871e-569ec01a15aa	64289463-e48b-4261-bfef-e59b622eb20e	13f1d0a1-a21b-42e1-865b-51838688da07	default-warehouse	0	0	0	10	2026-06-17 11:53:06.668
+ca660625-6581-47a8-95ca-0c1d1fb3be9e	c7b8e71d-3489-4bd7-8f88-2e541ee86e41	81b62a2b-ca50-48c2-8ee7-3628ab91a7a1	default-warehouse	100	0	100	10	2026-06-17 14:00:14.427
+e57f5c78-ac0b-492e-9bdd-67d63a88d044	0019bc5a-cfda-423a-8033-04e19527878c	58daf9a0-a0ab-4273-b449-e6a076fc9acc	default-warehouse	300	0	300	10	2026-06-17 14:01:00.946
+4dcef264-f20d-4ed8-8e10-2f1669d1df37	2e6248be-15bb-45a8-8dc1-245118193c6f	5c75a449-39e0-4ec7-a6ff-d11dbb9f2d08	default-warehouse	100	0	100	10	2026-06-17 14:03:50.547
+d450eb12-9a89-4c8b-a976-be078712457a	fb39c7d5-a4c8-43b6-abed-24fa74046d1d	85511305-b97c-4697-9e60-1ebb4ef4e0de	default-warehouse	98	0	98	10	2026-06-17 14:04:04.717
+a036ecf0-ad5c-4e75-8d9f-9496a6fb9c7b	11920e18-2c21-473c-a201-54cfa6870a03	a0f519b2-b535-41bb-abae-c7bf57b39e4c	default-warehouse	100	0	100	10	2026-06-17 14:04:43.477
+da03eeb2-7a69-453b-ac43-d7ccf312e55d	eb72e342-64df-4566-8029-db2c63859130	fdf241e4-b0d0-456e-8da6-eef5c1124666	default-warehouse	100	0	100	10	2026-06-17 14:04:56.239
+4b2afae4-8cbd-46ee-b38a-2b1a653ccf06	72c84214-a05b-40e8-9093-d76177afd8d9	80c8d8b5-ebed-42d3-aca4-9611d4585f71	default-warehouse	100	0	100	10	2026-06-17 14:05:07.474
+36ae4515-34fd-4626-abbc-67038eb0fd50	230f5c47-5d61-4da1-adfc-6aa5d46f7111	b0d59239-7b73-492b-8cf8-d0ddba9b5d2e	default-warehouse	100	0	100	10	2026-06-17 14:05:30.854
+a5ca3c26-9814-4692-853b-b13bef9e1ef4	46ee9fc8-c21e-4b8c-9003-7337ea88ab68	cb0eb246-2ad0-45d8-9be8-07f10fcbf62d	default-warehouse	100	0	100	10	2026-06-17 14:06:45.357
+5e5c6e02-c8c3-4ba6-a63d-73caae2086b5	2881ef70-d26b-4da5-af06-9e0c5795fee4	4e7ea113-5c3c-4315-96f5-357735682caa	default-warehouse	100	0	100	10	2026-06-17 14:07:06.017
 114ef54c-852c-4403-85d0-801b2dea6f8d	64289463-e48b-4261-bfef-e59b622eb20e	54baa2ca-a251-4b16-b691-80c365b3525d	default-warehouse	0	0	0	10	2026-06-17 11:53:10.335
 7d4da14a-0149-4a8e-8428-6255546aeb52	64289463-e48b-4261-bfef-e59b622eb20e	e976bacd-89cf-47a4-99d5-1c37c9eb3cdc	default-warehouse	0	0	0	10	2026-06-17 11:53:10.334
 ccd17825-328a-4be2-a352-fda4a3570b14	64289463-e48b-4261-bfef-e59b622eb20e	9f8d36e8-526e-43a8-8171-4d7f76d1ceb6	default-warehouse	0	0	0	10	2026-06-17 11:53:10.341
@@ -1318,6 +1308,26 @@ ccd17825-328a-4be2-a352-fda4a3570b14	64289463-e48b-4261-bfef-e59b622eb20e	9f8d36
 48d70064-02da-47a4-a24b-3842419350d1	eaacdf54-eaa9-4dcc-839e-a10a61588523	f44c87d3-ea38-4329-bad9-b0a72e4d955d	default-warehouse	0	0	0	10	2026-06-17 12:00:00.526
 eb4df3ab-56b6-4d47-b063-f96977b1e3df	eaacdf54-eaa9-4dcc-839e-a10a61588523	76e0bd60-36da-44ae-bff0-dd87635ce982	default-warehouse	0	0	0	10	2026-06-17 12:00:02.322
 de230c85-428b-4443-aea2-0cff949af90d	eaacdf54-eaa9-4dcc-839e-a10a61588523	ec4803c2-6aa6-452c-aa1a-e23d0271d115	default-warehouse	0	0	0	10	2026-06-17 12:00:02.323
+ed00912f-f66e-422b-83d5-f881e8a5ac71	5eaf65df-0faa-4975-be7b-6a2554a04f13	b85f7fa3-cb5b-4754-8399-6f792a3bf635	default-warehouse	98	0	98	10	2026-06-18 09:27:40.331
+f0586044-dd40-4ed1-a302-34bf601e6856	05268a8c-518a-4ff4-8691-3cfdff054382	e35461a9-65b7-4ab2-a26a-d1d3d46bfb9a	default-warehouse	1	0	1	10	2026-06-18 08:23:14.712
+c53e3755-c61f-4843-9307-5374e5991fd2	1f87d70a-7fb5-43e9-a41c-87b29873a33b	f48488c2-d01c-47a1-98f2-8073d9f103db	default-warehouse	99	1	98	10	2026-06-18 08:29:36.349
+2b2ce941-b199-499e-9b1d-bfd8257b8e95	90792798-2b85-4423-8eba-e7f12c64617d	dac44db9-52fe-47ef-bec9-80ebd2773cba	default-warehouse	98	0	98	10	2026-06-18 08:44:50.353
+82faa21f-b032-4dfa-a325-65ec02dd9035	03e5ef08-6883-4fd0-9583-94a2734aad9a	48de193f-546c-4de8-b665-15e8cab49584	default-warehouse	98	0	98	10	2026-06-18 09:49:44.591
+38352b5d-e67e-4109-9e8c-a8b195bd96fd	07b2bf6a-2585-42f2-a7fd-ecc432b11861	efbf85a4-a7b1-4ead-83db-4c7df04e3790	default-warehouse	99	1	98	10	2026-06-18 09:19:44.241
+c2dcd150-bdf3-494e-ba63-257e03c8fae1	df541ce1-98b2-49a0-8479-f5a9e1532a85	120f37f1-42aa-45c0-b801-4731330886e3	default-warehouse	99	0	99	10	2026-06-18 09:41:10.525
+c77665cb-bfb9-4f9e-b6bf-5fa923f8abe5	09cfaa0d-9088-4e2d-823e-3ad80af8853b	480fc5fd-9198-4c2f-ae38-8a0b052a9313	default-warehouse	98	0	98	10	2026-06-18 09:42:40.855
+31ed8490-3c95-4f4a-b6e3-5e4a8677ea22	b4366645-b14a-4de1-b621-e8776dc4f689	cd8e05c4-96f5-488b-aa34-74083d3e2978	default-warehouse	97	0	97	10	2026-06-18 12:38:28.783
+0162d3f2-7c90-4f9b-9a40-ca4a17699bba	64289463-e48b-4261-bfef-e59b622eb20e	f047134e-eb1a-4ea9-b20e-55323078d6a1	default-warehouse	0	0	0	10	2026-06-18 13:22:22.583
+e878f593-f0fc-4e69-b93f-f6d67e43efdd	64289463-e48b-4261-bfef-e59b622eb20e	75f2e5c6-0973-47a3-8c9d-15cb6147db88	default-warehouse	0	0	0	10	2026-06-18 13:22:22.582
+5aa9605e-3ee4-4972-b343-30e126b0ab58	64289463-e48b-4261-bfef-e59b622eb20e	1746cc9b-88f3-4920-a1d6-0492ce179e45	default-warehouse	0	0	0	10	2026-06-18 13:22:22.585
+37d82e62-d49c-494d-b809-f41ff434ce99	64289463-e48b-4261-bfef-e59b622eb20e	7f7fdb5c-02c4-4db6-8ad5-966d2856e8c9	default-warehouse	0	0	0	10	2026-06-18 13:22:22.585
+ffc6ff75-c067-4f40-b931-c03571b0cab7	64289463-e48b-4261-bfef-e59b622eb20e	73eb59f9-5c69-4354-96e2-b5a12ec4a18c	default-warehouse	0	0	0	10	2026-06-18 13:22:22.587
+342eceed-2be7-47d5-8e80-bd4f7ab7f731	64289463-e48b-4261-bfef-e59b622eb20e	6309427f-4106-4abb-96a4-e07120857fa7	default-warehouse	0	0	0	10	2026-06-18 13:22:22.589
+9a12c6d3-b49a-4b99-99d4-ebe6b2a04f6f	64289463-e48b-4261-bfef-e59b622eb20e	8e6c2b9a-3b66-42cb-af0e-dafe0a22c346	default-warehouse	100	0	100	10	2026-06-18 13:54:07.798
+e97ae164-1ad5-4d92-abc6-f597eea8a88d	64289463-e48b-4261-bfef-e59b622eb20e	cbdf51f3-8598-4827-9f49-3796df1417fd	default-warehouse	0	0	0	10	2026-06-18 13:22:22.594
+e53e6ec6-3dbf-486d-871e-569ec01a15aa	64289463-e48b-4261-bfef-e59b622eb20e	13f1d0a1-a21b-42e1-865b-51838688da07	default-warehouse	200	1	199	10	2026-06-18 13:53:30.049
+9313b11e-a6b3-4415-93fc-0a621fb9fdcb	64289463-e48b-4261-bfef-e59b622eb20e	39b566f3-2d29-40fc-9102-96c4c303c8b0	default-warehouse	100	0	100	10	2026-06-18 13:54:29.292
+12ff520c-1ceb-40b4-b14a-600f8861d1c6	64289463-e48b-4261-bfef-e59b622eb20e	2ebd7f2b-c889-443f-b40a-0ac968cef018	default-warehouse	0	0	0	10	2026-06-18 13:22:22.587
 \.
 
 
@@ -1339,6 +1349,9 @@ c96b759c-d1bf-4ce1-b05b-934a15dce57f	b090fcda-7fd0-491f-a568-eb88e441fdd6	cart	1
 125f3ef6-6dec-4f50-b2d3-01241e9eae4d	b090fcda-7fd0-491f-a568-eb88e441fdd6	cart	126c6181-f879-461c-b0de-c439d5c9bb94	2	2026-05-07 11:38:19.365	2026-05-07 11:08:19.368
 13a8d4f4-e2ba-46c2-aec8-3c6bba89162c	b090fcda-7fd0-491f-a568-eb88e441fdd6	cart	cba8d941-a211-4bd6-97f6-aa37baa3ae97	5	2026-05-07 12:15:56.2	2026-05-07 11:45:56.201
 4fc033ba-bd20-460e-a5e4-d3cffc33c5cb	caf29d2a-ac95-41a5-a473-731481b1993f	cart	3b96cc19-ecf4-480b-b66e-c5bc03243169	1	2026-05-08 06:01:15.411	2026-05-08 05:31:15.418
+c2015257-7e02-4df7-ad19-306692e3b2c5	c53e3755-c61f-4843-9307-5374e5991fd2	cart	08718290-6c00-473f-9ea1-6f9bbff2ae0e	1	2026-06-18 08:59:36.344	2026-06-18 08:29:36.345
+f836d98f-6b9f-4a56-bb20-f2806b0c3cd6	38352b5d-e67e-4109-9e8c-a8b195bd96fd	cart	471aec42-40a1-467b-b8e5-eb30c00b85b7	1	2026-06-18 09:49:44.229	2026-06-18 09:19:44.233
+044d9e63-54fa-4b0c-b6d8-0618e84dba68	e53e6ec6-3dbf-486d-871e-569ec01a15aa	cart	3ab6817c-dd16-4492-a8df-e625fb0ad423	1	2026-06-18 14:23:30.026	2026-06-18 13:53:30.043
 \.
 
 
@@ -1352,6 +1365,17 @@ COPY public.order_items (id, order_id, product_id, variant_id, sku, name, attrib
 21a18e0b-5bed-4136-ac04-678408542837	4263ac0a-4ea7-4a2b-8ad5-bbf68a2dc0fd	64289463-e48b-4261-bfef-e59b622eb20e	64289463-e48b-4261-bfef-e59b622eb20e	SKU-004	Test Product	{}	1	32.87	0.00	0.00	32.87	0	0	{}	2026-05-04 07:33:33.36
 8b64f088-d410-4ed8-a491-c2c79b21e28f	0aaf74b5-f65e-4019-9d3e-fbc88d4b2238	64289463-e48b-4261-bfef-e59b622eb20e	40973815-351e-42b2-99dc-e30539f21968	SKU-004-VANILA-1KG	Flavour: Vanila • Weight: 1kg	{"optionValues": {"weight": "1kg", "flavour": "Vanila"}, "optionValueIds": {"weight": "e86955c2-ebde-4ba0-9925-743eb1a2371e", "flavour": "c1ed8248-fa5f-4ed8-9b60-0534ee9cbfc4"}}	1	999.00	0.00	0.00	999.00	0	0	{}	2026-06-13 13:35:13.821
 48bccc19-cf33-4dbf-8c21-28d6c7a520f3	5bbb30ed-34a8-41d2-9d5b-da4510ff51bd	64289463-e48b-4261-bfef-e59b622eb20e	40973815-351e-42b2-99dc-e30539f21968	SKU-004-VANILA-1KG	Flavour: Vanila • Weight: 1kg	{"optionValues": {"weight": "1kg", "flavour": "Vanila"}, "optionValueIds": {"weight": "e86955c2-ebde-4ba0-9925-743eb1a2371e", "flavour": "c1ed8248-fa5f-4ed8-9b60-0534ee9cbfc4"}}	1	999.00	0.00	0.00	999.00	0	0	{}	2026-06-13 13:35:46.826
+fd02c613-1dcb-4e96-a1f8-e803e7d8b12e	ed2aa604-ab97-46f0-b68d-e3adc79d8208	07b2bf6a-2585-42f2-a7fd-ecc432b11861	efbf85a4-a7b1-4ead-83db-4c7df04e3790	SKU-015-1PCS	Pack: 1Pcs	{"optionValues": {"pack": "1Pcs"}, "optionValueIds": {"pack": "08b9ab65-eba3-4875-a761-485f6196f74e"}}	1	100.00	0.00	0.00	100.00	0	0	{}	2026-06-18 07:58:09.323
+788cb797-611e-4e50-b9b5-3c8221d21d7b	4c768e17-67dc-4338-954f-579e75b349e5	05268a8c-518a-4ff4-8691-3cfdff054382	e35461a9-65b7-4ab2-a26a-d1d3d46bfb9a	SKU-021-1PCS	Pack: 1Pcs	{"optionValues": {"pack": "1Pcs"}, "optionValueIds": {"pack": "08b9ab65-eba3-4875-a761-485f6196f74e"}}	1	50.00	0.00	0.00	50.00	0	0	{}	2026-06-18 08:09:20.864
+40c380a4-3d77-4224-b89e-76f1302b8193	654b6efd-d07f-4807-a203-919a9e285841	05268a8c-518a-4ff4-8691-3cfdff054382	e35461a9-65b7-4ab2-a26a-d1d3d46bfb9a	SKU-021-1PCS	Pack: 1Pcs	{"optionValues": {"pack": "1Pcs"}, "optionValueIds": {"pack": "08b9ab65-eba3-4875-a761-485f6196f74e"}}	98	50.00	0.00	0.00	4900.00	0	0	{}	2026-06-18 08:21:55.29
+f8fbb507-bd57-4da9-8309-18ac65499229	6c504841-7bb6-45f0-bf1a-58fda35f2000	90792798-2b85-4423-8eba-e7f12c64617d	dac44db9-52fe-47ef-bec9-80ebd2773cba	SKU-020-1PCS	Pack: 1Pcs	{"optionValues": {"pack": "1Pcs"}, "optionValueIds": {"pack": "08b9ab65-eba3-4875-a761-485f6196f74e"}}	1	10.00	0.00	0.00	10.00	0	0	{}	2026-06-18 08:23:36.138
+5ed75898-6c55-42b6-b206-32201623a691	b57f8179-1e64-4504-9e63-74e0aff73c27	90792798-2b85-4423-8eba-e7f12c64617d	dac44db9-52fe-47ef-bec9-80ebd2773cba	SKU-020-1PCS	Pack: 1Pcs	{"optionValues": {"pack": "1Pcs"}, "optionValueIds": {"pack": "08b9ab65-eba3-4875-a761-485f6196f74e"}}	1	10.00	0.00	0.00	10.00	0	0	{}	2026-06-18 08:44:50.292
+d3322e01-6728-4365-bc80-720e84614d53	b65a1ffc-c717-42f5-a104-066d8fd6dd12	03e5ef08-6883-4fd0-9583-94a2734aad9a	48de193f-546c-4de8-b665-15e8cab49584	SKU-014-1BOTTLE	Pack: 1Bottle	{"optionValues": {"pack": "1Bottle"}, "optionValueIds": {"pack": "a2203e30-f48b-48d9-8a20-f17b52937ced"}}	1	100.00	0.00	0.00	100.00	0	0	{}	2026-06-18 09:09:03.079
+82ba322e-09c3-4c35-bf2d-74e8da160a68	bc071ff0-87c0-484a-93a4-286961c91d20	5eaf65df-0faa-4975-be7b-6a2554a04f13	b85f7fa3-cb5b-4754-8399-6f792a3bf635	SKU-010-1-5LTR	Tile Wash	{"optionValues": {"weight": "1.5Ltr"}, "optionValueIds": {"weight": "f56ce2c9-7e87-4eaf-8588-d6c8822a106e"}}	1	80.00	0.00	0.00	80.00	0	0	{"productName": "Tile Wash", "productImage": "http://localhost:3000/uploads/products/e2efe486-c41b-4700-879c-f2debc87b3fd.jpeg", "variantLabel": "Weight: 1.5Ltr"}	2026-06-18 09:27:40.29
+004c2dd0-795b-4dfb-9cb3-6f364354d333	51ec8a89-eff9-49d9-964e-5420a013ea3b	df541ce1-98b2-49a0-8479-f5a9e1532a85	120f37f1-42aa-45c0-b801-4731330886e3	SKU-012-1BOTTLE	Glass Cleaner (Clean 360)	{"optionValues": {"pack": "1Bottle"}, "optionValueIds": {"pack": "a2203e30-f48b-48d9-8a20-f17b52937ced"}}	1	200.00	0.00	0.00	200.00	0	0	{"productName": "Glass Cleaner (Clean 360)", "productImage": "http://localhost:3000/uploads/products/f1d3659c-e8a6-4841-b2ba-16dcad409431.jpeg", "variantLabel": "Pack: 1Bottle"}	2026-06-18 09:41:10.485
+eaf1cfed-c179-4507-8a3b-c930618d1786	cb80ad0a-2a4f-40e7-a4ac-f3bfbd007b1a	09cfaa0d-9088-4e2d-823e-3ad80af8853b	480fc5fd-9198-4c2f-ae38-8a0b052a9313	SKU-017-2LTR	Sweep-o Floor & Tile Cleaner	{"optionValues": {"weight": "2Ltr"}, "optionValueIds": {"weight": "0f01dc86-2798-4ffb-9902-663a759b845e"}}	1	159.00	0.00	0.00	159.00	0	0	{"productName": "Sweep-o Floor & Tile Cleaner", "productImage": "http://localhost:3000/uploads/products/0c2e39fe-26c3-416f-8cd0-72747aa624be.jpeg", "variantLabel": "Weight: 2Ltr"}	2026-06-18 09:42:40.827
+c38f3021-85a9-4cda-9b78-9c78a3e21194	d3559801-23d2-4547-8f47-153a81fd2451	03e5ef08-6883-4fd0-9583-94a2734aad9a	48de193f-546c-4de8-b665-15e8cab49584	SKU-014-1BOTTLE	Panda Liquid Neel	{"optionValues": {"pack": "1Bottle"}, "optionValueIds": {"pack": "a2203e30-f48b-48d9-8a20-f17b52937ced"}}	1	100.00	0.00	0.00	100.00	0	0	{"productName": "Panda Liquid Neel", "productImage": "http://localhost:3000/uploads/products/66da266a-d52b-46da-a138-77ad84696bef.jpeg", "variantLabel": "Pack: 1Bottle"}	2026-06-18 09:49:44.552
+73d17daa-8b1f-41e9-ae12-e76ccca98a7c	fc750368-9e2b-4ff9-a64d-fb1693c0b1c9	b4366645-b14a-4de1-b621-e8776dc4f689	cd8e05c4-96f5-488b-aa34-74083d3e2978	SKU-013-ROSE-3LTR	Panda Perfume Phenyl	{"optionValues": {"weight": "3Ltr", "flavour": "Rose"}, "optionValueIds": {"weight": "82b87405-7303-4194-8470-0b74022faa4c", "flavour": "30d60dcc-867c-4fbd-a208-4aef88480725"}}	1	370.00	0.00	0.00	370.00	0	0	{"productName": "Panda Perfume Phenyl", "productImage": "http://localhost:3000/uploads/products/85d40ec1-22b4-41b3-b485-ce02a3f10a7b.jpeg", "variantLabel": "Flavour: Rose • Weight: 3Ltr"}	2026-06-18 12:38:28.752
 \.
 
 
@@ -1385,6 +1409,17 @@ COPY public.orders (id, order_number, customer_id, customer_group_id, status, pa
 4263ac0a-4ea7-4a2b-8ad5-bbf68a2dc0fd	ORD-20260504-00001	88eba4d4-b784-4d99-9c51-8ad1ac99f3fc	8a31ee2d-11fe-4e3d-91db-c03e5a79a6b8	pending	pending	unfulfilled	smhuzaifa525@gmail.com	\N	{"city": "KARACHI", "label": "HOME A", "phone": "", "state": "SINDH", "company": "", "country": "PK", "lastName": "HUZAIFA", "firstName": "SYED", "postalCode": "74760", "addressLine1": "SAEEDABAD", "addressLine2": ""}	{"city": "KARACHI", "label": "HOME A", "phone": "", "state": "SINDH", "company": "", "country": "PK", "lastName": "HUZAIFA", "firstName": "SYED", "postalCode": "74760", "addressLine1": "SAEEDABAD", "addressLine2": ""}	USD	32.87	0.00	0.00	0.00	32.87	[]	\N	\N	\N	{"checkoutId": "55b4c288-998d-49f9-bd4b-ac10fae8f79f", "customerGroupSnapshot": {"id": "8a31ee2d-11fe-4e3d-91db-c03e5a79a6b8", "name": "default", "taxClassId": null, "discountPercent": 10}}	2026-05-04 07:33:33.36	2026-05-04 07:33:33.36	\N	\N
 0aaf74b5-f65e-4019-9d3e-fbc88d4b2238	ORD-20260613-00001	8fbf3a74-9fd8-43db-8858-a0ec225cdb10	8a31ee2d-11fe-4e3d-91db-c03e5a79a6b8	pending	pending	unfulfilled	a.wahab445@gmail.com	test	{"city": "Karachi", "label": "", "state": "Sindh", "country": "PK", "lastName": "Wahab", "firstName": "Abdul", "postalCode": "75760", "addressLine1": "House 12345"}	{"city": "Karachi", "label": "", "state": "Sindh", "country": "PK", "lastName": "Wahab", "firstName": "Abdul", "postalCode": "75760", "addressLine1": "House 12345"}	PKR	999.00	0.00	0.00	0.00	999.00	[]	\N	\N	\N	{"checkoutId": "77b158e9-8973-4b6a-936d-1ce7fed26a40", "customerGroupSnapshot": {"id": "8a31ee2d-11fe-4e3d-91db-c03e5a79a6b8", "name": "default", "taxClassId": null, "discountPercent": 10}}	2026-06-13 13:35:13.821	2026-06-13 13:35:13.821	\N	\N
 5bbb30ed-34a8-41d2-9d5b-da4510ff51bd	ORD-20260613-00002	8fbf3a74-9fd8-43db-8858-a0ec225cdb10	8a31ee2d-11fe-4e3d-91db-c03e5a79a6b8	processing	pending	unfulfilled	a.wahab445@gmail.com	\N	{"city": "Karachi", "label": "", "state": "Sindh", "country": "PK", "lastName": "Wahab", "firstName": "Abdul", "postalCode": "75760", "addressLine1": "House 12345"}	{"city": "Karachi", "label": "", "state": "Sindh", "country": "PK", "lastName": "Wahab", "firstName": "Abdul", "postalCode": "75760", "addressLine1": "House 12345"}	PKR	999.00	0.00	0.00	0.00	999.00	[]	\N	\N	\N	{"checkoutId": "6f672239-62af-4d88-acb8-d46d5fae96a6", "customerGroupSnapshot": {"id": "8a31ee2d-11fe-4e3d-91db-c03e5a79a6b8", "name": "default", "taxClassId": null, "discountPercent": 10}}	2026-06-13 13:35:46.826	2026-06-13 13:45:32.357	\N	\N
+ed2aa604-ab97-46f0-b68d-e3adc79d8208	ORD-20260618-00001	88eba4d4-b784-4d99-9c51-8ad1ac99f3fc	8a31ee2d-11fe-4e3d-91db-c03e5a79a6b8	pending	pending	unfulfilled	smhuzaifa525@gmail.com	\N	{"city": "khi", "label": "", "state": "sindh", "country": "pk", "lastName": "huzaifa", "firstName": "syed", "postalCode": "75740", "addressLine1": "baldia"}	{"city": "khi", "label": "", "state": "sindh", "country": "pk", "lastName": "huzaifa", "firstName": "syed", "postalCode": "75740", "addressLine1": "baldia"}	USD	100.00	0.00	0.00	0.00	100.00	[]	\N	\N	\N	{"checkoutId": "44cfe58a-d167-4b32-9dff-f446edceb156", "customerGroupSnapshot": {"id": "8a31ee2d-11fe-4e3d-91db-c03e5a79a6b8", "name": "default", "taxClassId": null, "discountPercent": 10}}	2026-06-18 07:58:09.323	2026-06-18 07:58:09.323	\N	\N
+4c768e17-67dc-4338-954f-579e75b349e5	ORD-20260618-00002	88eba4d4-b784-4d99-9c51-8ad1ac99f3fc	8a31ee2d-11fe-4e3d-91db-c03e5a79a6b8	pending	pending	unfulfilled	smhuzaifa525@gmail.com	\N	{"city": "khi", "label": "", "state": "sindh", "country": "pk", "lastName": "huzaifa", "firstName": "syed", "postalCode": "75740", "addressLine1": "baldia"}	{"city": "khi", "label": "", "state": "sindh", "country": "pk", "lastName": "huzaifa", "firstName": "syed", "postalCode": "75740", "addressLine1": "baldia"}	USD	50.00	0.00	0.00	0.00	50.00	[]	\N	\N	\N	{"checkoutId": "6a953440-2c02-46b2-888b-07831af3e4b5", "customerGroupSnapshot": {"id": "8a31ee2d-11fe-4e3d-91db-c03e5a79a6b8", "name": "default", "taxClassId": null, "discountPercent": 10}}	2026-06-18 08:09:20.864	2026-06-18 08:09:20.864	\N	\N
+654b6efd-d07f-4807-a203-919a9e285841	ORD-20260618-00003	88eba4d4-b784-4d99-9c51-8ad1ac99f3fc	8a31ee2d-11fe-4e3d-91db-c03e5a79a6b8	pending	pending	unfulfilled	smhuzaifa525@gmail.com	\N	{"city": "khi", "label": "", "state": "sindh", "country": "pk", "lastName": "huzaifa", "firstName": "syed", "postalCode": "75740", "addressLine1": "baldia"}	{"city": "khi", "label": "", "state": "sindh", "country": "pk", "lastName": "huzaifa", "firstName": "syed", "postalCode": "75740", "addressLine1": "baldia"}	USD	4900.00	0.00	0.00	0.00	4900.00	[]	\N	\N	\N	{"checkoutId": "d746b0a1-c8bf-4138-a0fb-2aef0ec911ee", "customerGroupSnapshot": {"id": "8a31ee2d-11fe-4e3d-91db-c03e5a79a6b8", "name": "default", "taxClassId": null, "discountPercent": 10}}	2026-06-18 08:21:55.29	2026-06-18 08:21:55.29	\N	\N
+6c504841-7bb6-45f0-bf1a-58fda35f2000	ORD-20260618-00004	88eba4d4-b784-4d99-9c51-8ad1ac99f3fc	8a31ee2d-11fe-4e3d-91db-c03e5a79a6b8	pending	pending	unfulfilled	smhuzaifa525@gmail.com	\N	{"city": "khi", "label": "", "state": "sindh", "country": "pk", "lastName": "huzaifa", "firstName": "syed", "postalCode": "75740", "addressLine1": "baldia"}	{"city": "khi", "label": "", "state": "sindh", "country": "pk", "lastName": "huzaifa", "firstName": "syed", "postalCode": "75740", "addressLine1": "baldia"}	USD	10.00	0.00	0.00	0.00	10.00	[]	\N	\N	\N	{"checkoutId": "07a7fe79-340d-43d5-bb48-7bfc70b24abf", "customerGroupSnapshot": {"id": "8a31ee2d-11fe-4e3d-91db-c03e5a79a6b8", "name": "default", "taxClassId": null, "discountPercent": 10}}	2026-06-18 08:23:36.138	2026-06-18 08:23:36.138	\N	\N
+b57f8179-1e64-4504-9e63-74e0aff73c27	ORD-20260618-00005	88eba4d4-b784-4d99-9c51-8ad1ac99f3fc	8a31ee2d-11fe-4e3d-91db-c03e5a79a6b8	pending	pending	unfulfilled	smhuzaifa525@gmail.com	\N	{"city": "khi", "label": "", "state": "sindh", "country": "pk", "lastName": "huzaifa", "firstName": "syed", "postalCode": "75740", "addressLine1": "baldia"}	{"city": "khi", "label": "", "state": "sindh", "country": "pk", "lastName": "huzaifa", "firstName": "syed", "postalCode": "75740", "addressLine1": "baldia"}	PKR	10.00	0.00	0.00	0.00	10.00	[]	\N	\N	\N	{"checkoutId": "eede4445-1da2-459b-8a95-b8be94bdea6d", "customerGroupSnapshot": {"id": "8a31ee2d-11fe-4e3d-91db-c03e5a79a6b8", "name": "default", "taxClassId": null, "discountPercent": 10}}	2026-06-18 08:44:50.292	2026-06-18 08:44:50.292	\N	\N
+b65a1ffc-c717-42f5-a104-066d8fd6dd12	ORD-20260618-00006	88eba4d4-b784-4d99-9c51-8ad1ac99f3fc	8a31ee2d-11fe-4e3d-91db-c03e5a79a6b8	pending	pending	unfulfilled	smhuzaifa525@gmail.com	\N	{"city": "khi", "label": "", "state": "sindh", "country": "pk", "lastName": "huzaifa", "firstName": "syed", "postalCode": "75740", "addressLine1": "baldia"}	{"city": "khi", "label": "", "state": "sindh", "country": "pk", "lastName": "huzaifa", "firstName": "syed", "postalCode": "75740", "addressLine1": "baldia"}	PKR	100.00	0.00	0.00	0.00	100.00	[]	\N	\N	\N	{"checkoutId": "0c428526-f1eb-4864-a84b-d661b026b1fb", "customerGroupSnapshot": {"id": "8a31ee2d-11fe-4e3d-91db-c03e5a79a6b8", "name": "default", "taxClassId": null, "discountPercent": 10}}	2026-06-18 09:09:03.079	2026-06-18 09:09:03.079	\N	\N
+bc071ff0-87c0-484a-93a4-286961c91d20	ORD-20260618-00007	88eba4d4-b784-4d99-9c51-8ad1ac99f3fc	8a31ee2d-11fe-4e3d-91db-c03e5a79a6b8	pending	pending	unfulfilled	smhuzaifa525@gmail.com	\N	{"city": "khi", "label": "", "state": "sindh", "country": "pk", "lastName": "huzaifa", "firstName": "syed", "postalCode": "75740", "addressLine1": "baldia"}	{"city": "khi", "label": "", "state": "sindh", "country": "pk", "lastName": "huzaifa", "firstName": "syed", "postalCode": "75740", "addressLine1": "baldia"}	PKR	80.00	0.00	0.00	0.00	80.00	[]	\N	\N	\N	{"checkoutId": "d847292b-3d62-40bf-9f11-35fc6e7466f2", "customerGroupSnapshot": {"id": "8a31ee2d-11fe-4e3d-91db-c03e5a79a6b8", "name": "default", "taxClassId": null, "discountPercent": 10}}	2026-06-18 09:27:40.29	2026-06-18 09:27:40.29	\N	\N
+51ec8a89-eff9-49d9-964e-5420a013ea3b	ORD-20260618-00008	88eba4d4-b784-4d99-9c51-8ad1ac99f3fc	8a31ee2d-11fe-4e3d-91db-c03e5a79a6b8	pending	pending	unfulfilled	smhuzaifa525@gmail.com	\N	{"city": "khi", "label": "", "state": "sindh", "country": "pk", "lastName": "huzaifa", "firstName": "syed", "postalCode": "75740", "addressLine1": "baldia"}	{"city": "khi", "label": "", "state": "sindh", "country": "pk", "lastName": "huzaifa", "firstName": "syed", "postalCode": "75740", "addressLine1": "baldia"}	PKR	200.00	0.00	0.00	0.00	200.00	[]	\N	\N	\N	{"checkoutId": "93d1db05-b4c2-47fe-803a-829108528166", "customerGroupSnapshot": {"id": "8a31ee2d-11fe-4e3d-91db-c03e5a79a6b8", "name": "default", "taxClassId": null, "discountPercent": 10}}	2026-06-18 09:41:10.485	2026-06-18 09:41:10.485	\N	\N
+cb80ad0a-2a4f-40e7-a4ac-f3bfbd007b1a	ORD-20260618-00009	88eba4d4-b784-4d99-9c51-8ad1ac99f3fc	8a31ee2d-11fe-4e3d-91db-c03e5a79a6b8	pending	pending	unfulfilled	smhuzaifa525@gmail.com	\N	{"city": "khi", "label": "", "state": "sindh", "country": "pk", "lastName": "huzaifa", "firstName": "syed", "postalCode": "75740", "addressLine1": "baldia"}	{"city": "khi", "label": "", "state": "sindh", "country": "pk", "lastName": "huzaifa", "firstName": "syed", "postalCode": "75740", "addressLine1": "baldia"}	PKR	159.00	0.00	0.00	0.00	159.00	[]	\N	\N	\N	{"checkoutId": "afcc0bdd-f4d3-4a6f-9b95-40fb3881a856", "customerGroupSnapshot": {"id": "8a31ee2d-11fe-4e3d-91db-c03e5a79a6b8", "name": "default", "taxClassId": null, "discountPercent": 10}}	2026-06-18 09:42:40.827	2026-06-18 09:42:40.827	\N	\N
+d3559801-23d2-4547-8f47-153a81fd2451	ORD-20260618-00010	88eba4d4-b784-4d99-9c51-8ad1ac99f3fc	8a31ee2d-11fe-4e3d-91db-c03e5a79a6b8	pending	pending	unfulfilled	smhuzaifa525@gmail.com	\N	{"city": "khi", "label": "", "state": "sindh", "country": "pk", "lastName": "huzaifa", "firstName": "syed", "postalCode": "75740", "addressLine1": "baldia"}	{"city": "khi", "label": "", "state": "sindh", "country": "pk", "lastName": "huzaifa", "firstName": "syed", "postalCode": "75740", "addressLine1": "baldia"}	PKR	100.00	10.00	99.00	0.00	189.00	[]	\N	\N	\N	{"checkoutId": "bfb2ebb1-4097-40cf-bd9b-ae02bab05c77", "shippingMethod": {"cost": 99, "currency": "PKR", "methodId": "00000000-0000-0000-0000-000000000002", "methodName": "Standard Shipping", "estimatedDays": 0}, "customerGroupSnapshot": {"id": "8a31ee2d-11fe-4e3d-91db-c03e5a79a6b8", "name": "default", "taxClassId": null, "discountPercent": 10}}	2026-06-18 09:49:44.552	2026-06-18 09:49:44.552	\N	\N
+fc750368-9e2b-4ff9-a64d-fb1693c0b1c9	ORD-20260618-00011	88eba4d4-b784-4d99-9c51-8ad1ac99f3fc	8a31ee2d-11fe-4e3d-91db-c03e5a79a6b8	pending	pending	unfulfilled	smhuzaifa525@gmail.com	\N	{"city": "khi", "label": "", "state": "sindh", "country": "pk", "lastName": "huzaifa", "firstName": "syed", "postalCode": "75740", "addressLine1": "baldia"}	{"city": "khi", "label": "", "state": "sindh", "country": "pk", "lastName": "huzaifa", "firstName": "syed", "postalCode": "75740", "addressLine1": "baldia"}	PKR	370.00	0.00	99.00	0.00	469.00	[]	\N	\N	\N	{"checkoutId": "f1df211d-eed4-4a25-ad56-fd3a5f9f5478", "shippingMethod": {"cost": 99, "currency": "PKR", "methodId": "00000000-0000-0000-0000-000000000002", "methodName": "Standard Shipping", "estimatedDays": 0}, "customerGroupSnapshot": {"id": "8a31ee2d-11fe-4e3d-91db-c03e5a79a6b8", "name": "default", "taxClassId": null, "discountPercent": 10}}	2026-06-18 12:38:28.752	2026-06-18 12:38:28.752	\N	\N
 \.
 
 
@@ -1409,6 +1444,17 @@ COPY public.payments (id, order_id, payment_method_id, status, flow_type, amount
 d88b3cf9-218a-4f6f-bfcd-2fbf58f1909c	4263ac0a-4ea7-4a2b-8ad5-bbf68a2dc0fd	1f3e4b70-63ff-4b05-a95f-e7b3612dc405	pending	OFFLINE	32.87	USD	COD-f1a50684-3047-4c91-b51e-b2ae3b6b781c	\N	\N	{"orderId": "4263ac0a-4ea7-4a2b-8ad5-bbf68a2dc0fd", "orderNumber": "ORD-20260504-00001", "paymentMethod": "cod", "transactionId": "COD-f1a50684-3047-4c91-b51e-b2ae3b6b781c"}	\N	\N	\N	2026-05-04 07:33:33.411	2026-05-04 07:33:33.411
 38dd35c3-3cf1-4b4c-8d7e-5b7ae93138b9	0aaf74b5-f65e-4019-9d3e-fbc88d4b2238	1f3e4b70-63ff-4b05-a95f-e7b3612dc405	pending	OFFLINE	999.00	PKR	COD-089d01eb-fc7f-4dc6-a545-742c42cda4f2	\N	\N	{"orderId": "0aaf74b5-f65e-4019-9d3e-fbc88d4b2238", "orderNumber": "ORD-20260613-00001", "paymentMethod": "cod", "transactionId": "COD-089d01eb-fc7f-4dc6-a545-742c42cda4f2"}	\N	\N	\N	2026-06-13 13:35:13.835	2026-06-13 13:35:13.835
 d3941eb2-0019-46ff-b2b7-02d5ce7046f6	5bbb30ed-34a8-41d2-9d5b-da4510ff51bd	1f3e4b70-63ff-4b05-a95f-e7b3612dc405	pending	OFFLINE	999.00	PKR	COD-a15bf94a-2f52-49ec-9ca6-718708d5d874	\N	\N	{"orderId": "5bbb30ed-34a8-41d2-9d5b-da4510ff51bd", "orderNumber": "ORD-20260613-00002", "paymentMethod": "cod", "transactionId": "COD-a15bf94a-2f52-49ec-9ca6-718708d5d874"}	\N	\N	\N	2026-06-13 13:35:46.838	2026-06-13 13:35:46.838
+41a54b79-9f52-4503-980f-d16d130c6030	ed2aa604-ab97-46f0-b68d-e3adc79d8208	1f3e4b70-63ff-4b05-a95f-e7b3612dc405	pending	OFFLINE	100.00	USD	COD-28ba3a23-c121-4e28-891c-9a142272f7ee	\N	\N	{"orderId": "ed2aa604-ab97-46f0-b68d-e3adc79d8208", "orderNumber": "ORD-20260618-00001", "paymentMethod": "cod", "transactionId": "COD-28ba3a23-c121-4e28-891c-9a142272f7ee"}	\N	\N	\N	2026-06-18 07:58:09.379	2026-06-18 07:58:09.379
+0bfb01be-c027-44c8-be87-35a6c3e3e895	4c768e17-67dc-4338-954f-579e75b349e5	1f3e4b70-63ff-4b05-a95f-e7b3612dc405	pending	OFFLINE	50.00	USD	COD-1d566dcb-bdb0-48f7-bed4-3a776fafce2a	\N	\N	{"orderId": "4c768e17-67dc-4338-954f-579e75b349e5", "orderNumber": "ORD-20260618-00002", "paymentMethod": "cod", "transactionId": "COD-1d566dcb-bdb0-48f7-bed4-3a776fafce2a"}	\N	\N	\N	2026-06-18 08:09:20.911	2026-06-18 08:09:20.911
+cfd9f2a0-dc8e-435c-8904-a506afb79c1e	654b6efd-d07f-4807-a203-919a9e285841	1f3e4b70-63ff-4b05-a95f-e7b3612dc405	pending	OFFLINE	4900.00	USD	COD-55c07611-56e2-444c-a009-4e5775819856	\N	\N	{"orderId": "654b6efd-d07f-4807-a203-919a9e285841", "orderNumber": "ORD-20260618-00003", "paymentMethod": "cod", "transactionId": "COD-55c07611-56e2-444c-a009-4e5775819856"}	\N	\N	\N	2026-06-18 08:21:55.331	2026-06-18 08:21:55.331
+346e59bc-e806-492d-bd27-a6c65ae06065	6c504841-7bb6-45f0-bf1a-58fda35f2000	1f3e4b70-63ff-4b05-a95f-e7b3612dc405	pending	OFFLINE	10.00	USD	COD-5f412ced-12ca-43a9-8309-0a57611ecd72	\N	\N	{"orderId": "6c504841-7bb6-45f0-bf1a-58fda35f2000", "orderNumber": "ORD-20260618-00004", "paymentMethod": "cod", "transactionId": "COD-5f412ced-12ca-43a9-8309-0a57611ecd72"}	\N	\N	\N	2026-06-18 08:23:36.198	2026-06-18 08:23:36.198
+5cf63ace-6c14-443f-843e-b31cbc896493	b57f8179-1e64-4504-9e63-74e0aff73c27	1f3e4b70-63ff-4b05-a95f-e7b3612dc405	pending	OFFLINE	10.00	PKR	COD-01f7dc6e-8e15-4efc-88f7-ffde251a3f40	\N	\N	{"orderId": "b57f8179-1e64-4504-9e63-74e0aff73c27", "orderNumber": "ORD-20260618-00005", "paymentMethod": "cod", "transactionId": "COD-01f7dc6e-8e15-4efc-88f7-ffde251a3f40"}	\N	\N	\N	2026-06-18 08:44:50.373	2026-06-18 08:44:50.373
+7912776c-7ee9-45ba-a118-d6ce8a2795a9	b65a1ffc-c717-42f5-a104-066d8fd6dd12	1f3e4b70-63ff-4b05-a95f-e7b3612dc405	pending	OFFLINE	100.00	PKR	COD-d9342d73-2011-4a0d-8389-0fcf588ab650	\N	\N	{"orderId": "b65a1ffc-c717-42f5-a104-066d8fd6dd12", "orderNumber": "ORD-20260618-00006", "paymentMethod": "cod", "transactionId": "COD-d9342d73-2011-4a0d-8389-0fcf588ab650"}	\N	\N	\N	2026-06-18 09:09:03.128	2026-06-18 09:09:03.128
+fb4a661a-d9dc-4bbd-9e7c-ec81cd55db16	bc071ff0-87c0-484a-93a4-286961c91d20	1f3e4b70-63ff-4b05-a95f-e7b3612dc405	pending	OFFLINE	80.00	PKR	COD-344d1c99-647d-4748-91c2-12176ccdec91	\N	\N	{"orderId": "bc071ff0-87c0-484a-93a4-286961c91d20", "orderNumber": "ORD-20260618-00007", "paymentMethod": "cod", "transactionId": "COD-344d1c99-647d-4748-91c2-12176ccdec91"}	\N	\N	\N	2026-06-18 09:27:40.349	2026-06-18 09:27:40.349
+168d7f74-5b8f-4ab8-9f29-0ead39dd590a	51ec8a89-eff9-49d9-964e-5420a013ea3b	1f3e4b70-63ff-4b05-a95f-e7b3612dc405	pending	OFFLINE	200.00	PKR	COD-5c7fd56d-3612-497e-9a9e-05f2e68a53ee	\N	\N	{"orderId": "51ec8a89-eff9-49d9-964e-5420a013ea3b", "orderNumber": "ORD-20260618-00008", "paymentMethod": "cod", "transactionId": "COD-5c7fd56d-3612-497e-9a9e-05f2e68a53ee"}	\N	\N	\N	2026-06-18 09:41:10.543	2026-06-18 09:41:10.543
+d929fb3f-9a29-4faa-aa46-c699a9534398	cb80ad0a-2a4f-40e7-a4ac-f3bfbd007b1a	1f3e4b70-63ff-4b05-a95f-e7b3612dc405	pending	OFFLINE	159.00	PKR	COD-a6ca1acc-09bf-44ae-813c-398d6260b234	\N	\N	{"orderId": "cb80ad0a-2a4f-40e7-a4ac-f3bfbd007b1a", "orderNumber": "ORD-20260618-00009", "paymentMethod": "cod", "transactionId": "COD-a6ca1acc-09bf-44ae-813c-398d6260b234"}	\N	\N	\N	2026-06-18 09:42:40.862	2026-06-18 09:42:40.862
+9213bc62-b500-46a5-9461-393109135f85	d3559801-23d2-4547-8f47-153a81fd2451	1f3e4b70-63ff-4b05-a95f-e7b3612dc405	pending	OFFLINE	189.00	PKR	COD-687206ee-d15b-4429-b806-890ece9053a4	\N	\N	{"orderId": "d3559801-23d2-4547-8f47-153a81fd2451", "orderNumber": "ORD-20260618-00010", "paymentMethod": "cod", "transactionId": "COD-687206ee-d15b-4429-b806-890ece9053a4"}	\N	\N	\N	2026-06-18 09:49:44.606	2026-06-18 09:49:44.606
+13a3dafd-631e-43ce-b63d-fc9a2a81b445	fc750368-9e2b-4ff9-a64d-fb1693c0b1c9	1f3e4b70-63ff-4b05-a95f-e7b3612dc405	pending	OFFLINE	469.00	PKR	COD-731687f1-4a57-4192-9be1-6edccd6ed6c6	\N	\N	{"orderId": "fc750368-9e2b-4ff9-a64d-fb1693c0b1c9", "orderNumber": "ORD-20260618-00011", "paymentMethod": "cod", "transactionId": "COD-731687f1-4a57-4192-9be1-6edccd6ed6c6"}	\N	\N	\N	2026-06-18 12:38:28.797	2026-06-18 12:38:28.797
 \.
 
 
@@ -1520,6 +1566,7 @@ d1f00583-8325-4de2-8d03-13e550682edd	59574408-864b-4fb3-a08f-5ee2211a8ba1	Jasmin
 b7624b89-1245-4380-936f-3ec1cc995001	a39db598-111e-4007-bf54-f564b2c1f587	Long Bar	long bar	5	t	2026-06-17 12:43:24.898	2026-06-17 12:43:24.898
 08b9ab65-eba3-4875-a761-485f6196f74e	a39db598-111e-4007-bf54-f564b2c1f587	1Pcs	1pcs	0	t	2026-06-17 13:03:55.272	2026-06-17 13:03:55.272
 a2203e30-f48b-48d9-8a20-f17b52937ced	a39db598-111e-4007-bf54-f564b2c1f587	1Bottle	1bottle	0	t	2026-06-17 13:06:28.529	2026-06-17 13:06:28.529
+ff90c3cc-146f-4def-8f27-2ea350291c61	a39db598-111e-4007-bf54-f564b2c1f587	Large	large	6	t	2026-06-18 13:21:27.251	2026-06-18 13:23:14.256
 \.
 
 
@@ -1549,6 +1596,8 @@ fb39c7d5-a4c8-43b6-abed-24fa74046d1d	a39db598-111e-4007-bf54-f564b2c1f587	08b9ab
 64289463-e48b-4261-bfef-e59b622eb20e	59574408-864b-4fb3-a08f-5ee2211a8ba1	5c00a20f-7157-4e94-9797-eb233b0f8c48
 64289463-e48b-4261-bfef-e59b622eb20e	59574408-864b-4fb3-a08f-5ee2211a8ba1	f34de9c0-5dd7-48b1-bef4-9b8f72f95a86
 64289463-e48b-4261-bfef-e59b622eb20e	59574408-864b-4fb3-a08f-5ee2211a8ba1	11eca007-82d2-44d8-b07c-b9aad4ed0ec4
+64289463-e48b-4261-bfef-e59b622eb20e	a39db598-111e-4007-bf54-f564b2c1f587	12e6652f-be05-405f-8647-8cc760628251
+64289463-e48b-4261-bfef-e59b622eb20e	a39db598-111e-4007-bf54-f564b2c1f587	ff90c3cc-146f-4def-8f27-2ea350291c61
 eaacdf54-eaa9-4dcc-839e-a10a61588523	59574408-864b-4fb3-a08f-5ee2211a8ba1	0bb4c7bc-d181-4c9a-869e-4aeae5df4031
 eaacdf54-eaa9-4dcc-839e-a10a61588523	59574408-864b-4fb3-a08f-5ee2211a8ba1	30d60dcc-867c-4fbd-a208-4aef88480725
 eaacdf54-eaa9-4dcc-839e-a10a61588523	59574408-864b-4fb3-a08f-5ee2211a8ba1	0c67d0de-3c86-4047-b10c-fea938d735d5
@@ -1588,7 +1637,6 @@ a39db598-111e-4007-bf54-f564b2c1f587	Pack	pack	t	2026-05-08 06:43:46.941	2026-05
 --
 
 COPY public.product_options_on_products (product_id, option_id, is_required, "position") FROM stdin;
-64289463-e48b-4261-bfef-e59b622eb20e	59574408-864b-4fb3-a08f-5ee2211a8ba1	f	0
 eaacdf54-eaa9-4dcc-839e-a10a61588523	59574408-864b-4fb3-a08f-5ee2211a8ba1	f	0
 0019bc5a-cfda-423a-8033-04e19527878c	a39db598-111e-4007-bf54-f564b2c1f587	f	0
 eb72e342-64df-4566-8029-db2c63859130	59574408-864b-4fb3-a08f-5ee2211a8ba1	t	0
@@ -1610,6 +1658,8 @@ c7b8e71d-3489-4bd7-8f88-2e541ee86e41	a39db598-111e-4007-bf54-f564b2c1f587	t	0
 2e6248be-15bb-45a8-8dc1-245118193c6f	a39db598-111e-4007-bf54-f564b2c1f587	t	0
 fb39c7d5-a4c8-43b6-abed-24fa74046d1d	a39db598-111e-4007-bf54-f564b2c1f587	t	0
 11920e18-2c21-473c-a201-54cfa6870a03	a39db598-111e-4007-bf54-f564b2c1f587	t	0
+64289463-e48b-4261-bfef-e59b622eb20e	59574408-864b-4fb3-a08f-5ee2211a8ba1	f	0
+64289463-e48b-4261-bfef-e59b622eb20e	a39db598-111e-4007-bf54-f564b2c1f587	t	1
 \.
 
 
@@ -1633,6 +1683,14 @@ dac44db9-52fe-47ef-bec9-80ebd2773cba	90792798-2b85-4423-8eba-e7f12c64617d	SKU-02
 480fc5fd-9198-4c2f-ae38-8a0b052a9313	09cfaa0d-9088-4e2d-823e-3ad80af8853b	SKU-017-2LTR	Weight: 2Ltr	159.00	\N	\N	{"optionValues": {"weight": "2Ltr"}, "optionValueIds": {"weight": "0f01dc86-2798-4ffb-9902-663a759b845e"}}	0	t	2026-06-17 13:05:19.644	2026-06-17 13:05:19.644
 81b62a2b-ca50-48c2-8ee7-3628ab91a7a1	c7b8e71d-3489-4bd7-8f88-2e541ee86e41	SKU-001-1PCS	Pack: 1Pcs	110.00	\N	\N	{"optionValues": {"pack": "1Pcs"}, "optionValueIds": {"pack": "08b9ab65-eba3-4875-a761-485f6196f74e"}}	0	t	2026-06-17 13:09:42.151	2026-06-17 13:09:42.151
 a0f519b2-b535-41bb-abae-c7bf57b39e4c	11920e18-2c21-473c-a201-54cfa6870a03	SKU-007-1PCS	Pack: 1Pcs	79.98	\N	\N	{"optionValues": {"pack": "1Pcs"}, "optionValueIds": {"pack": "08b9ab65-eba3-4875-a761-485f6196f74e"}}	0	t	2026-06-17 13:10:33.453	2026-06-17 13:10:33.453
+2ebd7f2b-c889-443f-b40a-0ac968cef018	64289463-e48b-4261-bfef-e59b622eb20e	SKU-004-ORCHID-SMALL	Flavour: Orchid • Pack: Small	50.00	\N	\N	{"optionValues": {"pack": "Small", "flavour": "Orchid"}, "optionValueIds": {"pack": "12e6652f-be05-405f-8647-8cc760628251", "flavour": "5c00a20f-7157-4e94-9797-eb233b0f8c48"}}	10	t	2026-06-18 13:22:18.18	2026-06-18 13:22:18.18
+7f7fdb5c-02c4-4db6-8ad5-966d2856e8c9	64289463-e48b-4261-bfef-e59b622eb20e	SKU-004-WHITE-ROSE-SMALL	Flavour: White Rose • Pack: Small	50.00	\N	\N	{"optionValues": {"pack": "Small", "flavour": "White Rose"}, "optionValueIds": {"pack": "12e6652f-be05-405f-8647-8cc760628251", "flavour": "11eca007-82d2-44d8-b07c-b9aad4ed0ec4"}}	12	t	2026-06-18 13:22:18.197	2026-06-18 13:22:18.197
+1746cc9b-88f3-4920-a1d6-0492ce179e45	64289463-e48b-4261-bfef-e59b622eb20e	SKU-004-HONEY-ALMOND-SMALL	Flavour: Honey almond • Pack: Small	50.00	\N	\N	{"optionValues": {"pack": "Small", "flavour": "Honey almond"}, "optionValueIds": {"pack": "12e6652f-be05-405f-8647-8cc760628251", "flavour": "f34de9c0-5dd7-48b1-bef4-9b8f72f95a86"}}	14	t	2026-06-18 13:22:18.214	2026-06-18 13:22:18.214
+cbdf51f3-8598-4827-9f49-3796df1417fd	64289463-e48b-4261-bfef-e59b622eb20e	SKU-004-CUCUMBER-LARGE	Flavour: Cucumber • Pack: Large	100.00	\N	\N	{"optionValues": {"pack": "Large", "flavour": "Cucumber"}, "optionValueIds": {"pack": "ff90c3cc-146f-4def-8f27-2ea350291c61", "flavour": "fcdd232c-7426-4e25-b32f-df5103b7f511"}}	7	t	2026-06-18 13:22:18.153	2026-06-18 13:22:45.384
+39b566f3-2d29-40fc-9102-96c4c303c8b0	64289463-e48b-4261-bfef-e59b622eb20e	SKU-004-PINK-LILY-LARGE	Flavour: Pink Lily • Pack: Large	100.00	\N	\N	{"optionValues": {"pack": "Large", "flavour": "Pink Lily"}, "optionValueIds": {"pack": "ff90c3cc-146f-4def-8f27-2ea350291c61", "flavour": "0888e912-f7f3-466c-9603-d8958d9b139f"}}	5	t	2026-06-18 13:22:18.126	2026-06-18 13:22:45.389
+75f2e5c6-0973-47a3-8c9d-15cb6147db88	64289463-e48b-4261-bfef-e59b622eb20e	SKU-004-ORCHID-LARGE	Flavour: Orchid • Pack: Large	100.00	\N	\N	{"optionValues": {"pack": "Large", "flavour": "Orchid"}, "optionValueIds": {"pack": "ff90c3cc-146f-4def-8f27-2ea350291c61", "flavour": "5c00a20f-7157-4e94-9797-eb233b0f8c48"}}	9	t	2026-06-18 13:22:18.171	2026-06-18 13:22:45.4
+f047134e-eb1a-4ea9-b20e-55323078d6a1	64289463-e48b-4261-bfef-e59b622eb20e	SKU-004-WHITE-ROSE-LARGE	Flavour: White Rose • Pack: Large	100.00	\N	\N	{"optionValues": {"pack": "Large", "flavour": "White Rose"}, "optionValueIds": {"pack": "ff90c3cc-146f-4def-8f27-2ea350291c61", "flavour": "11eca007-82d2-44d8-b07c-b9aad4ed0ec4"}}	11	t	2026-06-18 13:22:18.188	2026-06-18 13:22:45.403
+73eb59f9-5c69-4354-96e2-b5a12ec4a18c	64289463-e48b-4261-bfef-e59b622eb20e	SKU-004-HONEY-ALMOND-LARGE	Flavour: Honey almond • Pack: Large	100.00	\N	\N	{"optionValues": {"pack": "Large", "flavour": "Honey almond"}, "optionValueIds": {"pack": "ff90c3cc-146f-4def-8f27-2ea350291c61", "flavour": "f34de9c0-5dd7-48b1-bef4-9b8f72f95a86"}}	13	t	2026-06-18 13:22:18.206	2026-06-18 13:22:45.419
 58daf9a0-a0ab-4273-b449-e6a076fc9acc	0019bc5a-cfda-423a-8033-04e19527878c	SKU-002-PACK-OF-3	Pack: Pack of 3	80.00	\N	\N	{"optionValues": {"pack": "Pack of 3"}, "optionValueIds": {"pack": "d79e5779-4b44-422c-bcb0-43743dba8196"}}	0	t	2026-06-17 12:02:33.213	2026-06-17 12:02:33.213
 80c8d8b5-ebed-42d3-aca4-9611d4585f71	72c84214-a05b-40e8-9093-d76177afd8d9	SKU-009-1-5LTR	Weight: 1.5Ltr	200.00	\N	\N	{"optionValues": {"weight": "1.5Ltr"}, "optionValueIds": {"weight": "f56ce2c9-7e87-4eaf-8588-d6c8822a106e"}}	0	t	2026-06-17 12:21:22.498	2026-06-17 12:21:22.498
 b85f7fa3-cb5b-4754-8399-6f792a3bf635	5eaf65df-0faa-4975-be7b-6a2554a04f13	SKU-010-1-5LTR	Weight: 1.5Ltr	80.00	\N	\N	{"optionValues": {"weight": "1.5Ltr"}, "optionValueIds": {"weight": "f56ce2c9-7e87-4eaf-8588-d6c8822a106e"}}	0	t	2026-06-17 12:22:41.869	2026-06-17 12:22:41.869
@@ -1648,6 +1706,8 @@ efbf85a4-a7b1-4ead-83db-4c7df04e3790	07b2bf6a-2585-42f2-a7fd-ecc432b11861	SKU-01
 120f37f1-42aa-45c0-b801-4731330886e3	df541ce1-98b2-49a0-8479-f5a9e1532a85	SKU-012-1BOTTLE	Pack: 1Bottle	200.00	\N	\N	{"optionValues": {"pack": "1Bottle"}, "optionValueIds": {"pack": "a2203e30-f48b-48d9-8a20-f17b52937ced"}}	0	t	2026-06-17 13:07:10.025	2026-06-17 13:07:10.025
 5c75a449-39e0-4ec7-a6ff-d11dbb9f2d08	2e6248be-15bb-45a8-8dc1-245118193c6f	SKU-005-1PCS	Pack: 1Pcs	50.00	\N	\N	{"optionValues": {"pack": "1Pcs"}, "optionValueIds": {"pack": "08b9ab65-eba3-4875-a761-485f6196f74e"}}	0	t	2026-06-17 13:10:05.209	2026-06-17 13:10:05.209
 85511305-b97c-4697-9e60-1ebb4ef4e0de	fb39c7d5-a4c8-43b6-abed-24fa74046d1d	SKU-006-1PCS	Pack: 1Pcs	60.00	\N	\N	{"optionValues": {"pack": "1Pcs"}, "optionValueIds": {"pack": "08b9ab65-eba3-4875-a761-485f6196f74e"}}	0	t	2026-06-17 13:10:16.459	2026-06-17 13:10:16.459
+8e6c2b9a-3b66-42cb-af0e-dafe0a22c346	64289463-e48b-4261-bfef-e59b622eb20e	SKU-004-PINK-LILY-SMALL	Flavour: Pink Lily • Pack: Small	50.00	\N	\N	{"optionValues": {"pack": "Small", "flavour": "Pink Lily"}, "optionValueIds": {"pack": "12e6652f-be05-405f-8647-8cc760628251", "flavour": "0888e912-f7f3-466c-9603-d8958d9b139f"}}	6	t	2026-06-18 13:22:18.144	2026-06-18 13:22:18.144
+6309427f-4106-4abb-96a4-e07120857fa7	64289463-e48b-4261-bfef-e59b622eb20e	SKU-004-CUCUMBER-SMALL	Flavour: Cucumber • Pack: Small	50.00	\N	\N	{"optionValues": {"pack": "Small", "flavour": "Cucumber"}, "optionValueIds": {"pack": "12e6652f-be05-405f-8647-8cc760628251", "flavour": "fcdd232c-7426-4e25-b32f-df5103b7f511"}}	8	t	2026-06-18 13:22:18.163	2026-06-18 13:22:18.163
 13f1d0a1-a21b-42e1-865b-51838688da07	64289463-e48b-4261-bfef-e59b622eb20e	SKU-004-PINK-LILY	Flavour: Pink Lily	100.00	\N	\N	{"optionValues": {"flavour": "Pink Lily"}, "optionValueIds": {"flavour": "0888e912-f7f3-466c-9603-d8958d9b139f"}}	0	t	2026-06-17 11:51:34.506	2026-06-17 11:51:34.506
 18f24f31-3013-4862-8624-96ead88caeee	64289463-e48b-4261-bfef-e59b622eb20e	SKU-004-CUCUMBER	Flavour: Cucumber	100.00	\N	\N	{"optionValues": {"flavour": "Cucumber"}, "optionValueIds": {"flavour": "fcdd232c-7426-4e25-b32f-df5103b7f511"}}	1	t	2026-06-17 11:51:34.518	2026-06-17 11:51:34.518
 54baa2ca-a251-4b16-b691-80c365b3525d	64289463-e48b-4261-bfef-e59b622eb20e	SKU-004-ORCHID	Flavour: Orchid	100.00	\N	\N	{"optionValues": {"flavour": "Orchid"}, "optionValueIds": {"flavour": "5c00a20f-7157-4e94-9797-eb233b0f8c48"}}	2	t	2026-06-17 11:51:34.524	2026-06-17 11:51:34.524
@@ -1665,25 +1725,25 @@ e976bacd-89cf-47a4-99d5-1c37c9eb3cdc	64289463-e48b-4261-bfef-e59b622eb20e	SKU-00
 COPY public.products (id, sku, name, slug, type, description, short_description, base_price, cost, weight, status, visibility, tax_class_id, attributes, meta_data, created_at, updated_at, deleted_at) FROM stdin;
 df541ce1-98b2-49a0-8479-f5a9e1532a85	SKU-012	Glass Cleaner (Clean 360)	glass-cleaner-clean-360	configurable	\N	\N	200.00	\N	\N	active	both	\N	{}	{}	2026-06-17 12:27:56.663	2026-06-17 12:27:56.663	\N
 b4366645-b14a-4de1-b621-e8776dc4f689	SKU-013	Panda Perfume Phenyl	panda-perfume-phenyl	configurable	\N	\N	370.00	\N	\N	active	both	\N	{}	{}	2026-06-17 12:30:01.373	2026-06-17 12:30:01.373	\N
-03e5ef08-6883-4fd0-9583-94a2734aad9a	SKU-014	Panda Liquid Neel	panda-liquid-neel	configurable	\N	\N	100.00	\N	\N	active	both	\N	{}	{}	2026-06-17 12:33:37.963	2026-06-17 12:33:37.963	\N
-07b2bf6a-2585-42f2-a7fd-ecc432b11861	SKU-015	Cockroach Killer	cockroach-killer	configurable	\N	\N	100.00	\N	\N	active	both	\N	{}	{}	2026-06-17 12:34:49.065	2026-06-17 12:34:49.065	\N
-09cfaa0d-9088-4e2d-823e-3ad80af8853b	SKU-017	Sweep-o Floor & Tile Cleaner	sweep-o-floor-tile-cleaner	configurable	\N	\N	159.00	\N	\N	active	both	\N	{}	{}	2026-06-17 12:37:49.797	2026-06-17 12:37:59.673	\N
 46ee9fc8-c21e-4b8c-9003-7337ea88ab68	SKU-016	Clean360 Bleach Exra Strong	clean360-bleach-exra-strong	configurable	\N	\N	180.00	\N	\N	active	both	\N	{}	{}	2026-06-17 12:36:13.619	2026-06-17 12:38:22.075	\N
-2881ef70-d26b-4da5-af06-9e0c5795fee4	SKU-018	Dish Wash Liquid	dish-wash-liquid	configurable	\N	\N	79.98	\N	\N	active	both	\N	{}	{}	2026-06-17 12:40:11.279	2026-06-17 12:40:11.279	\N
 1f87d70a-7fb5-43e9-a41c-87b29873a33b	SKU-019	Super Sony Dish Wash Soap	super-sony	configurable	\N	\N	20.00	\N	\N	active	both	\N	{}	{}	2026-06-17 12:42:28.802	2026-06-17 12:45:08.124	\N
 90792798-2b85-4423-8eba-e7f12c64617d	SKU-020	777 Sony Dish Wash Soap	777-sony-dish-wash-soap	configurable	\N	\N	10.00	\N	\N	active	both	\N	{}	{}	2026-06-17 12:44:43.939	2026-06-17 12:45:22.394	\N
 05268a8c-518a-4ff4-8691-3cfdff054382	SKU-021	Dish Wash Scourer	dish-wash-scourer	configurable	\N	\N	50.00	\N	\N	active	both	\N	{}	{}	2026-06-17 12:46:19.087	2026-06-17 12:46:19.087	\N
 72c84214-a05b-40e8-9093-d76177afd8d9	SKU-009	Toilet Bowl Cleaner	toilet-bowl-cleaner	configurable	\N	\N	200.00	\N	\N	active	both	\N	{}	{}	2026-06-17 12:21:11.493	2026-06-17 13:07:58.153	\N
-64289463-e48b-4261-bfef-e59b622eb20e	SKU-004	Viva Soap	test-product-3	configurable	\N	\N	100.00	\N	\N	active	both	\N	{}	{}	2026-05-04 06:50:26.021	2026-06-17 11:55:19.842	\N
+64289463-e48b-4261-bfef-e59b622eb20e	SKU-004	Viva Beauty Soap	test-product-3	configurable	\N	\N	50.00	\N	\N	active	both	\N	{}	{}	2026-05-04 06:50:26.021	2026-06-18 13:21:57.627	\N
+0019bc5a-cfda-423a-8033-04e19527878c	SKU-002	Tibet Beauty Soap	test-product-1	configurable	\N	\N	100.00	\N	\N	active	both	\N	{}	{}	2026-05-04 06:49:39.284	2026-06-18 13:25:07.618	\N
 eaacdf54-eaa9-4dcc-839e-a10a61588523	SKU-003	Hand Wash	test-product-2	configurable	\N	\N	200.00	\N	\N	active	both	\N	{}	{}	2026-05-04 06:49:51.979	2026-06-17 11:59:00.877	\N
-0019bc5a-cfda-423a-8033-04e19527878c	SKU-002	Tibet Beauty Soap	test-product-1	configurable	\N	\N	80.00	\N	\N	active	both	\N	{}	{}	2026-05-04 06:49:39.284	2026-06-17 12:03:00.601	\N
-c7b8e71d-3489-4bd7-8f88-2e541ee86e41	SKU-001	Euro Beauty Soap	test-product	configurable	\N	\N	110.00	\N	\N	active	both	\N	{}	{}	2026-05-04 06:49:27.174	2026-06-17 12:04:39.516	\N
+c7b8e71d-3489-4bd7-8f88-2e541ee86e41	SKU-001	Euro Beauty Soap	test-product	configurable	\N	\N	50.00	\N	\N	active	both	\N	{}	{}	2026-05-04 06:49:27.174	2026-06-18 13:25:26.778	\N
+2881ef70-d26b-4da5-af06-9e0c5795fee4	SKU-018	Dish Wash Liquid	dish-wash-liquid	configurable	\N	\N	200.00	\N	\N	active	both	\N	{}	{}	2026-06-17 12:40:11.279	2026-06-18 13:25:48.993	\N
+07b2bf6a-2585-42f2-a7fd-ecc432b11861	SKU-015	Cockroach Killer	cockroach-killer	configurable	\N	\N	250.00	\N	\N	active	both	\N	{}	{}	2026-06-17 12:34:49.065	2026-06-18 13:26:19.034	\N
 2e6248be-15bb-45a8-8dc1-245118193c6f	SKU-005	Khaleej Washing Soap	test-product-4	configurable	\N	\N	50.00	\N	\N	active	both	\N	{}	{}	2026-06-17 12:08:05.816	2026-06-17 12:13:55.671	\N
 fb39c7d5-a4c8-43b6-abed-24fa74046d1d	SKU-006	Misaal Washing Soap	test-product-5	configurable	\N	\N	60.00	\N	\N	active	both	\N	{}	{}	2026-06-17 12:12:32.073	2026-06-17 12:14:14.048	\N
 11920e18-2c21-473c-a201-54cfa6870a03	SKU-007	Fatty Brown Washing Soap	fatty-brown-washing-soap	configurable	\N	\N	79.98	\N	\N	active	both	\N	{}	{}	2026-06-17 12:15:17.43	2026-06-17 12:15:17.43	\N
 eb72e342-64df-4566-8029-db2c63859130	SKU-008	Perfume Phenyl	perfume-phenyl	configurable	\N	\N	120.00	\N	\N	active	both	\N	{}	{}	2026-06-17 12:17:15.615	2026-06-17 12:17:15.615	\N
 5eaf65df-0faa-4975-be7b-6a2554a04f13	SKU-010	Tile Wash	tile-wash	configurable	\N	\N	80.00	\N	\N	active	both	\N	{}	{}	2026-06-17 12:22:31.314	2026-06-17 12:22:31.314	\N
-230f5c47-5d61-4da1-adfc-6aa5d46f7111	SKU-011	Bleach Strong	bleach-cleaner	configurable	\N	\N	80.00	\N	\N	active	both	\N	{}	{}	2026-06-17 12:23:50.124	2026-06-17 12:25:14.97	\N
+09cfaa0d-9088-4e2d-823e-3ad80af8853b	SKU-017	Sweep-o Floor & Tile Cleaner	sweep-o-floor-tile-cleaner	configurable	\N	\N	160.00	\N	\N	active	both	\N	{}	{}	2026-06-17 12:37:49.797	2026-06-18 13:26:38.403	\N
+03e5ef08-6883-4fd0-9583-94a2734aad9a	SKU-014	Panda Liquid Neel	panda-liquid-neel	configurable	\N	\N	69.97	\N	\N	active	both	\N	{}	{}	2026-06-17 12:33:37.963	2026-06-18 13:27:13.556	\N
+230f5c47-5d61-4da1-adfc-6aa5d46f7111	SKU-011	Bleach Strong	bleach-cleaner	configurable	\N	\N	80.00	\N	\N	active	both	\N	{}	{}	2026-06-17 12:23:50.124	2026-06-18 13:52:16.479	\N
 \.
 
 
@@ -1704,6 +1764,15 @@ COPY public.promotion_customer_groups (id, promotion_id, customer_group_id, is_e
 --
 
 COPY public.promotion_logs (id, promotion_id, cart_id, checkout_id, order_id, customer_id, coupon_code, discount_amount, subtotal_before, subtotal_after, status, metadata, created_at) FROM stdin;
+7abc07a9-65b3-47bf-938e-0ff0758d2c35	e7fc56cd-648e-4d62-8a07-784dfe89a278	\N	44cfe58a-d167-4b32-9dff-f446edceb156	\N	88eba4d4-b784-4d99-9c51-8ad1ac99f3fc	5255	10.00	100.00	90.00	applied	{}	2026-06-18 07:58:09.242
+4fd516f7-13ee-4dd1-b967-2749be1a42e8	e7fc56cd-648e-4d62-8a07-784dfe89a278	\N	6a953440-2c02-46b2-888b-07831af3e4b5	\N	88eba4d4-b784-4d99-9c51-8ad1ac99f3fc	5255	5.00	50.00	45.00	applied	{}	2026-06-18 08:09:20.818
+23841703-790a-4f90-a60d-89bb4a1f5323	e7fc56cd-648e-4d62-8a07-784dfe89a278	\N	d746b0a1-c8bf-4138-a0fb-2aef0ec911ee	\N	88eba4d4-b784-4d99-9c51-8ad1ac99f3fc	5255	490.00	4900.00	4410.00	applied	{}	2026-06-18 08:21:16.244
+eedbe9b6-aa37-4b8b-8b61-e0de4cea9941	e7fc56cd-648e-4d62-8a07-784dfe89a278	\N	d746b0a1-c8bf-4138-a0fb-2aef0ec911ee	\N	88eba4d4-b784-4d99-9c51-8ad1ac99f3fc	5255	485.00	4850.00	4365.00	applied	{}	2026-06-18 08:21:34.438
+a46cd928-226e-487c-ad01-c294f68682cd	e7fc56cd-648e-4d62-8a07-784dfe89a278	\N	d746b0a1-c8bf-4138-a0fb-2aef0ec911ee	\N	88eba4d4-b784-4d99-9c51-8ad1ac99f3fc	5255	440.00	4400.00	3960.00	applied	{}	2026-06-18 08:21:42.949
+b21e6869-e4e4-498a-9397-520a3b0d0e7f	e7fc56cd-648e-4d62-8a07-784dfe89a278	\N	d746b0a1-c8bf-4138-a0fb-2aef0ec911ee	\N	88eba4d4-b784-4d99-9c51-8ad1ac99f3fc	5255	5.00	50.00	45.00	applied	{}	2026-06-18 08:21:55.24
+ba59926f-6678-4c64-8d0b-135e64c49076	e7fc56cd-648e-4d62-8a07-784dfe89a278	\N	0c428526-f1eb-4864-a84b-d661b026b1fb	\N	88eba4d4-b784-4d99-9c51-8ad1ac99f3fc	5255	10.00	100.00	90.00	applied	{}	2026-06-18 09:09:03.022
+04df3004-bcd0-4f58-a8f9-faacd6bb9572	e7fc56cd-648e-4d62-8a07-784dfe89a278	\N	afcc0bdd-f4d3-4a6f-9b95-40fb3881a856	\N	88eba4d4-b784-4d99-9c51-8ad1ac99f3fc	5255	15.90	159.00	143.10	applied	{}	2026-06-18 09:42:40.778
+885b0b0b-2890-4de0-bc60-9b68eb57893f	e7fc56cd-648e-4d62-8a07-784dfe89a278	\N	bfb2ebb1-4097-40cf-bd9b-ae02bab05c77	\N	88eba4d4-b784-4d99-9c51-8ad1ac99f3fc	5255	10.00	100.00	90.00	applied	{}	2026-06-18 09:49:44.499
 \.
 
 
@@ -1724,7 +1793,7 @@ COPY public.promotion_products (id, promotion_id, product_id, variant_id, catego
 --
 
 COPY public.promotions (id, code, name, description, type, status, discount_value, discount_type, scope, is_stackable, is_exclusive, applies_to_all_groups, conditions, usage_limit, usage_limit_per_user, current_usage, start_date, end_date, metadata, created_at, updated_at) FROM stdin;
-e7fc56cd-648e-4d62-8a07-784dfe89a278	5255	may discount offer	10% off on every product	percentage	active	10.00	percentage	cart	f	t	t	{}	\N	\N	0	\N	\N	{}	2026-05-12 08:15:49.738	2026-05-12 08:16:19.666
+e7fc56cd-648e-4d62-8a07-784dfe89a278	5255	may discount offer	10% off on every product	percentage	active	10.00	percentage	cart	f	t	t	{}	\N	\N	9	\N	\N	{}	2026-05-12 08:15:49.738	2026-06-18 09:49:44.508
 \.
 
 
@@ -1902,6 +1971,21 @@ efbf85a4-a7b1-4ead-83db-4c7df04e3790	a39db598-111e-4007-bf54-f564b2c1f587	08b9ab
 5c75a449-39e0-4ec7-a6ff-d11dbb9f2d08	a39db598-111e-4007-bf54-f564b2c1f587	08b9ab65-eba3-4875-a761-485f6196f74e
 85511305-b97c-4697-9e60-1ebb4ef4e0de	a39db598-111e-4007-bf54-f564b2c1f587	08b9ab65-eba3-4875-a761-485f6196f74e
 a0f519b2-b535-41bb-abae-c7bf57b39e4c	a39db598-111e-4007-bf54-f564b2c1f587	08b9ab65-eba3-4875-a761-485f6196f74e
+39b566f3-2d29-40fc-9102-96c4c303c8b0	59574408-864b-4fb3-a08f-5ee2211a8ba1	0888e912-f7f3-466c-9603-d8958d9b139f
+39b566f3-2d29-40fc-9102-96c4c303c8b0	a39db598-111e-4007-bf54-f564b2c1f587	ff90c3cc-146f-4def-8f27-2ea350291c61
+8e6c2b9a-3b66-42cb-af0e-dafe0a22c346	59574408-864b-4fb3-a08f-5ee2211a8ba1	0888e912-f7f3-466c-9603-d8958d9b139f
+8e6c2b9a-3b66-42cb-af0e-dafe0a22c346	a39db598-111e-4007-bf54-f564b2c1f587	12e6652f-be05-405f-8647-8cc760628251
+cbdf51f3-8598-4827-9f49-3796df1417fd	59574408-864b-4fb3-a08f-5ee2211a8ba1	fcdd232c-7426-4e25-b32f-df5103b7f511
+cbdf51f3-8598-4827-9f49-3796df1417fd	a39db598-111e-4007-bf54-f564b2c1f587	ff90c3cc-146f-4def-8f27-2ea350291c61
+6309427f-4106-4abb-96a4-e07120857fa7	59574408-864b-4fb3-a08f-5ee2211a8ba1	fcdd232c-7426-4e25-b32f-df5103b7f511
+6309427f-4106-4abb-96a4-e07120857fa7	a39db598-111e-4007-bf54-f564b2c1f587	12e6652f-be05-405f-8647-8cc760628251
+75f2e5c6-0973-47a3-8c9d-15cb6147db88	59574408-864b-4fb3-a08f-5ee2211a8ba1	5c00a20f-7157-4e94-9797-eb233b0f8c48
+75f2e5c6-0973-47a3-8c9d-15cb6147db88	a39db598-111e-4007-bf54-f564b2c1f587	ff90c3cc-146f-4def-8f27-2ea350291c61
+2ebd7f2b-c889-443f-b40a-0ac968cef018	59574408-864b-4fb3-a08f-5ee2211a8ba1	5c00a20f-7157-4e94-9797-eb233b0f8c48
+2ebd7f2b-c889-443f-b40a-0ac968cef018	a39db598-111e-4007-bf54-f564b2c1f587	12e6652f-be05-405f-8647-8cc760628251
+f047134e-eb1a-4ea9-b20e-55323078d6a1	59574408-864b-4fb3-a08f-5ee2211a8ba1	11eca007-82d2-44d8-b07c-b9aad4ed0ec4
+f047134e-eb1a-4ea9-b20e-55323078d6a1	a39db598-111e-4007-bf54-f564b2c1f587	ff90c3cc-146f-4def-8f27-2ea350291c61
+7f7fdb5c-02c4-4db6-8ad5-966d2856e8c9	59574408-864b-4fb3-a08f-5ee2211a8ba1	11eca007-82d2-44d8-b07c-b9aad4ed0ec4
 13f1d0a1-a21b-42e1-865b-51838688da07	59574408-864b-4fb3-a08f-5ee2211a8ba1	0888e912-f7f3-466c-9603-d8958d9b139f
 18f24f31-3013-4862-8624-96ead88caeee	59574408-864b-4fb3-a08f-5ee2211a8ba1	fcdd232c-7426-4e25-b32f-df5103b7f511
 54baa2ca-a251-4b16-b691-80c365b3525d	59574408-864b-4fb3-a08f-5ee2211a8ba1	5c00a20f-7157-4e94-9797-eb233b0f8c48
@@ -1910,6 +1994,11 @@ e976bacd-89cf-47a4-99d5-1c37c9eb3cdc	59574408-864b-4fb3-a08f-5ee2211a8ba1	f34de9
 f44c87d3-ea38-4329-bad9-b0a72e4d955d	59574408-864b-4fb3-a08f-5ee2211a8ba1	30d60dcc-867c-4fbd-a208-4aef88480725
 76e0bd60-36da-44ae-bff0-dd87635ce982	59574408-864b-4fb3-a08f-5ee2211a8ba1	0bb4c7bc-d181-4c9a-869e-4aeae5df4031
 ec4803c2-6aa6-452c-aa1a-e23d0271d115	59574408-864b-4fb3-a08f-5ee2211a8ba1	0c67d0de-3c86-4047-b10c-fea938d735d5
+7f7fdb5c-02c4-4db6-8ad5-966d2856e8c9	a39db598-111e-4007-bf54-f564b2c1f587	12e6652f-be05-405f-8647-8cc760628251
+73eb59f9-5c69-4354-96e2-b5a12ec4a18c	59574408-864b-4fb3-a08f-5ee2211a8ba1	f34de9c0-5dd7-48b1-bef4-9b8f72f95a86
+73eb59f9-5c69-4354-96e2-b5a12ec4a18c	a39db598-111e-4007-bf54-f564b2c1f587	ff90c3cc-146f-4def-8f27-2ea350291c61
+1746cc9b-88f3-4920-a1d6-0492ce179e45	59574408-864b-4fb3-a08f-5ee2211a8ba1	f34de9c0-5dd7-48b1-bef4-9b8f72f95a86
+1746cc9b-88f3-4920-a1d6-0492ce179e45	a39db598-111e-4007-bf54-f564b2c1f587	12e6652f-be05-405f-8647-8cc760628251
 \.
 
 
@@ -3855,11 +3944,11 @@ ALTER TABLE ONLY public.variant_option_values
 REVOKE USAGE ON SCHEMA public FROM PUBLIC;
 
 
--- Completed on 2026-06-17 18:27:58
+-- Completed on 2026-06-18 19:18:35
 
 --
 -- PostgreSQL database dump complete
 --
 
-\unrestrict 5PO2d0mvvwgmc0kBe2dYyZsX0p1IOhSAM8Cc59vXqSP1AAVeoVSArYajE2SNnt3
+\unrestrict s0SzmIMFFKbRD8GdrXyJDmLrDUpRQSyIaT3frLdjWjSiOudaMjeHwot4HqMSuLX
 

@@ -6,6 +6,7 @@ import { useEffect, useId, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useAuthStore } from '@/lib/auth.store';
 import { useCartStore } from '@/lib/cart.store';
+import { useHydrated } from '@/lib/use-hydrated';
 import { getStoreLogoSrc } from '@/lib/config';
 import {
   storefrontNavApi,
@@ -34,7 +35,7 @@ export function Header() {
   const [mainNav, setMainNav] = useState<StorefrontNavItem[]>(STOREFRONT_NAV_FALLBACK.header);
   const [megaMenu, setMegaMenu] = useState<StorefrontNavMegaNode[]>(STOREFRONT_NAV_FALLBACK.megaMenu);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const hydrated = useHydrated();
   const mobileNavTitleId = useId();
 
   useEffect(() => {
@@ -58,10 +59,6 @@ export function Header() {
     return () => {
       cancelled = true;
     };
-  }, []);
-
-  useEffect(() => {
-    setMounted(true);
   }, []);
 
   useEffect(() => {
@@ -208,7 +205,7 @@ export function Header() {
   }
 
   const mobileMenu =
-    mobileNavOpen && mounted ? (
+    mobileNavOpen && hydrated ? (
       <div
         className="fixed inset-0 z-[200] flex min-h-[100dvh] lg:hidden"
         id="mobile-main-nav"
@@ -246,7 +243,7 @@ export function Header() {
             aria-label="Mobile navigation"
           >
             {mainNav.map((item) => mobileNavItem(item))}
-            {isAuthenticated ? (
+            {hydrated && isAuthenticated ? (
               <Link
                 href="/account"
                 className="rounded-md px-3 py-3 text-base font-medium text-brand-text active:bg-brand-secondary/30 sm:py-2.5 sm:text-sm"
@@ -313,28 +310,39 @@ export function Header() {
           {cartNavItem ? desktopNavItem(cartNavItem) : null}
         </nav>
 
-        <button
-          type="button"
-          className="inline-flex shrink-0 items-center justify-center rounded-md border border-white/30 bg-brand-primary p-2.5 text-white shadow-sm transition-colors hover:bg-brand-accent hover:text-white active:brightness-95 lg:hidden"
-          aria-expanded={mobileNavOpen}
-          aria-controls="mobile-main-nav"
-          aria-haspopup="dialog"
-          aria-label={mobileNavOpen ? 'Close menu' : 'Open menu'}
-          onClick={() => setMobileNavOpen((o) => !o)}
-        >
-          {mobileNavOpen ? (
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          ) : (
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+        {hydrated ? (
+          <button
+            type="button"
+            className="inline-flex shrink-0 items-center justify-center rounded-md border border-white/30 bg-brand-primary p-2.5 text-white shadow-sm transition-colors hover:bg-brand-accent hover:text-white active:brightness-95 lg:hidden"
+            aria-expanded={mobileNavOpen}
+            aria-controls="mobile-main-nav"
+            aria-haspopup="dialog"
+            aria-label={mobileNavOpen ? 'Close menu' : 'Open menu'}
+            onClick={() => setMobileNavOpen((o) => !o)}
+          >
+            {mobileNavOpen ? (
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            ) : (
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            )}
+          </button>
+        ) : (
+          <span
+            className="inline-flex shrink-0 rounded-md border border-white/30 bg-brand-primary p-2.5 lg:hidden"
+            aria-hidden
+          >
+            <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
-          )}
-        </button>
+          </span>
+        )}
       </div>
 
-      {mounted && mobileMenu ? createPortal(mobileMenu, document.body) : null}
+      {hydrated && mobileMenu ? createPortal(mobileMenu, document.body) : null}
     </header>
   );
 }

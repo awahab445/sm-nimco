@@ -19,6 +19,24 @@ export class ApiError extends Error {
   }
 }
 
+function extractApiErrorMessage(errorData: unknown, statusText: string): string {
+  if (!errorData || typeof errorData !== 'object') {
+    return `API Error: ${statusText}`;
+  }
+  const data = errorData as { message?: unknown };
+  if (typeof data.message === 'string') {
+    return data.message;
+  }
+  if (
+    data.message &&
+    typeof data.message === 'object' &&
+    typeof (data.message as { message?: string }).message === 'string'
+  ) {
+    return (data.message as { message: string }).message;
+  }
+  return `API Error: ${statusText}`;
+}
+
 /** Low-level JSON fetch to `NEXT_PUBLIC_API_URL`. Exported for server-side CMS / layout calls. */
 export async function fetchApi<T>(
   endpoint: string,
@@ -54,7 +72,7 @@ export async function fetchApi<T>(
         ? (JSON.parse(errorText) as unknown)
         : {};
     throw new ApiError(
-      (errorData as { message?: string })?.message || `API Error: ${response.statusText}`,
+      extractApiErrorMessage(errorData, response.statusText),
       response.status,
       errorData,
     );
