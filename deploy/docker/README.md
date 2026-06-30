@@ -84,6 +84,9 @@ sudo bash deploy/docker/enable-https.sh
 | `export-db.sh` | VPS | Dump Docker Postgres |
 | `restore-db.sh` | VPS | Restore dump into Docker Postgres |
 | `restore-to-host.sh` | Local | Restore dump into host Postgres |
+| `export-from-host.sh` | Local | Export host Postgres + uploads for VPS |
+| `push-local-to-vps.sh` | Local | Export, upload, restore, sanitize URLs on VPS |
+| `sanitize-prod-urls.sh` | VPS | Rewrite localhost image/link URLs to production |
 
 ## Operations
 
@@ -154,31 +157,41 @@ Start apps as usual:
 
 Use admin credentials from the **VPS/restored** database.
 
-### Push local DB to VPS (optional)
+### Push local DB to VPS (products, admin data, images)
 
-Export from local host Postgres:
+**Warning:** This **replaces** the VPS database and uploads with your local copy.
+
+On your **laptop** (local Postgres running, `backend/.env` configured):
 
 ```bash
-PGPASSWORD='your-password' pg_dump \
-  -h localhost -U postgres -d ecommerce_platform \
-  -Fc --no-owner --no-acl \
-  -f backups/to-vps.dump
+cd /var/www/html/ecommerce-platform
 
-tar -czf backups/to-vps-uploads.tar.gz -C backend uploads
+# One command: export → scp → restore → sanitize URLs
+bash deploy/docker/push-local-to-vps.sh deploy@<VPS-IP>
 ```
 
-Upload and restore on VPS:
+Or step by step:
 
 ```bash
-scp backups/to-vps.dump user@<VPS-IP>:/var/www/ecommerce-platform/backups/
-scp backups/to-vps-uploads.tar.gz user@<VPS-IP>:/var/www/ecommerce-platform/backups/to-vps-uploads.tar.gz
+# 1. Export local DB + uploads
+bash deploy/docker/export-from-host.sh
 
-ssh user@<VPS-IP>
+# 2. Upload
+scp backups/local-to-vps-*.dump deploy@<VPS-IP>:/var/www/ecommerce-platform/backups/
+scp backups/local-to-vps-*-uploads.tar.gz deploy@<VPS-IP>:/var/www/ecommerce-platform/backups/
+
+# 3. On VPS
+ssh deploy@<VPS-IP>
 cd /var/www/ecommerce-platform
-# In deploy/env/docker.env: SKIP_BOOTSTRAP=true, SEED_DEMO_DATA=false
 bash deploy/docker/compose.sh up -d postgres redis
-bash deploy/docker/restore-db.sh backups/to-vps.dump
+bash deploy/docker/restore-db.sh backups/local-to-vps-YYYYMMDD-HHMMSS.dump
+bash deploy/docker/sanitize-prod-urls.sh
 ```
+
+`sanitize-prod-urls.sh` rewrites `localhost:3000/3001` image and link URLs to your production `API_URL` / `SHOP_URL` from `docker.env`.
+
+After restore, log in with your **local admin credentials**. Re-check **Payment settings** in admin (Stripe keys are environment-specific).
+
 
 ## Troubleshooting (VPS)
 

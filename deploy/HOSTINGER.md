@@ -17,7 +17,61 @@ Step-by-step guide for deploying this ecommerce platform on a **blank Hostinger 
 1. Hostinger KVM 2 VPS with **Ubuntu 24.04 LTS** (no control panel)
 2. SSH public key added at VPS creation
 3. A domain with DNS access
-4. GitHub repo access (deploy key or PAT for private repos)
+4. GitHub repo access — see **[GitHub access on the VPS](#github-access-on-the-vps)** below (fixes `Permission denied (publickey)`)
+
+## GitHub access on the VPS
+
+`Permission denied (publickey)` means the **VPS has no SSH key registered with GitHub**. Your laptop may work fine — that does not carry over to the server.
+
+**Use HTTPS (recommended, fastest fix):**
+
+```bash
+cd /var/www
+git clone https://github.com/awahab445/ecommerce-platform.git ecommerce-platform
+```
+
+- **Public repo:** clone works immediately, no login.
+- **Private repo:** when prompted:
+  - Username: your GitHub username (`awahab445`)
+  - Password: a **Personal Access Token** (not your GitHub password)
+  - Create one: GitHub → **Settings → Developer settings → Personal access tokens → Fine-grained token** → grant **read** access to `ecommerce-platform`
+
+To avoid typing the token on every `git pull`, cache credentials once:
+
+```bash
+git config --global credential.helper store
+git pull   # enter username + PAT once; saved in ~/.git-credentials
+```
+
+**Alternative — SSH deploy key (good for long-term VPS `git pull`):**
+
+On the **VPS** (as `deploy` user):
+
+```bash
+ssh-keygen -t ed25519 -C "hostinger-vps-deploy" -f ~/.ssh/id_ed25519_github -N ""
+cat ~/.ssh/id_ed25519_github.pub
+```
+
+Copy the printed key → GitHub → **awahab445/ecommerce-platform → Settings → Deploy keys → Add deploy key** (read-only is enough).
+
+Then on the VPS:
+
+```bash
+cat >> ~/.ssh/config <<'EOF'
+Host github.com
+  HostName github.com
+  User git
+  IdentityFile ~/.ssh/id_ed25519_github
+  IdentitiesOnly yes
+EOF
+chmod 600 ~/.ssh/config
+
+ssh -T git@github.com   # should say "Hi awahab445/..."
+cd /var/www
+git clone git@github.com:awahab445/ecommerce-platform.git ecommerce-platform
+```
+
+**Do not** copy your laptop's private key to the VPS — generate a **new** key on the server and add only the `.pub` file to GitHub.
 
 ## Step 1 — DNS (before deploy)
 
@@ -53,13 +107,17 @@ SSH in as root:
 ssh root@<VPS-IP>
 ```
 
-Run the server setup script (Docker, Nginx, Certbot, UFW, swap, deploy user):
+Run the server setup script (Docker, Nginx, Certbot, UFW, swap, deploy user).
+
+Use **HTTPS** to clone (works without a VPS SSH key):
 
 ```bash
-git clone https://github.com/<org>/<repo>.git /tmp/ecommerce-platform
+git clone https://github.com/awahab445/ecommerce-platform.git /tmp/ecommerce-platform
 cd /tmp/ecommerce-platform
 sudo bash deploy/docker/setup-docker-server.sh
 ```
+
+If the repo is private, use a GitHub PAT when prompted (see [GitHub access](#github-access-on-the-vps)).
 
 Log out and back in as the `deploy` user so the Docker group applies:
 
@@ -72,9 +130,11 @@ ssh deploy@<VPS-IP>
 
 ```bash
 cd /var/www
-git clone https://github.com/<org>/<repo>.git ecommerce-platform
+git clone https://github.com/awahab445/ecommerce-platform.git ecommerce-platform
 cd ecommerce-platform
 ```
+
+For private repos or SSH deploy keys, see [GitHub access](#github-access-on-the-vps).
 
 Create `deploy/env/docker.env` with generated secrets:
 
@@ -183,8 +243,10 @@ free -h
 |-------|-----|
 | Build OOM on 8 GB RAM | Swap is enabled by setup script; build one service at a time |
 | DNS not resolving | Wait for propagation; run `verify-dns.sh` |
+| `Permission denied (publickey)` on `git clone` | Use HTTPS URL or add a VPS deploy key — see [GitHub access](#github-access-on-the-vps) |
 | Login loop on HTTP | Use `enable-https.sh` or set `COOKIE_SECURE=false` and rebuild frontends |
 | CORS errors | `SHOP_URL` / `ADMIN_URL` must match browser URL exactly |
 | Port in use | Change `HOST_*_PORT` in `docker.env`, re-run `configure-nginx.sh` |
+| Shop/admin OK, API `/health` 404 from nginx | API vhost missing or wrong `API_DOMAIN` — check `grep API_DOMAIN deploy/env/docker.env`, then `sudo bash deploy/docker/configure-nginx.sh`; if HTTPS was enabled, re-run `sudo bash deploy/docker/enable-https.sh` |
 
 See also [docker/README.md](./docker/README.md) and [PROVISIONING.md](./PROVISIONING.md).
