@@ -45,12 +45,15 @@ docker exec -i ecommerce-postgres pg_restore \
   || echo "Note: some pg_restore warnings are normal (e.g. object already exists)."
 
 if [[ -f "${UPLOADS_ARCHIVE}" ]]; then
-  echo "=== Restoring uploads from ${UPLOADS_ARCHIVE} ==="
-  docker cp "${UPLOADS_ARCHIVE}" ecommerce-api:/tmp/uploads-restore.tar.gz
-  docker exec ecommerce-api sh -c 'cd /app && rm -rf uploads/* && tar -xzf /tmp/uploads-restore.tar.gz --strip-components=1 && rm -f /tmp/uploads-restore.tar.gz'
+  bash "${SCRIPT_DIR}/restore-uploads.sh" "${UPLOADS_ARCHIVE}"
 elif [[ -d "${REPO_ROOT}/backend/uploads" ]] && [[ -n "$(ls -A "${REPO_ROOT}/backend/uploads" 2>/dev/null)" ]]; then
-  echo "=== Syncing local backend/uploads into API container ==="
-  docker cp "${REPO_ROOT}/backend/uploads/." ecommerce-api:/app/uploads/
+  echo "=== Syncing backend/uploads from repo checkout ==="
+  TMP_TAR="$(mktemp /tmp/uploads-sync-XXXXXX.tar.gz)"
+  tar -czf "${TMP_TAR}" -C "${REPO_ROOT}/backend" uploads
+  bash "${SCRIPT_DIR}/restore-uploads.sh" "${TMP_TAR}"
+  rm -f "${TMP_TAR}"
+else
+  "${COMPOSE[@]}" up -d api
 fi
 
 echo "=== Starting app containers ==="
