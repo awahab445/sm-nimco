@@ -13,6 +13,7 @@ Use this checklist before running server setup scripts.
 
 ## Provider examples
 
+- [Hostinger](https://www.hostinger.com/vps-hosting) — KVM 2 (2 vCPU, 8 GB RAM, 100 GB NVMe) — see [HOSTINGER.md](./HOSTINGER.md)
 - [Hetzner Cloud](https://www.hetzner.com/cloud) — CX22 (4 GB) or CPX21 (4 GB, shared)
 - [DigitalOcean](https://www.digitalocean.com/) — Basic 4 GB or 8 GB droplet
 - [Vultr](https://www.vultr.com/) — 4 GB or 8 GB cloud compute
@@ -39,4 +40,4 @@ Use this checklist before running server setup scripts.
 
 7. Clone the repo (or upload via CI) to e.g. `/var/www/ecommerce-platform`.
 
-8. Continue with [README.md](./README.md) → **Quick deploy**.
+8. Continue with [HOSTINGER.md](./HOSTINGER.md) (Docker, recommended) or [README.md](./README.md) → **Quick deploy** (PM2).
