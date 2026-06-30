@@ -4,6 +4,7 @@ import { resolveImageUrl } from '@/lib/resolve-image-url';
 export interface OrderLineItemLike {
   name: string;
   sku?: string;
+  quantity?: number | null;
   attributes?: Record<string, unknown> | null;
   metadata?: Record<string, unknown> | null;
   productId?: string;
