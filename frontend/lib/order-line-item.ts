@@ -66,5 +66,6 @@ export function getOrderItemImageUrl(item: OrderLineItemLike): string | null {
     item.variant?.image ||
     metaImage;
 
-  return raw ? resolveImageUrl(String(raw)) : null;
+  if (!raw) return null;
+  return resolveImageUrl(String(raw)) ?? null;
 }
