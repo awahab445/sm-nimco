@@ -15,6 +15,11 @@ fi
 # shellcheck source=/dev/null
 source "${ENV_FILE}"
 
+if [[ "${SKIP_BOOTSTRAP:-}" == "true" ]]; then
+  echo "SKIP_BOOTSTRAP=true — skipping seed and first admin."
+  exit 0
+fi
+
 HOST_API_PORT="${HOST_API_PORT:-3100}"
 API_HEALTH_URL="http://127.0.0.1:${HOST_API_PORT}/health"
 

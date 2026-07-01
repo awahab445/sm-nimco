@@ -42,9 +42,36 @@ sed -e "s/SHOP_DOMAIN/${SHOP_DOMAIN}/g" \
     "${TEMPLATE}" > "${SITE}"
 
 ln -sf "${SITE}" /etc/nginx/sites-enabled/ecommerce-demo
+rm -f /etc/nginx/sites-enabled/default
 
 nginx -t
 systemctl reload nginx
 
 echo "Nginx configured for ${SHOP_DOMAIN}, ${ADMIN_DOMAIN}, ${API_DOMAIN}"
+
+VERIFY_FAIL=0
+verify_vhost() {
+  local domain="$1"
+  local path="$2"
+  local code
+  code="$(curl -s -o /dev/null -w '%{http_code}' -H "Host: ${domain}" "http://127.0.0.1${path}" 2>/dev/null || true)"
+  code="${code:-000}"
+  if [[ "${code}" =~ ^(200|301|302|307|308)$ ]]; then
+    echo "OK  nginx vhost ${domain} (${path}, ${code})"
+  else
+    echo "FAIL nginx vhost ${domain} (${path}, ${code})"
+    VERIFY_FAIL=1
+  fi
+}
+
+verify_vhost "${SHOP_DOMAIN}" "/"
+verify_vhost "${ADMIN_DOMAIN}" "/"
+verify_vhost "${API_DOMAIN}" "/health"
+
+if [[ "${VERIFY_FAIL}" -eq 1 ]]; then
+  echo ""
+  echo "One or more vhosts did not proxy correctly. Check: grep server_name ${SITE}"
+  exit 1
+fi
+
 echo "For HTTPS (Phase 2): sudo certbot --nginx -d ${SHOP_DOMAIN} -d ${ADMIN_DOMAIN} -d ${API_DOMAIN}"

@@ -76,37 +76,45 @@ bash deploy/scripts/deploy.sh
 
 Run the full stack in Docker — no Node/Postgres/Redis/PM2 on the host. Only **Docker** and **host Nginx** are required.
 
+**Hostinger KVM 2:** see [HOSTINGER.md](./HOSTINGER.md) for the full step-by-step guide.
+
 ### Quick deploy
 
-1. Copy env template and edit domains/secrets:
+1. Bootstrap VPS (once, as root):
    ```bash
-   cp deploy/env/docker.env.example deploy/env/docker.env
-   nano deploy/env/docker.env
+   sudo bash deploy/docker/setup-docker-server.sh
    ```
-   If ports **3000–3002** are already used on the host (e.g. by another Docker app), set `HOST_API_PORT`, `HOST_STOREFRONT_PORT`, and `HOST_ADMIN_PORT` in `docker.env` (defaults: **3100**, **3101**, **3102**). Nginx reads the same values from `configure-nginx.sh`.
-2. Build and start (build one service at a time on low-RAM VPS):
+2. Create env file with secrets:
    ```bash
-   bash deploy/docker/compose.sh build api
-   bash deploy/docker/compose.sh build storefront
-   bash deploy/docker/compose.sh build admin
-   bash deploy/docker/compose.sh up -d
+   bash deploy/docker/init-env.sh
    ```
-3. Bootstrap database and admin user:
+   If ports **3000–3002** are already used on the host, set `HOST_API_PORT`, `HOST_STOREFRONT_PORT`, and `HOST_ADMIN_PORT` in `docker.env` (defaults: **3100**, **3101**, **3102**).
+3. Build, start, bootstrap, and configure Nginx (HTTP):
    ```bash
-   bash deploy/docker/bootstrap.sh
+   bash deploy/docker/deploy.sh
    ```
-4. Configure host Nginx (HTTP for local `/etc/hosts` testing):
+4. Enable HTTPS:
    ```bash
-   sudo bash deploy/docker/configure-nginx.sh
+   sudo bash deploy/docker/enable-https.sh
    ```
-5. Phase 2 HTTPS: update `docker.env` URLs to `https://`, rebuild frontends, run Certbot on host Nginx.
+5. Optional — daily backups:
+   ```bash
+   bash deploy/docker/install-backup-cron.sh
+   ```
 
 ### Docker files
 
 | Path | Purpose |
 |------|---------|
+| [HOSTINGER.md](./HOSTINGER.md) | Hostinger KVM 2 deployment checklist |
 | [../docker-compose.prod.yml](../docker-compose.prod.yml) | Production compose stack |
 | [env/docker.env.example](./env/docker.env.example) | Single env file for compose |
+| [docker/setup-docker-server.sh](./docker/setup-docker-server.sh) | VPS bootstrap (Docker, Nginx, UFW, swap) |
+| [docker/init-env.sh](./docker/init-env.sh) | Create `docker.env` with generated secrets |
+| [docker/deploy.sh](./docker/deploy.sh) | Build, up, bootstrap, Nginx HTTP |
+| [docker/enable-https.sh](./docker/enable-https.sh) | Certbot + HTTPS rebuild |
+| [docker/redeploy.sh](./docker/redeploy.sh) | `git pull` + rebuild |
+| [docker/backup.sh](./docker/backup.sh) | DB + uploads backup |
 | [docker/compose.sh](./docker/compose.sh) | Compose wrapper |
 | [docker/bootstrap.sh](./docker/bootstrap.sh) | Seed + first admin |
 | [docker/configure-nginx.sh](./docker/configure-nginx.sh) | Host Nginx site (HTTP) |
@@ -114,3 +122,5 @@ Run the full stack in Docker — no Node/Postgres/Redis/PM2 on the host. Only **
 | [../backend/Dockerfile](../backend/Dockerfile) | NestJS API image |
 | [../frontend/Dockerfile](../frontend/Dockerfile) | Storefront image |
 | [../admin/Dockerfile](../admin/Dockerfile) | Admin image |
+
+See [docker/README.md](./docker/README.md) for operations, backups, and troubleshooting.

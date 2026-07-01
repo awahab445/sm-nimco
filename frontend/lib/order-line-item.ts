@@ -4,7 +4,11 @@ import { resolveImageUrl } from '@/lib/resolve-image-url';
 export interface OrderLineItemLike {
   name: string;
   sku?: string;
+<<<<<<< HEAD
   quantity?: number;
+=======
+  quantity?: number | null;
+>>>>>>> 9a2affa1923c86329bb025b6728e0f5af67b0d9b
   attributes?: Record<string, unknown> | null;
   metadata?: Record<string, unknown> | null;
   productId?: string;
@@ -66,5 +70,10 @@ export function getOrderItemImageUrl(item: OrderLineItemLike): string | null {
     item.variant?.image ||
     metaImage;
 
+<<<<<<< HEAD
   return raw ? resolveImageUrl(String(raw)) ?? null : null;
+=======
+  if (!raw) return null;
+  return resolveImageUrl(String(raw)) ?? null;
+>>>>>>> 9a2affa1923c86329bb025b6728e0f5af67b0d9b
 }

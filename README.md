@@ -14,7 +14,9 @@ Set `CORS_ORIGIN` on the API to include every web origin you use (e.g. `http://l
 
 ## Demo deployment (live VPS)
 
-See **[deploy/README.md](./deploy/README.md)** for minimum server specs, Nginx + HTTPS, PM2, and production env setup.
+See **[deploy/README.md](./deploy/README.md)** for minimum server specs, Nginx + HTTPS, and production env setup.
+
+**Hostinger KVM 2:** see **[deploy/HOSTINGER.md](./deploy/HOSTINGER.md)** for the full VPS deployment checklist (Docker recommended).
 
 ## Repository layout
 
