@@ -66,7 +66,8 @@ export const ADMIN_PERMISSION_SEED: { key: string; description: string }[] = [
   { key: 'cms.manage', description: 'Manage CMS pages, blocks, and sliders' },
   { key: 'subscriptions.manage', description: 'View storefront email subscriptions (subscriber list)' },
   { key: 'reports.read', description: 'Access reports and exports' },
-  { key: 'settings.manage', description: 'Platform settings' },
+  { key: 'settings.manage', description: 'Platform settings and mail server configuration' },
+  { key: 'mail.manage', description: 'Manage SMTP mailboxes and test connections' },
 ];
 
 export const SUPER_ADMIN_ROLE_SLUG = 'super-admin';
@@ -113,6 +114,8 @@ export const MANAGER_PERMISSION_KEYS: string[] = [
   'cms.manage',
   'subscriptions.manage',
   'reports.read',
+  'settings.manage',
+  'mail.manage',
 ];
 
 /** Read-only support: orders, customers, products. */

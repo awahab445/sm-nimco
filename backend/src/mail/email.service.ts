@@ -5,6 +5,7 @@ import type {
   OrderEmailDetails,
 } from './types/email.types';
 import { MailTransportService } from './mail-transport.service';
+import { MailMailboxPurpose } from './types/mail-purpose.types';
 import { renderWelcomeEmail } from './templates/welcome.template';
 import { renderOrderPlacementEmail } from './templates/order-placement.template';
 import { renderOrderCancellationEmail } from './templates/order-cancellation.template';
@@ -82,12 +83,15 @@ export class EmailService {
     });
 
     await this.safeSend('sendEmailVerificationEmail', normalizedEmail, () =>
-      this.mailTransport.sendMail({
-        to: normalizedEmail,
-        subject,
-        html,
-        text,
-      }),
+      this.mailTransport.sendMail(
+        {
+          to: normalizedEmail,
+          subject,
+          html,
+          text,
+        },
+        MailMailboxPurpose.AUTH,
+      ),
     );
   }
 
@@ -104,12 +108,15 @@ export class EmailService {
     });
 
     await this.safeSend('sendWelcomeEmail', normalizedEmail, () =>
-      this.mailTransport.sendMail({
-        to: normalizedEmail,
-        subject,
-        html,
-        text,
-      }),
+      this.mailTransport.sendMail(
+        {
+          to: normalizedEmail,
+          subject,
+          html,
+          text,
+        },
+        MailMailboxPurpose.WELCOME,
+      ),
     );
   }
 
@@ -132,12 +139,15 @@ export class EmailService {
     });
 
     await this.safeSend('sendOrderPlacementEmail', normalizedEmail, () =>
-      this.mailTransport.sendMail({
-        to: normalizedEmail,
-        subject,
-        html,
-        text,
-      }),
+      this.mailTransport.sendMail(
+        {
+          to: normalizedEmail,
+          subject,
+          html,
+          text,
+        },
+        MailMailboxPurpose.ORDERS,
+      ),
     );
   }
 
@@ -159,12 +169,15 @@ export class EmailService {
     });
 
     await this.safeSend('sendOrderCancellationEmail', normalizedEmail, () =>
-      this.mailTransport.sendMail({
-        to: normalizedEmail,
-        subject,
-        html,
-        text,
-      }),
+      this.mailTransport.sendMail(
+        {
+          to: normalizedEmail,
+          subject,
+          html,
+          text,
+        },
+        MailMailboxPurpose.ORDERS,
+      ),
     );
   }
 
@@ -181,12 +194,15 @@ export class EmailService {
     });
 
     await this.safeSend('sendAccountCreationLink', normalizedEmail, () =>
-      this.mailTransport.sendMail({
-        to: normalizedEmail,
-        subject,
-        html,
-        text,
-      }),
+      this.mailTransport.sendMail(
+        {
+          to: normalizedEmail,
+          subject,
+          html,
+          text,
+        },
+        MailMailboxPurpose.AUTH,
+      ),
     );
   }
 
@@ -208,12 +224,15 @@ export class EmailService {
     });
 
     await this.safeSend('sendPasswordResetEmail', normalizedEmail, () =>
-      this.mailTransport.sendMail({
-        to: normalizedEmail,
-        subject,
-        html,
-        text,
-      }),
+      this.mailTransport.sendMail(
+        {
+          to: normalizedEmail,
+          subject,
+          html,
+          text,
+        },
+        MailMailboxPurpose.AUTH,
+      ),
     );
   }
 }

@@ -149,6 +149,13 @@ export const adminNavGroups: NavGroup[] = [
         requirePermission: ['products.read'],
       },
       {
+        href: '/mail',
+        label: 'Mail servers',
+        description: 'SMTP mailboxes for orders, welcome, auth',
+        phase: 'N',
+        requirePermission: ['mail.manage', 'settings.manage'],
+      },
+      {
         href: '/subscriptions',
         label: 'Subscription',
         description: 'Storefront email subscribers',

@@ -900,3 +900,26 @@ model StorefrontNavLink {
   @@index([zone, parentId, sortOrder])
   @@map("storefront_nav_links")
 }
+
+/// SMTP mailbox for outbound email, routed by purpose (ORDERS, WELCOME, AUTH, etc.).
+model MailMailbox {
+  id          String   @id @default(uuid())
+  code        String   @unique @db.VarChar(50)
+  name        String   @db.VarChar(255)
+  purpose     String   @db.VarChar(50)
+  smtpHost    String   @map("smtp_host") @db.VarChar(255)
+  smtpPort    Int      @default(587) @map("smtp_port")
+  smtpSecure  Boolean  @default(false) @map("smtp_secure")
+  smtpUser    String   @map("smtp_user") @db.VarChar(255)
+  smtpPassEnc String   @map("smtp_pass_enc") @db.Text
+  fromName    String   @map("from_name") @db.VarChar(255)
+  fromAddress String   @map("from_address") @db.VarChar(255)
+  isActive    Boolean  @default(true) @map("is_active")
+  isDefault   Boolean  @default(false) @map("is_default")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([purpose, isActive])
+  @@index([purpose, isDefault])
+  @@map("mail_mailboxes")
+}
