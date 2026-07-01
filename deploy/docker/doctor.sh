@@ -53,6 +53,29 @@ check_upstream "Storefront" "${HOST_STOREFRONT_PORT:-3101}" "/"
 check_upstream "Admin" "${HOST_ADMIN_PORT:-3102}" "/"
 
 echo ""
+echo "=== API container state ==="
+if docker inspect ecommerce-api >/dev/null 2>&1; then
+  status="$(docker inspect ecommerce-api --format '{{.State.Status}}')"
+  restarts="$(docker inspect ecommerce-api --format '{{.RestartCount}}')"
+  echo "status=${status} restartCount=${restarts}"
+  if [[ "${status}" != "running" ]] || [[ "${restarts}" -gt 3 ]]; then
+    warn "API container unstable (status=${status}, restarts=${restarts})"
+  else
+    ok "API container running"
+  fi
+  echo ""
+  echo "=== Inside container (port 3000) ==="
+  if docker exec ecommerce-api node -e "fetch('http://127.0.0.1:3000/health').then(async r=>{console.log(await r.text());process.exit(r.ok?0:1)}).catch(()=>process.exit(1))" 2>/dev/null; then
+    echo ""
+    ok "API responds inside container"
+  else
+    warn "API not responding inside container — still starting or crashed"
+  fi
+else
+  warn "ecommerce-api container not found"
+fi
+
+echo ""
 echo "=== API container logs (last 40 lines) ==="
 docker logs ecommerce-api --tail 40 2>&1 || warn "Cannot read ecommerce-api logs"
 
