@@ -17,6 +17,7 @@ export class AppController {
     return this.appService.getHello();
   }
 
+  @Public()
   @Get('health')
   getHealth() {
     return this.appService.getHealth();
