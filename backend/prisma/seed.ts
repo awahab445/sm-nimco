@@ -343,6 +343,12 @@ async function main() {
     ],
   });
 
+  await prisma.analyticsGa4Settings.upsert({
+    where: { id: 'default' },
+    update: {},
+    create: { id: 'default', isEnabled: false, currency: 'PKR' },
+  });
+
   console.log('Seed completed: shipping/payment defaults + CMS starter data.');
 }
 

@@ -5,6 +5,8 @@ import { getStoreThemeId } from "@/lib/store-theme";
 import { STORE_NAME } from "@/lib/config";
 import { AuthProvider } from "@/components/auth-provider";
 import { CartProvider } from "@/components/cart-provider";
+import { AnalyticsProvider } from "@/components/analytics/analytics-provider";
+import { fetchAnalyticsConfig } from "@/lib/analytics/analytics-config.server";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { WhatsAppWidget } from "@/components/whatsapp-widget";
@@ -25,18 +27,20 @@ export const metadata: Metadata = {
   description: `${STORE_NAME} — shop quality products with secure checkout and order tracking.`,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   const storeTheme = getStoreThemeId();
+  const analyticsConfig = await fetchAnalyticsConfig();
 
   return (
     <html lang="en" data-store-theme={storeTheme}>
       <body className={`${geistSans.variable} ${geistMono.variable} bg-brand-bg text-brand-text antialiased`}>
-        <AuthProvider>
-          <CartProvider>
+        <AnalyticsProvider config={analyticsConfig}>
+          <AuthProvider>
+            <CartProvider>
             <div
               className={
                 storeTheme === "mehfil_shereen"
@@ -48,8 +52,9 @@ export default function RootLayout({
               <main className="min-w-0 flex-1 max-w-full bg-brand-bg">{children}</main>
               <Footer />
             </div>
-          </CartProvider>
-        </AuthProvider>
+            </CartProvider>
+          </AuthProvider>
+        </AnalyticsProvider>
         <WhatsAppWidget />
         <StorefrontToast />
       </body>

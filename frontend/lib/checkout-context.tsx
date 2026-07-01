@@ -11,6 +11,9 @@ import {
 } from './api-client';
 import { useCartStore } from './cart.store';
 import {
+  trackBeginCheckout,
+} from './analytics/events';
+import {
   getPendingCouponCode,
   clearPendingCouponCode,
   validateCouponCodeForCartLike,
@@ -153,6 +156,15 @@ export function CheckoutProvider({ children }: { children: React.ReactNode }) {
           isLoading: false,
           error: null,
         }));
+
+        const gaItems = checkout.items.map((item) => ({
+          item_id: item.variantId || item.productId,
+          item_name: item.productName || item.variantName || 'Product',
+          item_variant: item.variantName,
+          price: typeof item.price === 'number' ? item.price : parseFloat(String(item.price)),
+          quantity: item.quantity,
+        }));
+        trackBeginCheckout(checkoutId, gaItems, checkout.couponCode);
     } catch (error) {
       if (isCartNotFoundError(error)) {
         try {

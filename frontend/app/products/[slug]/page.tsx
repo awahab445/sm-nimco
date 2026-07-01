@@ -10,6 +10,7 @@ import { formatPrice } from '@/lib/currency';
 import { storefrontUi } from '@/lib/storefront-ui';
 import { ProductImageGallery } from '@/components/product/product-image-gallery';
 import { ProductStockAlert } from '@/components/product/product-stock-alert';
+import { trackViewItem } from '@/lib/analytics/events';
 
 type OptionDefinition = { code: string; label: string; values: string[] };
 
@@ -167,6 +168,19 @@ export default function ProductDetailPage() {
   const variants = product?.variants ?? [];
   const hasVariant = variants.length > 0;
   const currentVariant = selectedVariant ?? variants[0] ?? null;
+
+  useEffect(() => {
+    if (!product || !currentVariant) return;
+    const price =
+      typeof currentVariant.price === 'string'
+        ? parseFloat(currentVariant.price)
+        : Number(currentVariant.price);
+    trackViewItem(product, {
+      variantName: currentVariant.name,
+      price: Number.isFinite(price) ? price : undefined,
+    });
+  }, [product, currentVariant?.id, currentVariant?.name, currentVariant?.price]);
+
   const activeVariants = variants.filter((v) => v);
   const optionDefinitions: OptionDefinition[] = (() => {
     if (product?.options && product.options.length > 0) {

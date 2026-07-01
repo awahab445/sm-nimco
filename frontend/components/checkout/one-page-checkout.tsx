@@ -16,6 +16,7 @@ import {
   setPendingCouponCode,
 } from '@/lib/coupon-sync';
 import { formatVariantAttributes } from '@/lib/format-variant-attributes';
+import { trackAddPaymentInfo, trackAddShippingInfo } from '@/lib/analytics/events';
 
 const EMPTY_CART_ITEMS: CartItem[] = [];
 
@@ -442,6 +443,17 @@ export function OnePageCheckout() {
         estimatedDays: selectedShipping.estimatedDays ?? 0,
       });
 
+      if (checkout?.items?.length) {
+        const gaItems = checkout.items.map((item) => ({
+          item_id: item.variantId || item.productId,
+          item_name: item.productName || item.variantName || 'Product',
+          item_variant: item.variantName,
+          price: typeof item.price === 'number' ? item.price : parseFloat(String(item.price)),
+          quantity: item.quantity,
+        }));
+        trackAddShippingInfo(selectedShipping.methodName, gaItems);
+      }
+
       const paymentPayload = {
         paymentMethodCode: selectedPaymentCode,
         customerEmail: customerEmail.trim().toLowerCase(),
@@ -449,6 +461,17 @@ export function OnePageCheckout() {
         ...(checkout?.customerGroupId && { customerGroupId: checkout.customerGroupId }),
       };
       setPaymentInfo(paymentPayload);
+
+      if (checkout?.items?.length) {
+        const gaItems = checkout.items.map((item) => ({
+          item_id: item.variantId || item.productId,
+          item_name: item.productName || item.variantName || 'Product',
+          item_variant: item.variantName,
+          price: typeof item.price === 'number' ? item.price : parseFloat(String(item.price)),
+          quantity: item.quantity,
+        }));
+        trackAddPaymentInfo(selectedPaymentCode, gaItems);
+      }
 
       const result = await confirmCheckout(paymentPayload);
 

@@ -27,6 +27,7 @@ import { PlpBrowseTree, PlpBrowseBreadcrumbs } from '@/components/products/plp-b
 import { PlpProductGridSkeleton } from '@/components/products/plp-product-grid-skeleton';
 import { plpBrowseApi, type PlpBrowseTreeNode } from '@/lib/api-client';
 import { findBrowseNodeLabel } from '@/lib/plp-browse-tree';
+import { trackViewItemList } from '@/lib/analytics/events';
 
 function flattenCategories(res: { data?: Category[] } | CategoryTreeLike[]): Category[] {
   if (Array.isArray(res)) {
@@ -122,6 +123,7 @@ function ProductsContent() {
   const listQueryKey = useMemo(() => JSON.stringify(listQuery), [listQuery]);
   const facetQuery = useMemo(() => plpStateToFacetQuery(applied), [applied]);
   const facetQueryKey = useMemo(() => JSON.stringify(facetQuery), [facetQuery]);
+  const viewListDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -303,6 +305,18 @@ function ProductsContent() {
     }
     return 'Products';
   }, [applied.search, browseTree, selectedCategoryId, categoryNameById, categoryIdBySlug]);
+
+  useEffect(() => {
+    if (!data?.data?.length) return;
+    if (viewListDebounce.current) clearTimeout(viewListDebounce.current);
+    viewListDebounce.current = setTimeout(() => {
+      const listId = selectedCategoryId ?? applied.search ?? 'all-products';
+      trackViewItemList(String(listId), pageTitle, data.data);
+    }, 300);
+    return () => {
+      if (viewListDebounce.current) clearTimeout(viewListDebounce.current);
+    };
+  }, [data, selectedCategoryId, applied.search, pageTitle]);
 
   const pageSubtitle = useMemo(() => {
     if (applied.search) return `Results for "${applied.search}"`;

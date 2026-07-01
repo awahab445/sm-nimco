@@ -106,6 +106,8 @@ const RULES: RouteRule[] = [
 
   { test: prefix('/store-filters'), requirePermission: ['products.read'] },
 
+  { test: prefix('/analytics'), requirePermission: ['analytics.manage', 'settings.manage'] },
+
   { test: prefix('/mail'), requirePermission: ['mail.manage', 'settings.manage'] },
 
   // ---- Subscription (email list) ----------------------------------------

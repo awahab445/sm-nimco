@@ -15,6 +15,7 @@ import { storefrontUi } from '@/lib/storefront-ui';
 import { OrderLineItem } from '@/components/order/order-line-item';
 import { OrderSummaryTotals } from '@/components/order/order-summary-totals';
 import { normalizeOrderTotals } from '@/lib/order-totals';
+import { trackRefund } from '@/lib/analytics/events';
 
 interface OrderItem {
   id: string;
@@ -130,6 +131,19 @@ export default function OrderDetailPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (!order) return;
+    const isRefunded =
+      /cancelled|canceled|refunded/i.test(order.status) ||
+      /refunded/i.test(order.paymentStatus);
+    if (!isRefunded) return;
+    const value =
+      typeof order.grandTotal === 'number'
+        ? order.grandTotal
+        : parseFloat(String(order.grandTotal));
+    trackRefund(order.orderNumber, Number.isFinite(value) ? value : 0);
+  }, [order?.orderNumber, order?.status, order?.paymentStatus, order?.grandTotal]);
 
   const handleReorder = async () => {
     if (!order) return;

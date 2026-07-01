@@ -6,6 +6,7 @@
 import { create } from 'zustand';
 import { cartApi, Cart } from './api-client';
 import { clearPendingCouponCode } from './coupon-sync';
+import { trackAddToCartFromCartItem, trackRemoveFromCart } from './analytics/events';
 
 const CART_ID_KEY = 'cart-id';
 
@@ -122,6 +123,10 @@ export const useCartStore = create<CartState>((set, get) => ({
       const cartId = await get().getOrCreateCartId();
       const cart = await cartApi.addItem(cartId, { productId, variantId, quantity });
       set({ cart, isLoading: false, error: null });
+      const added = cart.items.find((i) => i.variantId === variantId);
+      if (added) {
+        trackAddToCartFromCartItem(added);
+      }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to add to cart';
       set({ isLoading: false, error: message });
@@ -146,10 +151,14 @@ export const useCartStore = create<CartState>((set, get) => ({
   removeItem: async (variantId: string) => {
     const cartId = getStoredCartId() ?? get().cartId;
     if (!cartId) return;
+    const existing = get().cart?.items.find((i) => i.variantId === variantId);
     set({ isLoading: true, error: null });
     try {
       const cart = await cartApi.removeItem(cartId, variantId);
       set({ cart, isLoading: false, error: null });
+      if (existing) {
+        trackRemoveFromCart(existing);
+      }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to remove item';
       set({ isLoading: false, error: message });

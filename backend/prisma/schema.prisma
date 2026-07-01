@@ -923,3 +923,23 @@ model MailMailbox {
   @@index([purpose, isDefault])
   @@map("mail_mailboxes")
 }
+
+/// Singleton GA4 analytics configuration (id is always "default").
+model AnalyticsGa4Settings {
+  id                   String   @id @default("default")
+  measurementId        String?  @map("measurement_id") @db.VarChar(32)
+  isEnabled            Boolean  @default(false) @map("is_enabled")
+  debugMode            Boolean  @default(false) @map("debug_mode")
+  trackPageViews       Boolean  @default(true) @map("track_page_views")
+  trackCartEvents      Boolean  @default(true) @map("track_cart_events")
+  trackCheckoutSteps   Boolean  @default(true) @map("track_checkout_steps")
+  trackPurchases       Boolean  @default(true) @map("track_purchases")
+  trackRefunds         Boolean  @default(false) @map("track_refunds")
+  trackCustomEvents    Boolean  @default(true) @map("track_custom_events")
+  anonymizeIp          Boolean  @default(true) @map("anonymize_ip")
+  currency             String   @default("PKR") @db.VarChar(3)
+  updatedAt            DateTime @updatedAt @map("updated_at")
+  updatedByAdminUserId String?  @map("updated_by_admin_user_id")
+
+  @@map("analytics_ga4_settings")
+}

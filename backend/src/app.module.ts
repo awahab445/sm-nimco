@@ -21,6 +21,7 @@ import { AdminModule } from './admin/admin.module';
 import { CmsModule } from './cms/cms.module';
 import { SubscriptionModule } from './subscription/subscription.module';
 import { MailModule } from './mail/mail.module';
+import { AnalyticsModule } from './analytics/analytics.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { MailModule } from './mail/mail.module';
     CmsModule,
     SubscriptionModule,
     MailModule,
+    AnalyticsModule,
   ],
   controllers: [AppController],
   providers: [

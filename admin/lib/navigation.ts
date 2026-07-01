@@ -149,6 +149,13 @@ export const adminNavGroups: NavGroup[] = [
         requirePermission: ['products.read'],
       },
       {
+        href: '/analytics',
+        label: 'Analytics',
+        description: 'GA4 enhanced ecommerce tracking',
+        phase: 'N',
+        requirePermission: ['analytics.manage', 'settings.manage'],
+      },
+      {
         href: '/mail',
         label: 'Mail servers',
         description: 'SMTP mailboxes for orders, welcome, auth',

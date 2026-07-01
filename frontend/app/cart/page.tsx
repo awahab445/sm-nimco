@@ -18,6 +18,7 @@ import {
 } from '@/lib/coupon-sync';
 import { formatVariantAttributes } from '@/lib/format-variant-attributes';
 import { storefrontUi } from '@/lib/storefront-ui';
+import { cartItemToGa4Item, trackViewCart } from '@/lib/analytics';
 
 export default function CartPage() {
   const { cart, isLoading, error, refreshCart, updateItem, removeItem, clearCart } =
@@ -41,6 +42,12 @@ export default function CartPage() {
   useEffect(() => {
     refreshCart();
   }, [refreshCart]);
+
+  useEffect(() => {
+    const items = cart?.items ?? [];
+    if (items.length === 0) return;
+    trackViewCart(items.map(cartItemToGa4Item));
+  }, [cart?.items]);
 
   useEffect(() => {
     const items = cart?.items ?? [];

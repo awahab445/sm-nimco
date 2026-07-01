@@ -68,6 +68,7 @@ export const ADMIN_PERMISSION_SEED: { key: string; description: string }[] = [
   { key: 'reports.read', description: 'Access reports and exports' },
   { key: 'settings.manage', description: 'Platform settings and mail server configuration' },
   { key: 'mail.manage', description: 'Manage SMTP mailboxes and test connections' },
+  { key: 'analytics.manage', description: 'Manage GA4 analytics and ecommerce tracking' },
 ];
 
 export const SUPER_ADMIN_ROLE_SLUG = 'super-admin';
@@ -116,6 +117,7 @@ export const MANAGER_PERMISSION_KEYS: string[] = [
   'reports.read',
   'settings.manage',
   'mail.manage',
+  'analytics.manage',
 ];
 
 /** Read-only support: orders, customers, products. */

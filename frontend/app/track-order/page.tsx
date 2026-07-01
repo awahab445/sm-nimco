@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { orderApi } from '@/lib/api-client';
 import { storefrontUi } from '@/lib/storefront-ui';
 import { useHydrated } from '@/lib/use-hydrated';
+import { trackCustomEvent } from '@/lib/analytics/events';
 
 export default function TrackOrderPage() {
   const router = useRouter();
@@ -43,6 +44,12 @@ export default function TrackOrderPage() {
     setLoading(true);
     try {
       const match = await orderApi.trackOrder(trimmedOrderNumber, trimmedEmail);
+      trackCustomEvent('track_order_submit', {
+        event_category: 'engagement',
+        event_label: 'track_order',
+        order_number: trimmedOrderNumber,
+        method: 'email_lookup',
+      });
       router.push(
         `/orders/${match.id}?orderNumber=${encodeURIComponent(trimmedOrderNumber)}&email=${encodeURIComponent(trimmedEmail)}`,
       );

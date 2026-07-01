@@ -11,6 +11,7 @@ import { formatPrice } from '@/lib/currency';
 import { OrderSummaryTotals } from '@/components/order/order-summary-totals';
 import { normalizeOrderTotals } from '@/lib/order-totals';
 import { storefrontUi } from '@/lib/storefront-ui';
+import { trackPurchase } from '@/lib/analytics/events';
 
 interface OrderPayment {
   id: string;
@@ -33,6 +34,13 @@ interface Order {
   grandTotal: number;
   currency: string;
   customerEmail: string;
+  couponCode?: string;
+  items?: Array<{
+    sku?: string;
+    name: string;
+    unitPrice?: number | string;
+    quantity?: number;
+  }>;
   payments?: OrderPayment[];
 }
 
@@ -100,7 +108,7 @@ function CheckoutSuccessContent() {
             currency: p.currency,
             paymentMethod: p.paymentMethod,
           })),
-        });
+        } as Order);
       } catch (err: unknown) {
         setError(err instanceof Error ? err.message : 'Failed to load order');
       } finally {
@@ -110,6 +118,23 @@ function CheckoutSuccessContent() {
 
     fetchOrderAndPayments();
   }, [orderId, orderNumber, email]);
+
+  useEffect(() => {
+    if (!order?.orderNumber || !order.items?.length) return;
+    const grandTotal =
+      typeof order.grandTotal === 'number'
+        ? order.grandTotal
+        : parseFloat(String(order.grandTotal));
+    trackPurchase({
+      orderNumber: order.orderNumber,
+      grandTotal: Number.isFinite(grandTotal) ? grandTotal : 0,
+      taxTotal: order.taxTotal,
+      shippingTotal: order.shippingTotal ?? order.shippingFee ?? order.shippingPrice,
+      couponCode: order.couponCode,
+      currency: order.currency,
+      items: order.items,
+    });
+  }, [order?.orderNumber, order?.items, order?.grandTotal, order?.taxTotal, order?.shippingTotal, order?.couponCode, order?.currency]);
 
   // Poll for payment status updates (only for online/redirect gateways; not for COD)
   useEffect(() => {
