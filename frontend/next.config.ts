@@ -17,10 +17,26 @@ const securityHeaders = [
   },
 ];
 
+const backendOrigin = (
+  process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
+).replace(/\/+$/, '');
+
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   // Pin tracing root to this monorepo (avoids picking up C:\Users\pc\package-lock.json).
   outputFileTracingRoot: monorepoRoot,
+  async rewrites() {
+    return [
+      {
+        source: '/api/backend/:path*',
+        destination: `${backendOrigin}/:path*`,
+      },
+      {
+        source: '/uploads/:path*',
+        destination: `${backendOrigin}/uploads/:path*`,
+      },
+    ];
+  },
   async headers() {
     return [
       {

@@ -3,9 +3,8 @@
  * Handles API calls for authentication. Backend returns JWT in access_token.
  */
 
-import { clearSession } from './auth-token';
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://api.messa-chemicals.local';
+import { clearSession, getToken } from './auth-token';
+import { getApiBaseUrl } from './api-base-url';
 
 export interface LoginCredentials {
   email: string;
@@ -61,14 +60,17 @@ async function fetchAuth<T>(
   options: RequestInit = {},
   withToken = false,
 ): Promise<T> {
-  const url = `${API_BASE_URL}${endpoint}`;
+  const url = `${getApiBaseUrl()}${endpoint}`;
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(options.headers as Record<string, string>),
   };
 
   if (withToken) {
-    // Session cookie is HttpOnly; API auth uses credentials: include.
+    const token = getToken();
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
   }
 
   const response = await fetch(url, {

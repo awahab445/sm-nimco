@@ -4,9 +4,8 @@
  */
 
 import { getToken, clearSession } from './auth-token';
+import { getApiBaseUrl } from './api-base-url';
 import { APP_CURRENCY } from './currency';
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
 export class ApiError extends Error {
   constructor(
@@ -42,7 +41,7 @@ export async function fetchApi<T>(
   endpoint: string,
   options: RequestInit = {},
 ): Promise<T> {
-  const url = `${API_BASE_URL}${endpoint}`;
+  const url = `${getApiBaseUrl()}${endpoint}`;
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(options.headers as Record<string, string>),

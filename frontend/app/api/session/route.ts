@@ -10,7 +10,7 @@ export async function GET() {
   const cookieStore = await cookies();
   const token = cookieStore.get(COOKIE_NAME)?.value;
   if (!token || !(await isValidCustomerSessionCookie(token))) {
-    return NextResponse.json({ authenticated: false }, { status: 401 });
+    return NextResponse.json({ authenticated: false });
   }
   return NextResponse.json({ authenticated: true, token });
 }

@@ -1,4 +1,6 @@
-const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000').replace(/\/+$/, '');
+import { SERVER_API_BASE_URL } from './api-base-url';
+
+const API_BASE_URL = SERVER_API_BASE_URL;
 
 export function resolveImageUrl(value?: string | null): string | undefined {
   if (!value) return undefined;

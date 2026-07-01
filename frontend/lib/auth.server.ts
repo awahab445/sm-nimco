@@ -6,8 +6,7 @@
 
 import { cookies } from 'next/headers';
 import { User } from './auth.service';
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+import { SERVER_API_BASE_URL } from './api-base-url';
 const AUTH_COOKIE_NAME = 'auth-token';
 
 /**
@@ -23,7 +22,7 @@ export async function getServerUser(): Promise<User | null> {
       return null;
     }
 
-    const response = await fetch(`${API_BASE_URL}/auth/me`, {
+    const response = await fetch(`${SERVER_API_BASE_URL}/auth/me`, {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${token}`,

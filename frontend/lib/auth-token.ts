@@ -32,7 +32,10 @@ export async function bootstrapSessionFromCookie(): Promise<boolean> {
   if (!response.ok) {
     return false;
   }
-  const data = (await response.json()) as { token?: string };
+  const data = (await response.json()) as { authenticated?: boolean; token?: string };
+  if (data.authenticated === false) {
+    return false;
+  }
   cachedToken = data.token?.trim() || null;
   return Boolean(cachedToken);
 }
