@@ -8,7 +8,9 @@ import { useAuthStore } from '@/lib/auth.store';
 import { useCartStore } from '@/lib/cart.store';
 import { useHydrated } from '@/lib/use-hydrated';
 import { getStoreLogoSrc } from '@/lib/config';
+import { getApiBaseUrl } from '@/lib/api-base-url';
 import {
+  siteConfigApi,
   storefrontNavApi,
   mergeStorefrontNavigation,
   STOREFRONT_NAV_FALLBACK,
@@ -21,6 +23,28 @@ import { UserMenuDropdown } from '@/components/layout/user-menu-dropdown';
 import { ShoppingBagIcon } from '@/components/icons/shopping-bag-icon';
 
 const DESKTOP_NAV_MIN_WIDTH = 1024;
+const DEFAULT_LOGO_WIDTH = 36;
+const DEFAULT_LOGO_HEIGHT = 36;
+const LOGO_DIMENSION_MIN = 16;
+const LOGO_DIMENSION_MAX = 96;
+
+function normalizeLogoDimension(value: number | null | undefined, fallback: number): number {
+  if (typeof value !== 'number' || Number.isNaN(value)) return fallback;
+  return Math.min(LOGO_DIMENSION_MAX, Math.max(LOGO_DIMENSION_MIN, Math.round(value)));
+}
+
+function resolveLogoSrc(logoUrl: string | null | undefined, fallback: string): string {
+  const raw = logoUrl?.trim();
+  if (!raw) return fallback;
+  if (/^https?:\/\//i.test(raw)) return raw;
+  if (raw.startsWith('/uploads/')) {
+    return `${getApiBaseUrl()}${raw}`;
+  }
+  if (raw.startsWith('/')) {
+    return raw;
+  }
+  return fallback;
+}
 
 function isCartHref(href: string): boolean {
   const h = href.trim().split('?')[0] ?? '';
@@ -31,7 +55,10 @@ export function Header() {
   const { isAuthenticated } = useAuthStore();
   const cart = useCartStore((s) => s.cart);
   const cartItemCount = cart?.items?.reduce((sum, i) => sum + i.quantity, 0) ?? 0;
-  const logoSrc = getStoreLogoSrc();
+  const defaultLogoSrc = getStoreLogoSrc();
+  const [logoSrc, setLogoSrc] = useState(defaultLogoSrc);
+  const [logoWidth, setLogoWidth] = useState(DEFAULT_LOGO_WIDTH);
+  const [logoHeight, setLogoHeight] = useState(DEFAULT_LOGO_HEIGHT);
   const [mainNav, setMainNav] = useState<StorefrontNavItem[]>(STOREFRONT_NAV_FALLBACK.header);
   const [megaMenu, setMegaMenu] = useState<StorefrontNavMegaNode[]>(STOREFRONT_NAV_FALLBACK.megaMenu);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -40,6 +67,22 @@ export function Header() {
 
   useEffect(() => {
     let cancelled = false;
+    siteConfigApi
+      .getSiteConfig()
+      .then((res) => {
+        if (cancelled) return;
+        const siteConfig = res.data;
+        setLogoSrc(resolveLogoSrc(siteConfig.logoUrl, defaultLogoSrc));
+        setLogoWidth(normalizeLogoDimension(siteConfig.logoWidth, DEFAULT_LOGO_WIDTH));
+        setLogoHeight(normalizeLogoDimension(siteConfig.logoHeight, DEFAULT_LOGO_HEIGHT));
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setLogoSrc(defaultLogoSrc);
+        setLogoWidth(DEFAULT_LOGO_WIDTH);
+        setLogoHeight(DEFAULT_LOGO_HEIGHT);
+      });
+
     storefrontNavApi
       .getNavigation()
       .then((res) => {
@@ -59,7 +102,7 @@ export function Header() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [defaultLogoSrc]);
 
   useEffect(() => {
     if (!mobileNavOpen) return;
@@ -282,12 +325,18 @@ export function Header() {
           className="inline-flex shrink-0 items-center bg-transparent outline-none ring-0 focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-primary"
         >
           <div className="flex items-center gap-2">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white p-1 shadow-sm">
+            <div
+              className="flex shrink-0 items-center justify-center rounded-full bg-white p-1 shadow-sm"
+              style={{
+                width: `${logoWidth + 8}px`,
+                height: `${logoHeight + 8}px`,
+              }}
+            >
               <Image
                 src={logoSrc}
                 alt="M. Essa Chemicals"
-                width={36}
-                height={36}
+                width={logoWidth}
+                height={logoHeight}
                 className="h-full w-full object-contain"
                 priority
                 unoptimized={logoSrc.startsWith('http')}

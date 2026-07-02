@@ -11,6 +11,7 @@ import {
   type ProductStatus,
   type ProductType,
   type ProductVisibility,
+  type UpdateProductBody,
   moneyToNumber,
 } from '@/lib/api/products';
 import { formatApiError } from '@/lib/api/error-message';
@@ -26,6 +27,78 @@ function parseOptionalJsonObject(raw: string, label: string): Record<string, unk
     throw new Error(`${label} must be a JSON object`);
   }
   return parsed as Record<string, unknown>;
+}
+
+function parseJsonObjectForEdit(raw: string, label: string): Record<string, unknown> {
+  const t = raw.trim();
+  if (!t) return {};
+  return parseOptionalJsonObject(t, label) ?? {};
+}
+
+function buildCreateBody(fields: {
+  sku: string;
+  name: string;
+  slug: string;
+  description: string;
+  shortDescription: string;
+  price: number;
+  parsedCost?: number;
+  parsedWeight?: number;
+  status: ProductStatus;
+  visibility: ProductVisibility;
+  taxClassId: string;
+  attributes?: Record<string, unknown>;
+  metaData?: Record<string, unknown>;
+}): CreateProductBody {
+  return {
+    sku: fields.sku,
+    name: fields.name,
+    type: 'configurable',
+    basePrice: fields.price,
+    status: fields.status,
+    visibility: fields.visibility,
+    ...(fields.slug ? { slug: fields.slug } : {}),
+    ...(fields.description ? { description: fields.description } : {}),
+    ...(fields.shortDescription ? { shortDescription: fields.shortDescription } : {}),
+    ...(fields.parsedCost !== undefined ? { cost: fields.parsedCost } : {}),
+    ...(fields.parsedWeight !== undefined ? { weight: fields.parsedWeight } : {}),
+    ...(fields.taxClassId ? { taxClassId: fields.taxClassId } : {}),
+    ...(fields.attributes !== undefined ? { attributes: fields.attributes } : {}),
+    ...(fields.metaData !== undefined ? { metaData: fields.metaData } : {}),
+  };
+}
+
+function buildUpdateBody(fields: {
+  sku: string;
+  name: string;
+  slug: string;
+  description: string;
+  shortDescription: string;
+  price: number;
+  parsedCost?: number;
+  parsedWeight?: number;
+  status: ProductStatus;
+  visibility: ProductVisibility;
+  taxClassId: string;
+  attributes: Record<string, unknown>;
+  metaData: Record<string, unknown>;
+}): UpdateProductBody {
+  return {
+    sku: fields.sku,
+    name: fields.name,
+    type: 'configurable',
+    basePrice: fields.price,
+    status: fields.status,
+    visibility: fields.visibility,
+    slug: fields.slug,
+    description: fields.description || null,
+    shortDescription: fields.shortDescription || null,
+    cost: fields.parsedCost ?? null,
+    weight: fields.parsedWeight ?? null,
+    taxClassId: fields.taxClassId || null,
+    attributes: fields.attributes,
+    metaData: fields.metaData,
+  };
 }
 
 type ProductFormProps = {
@@ -96,40 +169,58 @@ export function ProductForm({ mode, initial, productId, onCancel, onSaved }: Pro
     }
     let attributes: Record<string, unknown> | undefined;
     let metaData: Record<string, unknown> | undefined;
+    let editAttributes: Record<string, unknown> = {};
+    let editMetaData: Record<string, unknown> = {};
     try {
-      attributes = parseOptionalJsonObject(attributesJson, 'Attributes');
-      metaData = parseOptionalJsonObject(metaDataJson, 'Metadata');
+      if (mode === 'edit') {
+        editAttributes = parseJsonObjectForEdit(attributesJson, 'Attributes');
+        editMetaData = parseJsonObjectForEdit(metaDataJson, 'Metadata');
+      } else {
+        attributes = parseOptionalJsonObject(attributesJson, 'Attributes');
+        metaData = parseOptionalJsonObject(metaDataJson, 'Metadata');
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Invalid JSON');
       return;
     }
 
-    const body: CreateProductBody = {
+    const sharedFields = {
       sku: sku.trim(),
       name: name.trim(),
-      type: 'configurable',
-      basePrice: price,
+      slug: slug.trim(),
+      description: description.trim(),
+      shortDescription: shortDescription.trim(),
+      price,
+      parsedCost,
+      parsedWeight,
       status,
       visibility,
-      ...(slug.trim() ? { slug: slug.trim() } : {}),
-      ...(description.trim() ? { description: description.trim() } : {}),
-      ...(shortDescription.trim() ? { shortDescription: shortDescription.trim() } : {}),
-      ...(parsedCost !== undefined ? { cost: parsedCost } : {}),
-      ...(parsedWeight !== undefined ? { weight: parsedWeight } : {}),
-      ...(taxClassId.trim() ? { taxClassId: taxClassId.trim() } : {}),
-      ...(attributes !== undefined ? { attributes } : {}),
-      ...(metaData !== undefined ? { metaData } : {}),
+      taxClassId: taxClassId.trim(),
     };
 
-    if (!body.sku || !body.name) {
+    if (!sharedFields.sku || !sharedFields.name) {
       setError('SKU and name are required');
       return;
     }
 
+    const body: CreateProductBody | UpdateProductBody =
+      mode === 'edit'
+        ? buildUpdateBody({
+            ...sharedFields,
+            slug: sharedFields.slug || initial?.slug || '',
+            attributes: editAttributes,
+            metaData: editMetaData,
+          })
+        : buildCreateBody({
+            ...sharedFields,
+            attributes,
+            metaData,
+          });
+
     setSubmitting(true);
     try {
       if (mode === 'create') {
-        const created = await createAdminProduct(body);
+        const created = await createAdminProduct(body as CreateProductBody);
         if (imageFiles.length > 0) {
           for (let i = 0; i < imageFiles.length; i++) {
             const uploaded = await uploadProductImage(imageFiles[i]);
@@ -143,11 +234,7 @@ export function ProductForm({ mode, initial, productId, onCancel, onSaved }: Pro
         }
         onSaved?.(created);
       } else if (productId && initial) {
-        const slugOut = slug.trim() || initial.slug;
-        const updated = await updateAdminProduct(productId, {
-          ...body,
-          slug: slugOut,
-        });
+        const updated = await updateAdminProduct(productId, body as UpdateProductBody);
         if (imageFiles.length > 0) {
           const hasExistingImages = (initial.images?.length ?? 0) > 0;
           for (let i = 0; i < imageFiles.length; i++) {

@@ -32,7 +32,9 @@ export async function fetchApi<T>(
 ): Promise<T> {
   const url = `${API_BASE_URL}${path}`;
   const headers = new Headers(init.headers);
-  if (!headers.has('Content-Type') && init.body) {
+  const hasFormDataBody =
+    typeof FormData !== 'undefined' && init.body instanceof FormData;
+  if (!headers.has('Content-Type') && init.body && !hasFormDataBody) {
     headers.set('Content-Type', 'application/json');
   }
 

@@ -149,6 +149,13 @@ export const adminNavGroups: NavGroup[] = [
         requirePermission: ['products.read'],
       },
       {
+        href: '/settings/site-config',
+        label: 'Site settings',
+        description: 'Store logo and branding dimensions',
+        phase: 'N',
+        requirePermission: ['settings.manage'],
+      },
+      {
         href: '/analytics',
         label: 'Analytics',
         description: 'GA4 enhanced ecommerce tracking',

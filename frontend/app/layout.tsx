@@ -8,9 +8,11 @@ import { CartProvider } from "@/components/cart-provider";
 import { AnalyticsProvider } from "@/components/analytics/analytics-provider";
 import { fetchAnalyticsConfig } from "@/lib/analytics/analytics-config.server";
 import { Header } from "@/components/layout/header";
+import { AnnouncementBar } from "@/components/layout/announcement-bar";
 import { Footer } from "@/components/layout/footer";
 import { WhatsAppWidget } from "@/components/whatsapp-widget";
 import { StorefrontToast } from "@/components/storefront-toast";
+import { GoogleTagManager } from "@/components/analytics/google-tag-manager";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -38,6 +40,7 @@ export default async function RootLayout({
   return (
     <html lang="en" data-store-theme={storeTheme}>
       <body className={`${geistSans.variable} ${geistMono.variable} bg-brand-bg text-brand-text antialiased`}>
+        <GoogleTagManager />
         <AnalyticsProvider config={analyticsConfig}>
           <AuthProvider>
             <CartProvider>
@@ -48,6 +51,7 @@ export default async function RootLayout({
                   : "flex min-h-screen min-w-0 max-w-full flex-col bg-brand-bg"
               }
             >
+              <AnnouncementBar />
               <Header />
               <main className="min-w-0 flex-1 max-w-full bg-brand-bg">{children}</main>
               <Footer />

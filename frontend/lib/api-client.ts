@@ -312,6 +312,19 @@ export const storefrontNavApi = {
     fetchApi<{ data: StorefrontNavigationPayload }>('/storefront/navigation'),
 };
 
+export interface StorefrontSiteConfig {
+  logoUrl: string | null;
+  logoWidth: number;
+  logoHeight: number;
+  announcementText: string;
+  showAnnouncement: boolean;
+}
+
+export const siteConfigApi = {
+  getSiteConfig: (): Promise<{ data: StorefrontSiteConfig }> =>
+    fetchApi<{ data: StorefrontSiteConfig }>('/settings/site-config'),
+};
+
 export type PlpBrowseTreeNode = {
   id: string;
   label: string;

@@ -22,6 +22,7 @@ import { CmsModule } from './cms/cms.module';
 import { SubscriptionModule } from './subscription/subscription.module';
 import { MailModule } from './mail/mail.module';
 import { AnalyticsModule } from './analytics/analytics.module';
+import { SiteConfigModule } from './site-config/site-config.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
     SubscriptionModule,
     MailModule,
     AnalyticsModule,
+    SiteConfigModule,
   ],
   controllers: [AppController],
   providers: [

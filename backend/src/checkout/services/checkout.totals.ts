@@ -18,6 +18,7 @@ export interface TotalsCalculation {
 @Injectable()
 export class CheckoutTotalsService {
   private readonly logger = new Logger(CheckoutTotalsService.name);
+  private readonly freeDeliveryThreshold = 2000;
 
   constructor(
     private readonly promotionsService: PromotionsService,
@@ -232,9 +233,10 @@ export class CheckoutTotalsService {
       checkout,
       options,
     );
-    const shippingTotal = freeShippingApplied
-      ? 0
-      : this.calculateShippingTotal(checkout.shippingMethod);
+    const shippingTotal =
+      freeShippingApplied || subtotal >= this.freeDeliveryThreshold
+        ? 0
+        : this.calculateShippingTotal(checkout.shippingMethod);
     const taxTotal = await this.calculateTaxTotal(
       checkout.items,
       subtotal,

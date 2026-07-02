@@ -68,6 +68,7 @@ async function bootstrap() {
     join(uploadsRoot, 'products'),
     join(uploadsRoot, 'cms-slides'),
     join(uploadsRoot, 'storefront-nav'),
+    join(uploadsRoot, 'site-config'),
   ];
 
   for (const dir of uploadDirs) {

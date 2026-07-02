@@ -33,6 +33,7 @@ import { PaymentIntentCreatedEvent } from '../events/checkout.events';
 @Injectable()
 export class CheckoutService {
   private readonly logger = new Logger(CheckoutService.name);
+  private readonly minimumOrderValue = 800;
 
   constructor(
     private readonly checkoutRedis: CheckoutRedisService,
@@ -478,6 +479,12 @@ export class CheckoutService {
       recordPromotionRedemptions: true,
     });
     await this.checkoutRedis.updateCheckout(updated);
+
+    if (updated.subtotal < this.minimumOrderValue) {
+      throw new BadRequestException(
+        'A minimum order value of Rs. 800 is required to place an order. Please add more items to your cart. Note: Shopping of Rs. 2000 or more qualifies for Free Delivery!',
+      );
+    }
 
     // Comprehensive validation
     await this.checkoutValidator.validateForConfirmation(updated);

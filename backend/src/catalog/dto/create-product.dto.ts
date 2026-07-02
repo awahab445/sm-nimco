@@ -10,7 +10,10 @@ import {
   ValidateNested,
   IsArray,
 } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Type, Transform } from 'class-transformer';
+
+const emptyStringToNull = ({ value }: { value: unknown }) =>
+  value === '' ? null : value;
 
 export enum ProductType {
   SIMPLE = 'simple',
@@ -48,13 +51,15 @@ export class CreateProductDto {
   @IsEnum(ProductType)
   type: ProductType;
 
+  @Transform(emptyStringToNull)
   @IsString()
   @IsOptional()
-  description?: string;
+  description?: string | null;
 
+  @Transform(emptyStringToNull)
   @IsString()
   @IsOptional()
-  shortDescription?: string;
+  shortDescription?: string | null;
 
   @IsNumber()
   @Min(0)
@@ -78,9 +83,10 @@ export class CreateProductDto {
   @IsOptional()
   visibility?: ProductVisibility;
 
+  @Transform(emptyStringToNull)
   @IsString()
   @IsOptional()
-  taxClassId?: string;
+  taxClassId?: string | null;
 
   @IsObject()
   @IsOptional()

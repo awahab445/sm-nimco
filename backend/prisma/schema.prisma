@@ -943,3 +943,17 @@ model AnalyticsGa4Settings {
 
   @@map("analytics_ga4_settings")
 }
+
+/// Singleton storefront site configuration (id is always "default").
+model SiteConfig {
+  id                   String   @id @default("default")
+  logoUrl              String?  @map("logo_url") @db.VarChar(1024)
+  logoWidth            Int      @default(36) @map("logo_width")
+  logoHeight           Int      @default(36) @map("logo_height")
+  announcementText     String?  @map("announcement_text") @db.VarChar(500)
+  showAnnouncement     Boolean  @default(false) @map("show_announcement")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+  updatedByAdminUserId String?  @map("updated_by_admin_user_id")
+
+  @@map("site_config")
+}

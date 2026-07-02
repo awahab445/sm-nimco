@@ -352,19 +352,19 @@ export default function ProductDetailPage() {
           <p className="mt-2 text-lg font-medium text-foreground/90">
             {formatPrice(price)}
           </p>
-          {product.shortDescription && (
+          {product.shortDescription?.trim() ? (
             <p className="mt-4 text-muted-foreground">
-              {product.shortDescription}
+              {product.shortDescription.trim()}
             </p>
-          )}
-          {product.description && (
+          ) : null}
+          {product.description?.trim() ? (
             <div className="mt-4 text-muted-foreground">
               <h2 className="text-sm font-semibold text-foreground">
                 Description
               </h2>
-              <p className="mt-1 whitespace-pre-wrap">{product.description}</p>
+              <p className="mt-1 whitespace-pre-wrap">{product.description.trim()}</p>
             </div>
-          )}
+          ) : null}
 
           {variants.length > 1 && (
             <div className="mt-6">

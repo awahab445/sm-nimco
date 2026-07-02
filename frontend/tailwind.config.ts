@@ -18,11 +18,16 @@ const config = {
           '0 1px 3px 0 color-mix(in srgb, #1A2E40 7%, transparent), 0 4px 14px -2px color-mix(in srgb, #4f90f1 10%, transparent)',
       },
       animation: {
+        marquee: 'marquee var(--marquee-duration, 25s) linear infinite',
         'whatsapp-bounce': 'whatsapp-bounce 2.5s ease-in-out infinite',
         'plp-sheet-enter': 'plp-sheet-enter 0.32s ease-out',
         'plp-backdrop-enter': 'plp-backdrop-enter 0.24s ease-out',
       },
       keyframes: {
+        marquee: {
+          '0%': { transform: 'translate3d(0, 0, 0)' },
+          '100%': { transform: 'translate3d(-100%, 0, 0)' },
+        },
         'whatsapp-bounce': {
           '0%, 100%': { transform: 'translateY(0)' },
           '50%': { transform: 'translateY(-6px)' },

@@ -19,6 +19,8 @@ import { formatVariantAttributes } from '@/lib/format-variant-attributes';
 import { trackAddPaymentInfo, trackAddShippingInfo } from '@/lib/analytics/events';
 
 const EMPTY_CART_ITEMS: CartItem[] = [];
+const MIN_ORDER_VALUE = 800;
+const FREE_DELIVERY_THRESHOLD = 2000;
 
 const PAKISTAN_PROVINCES = [
   'Sindh',
@@ -132,6 +134,7 @@ export function OnePageCheckout() {
   const [shippingError, setShippingError] = useState<string | null>(null);
 
   const [formError, setFormError] = useState<string | null>(null);
+  const [showMinimumOrderModal, setShowMinimumOrderModal] = useState(false);
 
   const { isAuthenticated, user } = useAuthStore();
   const [savedAddresses, setSavedAddresses] = useState<AddressWithId[]>([]);
@@ -373,10 +376,19 @@ export function OnePageCheckout() {
   );
   const displaySubtotal = parsedSubtotal;
   const displayDiscountTotal = parsedDiscount;
-  const displayShippingTotal = Number.isFinite(shippingFee) ? shippingFee : 0;
+  const qualifiesForFreeDelivery = displaySubtotal >= FREE_DELIVERY_THRESHOLD;
+  const displayShippingTotal = qualifiesForFreeDelivery
+    ? 0
+    : Number.isFinite(shippingFee)
+      ? shippingFee
+      : 0;
   const displayGrandTotal = Math.max(
     0,
     parsedSubtotal - parsedDiscount + displayShippingTotal + parsedTax,
+  );
+  const amountRemainingForFreeDelivery = Math.max(
+    0,
+    FREE_DELIVERY_THRESHOLD - displaySubtotal,
   );
 
   const handlePlaceOrder = async (e: React.FormEvent) => {
@@ -402,6 +414,10 @@ export function OnePageCheckout() {
     }
     if (!isEmailValid(customerEmail)) {
       setFormError('Please enter a valid email address.');
+      return;
+    }
+    if (displaySubtotal < MIN_ORDER_VALUE) {
+      setShowMinimumOrderModal(true);
       return;
     }
 
@@ -1205,11 +1221,24 @@ export function OnePageCheckout() {
                 <span className="text-muted-foreground">Shipping</span>
                 <span>
                   {selectedShipping
-                    ? formatPrice(displayShippingTotal, displayCurrency)
+                    ? qualifiesForFreeDelivery
+                      ? 'Free'
+                      : formatPrice(displayShippingTotal, displayCurrency)
                     : '—'}
                 </span>
               </div>
             </div>
+            {!qualifiesForFreeDelivery && displaySubtotal >= MIN_ORDER_VALUE ? (
+              <p className="mt-3 rounded-md bg-[#4f90f1]/10 px-3 py-2 text-xs font-medium text-[#2f6fcb]">
+                Add {formatPrice(amountRemainingForFreeDelivery, displayCurrency)} more to get Free
+                Delivery.
+              </p>
+            ) : null}
+            {qualifiesForFreeDelivery ? (
+              <p className="mt-3 rounded-md bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-700">
+                Congratulations! Your order qualifies for Free Delivery.
+              </p>
+            ) : null}
             <div className="mt-4 flex justify-between border-t border-border pt-4 text-lg font-semibold text-foreground">
               <span>Total</span>
               <span>{formatPrice(displayGrandTotal, displayCurrency)}</span>
@@ -1232,6 +1261,30 @@ export function OnePageCheckout() {
           </div>
         </div>
       </div>
+      {showMinimumOrderModal ? (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-[#0e2d5f]/55 px-4">
+          <div className="w-full max-w-md rounded-2xl border border-[#78aefb] bg-white p-6 shadow-2xl">
+            <h3 className="text-lg font-bold text-[#2f6fcb]">Minimum order required</h3>
+            <p className="mt-3 text-sm leading-6 text-slate-700">
+              A minimum order value of Rs. 800 is required to place an order. Please add more items
+              to your cart.
+              <br />
+              <span className="mt-1 inline-block font-medium text-[#2f6fcb]">
+                Note: Shopping of Rs. 2000 or more qualifies for Free Delivery!
+              </span>
+            </p>
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setShowMinimumOrderModal(false)}
+                className="rounded-lg bg-[#4f90f1] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#2f6fcb]"
+              >
+                Back to cart
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </form>
   );
 }
