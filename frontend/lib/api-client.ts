@@ -266,7 +266,6 @@ export interface StorefrontNavigationPayload {
 
 export const STOREFRONT_NAV_FALLBACK: StorefrontNavigationPayload = {
   header: [
-    { id: '00000000-0000-0000-0000-00000000e001', label: 'Home', secondaryLabel: null, href: '/', sortOrder: 0, openMegaMenu: false },
     { id: '00000000-0000-0000-0000-00000000e002', label: 'Products', secondaryLabel: 'Categories', href: '/products', sortOrder: 10, openMegaMenu: true },
     { id: '00000000-0000-0000-0000-00000000e004', label: 'Deals', secondaryLabel: null, href: '/deals', sortOrder: 15, openMegaMenu: false },
     { id: '00000000-0000-0000-0000-00000000e003', label: 'Track order', secondaryLabel: null, href: '/track-order', sortOrder: 20, openMegaMenu: false },

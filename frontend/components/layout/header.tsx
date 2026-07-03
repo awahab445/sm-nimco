@@ -61,7 +61,9 @@ function navListsEqual(a: StorefrontNavItem[], b: StorefrontNavItem[]): boolean 
 export function Header() {
   const { isAuthenticated } = useAuthStore();
   const cart = useCartStore((s) => s.cart);
-  const cartItemCount = cart?.items?.reduce((sum, i) => sum + i.quantity, 0) ?? 0;
+  const cartItemCount =
+    (cart?.items?.reduce((sum, i) => sum + (i.quantity ?? 0), 0) ?? 0) +
+    (cart?.bundles?.reduce((sum, b) => sum + (b.quantity ?? 0), 0) ?? 0);
   const defaultLogoSrc = getStoreLogoSrc();
   const [logoSrc, setLogoSrc] = useState(defaultLogoSrc);
   const [logoWidth, setLogoWidth] = useState(DEFAULT_LOGO_WIDTH);
@@ -162,33 +164,6 @@ export function Header() {
           primaryHref={item.href}
           adminBanner={adminBanner}
         />
-      );
-    }
-    if (isCartHref(item.href)) {
-      return (
-        <Link
-          key={item.id}
-          href={item.href}
-          className="relative inline-flex items-center justify-center text-white transition-colors hover:text-white"
-          aria-label={
-            cartItemCount > 0
-              ? `${item.label}, ${cartItemCount} ${cartItemCount === 1 ? 'item' : 'items'}`
-              : item.label
-          }
-          title={item.label}
-        >
-          <span className="relative inline-flex h-6 w-6 items-center justify-center text-white">
-            <ShoppingBagIcon className="h-6 w-6 text-white" strokeWidth={2} aria-hidden />
-            {cartItemCount > 0 ? (
-              <span
-                className="pointer-events-none absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-semibold leading-none text-white ring-2 ring-primary"
-                aria-hidden
-              >
-                {cartItemCount > 99 ? '99+' : cartItemCount}
-              </span>
-            ) : null}
-          </span>
-        </Link>
       );
     }
     return (
@@ -352,7 +327,7 @@ export function Header() {
                 unoptimized={logoSrc.startsWith('http')}
               />
             </div>
-            <span className="ml-1 text-lg font-bold tracking-wide text-primary-foreground">M. Essa Chemicals</span>
+            <span className="ml-1 hidden text-lg font-bold tracking-wide text-primary-foreground lg:inline">M. Essa Chemicals</span>
           </div>
         </Link>
 
@@ -366,7 +341,9 @@ export function Header() {
         >
           {desktopNavLinks.map((item) => desktopNavItem(item))}
           <UserMenuDropdown />
-          {cartNavItem ? desktopNavItem(cartNavItem) : null}
+          {cartNavItem ? (
+            <CartPreviewDropdown label={cartNavItem.label} href={cartNavItem.href} />
+          ) : null}
         </nav>
 
         {hydrated ? (
