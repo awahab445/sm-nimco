@@ -5,10 +5,13 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { ShoppingBagIcon } from '@/components/icons/shopping-bag-icon';
 import { useCartStore } from '@/lib/cart.store';
 import { useHydrated } from '@/lib/use-hydrated';
+import { CartLineItemThumb } from '@/components/cart/cart-line-item-thumb';
 import { formatPrice, APP_CURRENCY } from '@/lib/currency';
-import { resolveImageUrl } from '@/lib/resolve-image-url';
 import { formatVariantAttributes } from '@/lib/format-variant-attributes';
 import { storefrontUi } from '@/lib/storefront-ui';
+import {
+  useCartItemFallbackImages,
+} from '@/lib/use-cart-item-fallback-images';
 import type { CartItem } from '@/lib/api-client';
 
 const CLOSE_MS = 180;
@@ -19,8 +22,15 @@ type CartPreviewDropdownProps = {
   href?: string;
 };
 
-function CartPreviewLine({ item, currency }: { item: CartItem; currency: string }) {
-  const imageUrl = resolveImageUrl(item.productImage);
+function CartPreviewLine({
+  item,
+  currency,
+  fallbackProductImages,
+}: {
+  item: CartItem;
+  currency: string;
+  fallbackProductImages: Record<string, string>;
+}) {
   const attrLines = formatVariantAttributes(item.variantAttributes ?? item.attributes);
   const subtitle =
     attrLines.length > 0
@@ -29,21 +39,11 @@ function CartPreviewLine({ item, currency }: { item: CartItem; currency: string 
 
   return (
     <li className="flex gap-3 py-2.5">
-      <div className="h-12 w-12 shrink-0 overflow-hidden rounded-md bg-muted">
-        {imageUrl ? (
-          <img
-            src={imageUrl}
-            alt={item.productName || 'Product'}
-            className="h-full w-full object-cover"
-            loading="lazy"
-            decoding="async"
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center text-[9px] text-muted-foreground">
-            —
-          </div>
-        )}
-      </div>
+      <CartLineItemThumb
+        item={item}
+        fallbackProductImages={fallbackProductImages}
+        size="sm"
+      />
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium text-foreground">
           {item.productName ?? 'Product'}
@@ -68,6 +68,7 @@ export function CartPreviewDropdown({ label = 'Cart', href = '/cart' }: CartPrev
   const isLoading = useCartStore((s) => s.isLoading);
   const refreshCart = useCartStore((s) => s.refreshCart);
   const items = cart?.items ?? [];
+  const fallbackProductImages = useCartItemFallbackImages(items);
   const cartItemCount = items.reduce((sum, i) => sum + i.quantity, 0);
   const displayCurrency = cart?.currency ?? APP_CURRENCY;
   const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
@@ -109,7 +110,7 @@ export function CartPreviewDropdown({ label = 'Cart', href = '/cart' }: CartPrev
     >
       <Link
         href={href}
-        className="relative inline-flex h-full items-center justify-center text-white transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-primary"
+        className="header-cart-trigger relative inline-flex h-full items-center justify-center text-white transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-primary"
         aria-label={
           cartItemCount > 0
             ? `${label}, ${cartItemCount} ${cartItemCount === 1 ? 'item' : 'items'}`
@@ -120,8 +121,8 @@ export function CartPreviewDropdown({ label = 'Cart', href = '/cart' }: CartPrev
         onFocus={openPreview}
         onBlur={scheduleClose}
       >
-        <span className="relative inline-flex h-6 w-6 items-center justify-center text-white">
-          <ShoppingBagIcon className="h-6 w-6 text-white" strokeWidth={2} aria-hidden />
+        <span className="relative inline-flex h-6 w-6 items-center justify-center text-white [&_.cart-icon]:text-white">
+          <ShoppingBagIcon className="h-6 w-6 shrink-0 text-white" strokeWidth={2} aria-hidden />
           {hydrated && cartItemCount > 0 ? (
             <span
               className="pointer-events-none absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-semibold leading-none text-white ring-2 ring-brand-primary"
@@ -166,7 +167,12 @@ export function CartPreviewDropdown({ label = 'Cart', href = '/cart' }: CartPrev
             <>
               <ul className="max-h-[min(16rem,40vh)] divide-y divide-border overflow-y-auto overscroll-contain px-4">
                 {previewItems.map((item) => (
-                  <CartPreviewLine key={item.variantId} item={item} currency={displayCurrency} />
+                  <CartPreviewLine
+                    key={item.variantId}
+                    item={item}
+                    currency={displayCurrency}
+                    fallbackProductImages={fallbackProductImages}
+                  />
                 ))}
               </ul>
               {hiddenCount > 0 ? (

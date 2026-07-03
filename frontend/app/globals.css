@@ -180,6 +180,16 @@ details.mega-menu-mobile-root[open] > summary .header-nav-trigger__chevron {
   color: inherit;
 }
 
+.site-header nav .header-cart-trigger,
+.site-header nav .header-cart-trigger:hover,
+.site-header nav .header-cart-trigger:focus-visible {
+  color: #fff;
+}
+
+.site-header nav .header-cart-trigger .cart-icon {
+  color: #fff;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .header-user-menu {
     animation: none;
