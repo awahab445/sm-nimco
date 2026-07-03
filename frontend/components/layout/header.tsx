@@ -20,6 +20,7 @@ import {
 import { SearchBar } from '@/components/search/search-bar';
 import { DesktopShopMegaMenu, MobileCategoryAccordions } from '@/components/layout/store-mega-menu';
 import { UserMenuDropdown } from '@/components/layout/user-menu-dropdown';
+import { CartPreviewDropdown } from '@/components/layout/cart-preview-dropdown';
 import { ShoppingBagIcon } from '@/components/icons/shopping-bag-icon';
 
 const DESKTOP_NAV_MIN_WIDTH = 1024;
@@ -155,31 +156,7 @@ export function Header() {
       );
     }
     if (isCartHref(item.href)) {
-      return (
-        <Link
-          key={item.id}
-          href={item.href}
-          className="relative inline-flex items-center justify-center text-white transition-colors hover:text-white"
-          aria-label={
-            cartItemCount > 0
-              ? `${item.label}, ${cartItemCount} ${cartItemCount === 1 ? 'item' : 'items'}`
-              : item.label
-          }
-          title={item.label}
-        >
-          <span className="relative inline-flex h-6 w-6 items-center justify-center text-white">
-            <ShoppingBagIcon className="h-6 w-6 text-white" strokeWidth={2} aria-hidden />
-            {cartItemCount > 0 ? (
-              <span
-                className="pointer-events-none absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-semibold leading-none text-white ring-2 ring-brand-primary"
-                aria-hidden
-              >
-                {cartItemCount > 99 ? '99+' : cartItemCount}
-              </span>
-            ) : null}
-          </span>
-        </Link>
-      );
+      return <CartPreviewDropdown key={item.id} label={item.label} href={item.href} />;
     }
     return (
       <Link

@@ -167,8 +167,27 @@ details.mega-menu-mobile-root[open] > summary .header-nav-trigger__chevron {
   font-weight: 600;
 }
 
+.header-cart-preview {
+  animation: header-user-menu-enter 0.18s ease-out forwards;
+  border-radius: var(--radius-md, 0.5rem);
+  border: 1px solid color-mix(in srgb, var(--border) 88%, transparent);
+  background: var(--popover, var(--card));
+  color: var(--popover-foreground, var(--foreground));
+  box-shadow: var(--mega-menu-shadow, 0 12px 32px -8px color-mix(in srgb, var(--foreground) 18%, transparent));
+}
+
+.site-header nav .header-cart-preview a {
+  color: inherit;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .header-user-menu {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .header-cart-preview {
     animation: none;
     opacity: 1;
     transform: none;
