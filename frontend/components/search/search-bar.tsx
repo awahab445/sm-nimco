@@ -116,15 +116,15 @@ export function SearchBar({ variant = 'default' }: { variant?: 'default' | 'head
               onFocus={() => query.trim().length >= MIN_QUERY_LENGTH && setOpen(true)}
               className={
                 isHeader
-                  ? 'w-full rounded-lg border border-white/30 bg-white/15 py-2 pl-4 pr-10 text-sm text-white placeholder:text-blue-100/80 focus:border-blue-200 focus:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/25'
-                  : 'w-full rounded-lg border border-input bg-card py-2 pl-4 pr-10 text-sm text-brand-text placeholder:text-brand-accent/70 focus:border-brand-primary focus:bg-card focus:outline-none focus:ring-2 focus:ring-brand-primary/25'
+                  ? 'w-full rounded-lg border border-primary-foreground/30 bg-primary-foreground/15 py-2 pl-4 pr-10 text-sm text-primary-foreground placeholder:text-primary-foreground/70 focus:border-primary-foreground/50 focus:bg-primary-foreground/20 focus:outline-none focus:ring-2 focus:ring-primary-foreground/25'
+                  : 'w-full rounded-lg border border-input bg-card py-2 pl-4 pr-10 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:bg-card focus:outline-none focus:ring-2 focus:ring-primary/25'
               }
               aria-expanded={open}
               aria-controls="search-suggestions"
               aria-autocomplete="list"
             />
             <span
-              className={`pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 ${isHeader ? 'text-blue-100' : 'text-muted-foreground'}`}
+              className={`pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 ${isHeader ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}
               aria-hidden
             >
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -137,7 +137,7 @@ export function SearchBar({ variant = 'default' }: { variant?: 'default' | 'head
         <div
           className={
             isHeader
-              ? 'h-[38px] w-full rounded-lg border border-white/30 bg-white/15'
+              ? 'h-[38px] w-full rounded-lg border border-primary-foreground/30 bg-primary-foreground/15'
               : 'h-[38px] w-full rounded-lg border border-input bg-card'
           }
           aria-hidden

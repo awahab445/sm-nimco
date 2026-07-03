@@ -171,7 +171,7 @@ export function Header() {
             <ShoppingBagIcon className="h-6 w-6 text-white" strokeWidth={2} aria-hidden />
             {cartItemCount > 0 ? (
               <span
-                className="pointer-events-none absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-semibold leading-none text-white ring-2 ring-brand-primary"
+                className="pointer-events-none absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-semibold leading-none text-white ring-2 ring-primary"
                 aria-hidden
               >
                 {cartItemCount > 99 ? '99+' : cartItemCount}
@@ -224,7 +224,7 @@ export function Header() {
             <ShoppingBagIcon className="h-6 w-6 text-white" strokeWidth={2} aria-hidden />
             {cartItemCount > 0 ? (
               <span
-                className="pointer-events-none absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-semibold leading-none text-white ring-2 ring-brand-primary"
+                className="pointer-events-none absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-semibold leading-none text-white ring-2 ring-primary"
                 aria-hidden
               >
                 {cartItemCount > 99 ? '99+' : cartItemCount}
@@ -305,7 +305,7 @@ export function Header() {
                 </Link>
                 <Link
                   href="/register"
-                  className="mt-1 rounded-md bg-brand-primary px-3 py-3 text-center text-base font-medium text-white shadow-sm transition-all duration-200 hover:brightness-110 sm:py-2.5 sm:text-sm"
+                  className="mt-1 rounded-md bg-primary px-3 py-3 text-center text-base font-medium text-primary-foreground shadow-sm transition-all duration-200 hover:bg-primary-hover sm:py-2.5 sm:text-sm"
                   onClick={closeMobileNav}
                 >
                   Sign up
@@ -318,11 +318,11 @@ export function Header() {
     ) : null;
 
   return (
-    <header className="site-header sticky top-0 z-[60] w-full max-w-full overflow-visible border-b relative bg-[#4f90f1]">
+    <header className="site-header sticky top-0 z-[60] w-full max-w-full overflow-visible border-b relative bg-primary">
       <div className="mx-auto flex min-h-14 w-full min-w-0 max-w-[100rem] items-center justify-between gap-2 py-1.5 px-4 sm:gap-3 sm:px-8 lg:gap-4 lg:px-12 xl:px-16">
         <Link
           href="/"
-          className="inline-flex shrink-0 items-center bg-transparent outline-none ring-0 focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-primary"
+          className="inline-flex shrink-0 items-center bg-transparent outline-none ring-0 focus-visible:ring-2 focus-visible:ring-primary-foreground/50 focus-visible:ring-offset-2 focus-visible:ring-offset-primary"
         >
           <div className="flex items-center gap-2">
             <div
@@ -342,7 +342,7 @@ export function Header() {
                 unoptimized={logoSrc.startsWith('http')}
               />
             </div>
-            <span className="ml-1 text-lg font-bold tracking-wide text-white">M. Essa Chemicals</span>
+            <span className="ml-1 text-lg font-bold tracking-wide text-primary-foreground">M. Essa Chemicals</span>
           </div>
         </Link>
 
@@ -362,7 +362,7 @@ export function Header() {
         {hydrated ? (
           <button
             type="button"
-            className="inline-flex shrink-0 items-center justify-center rounded-md border border-white/30 bg-brand-primary p-2.5 text-white shadow-sm transition-colors hover:bg-brand-accent hover:text-white active:brightness-95 lg:hidden"
+            className="inline-flex shrink-0 items-center justify-center rounded-md border border-primary-foreground/30 bg-primary p-2.5 text-primary-foreground shadow-sm transition-colors hover:bg-primary-hover hover:text-primary-foreground active:brightness-95 lg:hidden"
             aria-expanded={mobileNavOpen}
             aria-controls="mobile-main-nav"
             aria-haspopup="dialog"
@@ -381,7 +381,7 @@ export function Header() {
           </button>
         ) : (
           <span
-            className="inline-flex shrink-0 rounded-md border border-white/30 bg-brand-primary p-2.5 lg:hidden"
+            className="inline-flex shrink-0 rounded-md border border-primary-foreground/30 bg-primary p-2.5 lg:hidden"
             aria-hidden
           >
             <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">

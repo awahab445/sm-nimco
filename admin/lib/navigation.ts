@@ -156,6 +156,13 @@ export const adminNavGroups: NavGroup[] = [
         requirePermission: ['settings.manage'],
       },
       {
+        href: '/settings/theme',
+        label: 'Store theme',
+        description: 'Storefront color palette and visual style',
+        phase: 'N',
+        requirePermission: ['settings.manage'],
+      },
+      {
         href: '/analytics',
         label: 'Analytics',
         description: 'GA4 enhanced ecommerce tracking',

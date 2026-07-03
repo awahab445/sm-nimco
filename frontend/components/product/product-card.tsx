@@ -65,8 +65,8 @@ export function ProductCard({ product, showViewOnly = false, availableQuantity }
   };
 
   return (
-    <div className="group flex flex-col overflow-hidden rounded-lg border border-border bg-card text-brand-text shadow-product-card transition-shadow hover:shadow-md">
-      <Link href={`/products/${product.slug}`} className="relative aspect-square overflow-hidden bg-brand-secondary/20">
+    <div className="group flex flex-col overflow-hidden rounded-lg border border-border bg-card text-foreground shadow-product-card transition-all hover:border-primary/35 hover:shadow-md">
+      <Link href={`/products/${product.slug}`} className="relative aspect-square overflow-hidden bg-secondary/30">
         {imageUrl ? (
           <img
             src={imageUrl}
@@ -81,11 +81,11 @@ export function ProductCard({ product, showViewOnly = false, availableQuantity }
       </Link>
       <div className="flex flex-1 flex-col p-4">
         <Link href={`/products/${product.slug}`}>
-          <h3 className="font-medium text-brand-text line-clamp-2">
+          <h3 className="font-medium text-foreground line-clamp-2 transition-colors group-hover:text-primary">
             {product.name}
           </h3>
         </Link>
-        <p className="mt-1 text-sm font-medium text-brand-text/90">
+        <p className="mt-1 text-sm font-medium text-foreground/90">
           {formatPrice(product.basePrice)}
         </p>
         <div className="mt-auto pt-3">

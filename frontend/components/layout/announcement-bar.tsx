@@ -39,7 +39,7 @@ export function AnnouncementBar() {
   const trackStyle = { '--marquee-duration': `${durationSeconds}s` } as CSSProperties;
 
   return (
-    <div className="group relative left-1/2 right-1/2 z-[70] -ml-[50vw] -mr-[50vw] w-screen max-w-[100vw] overflow-hidden border-b border-sky-200 bg-[#E0F2FE] py-2 text-[#1E3A8A]">
+    <div className="group relative left-1/2 right-1/2 z-[70] -ml-[50vw] -mr-[50vw] w-screen max-w-[100vw] overflow-hidden border-b border-secondary/80 bg-secondary py-2 text-primary">
       <div className="flex min-w-full whitespace-nowrap">
         <div
           className="flex min-w-full shrink-0 animate-marquee justify-around gap-4 pr-4 group-hover:[animation-play-state:paused]"

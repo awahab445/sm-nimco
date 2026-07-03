@@ -957,3 +957,13 @@ model SiteConfig {
 
   @@map("site_config")
 }
+
+/// Singleton storefront theme settings (id is always "default").
+model StoreSettings {
+  id                   String   @id @default("default")
+  currentTheme         String   @default("tailwind") @map("current_theme") @db.VarChar(32)
+  updatedAt            DateTime @updatedAt @map("updated_at")
+  updatedByAdminUserId String?  @map("updated_by_admin_user_id")
+
+  @@map("store_settings")
+}

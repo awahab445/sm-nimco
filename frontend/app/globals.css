@@ -2,20 +2,94 @@
 @config "../tailwind.config.ts";
 @import "../styles/store-themes.css";
 
+/* Admin-provisioned storefront themes (data-theme on <html>) */
+[data-theme="tailwind"] {
+  --primary: #4f90f1;
+  --primary-hover: #3577d9;
+  --primary-foreground: #ffffff;
+  --secondary: #eef4fe;
+  --secondary-foreground: #1a2e40;
+  --background: #f5f5f5;
+  --foreground: #1a2e40;
+  --muted: #f0f7ff;
+  --muted-foreground: #3577d9;
+  --card: #ffffff;
+  --card-foreground: #1a2e40;
+  --border: #e3eef9;
+  --accent: #e8f4ff;
+  --accent-foreground: #3577d9;
+  --ring: #4f90f1;
+  --navbar-background: #3577d9;
+  --navbar-foreground: #ffffff;
+  --navbar-muted-foreground: #dbeafe;
+  --navbar-border: #1e3a8a;
+}
+
+[data-theme="ember"] {
+  --primary: #c2410c;
+  --primary-hover: #9a3412;
+  --primary-foreground: #fff7ed;
+  --secondary: #ffedd5;
+  --secondary-foreground: #7c2d12;
+  --background: #fafaf9;
+  --foreground: #1c1917;
+  --muted: #f5f5f4;
+  --muted-foreground: #78716c;
+  --card: #ffffff;
+  --card-foreground: #1c1917;
+  --border: #e7e5e4;
+  --accent: #fed7aa;
+  --accent-foreground: #7c2d12;
+  --ring: #ea580c;
+  --navbar-background: #9a3412;
+  --navbar-foreground: #fff7ed;
+  --navbar-muted-foreground: #ffedd5;
+  --navbar-border: #7c2d12;
+}
+
+[data-theme="mehfil-e-shireen"] {
+  --primary: #b8944a;
+  --primary-hover: #9a7a3a;
+  --primary-foreground: #161015;
+  --secondary: #141c2c;
+  --secondary-foreground: #f2ebe0;
+  --background: #ffffff;
+  --foreground: #2a1218;
+  --muted: #f4f4f5;
+  --muted-foreground: #57534e;
+  --card: #ffffff;
+  --card-foreground: #2a1218;
+  --border: rgba(42, 18, 24, 0.12);
+  --accent: #e7e5e4;
+  --accent-foreground: #4a1f2c;
+  --ring: #c4a052;
+  --navbar-background: linear-gradient(
+    165deg,
+    #3d121c 0%,
+    #5c1f2e 28%,
+    #6b2838 55%,
+    #5a2230 100%
+  );
+  --navbar-foreground: rgba(255, 248, 250, 0.96);
+  --navbar-muted-foreground: rgba(255, 248, 250, 0.78);
+  --navbar-border: color-mix(in srgb, var(--primary) 45%, rgba(255, 240, 245, 0.2));
+}
+
 html {
   overflow-x: clip;
-  background-color: #F5F5F5;
-  color: #1a2e40;
+  background-color: var(--background);
+  color: var(--foreground);
 }
 
 @theme inline {
-  --color-brand-primary: #4f90f1;
-  --color-brand-secondary: #eef4fe;
-  --color-brand-accent: #3577d9;
-  --color-brand-text: #1a2e40;
-  --color-brand-bg: #F5F5F5;
-  --shadow-product-card: 0 1px 3px 0 color-mix(in srgb, #1a2e40 7%, transparent),
-    0 4px 14px -2px color-mix(in srgb, #4f90f1 10%, transparent);
+  --color-brand-primary: var(--primary);
+  --color-brand-secondary: var(--secondary);
+  --color-brand-accent: var(--primary-hover);
+  --color-brand-text: var(--foreground);
+  --color-brand-bg: var(--background);
+  --color-primary-hover: var(--primary-hover);
+  --shadow-product-card: 0 1px 3px 0 color-mix(in srgb, var(--foreground) 7%, transparent),
+    0 4px 14px -2px color-mix(in srgb, var(--primary) 10%, transparent);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);
@@ -57,7 +131,7 @@ body {
 @layer base {
   html,
   body {
-    @apply bg-brand-bg text-brand-text;
+    @apply bg-background text-foreground;
   }
 
   h1,
@@ -68,7 +142,25 @@ body {
   span,
   input,
   button {
-    @apply text-brand-text;
+    @apply text-foreground;
+  }
+}
+
+@layer components {
+  .btn-brand-primary {
+    @apply rounded-md bg-primary font-semibold text-primary-foreground shadow-sm transition-all duration-200;
+  }
+
+  .btn-brand-primary:hover:not(:disabled) {
+    background-color: var(--primary-hover);
+  }
+
+  .btn-brand-primary:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+
+  .btn-brand-primary:disabled {
+    @apply cursor-not-allowed opacity-50;
   }
 }
 
@@ -187,11 +279,11 @@ details.mega-menu-mobile-root[open] > summary .header-nav-trigger__chevron {
 }
 
 .site-header {
-  background-color: #4f90f1 !important;
+  background: var(--navbar-background, var(--primary)) !important;
   background-image: none !important;
   position: relative;
-  border-bottom-color: var(--navbar-border);
-  color: var(--navbar-foreground, #ffffff);
+  border-bottom-color: var(--navbar-border, color-mix(in srgb, var(--primary-hover) 70%, transparent));
+  color: var(--navbar-foreground, var(--primary-foreground));
 }
 
 /* Header bar links, icons, and triggers — high contrast on navbar background */
@@ -543,13 +635,13 @@ html[data-store-theme="mehfil_shereen"] .store-mega-menu-panel .mega-menu-nav-ne
 }
 
 .plp-browse-tree .mega-menu-nav-link--active {
-  background-color: color-mix(in srgb, var(--color-brand-secondary, #eef4fe) 45%, transparent);
-  color: var(--color-brand-accent, #3577d9);
+  background-color: color-mix(in srgb, var(--secondary) 45%, transparent);
+  color: var(--primary);
 }
 
 .plp-browse-tree .mega-menu-nav-link:hover,
 .plp-browse-tree .mega-menu-nav-link:focus-visible {
-  background-color: color-mix(in srgb, var(--color-brand-secondary, #eef4fe) 35%, transparent);
+  background-color: color-mix(in srgb, var(--secondary) 35%, transparent);
 }
 
 /* Mobile layered navigation */

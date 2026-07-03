@@ -1,21 +1,32 @@
 import type { Config } from 'tailwindcss';
 
-/** Brand palette + product-card shadow — sole theme source (see app/globals.css @config). */
+/** Theme tokens are driven by CSS variables on <html data-theme> (see app/globals.css). */
 const config = {
   theme: {
     extend: {
-      colors: {
+        colors: {
+        'primary-hover': 'var(--primary-hover)',
+        primary: {
+          DEFAULT: 'var(--primary)',
+          hover: 'var(--primary-hover)',
+          foreground: 'var(--primary-foreground)',
+        },
+        secondary: {
+          DEFAULT: 'var(--secondary)',
+          foreground: 'var(--secondary-foreground)',
+        },
+        background: 'var(--background)',
         brand: {
-          primary: '#4f90f1',
-          secondary: '#eef4fe',
-          accent: '#3577d9',
-          text: '#1A2E40',
-          bg: '#F5F5F5',
+          primary: 'var(--primary)',
+          secondary: 'var(--secondary)',
+          accent: 'var(--primary-hover)',
+          text: 'var(--foreground)',
+          bg: 'var(--background)',
         },
       },
       boxShadow: {
         'product-card':
-          '0 1px 3px 0 color-mix(in srgb, #1A2E40 7%, transparent), 0 4px 14px -2px color-mix(in srgb, #4f90f1 10%, transparent)',
+          '0 1px 3px 0 color-mix(in srgb, var(--foreground) 7%, transparent), 0 4px 14px -2px color-mix(in srgb, var(--primary) 10%, transparent)',
       },
       animation: {
         marquee: 'marquee var(--marquee-duration, 25s) linear infinite',

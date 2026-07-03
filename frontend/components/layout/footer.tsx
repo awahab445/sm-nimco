@@ -33,8 +33,8 @@ export function Footer() {
     <footer
       className={
         IS_MEHFIL_THEME
-          ? 'border-t border-primary/25 bg-brand-primary text-white'
-          : 'border-t border-border bg-brand-primary'
+          ? 'border-t border-primary/25 bg-primary text-primary-foreground'
+          : 'border-t border-border bg-primary text-primary-foreground'
       }
     >
       <div className="mx-auto w-full max-w-[100rem] px-4 py-12 sm:px-8 lg:px-12 xl:px-16">
@@ -43,8 +43,8 @@ export function Footer() {
             <p
               className={
                 IS_MEHFIL_THEME
-                  ? 'text-sm font-semibold text-white'
-                  : 'text-sm font-semibold text-white'
+                  ? 'text-sm font-semibold text-primary-foreground'
+                  : 'text-sm font-semibold text-primary-foreground'
               }
             >
               {STORE_NAME}
@@ -52,8 +52,8 @@ export function Footer() {
             <p
               className={
                 IS_MEHFIL_THEME
-                  ? 'mt-3 max-w-xs text-sm text-white/80'
-                  : 'mt-3 max-w-xs text-sm text-white/80'
+                  ? 'mt-3 max-w-xs text-sm text-primary-foreground/80'
+                  : 'mt-3 max-w-xs text-sm text-primary-foreground/80'
               }
             >
               Curated products, secure checkout, and order tracking — built for how people shop today.
@@ -63,8 +63,8 @@ export function Footer() {
             <h3
               className={
                 IS_MEHFIL_THEME
-                  ? 'text-xs font-semibold uppercase tracking-wider text-white'
-                  : 'text-xs font-semibold uppercase tracking-wider text-white'
+                  ? 'text-xs font-semibold uppercase tracking-wider text-primary-foreground'
+                  : 'text-xs font-semibold uppercase tracking-wider text-primary-foreground'
               }
             >
               Shop
@@ -75,8 +75,8 @@ export function Footer() {
                   href="/products"
                   className={
                     IS_MEHFIL_THEME
-                      ? 'text-sm text-white transition-colors hover:text-blue-100'
-                      : 'text-sm text-white transition-colors hover:text-blue-100'
+                      ? 'text-sm text-primary-foreground transition-colors hover:text-primary-foreground/80'
+                      : 'text-sm text-primary-foreground transition-colors hover:text-primary-foreground/80'
                   }
                 >
                   All products
@@ -88,8 +88,8 @@ export function Footer() {
                     href={`/categories/${c.slug}`}
                     className={
                       IS_MEHFIL_THEME
-                        ? 'text-sm text-white transition-colors hover:text-blue-100'
-                        : 'text-sm text-white transition-colors hover:text-blue-100'
+                        ? 'text-sm text-primary-foreground transition-colors hover:text-primary-foreground/80'
+                        : 'text-sm text-primary-foreground transition-colors hover:text-primary-foreground/80'
                     }
                   >
                     {c.name}
@@ -102,8 +102,8 @@ export function Footer() {
             <h3
               className={
                 IS_MEHFIL_THEME
-                  ? 'text-xs font-semibold uppercase tracking-wider text-white'
-                  : 'text-xs font-semibold uppercase tracking-wider text-white'
+                  ? 'text-xs font-semibold uppercase tracking-wider text-primary-foreground'
+                  : 'text-xs font-semibold uppercase tracking-wider text-primary-foreground'
               }
             >
               Customer care
@@ -114,8 +114,8 @@ export function Footer() {
                   href="/track-order"
                   className={
                     IS_MEHFIL_THEME
-                      ? 'text-sm text-white transition-colors hover:text-blue-100'
-                      : 'text-sm text-white transition-colors hover:text-blue-100'
+                      ? 'text-sm text-primary-foreground transition-colors hover:text-primary-foreground/80'
+                      : 'text-sm text-primary-foreground transition-colors hover:text-primary-foreground/80'
                   }
                 >
                   Track order
@@ -126,11 +126,11 @@ export function Footer() {
                   href="/cart"
                   className={
                     IS_MEHFIL_THEME
-                      ? 'inline-flex items-center gap-2 text-sm text-white transition-colors hover:text-blue-100'
-                      : 'inline-flex items-center gap-2 text-sm text-white transition-colors hover:text-blue-100'
+                      ? 'inline-flex items-center gap-2 text-sm text-primary-foreground transition-colors hover:text-primary-foreground/80'
+                      : 'inline-flex items-center gap-2 text-sm text-primary-foreground transition-colors hover:text-primary-foreground/80'
                   }
                 >
-                  <ShoppingBagIcon className="h-4 w-4 shrink-0 text-white" strokeWidth={2} aria-hidden />
+                  <ShoppingBagIcon className="h-4 w-4 shrink-0 text-primary-foreground" strokeWidth={2} aria-hidden />
                   Shopping cart
                 </Link>
               </li>
@@ -139,8 +139,8 @@ export function Footer() {
                   href="/track-order"
                   className={
                     IS_MEHFIL_THEME
-                      ? 'text-sm text-white transition-colors hover:text-blue-100'
-                      : 'text-sm text-white transition-colors hover:text-blue-100'
+                      ? 'text-sm text-primary-foreground transition-colors hover:text-primary-foreground/80'
+                      : 'text-sm text-primary-foreground transition-colors hover:text-primary-foreground/80'
                   }
                 >
                   Order help
@@ -152,8 +152,8 @@ export function Footer() {
             <h3
               className={
                 IS_MEHFIL_THEME
-                  ? 'text-xs font-semibold uppercase tracking-wider text-white'
-                  : 'text-xs font-semibold uppercase tracking-wider text-white'
+                  ? 'text-xs font-semibold uppercase tracking-wider text-primary-foreground'
+                  : 'text-xs font-semibold uppercase tracking-wider text-primary-foreground'
               }
             >
               Account
@@ -164,8 +164,8 @@ export function Footer() {
                   href="/login"
                   className={
                     IS_MEHFIL_THEME
-                      ? 'text-sm text-white transition-colors hover:text-blue-100'
-                      : 'text-sm text-white transition-colors hover:text-blue-100'
+                      ? 'text-sm text-primary-foreground transition-colors hover:text-primary-foreground/80'
+                      : 'text-sm text-primary-foreground transition-colors hover:text-primary-foreground/80'
                   }
                 >
                   Log in
@@ -176,8 +176,8 @@ export function Footer() {
                   href="/register"
                   className={
                     IS_MEHFIL_THEME
-                      ? 'text-sm text-white transition-colors hover:text-blue-100'
-                      : 'text-sm text-white transition-colors hover:text-blue-100'
+                      ? 'text-sm text-primary-foreground transition-colors hover:text-primary-foreground/80'
+                      : 'text-sm text-primary-foreground transition-colors hover:text-primary-foreground/80'
                   }
                 >
                   Create account
@@ -188,8 +188,8 @@ export function Footer() {
                   href="/account"
                   className={
                     IS_MEHFIL_THEME
-                      ? 'text-sm text-white transition-colors hover:text-blue-100'
-                      : 'text-sm text-white transition-colors hover:text-blue-100'
+                      ? 'text-sm text-primary-foreground transition-colors hover:text-primary-foreground/80'
+                      : 'text-sm text-primary-foreground transition-colors hover:text-primary-foreground/80'
                   }
                 >
                   My account
@@ -200,8 +200,8 @@ export function Footer() {
                   href="/orders"
                   className={
                     IS_MEHFIL_THEME
-                      ? 'text-sm text-white transition-colors hover:text-blue-100'
-                      : 'text-sm text-white transition-colors hover:text-blue-100'
+                      ? 'text-sm text-primary-foreground transition-colors hover:text-primary-foreground/80'
+                      : 'text-sm text-primary-foreground transition-colors hover:text-primary-foreground/80'
                   }
                 >
                   My orders
@@ -221,8 +221,8 @@ export function Footer() {
           <p
             className={
               IS_MEHFIL_THEME
-                ? 'text-sm text-white/80'
-                : 'text-sm text-white/80'
+                ? 'text-sm text-primary-foreground/80'
+                : 'text-sm text-primary-foreground/80'
             }
           >
             © {year} {STORE_NAME}. All rights reserved.
@@ -230,16 +230,16 @@ export function Footer() {
           <div
             className={
               IS_MEHFIL_THEME
-                ? 'flex flex-wrap gap-x-6 gap-y-2 text-sm text-white'
-                : 'flex flex-wrap gap-x-6 gap-y-2 text-sm text-white'
+                ? 'flex flex-wrap gap-x-6 gap-y-2 text-sm text-primary-foreground'
+                : 'flex flex-wrap gap-x-6 gap-y-2 text-sm text-primary-foreground'
             }
           >
             <Link
               href="/products"
               className={
                 IS_MEHFIL_THEME
-                  ? 'transition-colors hover:text-blue-100'
-                  : 'transition-colors hover:text-blue-100'
+                  ? 'transition-colors hover:text-primary-foreground/80'
+                  : 'transition-colors hover:text-primary-foreground/80'
               }
             >
               Shipping &amp; returns
@@ -248,8 +248,8 @@ export function Footer() {
               href="/products"
               className={
                 IS_MEHFIL_THEME
-                  ? 'transition-colors hover:text-blue-100'
-                  : 'transition-colors hover:text-blue-100'
+                  ? 'transition-colors hover:text-primary-foreground/80'
+                  : 'transition-colors hover:text-primary-foreground/80'
               }
             >
               Privacy
@@ -258,8 +258,8 @@ export function Footer() {
               href="/products"
               className={
                 IS_MEHFIL_THEME
-                  ? 'transition-colors hover:text-blue-100'
-                  : 'transition-colors hover:text-blue-100'
+                  ? 'transition-colors hover:text-primary-foreground/80'
+                  : 'transition-colors hover:text-primary-foreground/80'
               }
             >
               Terms

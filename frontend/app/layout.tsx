@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { getStoreThemeId } from "@/lib/store-theme";
+import { fetchActiveTheme } from "@/lib/theme/theme.server";
+import { toStoreThemePresetId } from "@/lib/theme/types";
 import { STORE_NAME } from "@/lib/config";
 import { AuthProvider } from "@/components/auth-provider";
 import { CartProvider } from "@/components/cart-provider";
@@ -34,12 +35,13 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const storeTheme = getStoreThemeId();
+  const activeTheme = await fetchActiveTheme();
+  const storeTheme = toStoreThemePresetId(activeTheme);
   const analyticsConfig = await fetchAnalyticsConfig();
 
   return (
-    <html lang="en" data-store-theme={storeTheme}>
-      <body className={`${geistSans.variable} ${geistMono.variable} bg-brand-bg text-brand-text antialiased`}>
+    <html lang="en" data-store-theme={storeTheme} data-theme={activeTheme}>
+      <body className={`${geistSans.variable} ${geistMono.variable} bg-background text-foreground antialiased`}>
         <GoogleTagManager />
         <AnalyticsProvider config={analyticsConfig}>
           <AuthProvider>
@@ -47,13 +49,13 @@ export default async function RootLayout({
             <div
               className={
                 storeTheme === "mehfil_shereen"
-                  ? "mehfil-store-shell flex min-h-screen min-w-0 max-w-full flex-col bg-brand-bg"
-                  : "flex min-h-screen min-w-0 max-w-full flex-col bg-brand-bg"
+                  ? "mehfil-store-shell flex min-h-screen min-w-0 max-w-full flex-col bg-background"
+                  : "flex min-h-screen min-w-0 max-w-full flex-col bg-background"
               }
             >
               <AnnouncementBar />
               <Header />
-              <main className="min-w-0 flex-1 max-w-full bg-brand-bg">{children}</main>
+              <main className="min-w-0 flex-1 max-w-full bg-background">{children}</main>
               <Footer />
             </div>
             </CartProvider>

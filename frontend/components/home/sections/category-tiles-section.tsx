@@ -42,7 +42,7 @@ export function CategoryTilesSection({ title, subtitle, limit = 8 }: CategoryTil
   return (
     <section className="space-y-6">
       <div className="max-w-7xl">
-        <h2 className="text-2xl font-bold tracking-tight text-brand-text">{title}</h2>
+        <h2 className="text-2xl font-bold tracking-tight text-foreground">{title}</h2>
         {subtitle && <p className="mt-2 max-w-2xl text-muted-foreground">{subtitle}</p>}
       </div>
 
@@ -65,7 +65,7 @@ export function CategoryTilesSection({ title, subtitle, limit = 8 }: CategoryTil
               className="group flex min-h-[7rem] flex-col justify-between rounded-xl border border-border bg-card p-4 shadow-product-card transition-shadow hover:shadow-md md:min-h-[8rem]"
             >
               <div>
-                <h3 className="font-semibold text-brand-text group-hover:text-brand-primary">{cat.name}</h3>
+                <h3 className="font-semibold text-foreground transition-colors group-hover:text-primary">{cat.name}</h3>
                 {cat.description && (
                   <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{cat.description}</p>
                 )}
