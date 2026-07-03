@@ -8,6 +8,7 @@ import {
 } from 'class-validator';
 
 const MEASUREMENT_ID_REGEX = /^G-[A-Z0-9]{6,}$/;
+const GTM_ID_REGEX = /^GTM-[A-Z0-9]+$/;
 
 export class UpdateGa4SettingsDto {
   @IsOptional()
@@ -16,6 +17,13 @@ export class UpdateGa4SettingsDto {
     message: 'measurementId must be a valid GA4 ID (e.g. G-XXXXXXXXXX)',
   })
   measurementId?: string | null;
+
+  @IsOptional()
+  @IsString()
+  @Matches(GTM_ID_REGEX, {
+    message: 'gtmId must be a valid GTM container ID (e.g. GTM-XXXXXXX)',
+  })
+  gtmId?: string | null;
 
   @IsOptional()
   @IsBoolean()
@@ -66,3 +74,4 @@ export class ToggleGa4SettingsDto {
 }
 
 export const GA4_MEASUREMENT_ID_REGEX = MEASUREMENT_ID_REGEX;
+export const GTM_CONTAINER_ID_REGEX = GTM_ID_REGEX;

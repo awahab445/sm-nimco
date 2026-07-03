@@ -4,6 +4,7 @@ import type { Ga4PublicConfig } from '@/lib/analytics/types';
 const DISABLED: Ga4PublicConfig = {
   isEnabled: false,
   measurementId: null,
+  gtmId: null,
   debugMode: false,
   trackPageViews: true,
   trackCartEvents: true,

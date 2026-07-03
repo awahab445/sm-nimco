@@ -42,7 +42,7 @@ export default async function RootLayout({
   return (
     <html lang="en" data-store-theme={storeTheme} data-theme={activeTheme}>
       <body className={`${geistSans.variable} ${geistMono.variable} bg-background text-foreground antialiased`}>
-        <GoogleTagManager />
+        <GoogleTagManager gtmId={analyticsConfig.gtmId} />
         <AnalyticsProvider config={analyticsConfig}>
           <AuthProvider>
             <CartProvider>

@@ -13,6 +13,7 @@ import { formatApiError } from '@/lib/api/error-message';
 export function Ga4SettingsForm() {
   const [settings, setSettings] = useState<Ga4Settings | null>(null);
   const [measurementId, setMeasurementId] = useState('');
+  const [gtmId, setGtmId] = useState('');
   const [debugMode, setDebugMode] = useState(false);
   const [trackPageViews, setTrackPageViews] = useState(true);
   const [trackCartEvents, setTrackCartEvents] = useState(true);
@@ -31,6 +32,7 @@ export function Ga4SettingsForm() {
   const applyToForm = useCallback((data: Ga4Settings) => {
     setSettings(data);
     setMeasurementId(data.measurementId ?? '');
+    setGtmId(data.gtmId ?? '');
     setDebugMode(data.debugMode);
     setTrackPageViews(data.trackPageViews);
     setTrackCartEvents(data.trackCartEvents);
@@ -67,6 +69,7 @@ export function Ga4SettingsForm() {
     try {
       const data = await updateGa4Settings({
         measurementId: measurementId.trim() || null,
+        gtmId: gtmId.trim() || null,
         debugMode,
         trackPageViews,
         trackCartEvents,
@@ -110,11 +113,11 @@ export function Ga4SettingsForm() {
     <div className="mx-auto max-w-2xl">
       <div className="mb-6">
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-          Google Analytics 4
+          Analytics &amp; tagging
         </h1>
         <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-          Configure enhanced ecommerce tracking for the storefront. Measurement ID is public; no
-          secrets are stored.
+          Configure Google Analytics 4 and Google Tag Manager for the storefront. IDs are public;
+          no secrets are stored.
         </p>
         {settings ? (
           <p className="mt-2 text-sm">
@@ -154,6 +157,18 @@ export function Ga4SettingsForm() {
               onChange={(e) => setMeasurementId(e.target.value)}
               placeholder="G-XXXXXXXXXX"
             />
+          </label>
+          <label className="block text-sm">
+            <span className="text-zinc-700 dark:text-zinc-300">Google Tag Manager ID</span>
+            <input
+              className="mt-1 w-full rounded-lg border border-zinc-300 px-3 py-2 font-mono text-sm dark:border-zinc-600 dark:bg-zinc-900"
+              value={gtmId}
+              onChange={(e) => setGtmId(e.target.value)}
+              placeholder="GTM-XXXXXXX"
+            />
+            <span className="mt-1 block text-xs text-zinc-500">
+              Optional. When set, the GTM container loads on every storefront page.
+            </span>
           </label>
           <label className="block text-sm">
             <span className="text-zinc-700 dark:text-zinc-300">Currency</span>

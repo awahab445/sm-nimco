@@ -8,12 +8,14 @@ import Link from 'next/link';
 import { safeRedirectPath } from '@/lib/safe-redirect';
 import { storefrontUi } from '@/lib/storefront-ui';
 import { showStorefrontToast } from '@/lib/storefront-toast';
+import { useHydrated } from '@/lib/use-hydrated';
 
 function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = safeRedirectPath(searchParams.get('redirect'), '/account');
   const { login, isAuthenticated, isLoading, error, clearError } = useAuthStore();
+  const hydrated = useHydrated();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -105,6 +107,7 @@ function LoginContent() {
           </p>
         </div>
 
+        {hydrated ? (
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {error && (
             <div className={storefrontUi.alertErrorSm} role="alert">
@@ -127,6 +130,9 @@ function LoginContent() {
                 onChange={handleChange}
                 className={storefrontUi.inputMt}
                 placeholder="you@example.com"
+                data-lpignore="true"
+                data-1p-ignore
+                data-form-type="other"
               />
               {validationErrors.email && (
                 <p className="mt-1 text-sm text-destructive">{validationErrors.email}</p>
@@ -152,6 +158,9 @@ function LoginContent() {
                 onChange={handleChange}
                 className={storefrontUi.inputMt}
                 placeholder="••••••••"
+                data-lpignore="true"
+                data-1p-ignore
+                data-form-type="other"
               />
               {validationErrors.password && (
                 <p className="mt-1 text-sm text-destructive">{validationErrors.password}</p>
@@ -169,6 +178,23 @@ function LoginContent() {
             </button>
           </div>
         </form>
+        ) : (
+          <div className="mt-8 space-y-6" aria-hidden>
+            <div className="space-y-4 rounded-md shadow-sm">
+              <div>
+                <span className={storefrontUi.label}>Email address</span>
+                <div className={`${storefrontUi.inputMt} text-muted-foreground`}>you@example.com</div>
+              </div>
+              <div>
+                <span className={storefrontUi.label}>Password</span>
+                <div className={`${storefrontUi.inputMt} text-muted-foreground`}>••••••••</div>
+              </div>
+            </div>
+            <button type="button" disabled className={`flex w-full justify-center ${storefrontUi.btnPrimary}`}>
+              Sign in
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

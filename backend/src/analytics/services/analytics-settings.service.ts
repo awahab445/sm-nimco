@@ -10,6 +10,7 @@ import {
 export type PublicGa4Config = {
   isEnabled: boolean;
   measurementId: string | null;
+  gtmId: string | null;
   debugMode: boolean;
   trackPageViews: boolean;
   trackCartEvents: boolean;
@@ -37,6 +38,7 @@ export class AnalyticsSettingsService {
     return {
       isEnabled: row.isEnabled,
       measurementId: row.measurementId,
+      gtmId: row.gtmId,
       debugMode: row.debugMode,
       trackPageViews: row.trackPageViews,
       trackCartEvents: row.trackCartEvents,
@@ -110,6 +112,7 @@ export class AnalyticsSettingsService {
       where: { id: this.singletonId },
       data: {
         ...(dto.measurementId !== undefined && { measurementId }),
+        ...(dto.gtmId !== undefined && { gtmId: dto.gtmId?.trim() || null }),
         ...(dto.isEnabled !== undefined && { isEnabled: dto.isEnabled }),
         ...(dto.debugMode !== undefined && { debugMode: dto.debugMode }),
         ...(dto.trackPageViews !== undefined && {

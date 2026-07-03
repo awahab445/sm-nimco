@@ -930,6 +930,7 @@ model MailMailbox {
 model AnalyticsGa4Settings {
   id                   String   @id @default("default")
   measurementId        String?  @map("measurement_id") @db.VarChar(32)
+  gtmId                  String?  @map("gtm_id") @db.VarChar(32)
   isEnabled            Boolean  @default(false) @map("is_enabled")
   debugMode            Boolean  @default(false) @map("debug_mode")
   trackPageViews       Boolean  @default(true) @map("track_page_views")

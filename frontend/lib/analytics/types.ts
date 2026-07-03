@@ -1,6 +1,7 @@
 export type Ga4PublicConfig = {
   isEnabled: boolean;
   measurementId: string | null;
+  gtmId: string | null;
   debugMode: boolean;
   trackPageViews: boolean;
   trackCartEvents: boolean;

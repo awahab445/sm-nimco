@@ -3,6 +3,7 @@ import { fetchApi } from '@/lib/api-client';
 export type Ga4Settings = {
   id: string;
   measurementId: string | null;
+  gtmId: string | null;
   isEnabled: boolean;
   debugMode: boolean;
   trackPageViews: boolean;
@@ -21,6 +22,7 @@ export type Ga4SettingsInput = Partial<
   Pick<
     Ga4Settings,
     | 'measurementId'
+    | 'gtmId'
     | 'isEnabled'
     | 'debugMode'
     | 'trackPageViews'
