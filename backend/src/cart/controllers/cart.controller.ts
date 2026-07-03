@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Put,
+  Patch,
   Delete,
   Body,
   Param,
@@ -13,6 +14,8 @@ import { CartService } from '../services/cart.service';
 import { AddToCartDto } from '../dto/add-to-cart.dto';
 import { UpdateCartItemDto } from '../dto/update-cart-item.dto';
 import { CreateCartDto } from '../dto/create-cart.dto';
+import { AddBundleToCartDto } from '../dto/add-bundle-to-cart.dto';
+import { UpdateBundleCartDto } from '../dto/update-bundle-cart.dto';
 
 @Controller('cart')
 export class CartController {
@@ -47,6 +50,34 @@ export class CartController {
     @Body() addToCartDto: AddToCartDto,
   ) {
     return await this.cartService.addItemToCart(cartId, addToCartDto);
+  }
+
+  @Post(':cartId/bundles')
+  async addBundleToCart(
+    @Param('cartId') cartId: string,
+    @Body() dto: AddBundleToCartDto,
+  ) {
+    await this.cartService.addBundleToCart(cartId, dto);
+    return await this.cartService.getCart(cartId);
+  }
+
+  @Patch(':cartId/bundles/:bundleGroupId')
+  async updateBundleInCart(
+    @Param('cartId') cartId: string,
+    @Param('bundleGroupId') bundleGroupId: string,
+    @Body() dto: UpdateBundleCartDto,
+  ) {
+    await this.cartService.updateBundleInCart(cartId, bundleGroupId, dto);
+    return await this.cartService.getCart(cartId);
+  }
+
+  @Delete(':cartId/bundles/:bundleGroupId')
+  async removeBundleFromCart(
+    @Param('cartId') cartId: string,
+    @Param('bundleGroupId') bundleGroupId: string,
+  ) {
+    await this.cartService.removeBundleFromCart(cartId, bundleGroupId);
+    return await this.cartService.getCart(cartId);
   }
 
   /**

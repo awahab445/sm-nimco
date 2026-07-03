@@ -40,7 +40,14 @@ export function toStoreThemePresetId(theme: ProvisionedThemeId): 'default' | 'em
 
 export const THEME_PRESETS: Record<
   ProvisionedThemeId,
-  { label: string; description: string; primary: string; secondary: string; background: string }
+  {
+    label: string;
+    description: string;
+    primary: string;
+    primaryHover: string;
+    secondary: string;
+    background: string;
+  }
 > = {
   tailwind: {
     label: 'Tailwind',

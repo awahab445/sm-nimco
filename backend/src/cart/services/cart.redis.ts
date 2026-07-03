@@ -11,6 +11,20 @@ export interface CartItem {
   attributes: Record<string, any>;
   reservationId: string;
   addedAt: string;
+  bundleGroupId?: string;
+  bundleDealId?: string;
+  listPrice?: number;
+  isBundleComponent?: boolean;
+}
+
+export interface CartBundleGroup {
+  bundleDealId: string;
+  title: string;
+  slug: string;
+  quantity: number;
+  dealUnitPrice: number;
+  compareAtTotal: number;
+  savingsAmount: number;
 }
 
 export interface Cart {
@@ -19,6 +33,7 @@ export interface Cart {
   currency: string;
   createdAt: string;
   updatedAt: string;
+  bundleGroups?: Record<string, CartBundleGroup>;
 }
 
 @Injectable()

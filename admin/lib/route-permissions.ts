@@ -90,6 +90,8 @@ const RULES: RouteRule[] = [
   // ---- Promotions ------------------------------------------------------
   { test: prefix('/promotions'), requirePermission: ['promotions.manage'] },
 
+  { test: prefix('/bundle-deals'), requirePermission: ['deals.manage'] },
+
   // ---- Shipping --------------------------------------------------------
   { test: prefix('/shipping'), requirePermission: ['shipping.manage'] },
 

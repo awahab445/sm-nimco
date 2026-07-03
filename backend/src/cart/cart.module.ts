@@ -7,11 +7,12 @@ import { CartEventHandlers } from './events/cart.handlers';
 import { CatalogModule } from '../catalog/catalog.module';
 import { InventoryModule } from '../inventory/inventory.module';
 import { PromotionsModule } from '../promotions/promotions.module';
+import { BundleDealsModule } from '../bundle-deals/bundle-deals.module';
 
 const useRedis = process.env.REDIS_ENABLED !== 'false';
 
 @Module({
-  imports: [CatalogModule, InventoryModule, PromotionsModule],
+  imports: [CatalogModule, InventoryModule, PromotionsModule, BundleDealsModule],
   controllers: [CartController],
   providers: [
     CartService,

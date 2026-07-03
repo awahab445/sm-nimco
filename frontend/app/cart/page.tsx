@@ -21,7 +21,7 @@ import { useCartItemFallbackImages } from '@/lib/use-cart-item-fallback-images';
 import { cartItemToGa4Item, trackViewCart } from '@/lib/analytics';
 
 export default function CartPage() {
-  const { cart, isLoading, error, refreshCart, updateItem, removeItem, clearCart } =
+  const { cart, isLoading, error, refreshCart, updateItem, removeItem, updateBundle, removeBundle, clearCart } =
     useCartStore();
   const { user, isAuthenticated } = useAuthStore();
   const customerId = isAuthenticated ? user?.id : undefined;
@@ -58,15 +58,24 @@ export default function CartPage() {
   }, [cart?.items]);
 
   const items = cart?.items ?? [];
+  const bundles = cart?.bundles ?? [];
   const fallbackProductImages = useCartItemFallbackImages(items);
-  const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  const bundleSubtotal = bundles.reduce((sum, b) => sum + b.dealUnitPrice * b.quantity, 0);
+  const itemSubtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  const subtotal = bundleSubtotal + itemSubtotal;
+  const totalUnits =
+    items.reduce((sum, i) => sum + i.quantity, 0) +
+    bundles.reduce((sum, b) => sum + b.quantity, 0);
   const cartId = cart?.id ?? null;
   const displayCurrency = cart?.currency ?? APP_CURRENCY;
 
   useEffect(() => {
     const lineItems = cart?.items ?? [];
+    const bundleRows = cart?.bundles ?? [];
     const code = getPendingCouponCode();
-    const sub = lineItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
+    const sub =
+      lineItems.reduce((sum, i) => sum + i.price * i.quantity, 0) +
+      bundleRows.reduce((sum, b) => sum + b.dealUnitPrice * b.quantity, 0);
 
     if (!code) {
       setCouponMeta((prev) =>
@@ -76,7 +85,7 @@ export default function CartPage() {
       );
       return;
     }
-    if (lineItems.length === 0) {
+    if (lineItems.length === 0 && bundleRows.length === 0) {
       setCouponMeta((prev) =>
         prev.code === code && prev.discountAmount === 0 && prev.isFreeShipping === false
           ? prev
@@ -121,7 +130,7 @@ export default function CartPage() {
     return () => {
       cancelled = true;
     };
-  }, [cart?.items, customerId, customerGroupId]);
+  }, [cart?.items, cart?.bundles, customerId, customerGroupId]);
 
   const handleQtyBlur = async (variantId: string) => {
     const q = Math.max(1, localQty[variantId] ?? 1);
@@ -147,10 +156,9 @@ export default function CartPage() {
           <ShoppingBagIcon className="h-7 w-7 shrink-0 text-primary" strokeWidth={2} aria-hidden />
           Your cart
         </h1>
-        {items.length > 0 ? (
+        {totalUnits > 0 ? (
           <p className="mt-1 text-sm text-muted-foreground">
-            {items.reduce((sum, i) => sum + i.quantity, 0)}{' '}
-            {items.reduce((sum, i) => sum + i.quantity, 0) === 1 ? 'item' : 'items'} in your cart
+            {totalUnits} {totalUnits === 1 ? 'item' : 'items'} in your cart
           </p>
         ) : null}
       </div>
@@ -161,7 +169,7 @@ export default function CartPage() {
         </div>
       )}
 
-      {items.length === 0 && !isLoading ? (
+      {items.length === 0 && bundles.length === 0 && !isLoading ? (
         <div className="mt-8 rounded-xl border border-border bg-card py-16 text-center shadow-sm">
           <p className="text-muted-foreground">Your cart is empty.</p>
           <Link
@@ -181,6 +189,52 @@ export default function CartPage() {
                 </h2>
               </div>
               <ul className="divide-y divide-border">
+              {bundles.map((bundle) => {
+                const rowTotal = bundle.dealUnitPrice * bundle.quantity;
+                return (
+                  <li key={bundle.bundleGroupId} className="flex flex-wrap items-center gap-4 px-4 py-5 sm:px-6">
+                    <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-secondary/50 text-xs font-medium text-primary">
+                      Bundle
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-foreground">{bundle.title}</p>
+                      <Link href={`/deals/${bundle.slug}`} className="text-sm text-primary hover:underline">
+                        View deal
+                      </Link>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        {formatPrice(bundle.dealUnitPrice, displayCurrency)} per bundle
+                      </p>
+                    </div>
+                    <div className="flex w-full flex-wrap items-center justify-between gap-3 sm:w-auto sm:justify-end">
+                      <p className="text-sm font-semibold text-foreground sm:hidden">
+                        {formatPrice(rowTotal, displayCurrency)}
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="number"
+                          min={1}
+                          className="w-16 rounded-md border border-input bg-card px-2 py-1 text-sm"
+                          defaultValue={bundle.quantity}
+                          onBlur={(e) => {
+                            const q = Math.max(1, Number(e.target.value) || 1);
+                            void updateBundle(bundle.bundleGroupId, q).then(() => refreshCart());
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => void removeBundle(bundle.bundleGroupId).then(() => refreshCart())}
+                          className="text-sm text-destructive hover:underline"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                      <p className="hidden text-sm font-semibold text-foreground sm:block">
+                        {formatPrice(rowTotal, displayCurrency)}
+                      </p>
+                    </div>
+                  </li>
+                );
+              })}
               {items.map((item) => {
                 const rowTotal = item.price * item.quantity;
                 const attrLines = formatVariantAttributes(item.variantAttributes ?? item.attributes);

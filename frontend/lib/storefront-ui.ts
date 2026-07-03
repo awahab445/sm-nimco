@@ -32,6 +32,16 @@ export const storefrontUi = {
   link: 'font-medium text-primary transition-colors hover:text-primary-hover',
   btnSecondary:
     'rounded-md border border-primary bg-card px-4 py-2 text-sm font-medium text-primary transition-colors hover:bg-secondary/60 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2 focus:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50',
+  btnNeutral:
+    'rounded-md border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted/60 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2 focus:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50',
+  btnNeutralLg:
+    'w-full rounded-md border border-border bg-card px-6 py-3 text-base font-medium text-foreground transition-colors hover:bg-muted/60 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2 focus:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50',
+  btnDestructive:
+    'rounded-md border border-destructive/30 bg-card px-3 py-1.5 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10 focus:outline-none focus:ring-2 focus:ring-destructive/30 disabled:cursor-not-allowed disabled:opacity-50',
+  btnDestructiveText:
+    'font-medium text-destructive transition-colors hover:text-destructive/80 focus:outline-none focus:underline disabled:cursor-not-allowed disabled:opacity-50',
+  btnPrimaryInverted:
+    'inline-flex items-center justify-center rounded-md bg-primary-foreground px-6 py-3 text-sm font-semibold text-primary shadow-md transition-all duration-200 hover:brightness-95 active:scale-[0.98]',
   badgeBrand:
     'rounded bg-secondary/60 px-2 py-1 text-xs font-medium text-primary ring-1 ring-inset ring-secondary/80',
   card:

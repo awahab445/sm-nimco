@@ -24,6 +24,7 @@ import { MailModule } from './mail/mail.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { SiteConfigModule } from './site-config/site-config.module';
 import { StoreSettingsModule } from './store-settings/store-settings.module';
+import { BundleDealsModule } from './bundle-deals/bundle-deals.module';
 
 @Module({
   imports: [
@@ -54,6 +55,7 @@ import { StoreSettingsModule } from './store-settings/store-settings.module';
     AnalyticsModule,
     SiteConfigModule,
     StoreSettingsModule,
+    BundleDealsModule,
   ],
   controllers: [AppController],
   providers: [

@@ -1,33 +1,43 @@
-import { SERVER_API_BASE_URL } from './api-base-url';
-
-const API_BASE_URL = SERVER_API_BASE_URL;
-
+/**
+ * Normalize stored image URLs for storefront `<img src>`.
+ * Upload assets are always served as same-origin `/uploads/...` paths;
+ * Next.js rewrites those to the NestJS backend (see next.config.ts).
+ */
 export function resolveImageUrl(value?: string | null): string | undefined {
   if (!value) return undefined;
   const trimmed = value.trim();
   if (!trimmed) return undefined;
 
-  if (trimmed.startsWith('/uploads/')) {
-    return `${API_BASE_URL}${trimmed}`;
+  const uploadPath = extractUploadPath(trimmed);
+  if (uploadPath) {
+    return uploadPath;
   }
-  if (trimmed.startsWith('uploads/')) {
-    return `${API_BASE_URL}/${trimmed}`;
-  }
+
   if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
-    try {
-      const parsed = new URL(trimmed);
-      const isLocalhost = parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1';
-      const isFrontendPort = parsed.port === '3000' || parsed.port === '';
-      if (isLocalhost && isFrontendPort && parsed.pathname.startsWith('/uploads/')) {
-        return `${API_BASE_URL}${parsed.pathname}${parsed.search}${parsed.hash}`;
-      }
-      return trimmed;
-    } catch {
-      return trimmed;
-    }
+    return trimmed;
   }
   if (trimmed.startsWith('/')) {
     return trimmed;
   }
   return `/${trimmed}`;
+}
+
+function extractUploadPath(value: string): string | null {
+  if (value.startsWith('/uploads/')) {
+    return value;
+  }
+  if (value.startsWith('uploads/')) {
+    return `/${value}`;
+  }
+  if (value.startsWith('http://') || value.startsWith('https://')) {
+    try {
+      const parsed = new URL(value);
+      if (parsed.pathname.startsWith('/uploads/')) {
+        return parsed.pathname;
+      }
+    } catch {
+      return null;
+    }
+  }
+  return null;
 }

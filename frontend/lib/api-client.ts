@@ -268,6 +268,7 @@ export const STOREFRONT_NAV_FALLBACK: StorefrontNavigationPayload = {
   header: [
     { id: '00000000-0000-0000-0000-00000000e001', label: 'Home', secondaryLabel: null, href: '/', sortOrder: 0, openMegaMenu: false },
     { id: '00000000-0000-0000-0000-00000000e002', label: 'Products', secondaryLabel: 'Categories', href: '/products', sortOrder: 10, openMegaMenu: true },
+    { id: '00000000-0000-0000-0000-00000000e004', label: 'Deals', secondaryLabel: null, href: '/deals', sortOrder: 15, openMegaMenu: false },
     { id: '00000000-0000-0000-0000-00000000e003', label: 'Track order', secondaryLabel: null, href: '/track-order', sortOrder: 20, openMegaMenu: false },
     { id: '00000000-0000-0000-0000-00000000e005', label: 'Cart', secondaryLabel: null, href: '/cart', sortOrder: 40, openMegaMenu: false },
   ],
@@ -288,12 +289,21 @@ export function mergeStorefrontNavigation(
   const dbHeader = api.header.filter((item) => !item.id.startsWith('cms:'));
   const cmsHeader = api.header.filter((item) => item.id.startsWith('cms:'));
 
-  const baseHeader = dbHeader.length > 0 ? dbHeader : fallback.header;
-
   const byHref = new Map<string, StorefrontNavItem>();
+
+  const baseHeader = dbHeader.length > 0 ? dbHeader : fallback.header;
   for (const item of baseHeader) {
     byHref.set(normalizeNavHref(item.href), item);
   }
+
+  // Admin DB nav wins for matching hrefs; fallback fills gaps (e.g. /deals not in CMS yet).
+  for (const item of fallback.header) {
+    const key = normalizeNavHref(item.href);
+    if (!byHref.has(key)) {
+      byHref.set(key, item);
+    }
+  }
+
   for (const item of cmsHeader) {
     const key = normalizeNavHref(item.href);
     if (!byHref.has(key)) {
@@ -416,6 +426,21 @@ export interface CartItem {
   variantName?: string;
   variantAttributes?: Record<string, unknown>;
   productImage?: string;
+  bundleGroupId?: string;
+  bundleDealId?: string;
+  listPrice?: number;
+  isBundleComponent?: boolean;
+}
+
+export interface CartBundleRow {
+  bundleGroupId: string;
+  bundleDealId: string;
+  title: string;
+  slug: string;
+  quantity: number;
+  dealUnitPrice: number;
+  compareAtTotal: number;
+  savingsAmount: number;
 }
 
 export interface Cart {
@@ -424,6 +449,7 @@ export interface Cart {
   currency: string;
   createdAt: string;
   updatedAt: string;
+  bundles?: CartBundleRow[];
 }
 
 export const cartApi = {
@@ -454,6 +480,47 @@ export const cartApi = {
 
   clearCart: (cartId: string) =>
     fetchApi<void>(`/cart/${encodeURIComponent(cartId)}`, { method: 'DELETE' }),
+
+  addBundle: (cartId: string, body: { bundleDealId: string; quantity: number }) =>
+    fetchApi<Cart>(`/cart/${encodeURIComponent(cartId)}/bundles`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+
+  updateBundle: (cartId: string, bundleGroupId: string, body: { quantity: number }) =>
+    fetchApi<Cart>(`/cart/${encodeURIComponent(cartId)}/bundles/${encodeURIComponent(bundleGroupId)}`, {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    }),
+
+  removeBundle: (cartId: string, bundleGroupId: string) =>
+    fetchApi<Cart>(`/cart/${encodeURIComponent(cartId)}/bundles/${encodeURIComponent(bundleGroupId)}`, {
+      method: 'DELETE',
+    }),
+};
+
+export type StorefrontBundleDealSummary = {
+  id: string;
+  title: string;
+  slug: string;
+  description: string | null;
+  dealPrice: number;
+  compareAtTotal: number;
+  savingsAmount: number;
+  savingsPercent: number | null;
+  imageUrl: string | null;
+  isFeatured: boolean;
+  itemCount?: number;
+};
+
+export const bundleDealsApi = {
+  list: () =>
+    fetchApi<{ data: StorefrontBundleDealSummary[] }>('/deals'),
+
+  getBySlug: (slug: string) =>
+    fetchApi<{ data: StorefrontBundleDealSummary & { items?: unknown[] } }>(
+      `/deals/${encodeURIComponent(slug)}`,
+    ),
 };
 
 // Checkout API

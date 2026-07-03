@@ -85,6 +85,22 @@ export function trackAddToCartFromCartItem(
   });
 }
 
+export function trackAddBundleToCart(
+  deal: { id: string; title: string; dealPrice: number; slug?: string },
+  quantity: number,
+): void {
+  if (!canTrack('trackCustomEvents')) return;
+  runWhenIdle(() => {
+    sendGAEvent('add_bundle_to_cart', {
+      currency: currency(),
+      value: deal.dealPrice * quantity,
+      bundle_deal_id: deal.id,
+      bundle_title: deal.title,
+      quantity,
+    });
+  });
+}
+
 export function trackRemoveFromCart(
   item: Parameters<typeof cartItemToGa4Item>[0],
 ): void {

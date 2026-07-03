@@ -32,6 +32,7 @@ model Product {
   optionValues     ProductOptionValueOnProduct[]
   options          ProductOptionOnProduct[]
   variants         ProductVariant[]
+  bundleDealItems  BundleDealItem[]
 
   @@index([status, deletedAt])
   @@index([slug])
@@ -57,6 +58,7 @@ model ProductVariant {
   images         ProductImage[]
   product        Product              @relation(fields: [productId], references: [id], onDelete: Cascade)
   optionValues   VariantOptionValue[]
+  bundleDealItems BundleDealItem[]
 
   @@index([productId])
   @@index([sku])
@@ -966,4 +968,48 @@ model StoreSettings {
   updatedByAdminUserId String?  @map("updated_by_admin_user_id")
 
   @@map("store_settings")
+}
+
+model BundleDeal {
+  id             String           @id @default(uuid())
+  title          String
+  slug           String           @unique
+  description    String?
+  status         String           @default("draft")
+  isFeatured     Boolean          @default(false) @map("is_featured")
+  dealPrice      Decimal          @map("deal_price") @db.Decimal(10, 2)
+  compareAtTotal Decimal          @map("compare_at_total") @db.Decimal(10, 2)
+  savingsAmount  Decimal          @map("savings_amount") @db.Decimal(10, 2)
+  savingsPercent Decimal?         @map("savings_percent") @db.Decimal(5, 2)
+  imageUrl       String?          @map("image_url")
+  validFrom      DateTime?        @map("valid_from")
+  validTo        DateTime?        @map("valid_to")
+  metadata       Json             @default("{}")
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime         @updatedAt @map("updated_at")
+  deletedAt      DateTime?        @map("deleted_at")
+  items          BundleDealItem[]
+
+  @@index([slug])
+  @@index([status, deletedAt])
+  @@index([validFrom, validTo])
+  @@index([isFeatured])
+  @@map("bundle_deals")
+}
+
+model BundleDealItem {
+  id            String          @id @default(uuid())
+  bundleDealId  String          @map("bundle_deal_id")
+  productId     String          @map("product_id")
+  variantId     String?         @map("variant_id")
+  quantity      Int             @default(1)
+  position      Int             @default(0)
+  unitListPrice Decimal?        @map("unit_list_price") @db.Decimal(10, 2)
+  bundleDeal    BundleDeal      @relation(fields: [bundleDealId], references: [id], onDelete: Cascade)
+  product       Product         @relation(fields: [productId], references: [id])
+  variant       ProductVariant? @relation(fields: [variantId], references: [id])
+
+  @@unique([bundleDealId, productId, variantId])
+  @@index([bundleDealId, position])
+  @@map("bundle_deal_items")
 }

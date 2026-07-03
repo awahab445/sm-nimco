@@ -8,7 +8,6 @@ import { useAuthStore } from '@/lib/auth.store';
 import { useCartStore } from '@/lib/cart.store';
 import { useHydrated } from '@/lib/use-hydrated';
 import { getStoreLogoSrc } from '@/lib/config';
-import { getApiBaseUrl } from '@/lib/api-base-url';
 import {
   siteConfigApi,
   storefrontNavApi,
@@ -17,6 +16,7 @@ import {
   type StorefrontNavItem,
   type StorefrontNavMegaNode,
 } from '@/lib/api-client';
+import { resolveImageUrl } from '@/lib/resolve-image-url';
 import { SearchBar } from '@/components/search/search-bar';
 import { DesktopShopMegaMenu, MobileCategoryAccordions } from '@/components/layout/store-mega-menu';
 import { UserMenuDropdown } from '@/components/layout/user-menu-dropdown';
@@ -36,21 +36,26 @@ function normalizeLogoDimension(value: number | null | undefined, fallback: numb
 }
 
 function resolveLogoSrc(logoUrl: string | null | undefined, fallback: string): string {
-  const raw = logoUrl?.trim();
-  if (!raw) return fallback;
-  if (/^https?:\/\//i.test(raw)) return raw;
-  if (raw.startsWith('/uploads/')) {
-    return `${getApiBaseUrl()}${raw}`;
-  }
-  if (raw.startsWith('/')) {
-    return raw;
-  }
-  return fallback;
+  return resolveImageUrl(logoUrl) ?? fallback;
 }
 
 function isCartHref(href: string): boolean {
   const h = href.trim().split('?')[0] ?? '';
   return h === '/cart' || h.endsWith('/cart');
+}
+
+function navListsEqual(a: StorefrontNavItem[], b: StorefrontNavItem[]): boolean {
+  if (a.length !== b.length) return false;
+  return a.every((item, i) => {
+    const other = b[i];
+    return (
+      item.id === other.id &&
+      item.label === other.label &&
+      item.href === other.href &&
+      item.sortOrder === other.sortOrder &&
+      item.openMegaMenu === other.openMegaMenu
+    );
+  });
 }
 
 export function Header() {
@@ -92,7 +97,10 @@ export function Header() {
         const merged = mergeStorefrontNavigation(
           res.data ?? { header: [], megaMenu: [] },
         );
-        setMainNav(merged.header);
+        // Only update when merged nav differs — avoids flash when API matches fallback+core links.
+        setMainNav((prev) =>
+          navListsEqual(prev, merged.header) ? prev : merged.header,
+        );
         setMegaMenu(merged.megaMenu);
       })
       .catch(() => {

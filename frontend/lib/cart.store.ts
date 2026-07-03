@@ -48,6 +48,15 @@ interface CartState {
   /** Remove item from cart. */
   removeItem: (variantId: string) => Promise<void>;
 
+  /** Add a bundle deal to cart. */
+  addBundleToCart: (bundleDealId: string, quantity: number) => Promise<void>;
+
+  /** Update bundle quantity in cart. */
+  updateBundle: (bundleGroupId: string, quantity: number) => Promise<void>;
+
+  /** Remove a bundle from cart. */
+  removeBundle: (bundleGroupId: string) => Promise<void>;
+
   /** Clear cart and remove cartId from storage. */
   clearCart: () => Promise<void>;
 
@@ -161,6 +170,47 @@ export const useCartStore = create<CartState>((set, get) => ({
       }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to remove item';
+      set({ isLoading: false, error: message });
+      throw err;
+    }
+  },
+
+  addBundleToCart: async (bundleDealId: string, quantity: number) => {
+    set({ isLoading: true, error: null });
+    try {
+      const cartId = await get().getOrCreateCartId();
+      const cart = await cartApi.addBundle(cartId, { bundleDealId, quantity });
+      set({ cart, isLoading: false, error: null });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to add bundle to cart';
+      set({ isLoading: false, error: message });
+      throw err;
+    }
+  },
+
+  updateBundle: async (bundleGroupId: string, quantity: number) => {
+    const cartId = getStoredCartId() ?? get().cartId;
+    if (!cartId) return;
+    set({ isLoading: true, error: null });
+    try {
+      const cart = await cartApi.updateBundle(cartId, bundleGroupId, { quantity });
+      set({ cart, isLoading: false, error: null });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to update bundle';
+      set({ isLoading: false, error: message });
+      throw err;
+    }
+  },
+
+  removeBundle: async (bundleGroupId: string) => {
+    const cartId = getStoredCartId() ?? get().cartId;
+    if (!cartId) return;
+    set({ isLoading: true, error: null });
+    try {
+      const cart = await cartApi.removeBundle(cartId, bundleGroupId);
+      set({ cart, isLoading: false, error: null });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to remove bundle';
       set({ isLoading: false, error: message });
       throw err;
     }

@@ -236,6 +236,16 @@ export class OrderFactory {
           productName: product.name,
           variantLabel,
           productImage,
+          ...(cartItem.isBundleComponent
+            ? {
+                bundleDealId: cartItem.bundleDealId,
+                bundleGroupId: cartItem.bundleGroupId,
+                bundleTitle: cart.bundleGroups?.[cartItem.bundleGroupId!]?.title,
+                bundleQuantity: cart.bundleGroups?.[cartItem.bundleGroupId!]?.quantity,
+                listPrice: cartItem.listPrice,
+                allocatedDealPrice: unitPrice,
+              }
+            : {}),
         },
       });
 

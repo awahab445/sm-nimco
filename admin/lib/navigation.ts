@@ -101,6 +101,13 @@ export const adminNavGroups: NavGroup[] = [
         phase: 'I',
         requirePermission: ['promotions.manage'],
       },
+      {
+        href: '/bundle-deals',
+        label: 'Bundle deals',
+        description: 'Product bundles and deal pricing',
+        phase: 'I',
+        requirePermission: ['deals.manage'],
+      },
     ],
   },
   {

@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { randomUUID } from 'crypto';
-import { CartRedisService, Cart, CartItem } from './cart.redis';
+import { CartRedisService, Cart, CartItem, CartBundleGroup } from './cart.redis';
 import { VariantService } from '../../catalog/services/variant.service';
 import { ReservationService } from '../../inventory/services/reservation.service';
 import { InventoryService } from '../../inventory/services/inventory.service';
@@ -22,6 +22,11 @@ import {
   CartExpiredEvent,
 } from '../events/cart.events';
 import { InsufficientStockException } from '../errors/insufficient-stock.exception';
+import { AddBundleToCartDto } from '../dto/add-bundle-to-cart.dto';
+import { UpdateBundleCartDto } from '../dto/update-bundle-cart.dto';
+import { BundleDealService } from '../../bundle-deals/services/bundle-deal.service';
+import { BundleDealPricingService } from '../../bundle-deals/services/bundle-deal-pricing.service';
+import { BundleDealItemDto } from '../../bundle-deals/dto/bundle-deal-item.dto';
 
 @Injectable()
 export class CartService {
@@ -35,6 +40,8 @@ export class CartService {
     private readonly reservationService: ReservationService,
     private readonly inventoryService: InventoryService,
     private readonly promotionsService: PromotionsService,
+    private readonly bundleDealService: BundleDealService,
+    private readonly bundleDealPricingService: BundleDealPricingService,
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
@@ -57,7 +64,10 @@ export class CartService {
   /**
    * Get cart by ID with enriched item details (product name, variant attributes, image)
    */
-  async getCart(cartId: string): Promise<Cart & { items: Array<CartItem & { productName?: string; variantName?: string; variantAttributes?: Record<string, unknown>; productImage?: string }> }> {
+  async getCart(cartId: string): Promise<Cart & {
+    items: Array<CartItem & { productName?: string; variantName?: string; variantAttributes?: Record<string, unknown>; productImage?: string }>;
+    bundles?: Array<CartBundleGroup & { bundleGroupId: string; imageUrl?: string }>;
+  }> {
     const cart = await this.cartRedis.getCart(cartId);
 
     if (!cart) {
@@ -114,7 +124,22 @@ export class CartService {
       }),
     );
 
-    return { ...cart, items: enrichedItems };
+    const visibleItems = enrichedItems.filter((item) => !item.isBundleComponent);
+    const bundles = this.buildBundlesView(cart, enrichedItems);
+
+    return { ...cart, items: visibleItems, bundles };
+  }
+
+  private buildBundlesView(
+    cart: Cart,
+    enrichedItems: Array<CartItem & { productName?: string }>,
+  ): Array<CartBundleGroup & { bundleGroupId: string }> {
+    if (!cart.bundleGroups) return [];
+
+    return Object.entries(cart.bundleGroups).map(([bundleGroupId, group]) => ({
+      bundleGroupId,
+      ...group,
+    }));
   }
 
   /** Placeholder reservation id for simple products (no variant = no inventory reservation). */
@@ -157,7 +182,9 @@ export class CartService {
     const isSimpleProduct = variant.id === variant.productId;
 
     // Check if variant is already in cart
-    const existingItemIndex = cart.items.findIndex((item) => item.variantId === variantId);
+    const existingItemIndex = cart.items.findIndex(
+      (item) => item.variantId === variantId && !item.isBundleComponent,
+    );
 
     if (existingItemIndex >= 0) {
       const existingItem = cart.items[existingItemIndex];
@@ -385,9 +412,9 @@ export class CartService {
       discountAmount: number;
     }>;
   }> {
-    const cart = await this.getCart(cartId);
+    const cart = await this.cartRedis.getCart(cartId);
 
-    if (!cart.items || cart.items.length === 0) {
+    if (!cart?.items || cart.items.length === 0) {
       return { discountTotal: 0, appliedPromotions: [] };
     }
 
@@ -448,6 +475,171 @@ export class CartService {
         discountAmount: p.discountAmount,
       })),
     };
+  }
+
+  async addBundleToCart(cartId: string, dto: AddBundleToCartDto): Promise<Cart> {
+    const deal = await this.bundleDealService.getActiveDealForCart(dto.bundleDealId);
+    const itemDtos: BundleDealItemDto[] = deal.items.map((item: any) => ({
+      productId: item.productId,
+      variantId: item.variantId ?? undefined,
+      quantity: item.quantity,
+    }));
+
+    const pricing = await this.bundleDealPricingService.computePricing(
+      itemDtos,
+      deal.dealPrice,
+    );
+
+    let cart = await this.cartRedis.getCart(cartId);
+    if (!cart) {
+      cart = await this.cartRedis.createCart(cartId, APP_CURRENCY);
+    }
+
+    for (const allocation of pricing.allocations) {
+      const requiredQty = allocation.quantity * dto.quantity;
+      await this.assertSufficientStock(allocation.variantId, requiredQty);
+    }
+
+    const bundleGroupId = randomUUID();
+    if (!cart.bundleGroups) {
+      cart.bundleGroups = {};
+    }
+
+    cart.bundleGroups[bundleGroupId] = {
+      bundleDealId: deal.id,
+      title: deal.title,
+      slug: deal.slug,
+      quantity: dto.quantity,
+      dealUnitPrice: pricing.dealPrice,
+      compareAtTotal: pricing.compareAtTotal,
+      savingsAmount: pricing.savingsAmount,
+    };
+
+    for (let i = 0; i < pricing.allocations.length; i++) {
+      const allocation = pricing.allocations[i];
+      const resolved = pricing.items[i];
+      const lineQty = allocation.quantity * dto.quantity;
+
+      const reservationId = (
+        await this.reservationService.reserveStock({
+          variantId: allocation.variantId,
+          quantity: lineQty,
+          referenceType: 'cart',
+          referenceId: cartId,
+          expiresInMinutes: this.CART_RESERVATION_EXPIRY_MINUTES,
+        })
+      ).reservation.id;
+
+      const newItem: CartItem = {
+        variantId: allocation.variantId,
+        productId: allocation.productId,
+        quantity: lineQty,
+        price: allocation.allocatedUnitPrice,
+        listPrice: resolved.unitListPrice,
+        currency: cart.currency,
+        attributes: {},
+        reservationId,
+        addedAt: new Date().toISOString(),
+        bundleGroupId,
+        bundleDealId: deal.id,
+        isBundleComponent: true,
+      };
+
+      cart.items.push(newItem);
+    }
+
+    await this.cartRedis.updateCart(cart);
+    await this.cartRedis.extendCartTTL(cartId);
+    this.logger.log(`Bundle ${deal.id} added to cart ${cartId} as group ${bundleGroupId}`);
+    return cart;
+  }
+
+  async removeBundleFromCart(cartId: string, bundleGroupId: string): Promise<Cart> {
+    const cart = await this.cartRedis.getCart(cartId);
+    if (!cart) {
+      throw new NotFoundException(`Cart with ID ${cartId} not found`);
+    }
+
+    const bundleItems = cart.items.filter((item) => item.bundleGroupId === bundleGroupId);
+    if (bundleItems.length === 0) {
+      throw new NotFoundException(`Bundle group ${bundleGroupId} not found in cart`);
+    }
+
+    for (const item of bundleItems) {
+      if (item.reservationId && !this.isSimpleProductReservation(item.reservationId)) {
+        await this.reservationService.releaseStock({ reservationId: item.reservationId });
+      }
+    }
+
+    cart.items = cart.items.filter((item) => item.bundleGroupId !== bundleGroupId);
+    if (cart.bundleGroups) {
+      delete cart.bundleGroups[bundleGroupId];
+    }
+
+    await this.cartRedis.updateCart(cart);
+    await this.cartRedis.extendCartTTL(cartId);
+    return cart;
+  }
+
+  async updateBundleInCart(
+    cartId: string,
+    bundleGroupId: string,
+    dto: UpdateBundleCartDto,
+  ): Promise<Cart> {
+    const cart = await this.cartRedis.getCart(cartId);
+    if (!cart) {
+      throw new NotFoundException(`Cart with ID ${cartId} not found`);
+    }
+
+    const group = cart.bundleGroups?.[bundleGroupId];
+    if (!group) {
+      throw new NotFoundException(`Bundle group ${bundleGroupId} not found in cart`);
+    }
+
+    const bundleItems = cart.items.filter((item) => item.bundleGroupId === bundleGroupId);
+    const oldBundleQty = group.quantity;
+    const newBundleQty = dto.quantity;
+
+    if (oldBundleQty === newBundleQty) {
+      await this.cartRedis.extendCartTTL(cartId);
+      return cart;
+    }
+
+    const ratio = newBundleQty / oldBundleQty;
+
+    for (const item of bundleItems) {
+      const newQty = Math.round(item.quantity * ratio);
+      if (newQty > 0) {
+        await this.assertSufficientStock(item.variantId, newQty);
+      }
+      if (item.reservationId) {
+        await this.reservationService.releaseStock({ reservationId: item.reservationId });
+      }
+
+      if (newQty > 0) {
+        const reservationId = (
+          await this.reservationService.reserveStock({
+            variantId: item.variantId,
+            quantity: newQty,
+            referenceType: 'cart',
+            referenceId: cartId,
+            expiresInMinutes: this.CART_RESERVATION_EXPIRY_MINUTES,
+          })
+        ).reservation.id;
+        item.quantity = newQty;
+        item.reservationId = reservationId;
+      }
+    }
+
+    cart.items = cart.items.filter((item) => {
+      if (item.bundleGroupId !== bundleGroupId) return true;
+      return item.quantity > 0;
+    });
+
+    group.quantity = newBundleQty;
+    await this.cartRedis.updateCart(cart);
+    await this.cartRedis.extendCartTTL(cartId);
+    return cart;
   }
 }
 

@@ -18,6 +18,7 @@ export type RbacEntity =
   | 'tax'
   | 'payments'
   | 'promotions'
+  | 'deals'
   | 'subscriptions'
   | 'admin.users'
   | 'admin.roles';

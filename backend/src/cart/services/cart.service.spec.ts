@@ -8,6 +8,8 @@ import { ProductService } from '../../catalog/services/product.service';
 import { ReservationService } from '../../inventory/services/reservation.service';
 import { InventoryService } from '../../inventory/services/inventory.service';
 import { PromotionsService } from '../../promotions/services/promotions.service';
+import { BundleDealService } from '../../bundle-deals/services/bundle-deal.service';
+import { BundleDealPricingService } from '../../bundle-deals/services/bundle-deal-pricing.service';
 
 describe('CartService', () => {
   let service: CartService;
@@ -46,6 +48,14 @@ describe('CartService', () => {
     emit: jest.fn(),
   };
 
+  const mockBundleDealService = {
+    getActiveDealForCart: jest.fn(),
+  };
+
+  const mockBundleDealPricingService = {
+    computePricing: jest.fn(),
+  };
+
   beforeEach(async () => {
     jest.clearAllMocks();
     const module: TestingModule = await Test.createTestingModule({
@@ -57,6 +67,8 @@ describe('CartService', () => {
         { provide: ReservationService, useValue: mockReservationService },
         { provide: InventoryService, useValue: mockInventoryService },
         { provide: PromotionsService, useValue: mockPromotionsService },
+        { provide: BundleDealService, useValue: mockBundleDealService },
+        { provide: BundleDealPricingService, useValue: mockBundleDealPricingService },
         { provide: EventEmitter2, useValue: mockEventEmitter },
       ],
     }).compile();
