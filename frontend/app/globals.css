@@ -178,11 +178,11 @@ details.mega-menu-mobile-root[open] > summary .header-nav-trigger__chevron {
 @keyframes mega-menu-enter {
   from {
     opacity: 0;
-    transform: translateX(-50%) translateY(-0.25rem);
+    transform: translateY(-0.25rem);
   }
   to {
     opacity: 1;
-    transform: translateX(-50%) translateY(0);
+    transform: translateY(0);
   }
 }
 
@@ -224,8 +224,6 @@ html[data-store-theme='default'] .store-mega-menu-panel {
 
 .store-mega-menu-panel {
   box-sizing: border-box;
-  left: 50%;
-  transform: translateX(-50%);
   border-top: 1px solid var(--navbar-border);
   border-radius: 0 0 0.75rem 0.75rem;
   max-height: min(68vh, 26rem);
@@ -368,6 +366,28 @@ html[data-store-theme="mehfil_shereen"] .store-mega-menu-panel .mega-menu-nav-ne
 
 .mega-menu-nav-grid {
   overflow: visible;
+}
+
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .store-mega-menu-panel__inner {
+    padding: 1rem 1.25rem 1.25rem;
+  }
+
+  .mega-menu-nav-grid {
+    column-gap: 1rem;
+    row-gap: 0.75rem;
+  }
+
+  .mega-menu-nav-heading {
+    font-size: 0.875rem;
+  }
+
+  .mega-menu-nav-link--l2,
+  .mega-menu-nav-link--l3 {
+    font-size: 0.8125rem;
+    padding-top: 0.35rem;
+    padding-bottom: 0.35rem;
+  }
 }
 
 .mega-menu-nav-column-list {
@@ -581,7 +601,7 @@ html[data-store-theme="mehfil_shereen"] .store-mega-menu-panel .mega-menu-nav-ne
   .store-mega-menu-panel {
     animation: none;
     opacity: 1;
-    transform: translateX(-50%);
+    transform: none;
   }
 }
 
