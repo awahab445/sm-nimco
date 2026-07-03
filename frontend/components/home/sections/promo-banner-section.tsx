@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { storefrontUi } from '@/lib/storefront-ui';
 
 interface PromoBannerSectionProps {
   title: string;
@@ -43,11 +44,11 @@ export function PromoBannerSection({
         {ctaLabel && ctaHref && (
           <Link
             href={ctaHref}
-            className={`inline-flex shrink-0 justify-center rounded-md px-5 py-2.5 text-sm font-medium shadow-sm transition-opacity hover:opacity-90 ${
+            className={
               isPrimary
-                ? 'border border-primary-foreground/40 bg-primary-foreground text-primary'
-                : 'bg-primary text-primary-foreground'
-            }`}
+                ? storefrontUi.btnPrimaryInverted
+                : storefrontUi.btnPrimary
+            }
           >
             {ctaLabel}
           </Link>

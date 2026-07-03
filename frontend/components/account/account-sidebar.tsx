@@ -79,7 +79,7 @@ export function AccountSidebar() {
           <button
             type="button"
             onClick={handleLogout}
-            className="flex w-full items-center justify-center rounded-md border border-border bg-brand-bg px-4 py-2 text-sm font-medium text-brand-text transition-colors hover:bg-brand-secondary/25"
+            className={`flex w-full justify-center ${storefrontUi.btnSecondary}`}
           >
             Sign Out
           </button>

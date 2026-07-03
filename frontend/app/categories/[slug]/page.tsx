@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { productApi, categoryApi, inventoryApi, type ProductListResponse, type Category } from '@/lib/api-client';
 import { ProductCard, getVariantForCart } from '@/components/product/product-card';
 import { CategorySidebar } from '@/components/products/category-sidebar';
+import { storefrontUi } from '@/lib/storefront-ui';
 
 export default function CategoryPage() {
   const params = useParams();
@@ -66,7 +67,7 @@ export default function CategoryPage() {
           <div className="mb-6">
             <Link
               href="/products"
-              className="text-sm font-medium text-primary transition-colors hover:opacity-80"
+              className={`text-sm ${storefrontUi.link}`}
             >
               ← All products
             </Link>

@@ -20,7 +20,9 @@ import {
 import { SearchBar } from '@/components/search/search-bar';
 import { DesktopShopMegaMenu, MobileCategoryAccordions } from '@/components/layout/store-mega-menu';
 import { UserMenuDropdown } from '@/components/layout/user-menu-dropdown';
+import { CartPreviewDropdown } from '@/components/layout/cart-preview-dropdown';
 import { ShoppingBagIcon } from '@/components/icons/shopping-bag-icon';
+import { storefrontUi } from '@/lib/storefront-ui';
 
 const DESKTOP_NAV_MIN_WIDTH = 1024;
 const DEFAULT_LOGO_WIDTH = 36;

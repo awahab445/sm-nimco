@@ -83,21 +83,31 @@ function MegaMenuLink({ href, label, level, pathname, onNavigate }: MegaMenuLink
 
 const CLOSE_MS = 180;
 const SITE_HEADER_SELECTOR = 'header.site-header';
+const SITE_HEADER_INNER_SELECTOR = 'header.site-header .site-header__inner';
 
 function useMegaMenuPanelPosition(open: boolean): CSSProperties {
   const [style, setStyle] = useState<CSSProperties>({});
 
   const sync = useCallback(() => {
     const header = document.querySelector(SITE_HEADER_SELECTOR);
-    if (!header) return;
-    const { bottom, width } = header.getBoundingClientRect();
+    const inner = document.querySelector(SITE_HEADER_INNER_SELECTOR);
+    const anchor = inner ?? header;
+    if (!anchor || !header) return;
+
+    const headerBottom = header.getBoundingClientRect().bottom;
+    const rect = anchor.getBoundingClientRect();
+    const viewportPad = 8;
+    const left = Math.max(viewportPad, rect.left);
+    const right = Math.min(window.innerWidth - viewportPad, rect.right);
+    const width = Math.max(0, right - left);
+
     setStyle({
       position: 'fixed',
-      top: bottom,
-      left: '50%',
-      width: `min(${width}px, calc(100vw - 2rem))`,
-      maxWidth: '72rem',
+      top: headerBottom,
+      left,
+      width,
       zIndex: 50,
+      transform: 'none',
     });
   }, []);
 
@@ -299,7 +309,7 @@ function useAdminMegaMenuBanner(
 
 function MegaMenuProductSpotlight({ spotlight }: { spotlight: MegaMenuProductSpotlight }) {
   return (
-    <aside className="mega-menu-product-spotlight hidden lg:block">
+    <aside className="mega-menu-product-spotlight hidden xl:block">
       <Link href={spotlight.href} className="mega-menu-product-spotlight__link">
         <img
           src={spotlight.imageSrc}

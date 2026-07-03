@@ -4,9 +4,8 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useCartStore } from '@/lib/cart.store';
 import { useAuthStore } from '@/lib/auth.store';
-import { productApi } from '@/lib/api-client';
 import { formatPrice, APP_CURRENCY } from '@/lib/currency';
-import { resolveImageUrl } from '@/lib/resolve-image-url';
+import { CartLineItemThumb } from '@/components/cart/cart-line-item-thumb';
 import { CouponApplySection } from '@/components/coupon/coupon-apply-section';
 import { ShoppingBagIcon } from '@/components/icons/shopping-bag-icon';
 import {
@@ -18,6 +17,7 @@ import {
 } from '@/lib/coupon-sync';
 import { formatVariantAttributes } from '@/lib/format-variant-attributes';
 import { storefrontUi } from '@/lib/storefront-ui';
+import { useCartItemFallbackImages } from '@/lib/use-cart-item-fallback-images';
 import { cartItemToGa4Item, trackViewCart } from '@/lib/analytics';
 
 export default function CartPage() {
@@ -27,7 +27,6 @@ export default function CartPage() {
   const customerId = isAuthenticated ? user?.id : undefined;
   const customerGroupId = isAuthenticated ? user?.customerGroupId : undefined;
   const [localQty, setLocalQty] = useState<Record<string, number>>({});
-  const [fallbackProductImages, setFallbackProductImages] = useState<Record<string, string>>({});
   const [couponMeta, setCouponMeta] = useState<{
     code: string | null;
     discountAmount: number;
@@ -58,45 +57,8 @@ export default function CartPage() {
     setLocalQty(next);
   }, [cart?.items]);
 
-  useEffect(() => {
-    const items = cart?.items ?? [];
-    const missingProductIds = Array.from(
-      new Set(
-        items
-          .filter((item) => !item.productImage && !!item.productId && !fallbackProductImages[item.productId])
-          .map((item) => item.productId),
-      ),
-    );
-    if (missingProductIds.length === 0) return;
-
-    let cancelled = false;
-    Promise.all(
-      missingProductIds.map(async (productId) => {
-        try {
-          const product = await productApi.getProductById(productId);
-          const primary = product.images?.find((img) => img.isPrimary) ?? product.images?.[0];
-          return { productId, image: primary?.url ?? '' };
-        } catch {
-          return { productId, image: '' };
-        }
-      }),
-    ).then((results) => {
-      if (cancelled) return;
-      setFallbackProductImages((prev) => {
-        const next = { ...prev };
-        for (const r of results) {
-          next[r.productId] = r.image;
-        }
-        return next;
-      });
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [cart?.items, fallbackProductImages]);
-
   const items = cart?.items ?? [];
+  const fallbackProductImages = useCartItemFallbackImages(items);
   const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
   const cartId = cart?.id ?? null;
   const displayCurrency = cart?.currency ?? APP_CURRENCY;
@@ -170,7 +132,7 @@ export default function CartPage() {
   if (isLoading && !cart) {
     return (
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="flex flex-col items-center justify-center py-24">
+        <div className="flex flex-col items-center justify-center rounded-xl border border-border bg-card py-24 shadow-sm">
           <div className="h-10 w-10 animate-spin rounded-full border-2 border-muted border-t-primary" aria-hidden />
           <p className="mt-4 text-muted-foreground">Loading cart…</p>
         </div>
@@ -180,10 +142,18 @@ export default function CartPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight text-foreground">
-        <ShoppingBagIcon className="h-7 w-7 shrink-0" strokeWidth={2} aria-hidden />
-        Your cart
-      </h1>
+      <div className="border-b border-border pb-6">
+        <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight text-foreground">
+          <ShoppingBagIcon className="h-7 w-7 shrink-0 text-primary" strokeWidth={2} aria-hidden />
+          Your cart
+        </h1>
+        {items.length > 0 ? (
+          <p className="mt-1 text-sm text-muted-foreground">
+            {items.reduce((sum, i) => sum + i.quantity, 0)}{' '}
+            {items.reduce((sum, i) => sum + i.quantity, 0) === 1 ? 'item' : 'items'} in your cart
+          </p>
+        ) : null}
+      </div>
 
       {error && (
         <div className="mt-4 rounded-lg border border-destructive/25 bg-destructive/10 p-4 text-destructive">
@@ -192,7 +162,7 @@ export default function CartPage() {
       )}
 
       {items.length === 0 && !isLoading ? (
-        <div className="mt-8 rounded-lg border border-border bg-muted/50 py-16 text-center">
+        <div className="mt-8 rounded-xl border border-border bg-card py-16 text-center shadow-sm">
           <p className="text-muted-foreground">Your cart is empty.</p>
           <Link
             href="/products"
@@ -204,26 +174,22 @@ export default function CartPage() {
       ) : (
         <div className="mt-8 lg:grid lg:grid-cols-3 lg:gap-8">
           <div className="lg:col-span-2">
-            <ul className="divide-y divide-border">
+            <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+              <div className="border-b border-border bg-muted/30 px-4 py-3 sm:px-6">
+                <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                  Cart items
+                </h2>
+              </div>
+              <ul className="divide-y divide-border">
               {items.map((item) => {
                 const rowTotal = item.price * item.quantity;
                 const attrLines = formatVariantAttributes(item.variantAttributes ?? item.attributes);
-                const imageUrl = resolveImageUrl(item.productImage) ?? resolveImageUrl(fallbackProductImages[item.productId]);
                 return (
-                <li key={item.variantId} className="flex flex-wrap items-center gap-4 py-4">
-                  <div className="flex-shrink-0 w-14 h-14 rounded-md bg-muted overflow-hidden">
-                    {imageUrl ? (
-                      <img
-                        src={imageUrl}
-                        alt={item.productName || 'Product'}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center text-[10px] text-muted-foreground">
-                        No image
-                      </div>
-                    )}
-                  </div>
+                <li key={item.variantId} className="flex flex-wrap items-center gap-4 px-4 py-5 sm:px-6">
+                  <CartLineItemThumb
+                    item={item}
+                    fallbackProductImages={fallbackProductImages}
+                  />
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-foreground">
                       {item.productName ?? 'Product'}
@@ -235,67 +201,88 @@ export default function CartPage() {
                     ) : item.variantName ? (
                       <p className="text-sm text-muted-foreground">{item.variantName}</p>
                     ) : null}
-                    <p className="text-sm text-muted-foreground mt-0.5">
-                      {formatPrice(item.price, displayCurrency)} × {item.quantity} = {formatPrice(rowTotal, displayCurrency)}
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {formatPrice(item.price, displayCurrency)} each
                     </p>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="number"
-                      min={1}
-                      value={localQty[item.variantId] ?? item.quantity}
-                      onChange={(e) => {
-                        const q = Math.max(1, parseInt(e.target.value, 10) || 1);
-                        setLocalQty((prev) => ({ ...prev, [item.variantId]: q }));
-                      }}
-                      onBlur={() => handleQtyBlur(item.variantId)}
-                      className="w-16 rounded border border-input bg-card px-2 py-1 text-center text-foreground"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeItem(item.variantId)}
-                      className="text-sm text-destructive transition-colors hover:opacity-80"
-                    >
-                      Remove
-                    </button>
+                  <div className="flex w-full flex-wrap items-center justify-between gap-3 sm:w-auto sm:justify-end">
+                    <p className="text-sm font-semibold text-foreground sm:hidden">
+                      {formatPrice(rowTotal, displayCurrency)}
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <label className="sr-only" htmlFor={`qty-${item.variantId}`}>
+                        Quantity for {item.productName ?? 'product'}
+                      </label>
+                      <input
+                        id={`qty-${item.variantId}`}
+                        type="number"
+                        min={1}
+                        value={localQty[item.variantId] ?? item.quantity}
+                        onChange={(e) => {
+                          const q = Math.max(1, parseInt(e.target.value, 10) || 1);
+                          setLocalQty((prev) => ({ ...prev, [item.variantId]: q }));
+                        }}
+                        onBlur={() => handleQtyBlur(item.variantId)}
+                        className="w-16 rounded-md border border-input bg-background px-2 py-1.5 text-center text-sm text-foreground shadow-sm"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeItem(item.variantId)}
+                        className={storefrontUi.btnDestructive}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                    <p className="hidden min-w-[5.5rem] text-right text-sm font-semibold text-foreground sm:block">
+                      {formatPrice(rowTotal, displayCurrency)}
+                    </p>
                   </div>
                 </li>
               );
               })}
-            </ul>
+              </ul>
+            </div>
             <button
               type="button"
               onClick={() => clearCart()}
-              className="mt-4 text-sm text-muted-foreground transition-colors hover:text-foreground"
+              className={`mt-4 ${storefrontUi.btnDestructive} px-4 py-2`}
             >
               Clear cart
             </button>
           </div>
 
           <div className="mt-8 lg:mt-0">
-            <div className="rounded-lg border border-border bg-muted/40 p-6">
-              <h2 className="text-lg font-semibold text-foreground">
-                Summary
+            <div className="sticky top-24 rounded-xl border border-border bg-card p-6 shadow-sm">
+              <h2 className="border-b border-border pb-3 text-lg font-semibold text-foreground">
+                Order summary
               </h2>
-              <p className="mt-2 text-muted-foreground">
-                Subtotal: {formatPrice(subtotal, displayCurrency)}
-              </p>
+              <div className="mt-4 space-y-2 text-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Subtotal</span>
+                  <span className="font-medium text-foreground">
+                    {formatPrice(subtotal, displayCurrency)}
+                  </span>
+                </div>
               {couponMeta.discountAmount > 0 && (
-                <p className="mt-1 text-sm font-medium text-emerald-700 dark:text-emerald-400">
-                  Discount applied: −{formatPrice(couponMeta.discountAmount, displayCurrency)}
-                </p>
+                <div className="flex items-center justify-between text-emerald-700 dark:text-emerald-400">
+                  <span>Discount</span>
+                  <span className="font-medium">−{formatPrice(couponMeta.discountAmount, displayCurrency)}</span>
+                </div>
               )}
               {couponMeta.isFreeShipping && couponMeta.discountAmount <= 0 && couponMeta.code && (
-                <p className="mt-1 text-sm text-muted-foreground">
+                <p className="text-muted-foreground">
                   Free shipping coupon — savings shown at checkout.
                 </p>
               )}
               {(couponMeta.discountAmount > 0 || (couponMeta.isFreeShipping && couponMeta.code)) && (
-                <p className="mt-2 text-sm font-semibold text-foreground">
-                  Estimated total (before shipping):{' '}
-                  {formatPrice(Math.max(0, subtotal - couponMeta.discountAmount), displayCurrency)}
-                </p>
+                <div className="flex items-center justify-between border-t border-border pt-2 font-semibold text-foreground">
+                  <span>Estimated total</span>
+                  <span>
+                    {formatPrice(Math.max(0, subtotal - couponMeta.discountAmount), displayCurrency)}
+                  </span>
+                </div>
               )}
+              </div>
               <div className="mt-4">
                 <CouponApplySection
                   appliedCouponCode={couponMeta.code}

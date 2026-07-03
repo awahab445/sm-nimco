@@ -8,8 +8,7 @@ import Link from 'next/link';
 export default function AccountPage() {
   const { user } = useAuthStore();
 
-  const actionClass =
-    'block rounded-md border border-border bg-card px-4 py-2 text-sm font-medium text-brand-text transition-colors hover:bg-brand-secondary/30 focus:outline-none focus:ring-2 focus:ring-brand-primary/30 focus:ring-offset-2 focus:ring-offset-brand-bg';
+  const actionClass = `block w-full text-center ${storefrontUi.btnSecondary}`;
 
   return (
     <>

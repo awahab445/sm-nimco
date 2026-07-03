@@ -224,14 +224,14 @@ export default function AddressesPage() {
                 <div className="flex flex-wrap gap-2">
                   <button
                     onClick={() => handleEdit(address)}
-                    className="rounded-md border border-border bg-card px-3 py-1.5 text-sm font-medium text-brand-text transition-colors hover:bg-brand-secondary/25 focus:outline-none focus:ring-2 focus:ring-brand-primary/30"
+                    className={`${storefrontUi.btnSecondary} px-3 py-1.5`}
                   >
                     Edit
                   </button>
                   {!address.isDefaultBilling && (
                     <button
                       onClick={() => handleSetDefaultBilling(address.id)}
-                      className="rounded-md border border-border bg-card px-3 py-1.5 text-sm font-medium text-brand-text transition-colors hover:bg-brand-secondary/25 focus:outline-none focus:ring-2 focus:ring-brand-primary/30"
+                      className={`${storefrontUi.btnSecondary} px-3 py-1.5`}
                     >
                       Set Billing
                     </button>
@@ -239,14 +239,14 @@ export default function AddressesPage() {
                   {!address.isDefaultShipping && (
                     <button
                       onClick={() => handleSetDefaultShipping(address.id)}
-                      className="rounded-md border border-border bg-card px-3 py-1.5 text-sm font-medium text-brand-text transition-colors hover:bg-brand-secondary/25 focus:outline-none focus:ring-2 focus:ring-brand-primary/30"
+                      className={`${storefrontUi.btnSecondary} px-3 py-1.5`}
                     >
                       Set Shipping
                     </button>
                   )}
                   <button
                     onClick={() => handleDelete(address.id)}
-                    className="rounded-md border border-destructive/40 bg-card px-3 py-1.5 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10 focus:outline-none focus:ring-2 focus:ring-destructive/30"
+                    className={storefrontUi.btnDestructive}
                   >
                     Delete
                   </button>

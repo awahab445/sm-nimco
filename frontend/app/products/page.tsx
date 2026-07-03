@@ -27,6 +27,7 @@ import { PlpBrowseTree, PlpBrowseBreadcrumbs } from '@/components/products/plp-b
 import { PlpProductGridSkeleton } from '@/components/products/plp-product-grid-skeleton';
 import { plpBrowseApi, type PlpBrowseTreeNode } from '@/lib/api-client';
 import { findBrowseNodeLabel } from '@/lib/plp-browse-tree';
+import { storefrontUi } from '@/lib/storefront-ui';
 import { trackViewItemList } from '@/lib/analytics/events';
 
 function flattenCategories(res: { data?: Category[] } | CategoryTreeLike[]): Category[] {
@@ -390,7 +391,7 @@ function ProductsContent() {
               type="button"
               disabled={previewLoading}
               onClick={applyDrawerFilters}
-              className="btn-brand-primary w-full py-3 text-sm font-semibold"
+              className={`w-full py-3 text-sm font-semibold ${storefrontUi.btnPrimary}`}
             >
               {previewLoading
                 ? 'Applying…'
@@ -401,7 +402,7 @@ function ProductsContent() {
             <button
               type="button"
               onClick={() => setDrawerOpen(false)}
-              className="w-full rounded-md border border-border bg-card py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+              className={`w-full py-2.5 ${storefrontUi.btnNeutral}`}
             >
               Close
             </button>
@@ -498,7 +499,7 @@ function ProductsContent() {
               <button
                 type="button"
                 onClick={openFiltersDrawer}
-                className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3.5 py-2 text-sm font-medium text-foreground shadow-sm transition-colors hover:bg-muted active:scale-[0.98] lg:hidden"
+                className={`inline-flex items-center gap-2 lg:hidden ${storefrontUi.btnNeutral} px-3.5 py-2 shadow-sm active:scale-[0.98]`}
                 aria-expanded={drawerOpen}
                 aria-controls="plp-mobile-filters"
               >
@@ -556,7 +557,7 @@ function ProductsContent() {
               {page > 1 && (
                 <Link
                   href={buildPageUrl(page - 1)}
-                  className="rounded-md border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                  className={storefrontUi.btnNeutral}
                 >
                   Previous
                 </Link>
@@ -567,7 +568,7 @@ function ProductsContent() {
               {page < totalPages && (
                 <Link
                   href={buildPageUrl(page + 1)}
-                  className="rounded-md border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                  className={storefrontUi.btnNeutral}
                 >
                   Next
                 </Link>

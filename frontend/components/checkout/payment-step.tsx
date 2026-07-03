@@ -116,7 +116,7 @@ export function PaymentStep({ onNext, onBack }: PaymentStepProps) {
         <button
           type="button"
           onClick={onBack}
-          className="rounded-md border border-border bg-card px-6 py-2 text-foreground transition-colors hover:bg-muted"
+          className={storefrontUi.btnNeutralLg}
         >
           Back
         </button>

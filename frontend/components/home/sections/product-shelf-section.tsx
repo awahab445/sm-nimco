@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { productApi, inventoryApi, type ProductListResponse } from '@/lib/api-client';
 import { ProductCard, getVariantForCart } from '@/components/product/product-card';
 import type { ProductShelfSource } from '@/lib/cms/home-page-types';
+import { storefrontUi } from '@/lib/storefront-ui';
 
 interface ProductShelfSectionProps {
   title: string;
@@ -70,7 +71,7 @@ export function ProductShelfSection({ title, subtitle, viewAllHref, source }: Pr
         </div>
         <Link
           href={viewAllHref}
-          className="shrink-0 text-sm font-medium text-primary transition-opacity hover:opacity-80"
+          className={`shrink-0 text-sm ${storefrontUi.link}`}
         >
           View all →
         </Link>

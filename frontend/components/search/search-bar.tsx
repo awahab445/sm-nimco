@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { productApi } from '@/lib/api-client';
 import { formatPrice } from '@/lib/currency';
 import { useHydrated } from '@/lib/use-hydrated';
+import { storefrontUi } from '@/lib/storefront-ui';
 
 const DEBOUNCE_MS = 300;
 const MIN_QUERY_LENGTH = 2;
@@ -194,7 +195,7 @@ export function SearchBar({ variant = 'default' }: { variant?: 'default' | 'head
                   <Link
                     href={`/products?search=${encodeURIComponent(query.trim())}`}
                     onClick={() => setOpen(false)}
-                    className="block px-4 py-3 text-center text-sm font-medium text-primary transition-colors hover:bg-muted hover:opacity-90"
+                    className={`block px-4 py-3 text-center text-sm ${storefrontUi.link} hover:bg-muted`}
                   >
                     See all {total} results
                   </Link>

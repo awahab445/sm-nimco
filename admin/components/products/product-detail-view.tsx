@@ -1,5 +1,6 @@
 'use client';
 
+import { adminUi } from '@/lib/admin-ui';
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -453,7 +454,7 @@ function InventoryMatrixPanel({ product }: { product: ProductDetail }) {
             type="button"
             onClick={() => void saveAll()}
             disabled={saving || loading}
-            className="rounded-lg bg-zinc-900 px-3 py-2 text-sm font-medium text-white disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
+            className={adminUi.btnPrimaryMd}
           >
             {saving ? 'Saving…' : 'Save all'}
           </button>
@@ -756,7 +757,7 @@ function VariantsPanel({
               <button
                 type="submit"
                 disabled={bulkSaving}
-                className="w-full rounded-lg bg-zinc-900 px-3 py-2 text-sm font-medium text-white disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
+                className={`w-full ${adminUi.btnPrimaryMd}`}
               >
                 {bulkSaving ? 'Applying…' : 'Apply to matching variants'}
               </button>
@@ -839,7 +840,7 @@ function VariantsPanel({
               <button
                 type="submit"
                 disabled={saving}
-                className="rounded-lg bg-zinc-900 px-3 py-1.5 text-sm text-white disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
+                className={adminUi.btnPrimarySm}
               >
                 {saving ? 'Saving…' : 'Save'}
               </button>
@@ -993,7 +994,7 @@ function ProductOptionsPanel({
             type="button"
             onClick={() => void createCombinations()}
             disabled={creating}
-            className="rounded-lg bg-zinc-900 px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
+            className={adminUi.btnPrimarySm}
           >
             {creating ? 'Creating…' : 'Create combination'}
           </button>
@@ -1281,7 +1282,7 @@ function ImagesPanel({
             type="button"
             onClick={() => void uploadMultipleImages()}
             disabled={uploading || uploadFiles.length === 0}
-            className="rounded-lg bg-zinc-900 px-3 py-2 text-sm font-medium text-white disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
+            className={adminUi.btnPrimaryMd}
           >
             {uploading ? 'Uploading…' : 'Upload selected'}
           </button>
@@ -1296,7 +1297,7 @@ function ImagesPanel({
         <button
           type="button"
           onClick={openCreate}
-          className="rounded-lg bg-zinc-900 px-3 py-1.5 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
+          className={adminUi.btnPrimarySm}
         >
           Add image
         </button>
@@ -1420,7 +1421,7 @@ function ImagesPanel({
               <button
                 type="submit"
                 disabled={saving}
-                className="rounded-lg bg-zinc-900 px-3 py-1.5 text-sm text-white dark:bg-zinc-100 dark:text-zinc-900"
+                className={adminUi.btnPrimarySm}
               >
                 {saving ? 'Saving…' : 'Save'}
               </button>
@@ -1537,7 +1538,7 @@ function CategoriesPanel({
           type="button"
           disabled={busy}
           onClick={() => void assign()}
-          className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
+          className={adminUi.btnPrimary}
         >
           Assign
         </button>

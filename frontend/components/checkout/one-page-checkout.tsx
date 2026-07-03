@@ -1177,7 +1177,7 @@ export function OnePageCheckout() {
                             type="button"
                             onClick={handleRemove}
                             disabled={isUpdating || checkout.items.length <= 1}
-                            className="text-xs text-destructive transition-colors hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-50"
+                            className={`${storefrontUi.btnDestructiveText} text-xs`}
                           >
                             {isUpdating ? '…' : 'Remove'}
                           </button>
@@ -1277,7 +1277,7 @@ export function OnePageCheckout() {
               <button
                 type="button"
                 onClick={() => setShowMinimumOrderModal(false)}
-                className="rounded-lg bg-[#4f90f1] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#2f6fcb]"
+                className={storefrontUi.btnPrimary}
               >
                 Back to cart
               </button>

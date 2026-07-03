@@ -1,5 +1,6 @@
 'use client';
 
+import { adminUi } from '@/lib/admin-ui';
 import { useEffect, useMemo, useState } from 'react';
 import {
   createProductOption,
@@ -240,7 +241,7 @@ export function ProductOptionsManager() {
         <button
           type="button"
           onClick={openCreate}
-          className="shrink-0 rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
+          className={`shrink-0 ${adminUi.btnPrimary}`}
         >
           New option
         </button>
@@ -431,7 +432,7 @@ export function ProductOptionsManager() {
               <button
                 type="submit"
                 disabled={creating}
-                className="rounded-lg bg-zinc-900 px-3 py-1.5 text-sm text-white disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
+                className={adminUi.btnPrimarySm}
               >
                 {creating ? 'Creating…' : 'Create'}
               </button>
@@ -490,7 +491,7 @@ export function ProductOptionsManager() {
               <button
                 type="submit"
                 disabled={savingOption}
-                className="rounded-lg bg-zinc-900 px-3 py-1.5 text-sm text-white disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
+                className={adminUi.btnPrimarySm}
               >
                 {savingOption ? 'Saving…' : 'Save'}
               </button>
@@ -565,7 +566,7 @@ export function ProductOptionsManager() {
               <button
                 type="submit"
                 disabled={savingValue}
-                className="rounded-lg bg-zinc-900 px-3 py-1.5 text-sm text-white disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
+                className={adminUi.btnPrimarySm}
               >
                 {savingValue ? 'Saving…' : 'Save'}
               </button>

@@ -175,6 +175,41 @@ button .cart-icon {
   color: inherit;
 }
 
+/* Primary storefront CTA — theme-aware fill via CSS variables */
+@layer components {
+  .btn-brand-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md, 0.375rem);
+    background-color: var(--primary);
+    color: var(--primary-foreground);
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.25rem;
+    box-shadow: 0 1px 2px 0 color-mix(in srgb, var(--foreground) 6%, transparent);
+    transition:
+      background-color 0.2s ease,
+      box-shadow 0.2s ease,
+      transform 0.15s ease,
+      opacity 0.2s ease;
+  }
+
+  .btn-brand-primary:hover:not(:disabled) {
+    background-color: color-mix(in srgb, var(--primary) 88%, var(--foreground));
+    box-shadow: 0 4px 12px -2px color-mix(in srgb, var(--primary) 35%, transparent);
+  }
+
+  .btn-brand-primary:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+
+  .btn-brand-primary:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+}
+
 /* Header nav triggers (Products / Categories mega menu) */
 .header-nav-trigger {
   display: inline-flex;
@@ -259,8 +294,37 @@ details.mega-menu-mobile-root[open] > summary .header-nav-trigger__chevron {
   font-weight: 600;
 }
 
+.header-cart-preview {
+  animation: header-user-menu-enter 0.18s ease-out forwards;
+  border-radius: var(--radius-md, 0.5rem);
+  border: 1px solid color-mix(in srgb, var(--border) 88%, transparent);
+  background: var(--popover, var(--card));
+  color: var(--popover-foreground, var(--foreground));
+  box-shadow: var(--mega-menu-shadow, 0 12px 32px -8px color-mix(in srgb, var(--foreground) 18%, transparent));
+}
+
+.site-header nav .header-cart-preview a {
+  color: inherit;
+}
+
+.site-header nav .header-cart-trigger,
+.site-header nav .header-cart-trigger:hover,
+.site-header nav .header-cart-trigger:focus-visible {
+  color: #fff;
+}
+
+.site-header nav .header-cart-trigger .cart-icon {
+  color: #fff;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .header-user-menu {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .header-cart-preview {
     animation: none;
     opacity: 1;
     transform: none;
@@ -270,11 +334,11 @@ details.mega-menu-mobile-root[open] > summary .header-nav-trigger__chevron {
 @keyframes mega-menu-enter {
   from {
     opacity: 0;
-    transform: translateX(-50%) translateY(-0.25rem);
+    transform: translateY(-0.25rem);
   }
   to {
     opacity: 1;
-    transform: translateX(-50%) translateY(0);
+    transform: translateY(0);
   }
 }
 
@@ -316,8 +380,6 @@ html[data-store-theme='default'] .store-mega-menu-panel {
 
 .store-mega-menu-panel {
   box-sizing: border-box;
-  left: 50%;
-  transform: translateX(-50%);
   border-top: 1px solid var(--navbar-border);
   border-radius: 0 0 0.75rem 0.75rem;
   max-height: min(68vh, 26rem);
@@ -460,6 +522,28 @@ html[data-store-theme="mehfil_shereen"] .store-mega-menu-panel .mega-menu-nav-ne
 
 .mega-menu-nav-grid {
   overflow: visible;
+}
+
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .store-mega-menu-panel__inner {
+    padding: 1rem 1.25rem 1.25rem;
+  }
+
+  .mega-menu-nav-grid {
+    column-gap: 1rem;
+    row-gap: 0.75rem;
+  }
+
+  .mega-menu-nav-heading {
+    font-size: 0.875rem;
+  }
+
+  .mega-menu-nav-link--l2,
+  .mega-menu-nav-link--l3 {
+    font-size: 0.8125rem;
+    padding-top: 0.35rem;
+    padding-bottom: 0.35rem;
+  }
 }
 
 .mega-menu-nav-column-list {
@@ -673,7 +757,7 @@ html[data-store-theme="mehfil_shereen"] .store-mega-menu-panel .mega-menu-nav-ne
   .store-mega-menu-panel {
     animation: none;
     opacity: 1;
-    transform: translateX(-50%);
+    transform: none;
   }
 }
 

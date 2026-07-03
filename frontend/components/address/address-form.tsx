@@ -233,7 +233,7 @@ export function AddressForm({
             type="button"
             onClick={onCancel}
             disabled={isLoading}
-            className="rounded-md border border-border bg-card px-6 py-2 text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
+            className={`${storefrontUi.btnNeutralLg} disabled:cursor-not-allowed disabled:opacity-50`}
           >
             Cancel
           </button>

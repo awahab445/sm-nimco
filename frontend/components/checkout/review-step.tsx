@@ -213,7 +213,7 @@ export function ReviewStep({ onBack }: ReviewStepProps) {
           type="button"
           onClick={onBack}
           disabled={isLoading}
-          className="rounded-md border border-border bg-card px-6 py-2 text-foreground transition-colors hover:bg-muted disabled:opacity-50"
+          className={`${storefrontUi.btnNeutralLg} disabled:opacity-50`}
         >
           Back
         </button>

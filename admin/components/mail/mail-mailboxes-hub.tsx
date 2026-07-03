@@ -1,5 +1,6 @@
 'use client';
 
+import { adminUi } from '@/lib/admin-ui';
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
@@ -77,7 +78,7 @@ export function MailMailboxesHub() {
         </div>
         <Link
           href="/mail/new"
-          className="rounded-lg bg-zinc-900 px-4 py-2 text-center text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
+          className={adminUi.btnPrimary}
         >
           New mailbox
         </Link>

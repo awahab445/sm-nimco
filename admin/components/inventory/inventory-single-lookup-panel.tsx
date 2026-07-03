@@ -1,5 +1,6 @@
 'use client';
 
+import { adminUi } from '@/lib/admin-ui';
 import { useState } from 'react';
 import Link from 'next/link';
 import {
@@ -229,7 +230,7 @@ export function InventorySingleLookupPanel() {
             type="button"
             onClick={() => void loadStatus()}
             disabled={loadingStatus}
-            className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
+            className={adminUi.btnPrimary}
           >
             {loadingStatus ? 'Loading…' : 'Load status'}
           </button>
@@ -292,7 +293,7 @@ export function InventorySingleLookupPanel() {
           <button
             type="submit"
             disabled={adjusting}
-            className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
+            className={adminUi.btnPrimary}
           >
             {adjusting ? 'Applying…' : 'Apply adjustment'}
           </button>

@@ -1,5 +1,6 @@
 'use client';
 
+import { adminUi } from '@/lib/admin-ui';
 import { useRef, useState } from 'react';
 import { uploadStorefrontNavBannerImage, type StorefrontNavRow } from '@/lib/api/storefront-navigation';
 import { formatApiError } from '@/lib/api/error-message';
@@ -136,7 +137,7 @@ export function MegaMenuBannerSection({
                 type="button"
                 disabled={uploadBusy}
                 onClick={() => fileRef.current?.click()}
-                className="rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium disabled:opacity-50"
+                className={adminUi.btnSecondary}
               >
                 {uploadBusy ? 'Uploading…' : 'Upload image'}
               </button>
@@ -190,7 +191,7 @@ export function MegaMenuBannerSection({
           <button
             type="submit"
             disabled={saving}
-            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
+            className={adminUi.btnPrimary}
           >
             {saving ? 'Saving…' : 'Save banner'}
           </button>

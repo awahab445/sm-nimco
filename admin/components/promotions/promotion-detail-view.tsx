@@ -1,5 +1,6 @@
 'use client';
 
+import { adminUi } from '@/lib/admin-ui';
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { fetchCustomerGroups, type CustomerGroup } from '@/lib/api/customer-groups';
@@ -238,7 +239,7 @@ export function PromotionDetailView({ promotionId }: { promotionId: string }) {
             <button
               type="submit"
               disabled={statusSaving}
-              className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
+              className={adminUi.btnPrimary}
             >
               {statusSaving ? 'Saving…' : 'Save status'}
             </button>
@@ -412,7 +413,7 @@ export function PromotionDetailView({ promotionId }: { promotionId: string }) {
             type="button"
             onClick={() => void runValidate()}
             disabled={valRunning}
-            className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
+            className={adminUi.btnPrimary}
           >
             {valRunning ? 'Running…' : 'Run validate'}
           </button>

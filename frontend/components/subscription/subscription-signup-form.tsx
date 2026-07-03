@@ -3,6 +3,7 @@
 import { subscriptionApi } from '@/lib/api-client';
 import { useHydrated } from '@/lib/use-hydrated';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import { storefrontUi } from '@/lib/storefront-ui';
 
 const EMAIL_RE =
   /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
@@ -102,7 +103,7 @@ export function SubscriptionSignupForm({
           <button
             type="submit"
             disabled={loading}
-            className="rounded-md bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground shadow-sm transition-opacity hover:opacity-90 disabled:opacity-60"
+            className={`${storefrontUi.btnPrimary} px-5 py-2.5`}
           >
             {loading ? 'Subscribing…' : 'Subscribe'}
           </button>
