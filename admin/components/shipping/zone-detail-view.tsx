@@ -1,5 +1,6 @@
 'use client';
 
+import { adminUi } from '@/lib/admin-ui';
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -204,7 +205,7 @@ export function ZoneDetailView({ zoneId }: { zoneId: string }) {
           <button
             type="submit"
             disabled={saving}
-            className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
+            className={adminUi.btnPrimary}
           >
             {saving ? 'Saving…' : 'Save zone'}
           </button>
@@ -226,7 +227,7 @@ export function ZoneDetailView({ zoneId }: { zoneId: string }) {
           <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">Methods</h2>
           <Link
             href={`/shipping/methods/new?zoneId=${encodeURIComponent(zoneId)}`}
-            className="rounded-lg bg-zinc-900 px-3 py-1.5 text-center text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
+            className={adminUi.btnPrimarySm}
           >
             New method
           </Link>

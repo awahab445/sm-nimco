@@ -1,5 +1,6 @@
 'use client';
 
+import { adminUi } from '@/lib/admin-ui';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { fetchAdminCategories, type AdminCategoryListItem } from '@/lib/api/categories';
 import {
@@ -318,7 +319,7 @@ export function StoreNavigationManager() {
               <button
                 type="button"
                 onClick={() => openCreate('header')}
-                className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground"
+                className={adminUi.btnPrimarySm}
               >
                 Add header link
               </button>
@@ -393,7 +394,7 @@ export function StoreNavigationManager() {
               <button
                 type="button"
                 onClick={() => openCreate('mega')}
-                className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground"
+                className={adminUi.btnPrimarySm}
               >
                 Add menu item
               </button>
@@ -570,14 +571,14 @@ export function StoreNavigationManager() {
               <button
                 type="button"
                 onClick={() => setModal(false)}
-                className="rounded-md border border-border px-4 py-2 text-sm"
+                className={adminUi.btnSecondary}
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={saving}
-                className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
+                className={adminUi.btnPrimary}
               >
                 {saving ? 'Savingâ€¦' : 'Save'}
               </button>

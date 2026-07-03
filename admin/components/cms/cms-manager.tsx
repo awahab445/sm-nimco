@@ -1,5 +1,6 @@
 'use client';
 
+import { adminUi } from '@/lib/admin-ui';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   cmsApi,
@@ -714,7 +715,7 @@ function ActionRow({ onReset }: { onReset: () => void }) {
     <div className="flex gap-2 pt-2">
       <button
         type="submit"
-        className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
+        className={adminUi.btnPrimary}
       >
         Save
       </button>

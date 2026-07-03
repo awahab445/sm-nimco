@@ -1,5 +1,6 @@
 'use client';
 
+import { adminUi } from '@/lib/admin-ui';
 import { useCallback, useEffect, useState } from 'react';
 import { fetchCustomerGroups, type CustomerGroup } from '@/lib/api/customer-groups';
 import {
@@ -283,7 +284,7 @@ export function MethodCustomerGroupsPanel({ methodId }: { methodId: string }) {
             <button
               type="submit"
               disabled={saving || availableGroups.length === 0}
-              className="rounded-lg bg-zinc-900 px-3 py-2 text-sm font-medium text-white disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
+              className={adminUi.btnPrimaryMd}
             >
               Assign
             </button>

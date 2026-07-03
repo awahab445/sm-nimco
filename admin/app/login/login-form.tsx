@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/lib/auth.store';
 import { safeRedirectPath } from '@/lib/safe-redirect';
+import { adminUi } from '@/lib/admin-ui';
 
 export function LoginForm() {
   const router = useRouter();
@@ -128,7 +129,7 @@ export function LoginForm() {
         <button
           type="submit"
           disabled={isLoading}
-          className="flex w-full justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-blue-500 dark:hover:bg-blue-600"
+          className={`flex w-full justify-center ${adminUi.btnPrimary}`}
         >
           {isLoading ? 'Signing in…' : 'Sign in'}
         </button>

@@ -22,6 +22,7 @@ import { DesktopShopMegaMenu, MobileCategoryAccordions } from '@/components/layo
 import { UserMenuDropdown } from '@/components/layout/user-menu-dropdown';
 import { CartPreviewDropdown } from '@/components/layout/cart-preview-dropdown';
 import { ShoppingBagIcon } from '@/components/icons/shopping-bag-icon';
+import { storefrontUi } from '@/lib/storefront-ui';
 
 const DESKTOP_NAV_MIN_WIDTH = 1024;
 const DEFAULT_LOGO_WIDTH = 36;
@@ -282,7 +283,7 @@ export function Header() {
                 </Link>
                 <Link
                   href="/register"
-                  className="mt-1 rounded-md bg-brand-primary px-3 py-3 text-center text-base font-medium text-white shadow-sm transition-all duration-200 hover:brightness-110 sm:py-2.5 sm:text-sm"
+                  className={`mt-1 block text-center sm:py-2.5 ${storefrontUi.btnPrimary} py-3 text-base sm:text-sm`}
                   onClick={closeMobileNav}
                 >
                   Sign up

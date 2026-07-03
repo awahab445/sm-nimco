@@ -228,7 +228,7 @@ export default function CartPage() {
                       <button
                         type="button"
                         onClick={() => removeItem(item.variantId)}
-                        className="rounded-md border border-border px-3 py-1.5 text-sm text-destructive transition-colors hover:bg-destructive/5"
+                        className={storefrontUi.btnDestructive}
                       >
                         Remove
                       </button>
@@ -245,7 +245,7 @@ export default function CartPage() {
             <button
               type="button"
               onClick={() => clearCart()}
-              className="mt-4 rounded-md border border-border bg-card px-4 py-2 text-sm text-muted-foreground shadow-sm transition-colors hover:border-destructive/40 hover:text-destructive"
+              className={`mt-4 ${storefrontUi.btnDestructive} px-4 py-2`}
             >
               Clear cart
             </button>

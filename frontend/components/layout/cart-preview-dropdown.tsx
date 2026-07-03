@@ -157,7 +157,7 @@ export function CartPreviewDropdown({ label = 'Cart', href = '/cart' }: CartPrev
               <p className="text-sm text-muted-foreground">Your cart is empty.</p>
               <Link
                 href="/products"
-                className={`mt-3 inline-block text-sm font-medium text-primary hover:underline`}
+                className={`mt-3 inline-block text-sm ${storefrontUi.btnPrimary}`}
                 onClick={() => setOpen(false)}
               >
                 Continue shopping

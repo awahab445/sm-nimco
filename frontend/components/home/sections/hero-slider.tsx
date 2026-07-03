@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import type { HeroSlide } from '@/lib/cms/home-page-types';
+import { storefrontUi } from '@/lib/storefront-ui';
 import { useHydrated } from '@/lib/use-hydrated';
 
 export type HeroSliderLayout = 'card' | 'immersive';
@@ -203,8 +204,8 @@ export function HeroSlider({
                     href={slide.ctaHref}
                     className={
                       immersive
-                        ? 'btn-brand-primary mt-8 inline-flex px-6 py-3 text-sm font-semibold shadow-md sm:text-base'
-                        : 'btn-brand-primary mt-6 inline-flex px-5 py-2.5 text-sm'
+                        ? `mt-8 inline-flex px-6 py-3 text-sm font-semibold shadow-md sm:text-base ${storefrontUi.btnPrimary}`
+                        : `mt-6 inline-flex px-5 py-2.5 ${storefrontUi.btnPrimary}`
                     }
                   >
                     {slide.ctaLabel}

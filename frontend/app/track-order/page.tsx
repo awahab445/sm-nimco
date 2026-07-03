@@ -125,7 +125,7 @@ export default function TrackOrderPage() {
               </button>
               <Link
                 href="/"
-                className="w-full rounded-md border border-border bg-card px-4 py-2 text-center text-sm font-medium text-foreground transition-colors hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring/30 focus:ring-offset-2 focus:ring-offset-background"
+                className={`w-full text-center ${storefrontUi.btnNeutral}`}
               >
                 Cancel
               </Link>

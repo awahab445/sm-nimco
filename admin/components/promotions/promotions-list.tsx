@@ -1,5 +1,6 @@
 'use client';
 
+import { adminUi } from '@/lib/admin-ui';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import {
@@ -110,7 +111,7 @@ export function PromotionsList() {
         <PermissionGate anyOf={['promotions.manage']}>
           <Link
             href="/promotions/new"
-            className="shrink-0 rounded-lg bg-zinc-900 px-4 py-2 text-center text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
+            className={`shrink-0 ${adminUi.btnPrimary}`}
           >
             New promotion
           </Link>

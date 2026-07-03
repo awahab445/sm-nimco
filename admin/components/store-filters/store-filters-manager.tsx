@@ -1,5 +1,6 @@
 'use client';
 
+import { adminUi } from '@/lib/admin-ui';
 import { Fragment, useCallback, useEffect, useState } from 'react';
 import {
   fetchStoreFilters,
@@ -204,7 +205,7 @@ export function StoreFiltersManager() {
         <button
           type="button"
           onClick={openCreateFilter}
-          className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
+          className={adminUi.btnPrimary}
         >
           New filter
         </button>
@@ -409,10 +410,10 @@ export function StoreFiltersManager() {
                 Active on storefront
               </label>
               <div className="flex justify-end gap-2 pt-2">
-                <button type="button" className="rounded-lg border px-3 py-2 text-sm dark:border-zinc-600" onClick={() => !fSaving && setFilterModal(false)}>
+                <button type="button" className={adminUi.btnSecondary} onClick={() => !fSaving && setFilterModal(false)}>
                   Cancel
                 </button>
-                <button type="submit" disabled={fSaving} className="rounded-lg bg-zinc-900 px-4 py-2 text-sm text-white dark:bg-zinc-100 dark:text-zinc-900">
+                <button type="submit" disabled={fSaving} className={adminUi.btnPrimary}>
                   {fSaving ? 'Saving…' : editingFilter ? 'Save' : 'Create'}
                 </button>
               </div>
@@ -455,10 +456,10 @@ export function StoreFiltersManager() {
                 Active
               </label>
               <div className="flex justify-end gap-2 pt-2">
-                <button type="button" className="rounded-lg border px-3 py-2 text-sm dark:border-zinc-600" onClick={() => !oSaving && setOptModal(false)}>
+                <button type="button" className={adminUi.btnSecondary} onClick={() => !oSaving && setOptModal(false)}>
                   Cancel
                 </button>
-                <button type="submit" disabled={oSaving} className="rounded-lg bg-zinc-900 px-4 py-2 text-sm text-white dark:bg-zinc-100 dark:text-zinc-900">
+                <button type="submit" disabled={oSaving} className={adminUi.btnPrimary}>
                   {oSaving ? 'Saving…' : editingOpt ? 'Save' : 'Create'}
                 </button>
               </div>

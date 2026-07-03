@@ -1,5 +1,6 @@
 'use client';
 
+import { adminUi } from '@/lib/admin-ui';
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { fetchShippingZones, type ShippingZone } from '@/lib/api/shipping';
@@ -47,7 +48,7 @@ export function ShippingZonesHome() {
         <div className="flex flex-wrap gap-2">
           <Link
             href="/shipping/zones/new"
-            className="rounded-lg bg-zinc-900 px-4 py-2 text-center text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
+            className={adminUi.btnPrimary}
           >
             New zone
           </Link>

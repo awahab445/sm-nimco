@@ -39,7 +39,7 @@ function CheckoutFailureContent() {
             <button
               type="button"
               onClick={() => router.push('/')}
-              className="rounded-md border border-border bg-card px-6 py-2 text-foreground transition-colors hover:bg-muted"
+              className={storefrontUi.btnNeutralLg}
             >
               Return to Home
             </button>

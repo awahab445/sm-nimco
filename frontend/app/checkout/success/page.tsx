@@ -360,14 +360,14 @@ function CheckoutSuccessContent() {
             {isPaymentFailed && (
               <button
                 onClick={() => router.push(`/checkout?orderId=${order.id}`)}
-                className={`btn-brand-primary flex-1 px-6 py-2`}
+                className={`flex-1 ${storefrontUi.btnPrimary} px-6 py-2`}
               >
                 Retry Payment
               </button>
             )}
             <button
               onClick={() => router.push('/')}
-              className="flex-1 rounded-md border border-border bg-card px-6 py-2 text-foreground transition-colors hover:bg-muted"
+              className={`flex-1 ${storefrontUi.btnNeutralLg}`}
             >
               Continue Shopping
             </button>

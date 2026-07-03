@@ -1,5 +1,6 @@
 'use client';
 
+import { adminUi } from '@/lib/admin-ui';
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
@@ -249,7 +250,7 @@ export function OrderShippingOps() {
           <button
             type="submit"
             disabled={assigning}
-            className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
+            className={adminUi.btnPrimary}
           >
             {assigning ? 'Assigning…' : 'Assign shipping'}
           </button>
@@ -315,7 +316,7 @@ export function OrderShippingOps() {
           <button
             type="submit"
             disabled={statusSaving}
-            className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
+            className={adminUi.btnPrimary}
           >
             {statusSaving ? 'Saving…' : 'Update status'}
           </button>

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import type { ValidatePromotionItem } from '@/lib/api-client';
 import { validateCouponCodeForCartLike } from '@/lib/coupon-sync';
+import { storefrontUi } from '@/lib/storefront-ui';
 
 export type CouponApplySectionProps = {
   appliedCouponCode: string | null;
@@ -127,7 +128,7 @@ export function CouponApplySection({
               type="button"
               onClick={() => void handleApply()}
               disabled={loading || !!disabled || !input.trim()}
-              className="shrink-0 rounded-md bg-secondary px-3 py-2 text-sm font-medium text-secondary-foreground transition-colors hover:opacity-90 disabled:opacity-50"
+              className={`shrink-0 ${storefrontUi.btnPrimary} px-3 py-2`}
             >
               {loading ? '…' : 'Apply'}
             </button>

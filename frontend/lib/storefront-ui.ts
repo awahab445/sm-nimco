@@ -2,8 +2,9 @@
  * Shared semantic Tailwind classes for storefront forms and alerts.
  * Keeps inputs, labels, and messages aligned with styles/store-themes.css tokens.
  */
-const btnPrimaryBlue =
-  'rounded-md bg-blue-600 text-sm font-semibold text-white transition-all duration-200 hover:bg-blue-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100';
+const btnFocus =
+  'focus:outline-none focus:ring-2 focus:ring-brand-primary/30 focus:ring-offset-2 focus:ring-offset-brand-bg';
+const btnDisabled = 'disabled:cursor-not-allowed disabled:opacity-50';
 
 export const storefrontUi = {
   input:
@@ -19,19 +20,23 @@ export const storefrontUi = {
     'rounded-md border border-destructive/25 bg-destructive/10 p-4 text-destructive',
   checkbox:
     'h-4 w-4 rounded border-input text-brand-primary focus:ring-2 focus:ring-brand-primary/30',
-  btnPrimary:
-    'btn-brand-primary px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/30 focus:ring-offset-2 focus:ring-offset-brand-bg disabled:cursor-not-allowed disabled:opacity-50',
-  btnPrimaryLg:
-    'btn-brand-primary mt-6 w-full py-3 text-base font-medium disabled:cursor-not-allowed disabled:opacity-50',
-  btnPrimaryCheckout:
-    'mt-6 w-full rounded-md bg-blue-600 px-8 py-3 text-base font-semibold tracking-wide text-white shadow-md transition-all duration-200 hover:bg-blue-700 hover:shadow-lg active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70',
-  btnPrimarySubmit:
-    'rounded-md bg-blue-600 px-8 py-3 text-base font-semibold tracking-wide text-white shadow-md transition-all duration-200 hover:bg-blue-700 hover:shadow-lg active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70',
-  btnPrimaryBlock: `${btnPrimaryBlue} w-full py-2.5`,
-  btnPrimaryInline: `${btnPrimaryBlue} px-6 py-2`,
+  /** Primary filled CTA — uses .btn-brand-primary in globals.css for theme-aware fill */
+  btnPrimary: `btn-brand-primary px-4 py-2 text-sm ${btnFocus} ${btnDisabled}`,
+  btnPrimaryLg: `btn-brand-primary mt-6 w-full py-3 text-base font-medium ${btnDisabled}`,
+  btnPrimaryCheckout: `btn-brand-primary mt-6 w-full px-8 py-3 text-base font-semibold tracking-wide shadow-md hover:shadow-lg active:scale-[0.98] ${btnDisabled}`,
+  btnPrimarySubmit: `btn-brand-primary px-8 py-3 text-base font-semibold tracking-wide shadow-md hover:shadow-lg active:scale-[0.98] ${btnDisabled}`,
+  btnPrimaryBlock: 'btn-brand-primary w-full py-2.5',
+  btnPrimaryInline: 'btn-brand-primary px-6 py-2',
+  btnPrimaryInverted:
+    'inline-flex justify-center rounded-md border border-primary-foreground/40 bg-primary-foreground px-5 py-2.5 text-sm font-medium text-primary shadow-sm transition-opacity hover:opacity-90',
+  /** Outlined brand secondary action */
+  btnSecondary: `rounded-md border border-brand-primary bg-card px-4 py-2 text-sm font-medium text-brand-primary transition-colors hover:bg-brand-secondary/40 ${btnFocus} ${btnDisabled}`,
+  /** Neutral cancel / back actions */
+  btnNeutral: `rounded-md border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted ${btnFocus} ${btnDisabled}`,
+  btnNeutralLg: `rounded-md border border-border bg-card px-6 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted ${btnFocus} ${btnDisabled}`,
+  btnDestructive: `rounded-md border border-destructive/40 bg-card px-3 py-1.5 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10 focus:outline-none focus:ring-2 focus:ring-destructive/30 ${btnDisabled}`,
+  btnDestructiveText: `text-sm font-medium text-destructive transition-colors hover:opacity-80 ${btnDisabled}`,
   link: 'font-medium text-brand-primary transition-colors hover:text-brand-accent',
-  btnSecondary:
-    'rounded-md border border-brand-primary bg-card px-4 py-2 text-sm font-medium text-brand-primary transition-colors hover:bg-brand-secondary/40 focus:outline-none focus:ring-2 focus:ring-brand-primary/30 focus:ring-offset-2 focus:ring-offset-brand-bg disabled:cursor-not-allowed disabled:opacity-50',
   badgeBrand:
     'rounded bg-brand-secondary/40 px-2 py-1 text-xs font-medium text-brand-accent ring-1 ring-inset ring-brand-secondary/45',
   card:
