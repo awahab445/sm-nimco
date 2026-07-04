@@ -69,20 +69,37 @@ export default async function DealDetailPage({ params }: Props) {
                     </span>
                   )}
                   <div className="min-w-0 flex-1">
-                    <p className="font-medium text-foreground">
-                      {item.product?.name ?? 'Product'}
+                    <div className="flex flex-wrap items-center gap-y-1">
+                      <p className="font-medium text-foreground">
+                        {item.product?.name ?? 'Product'}
+                      </p>
                       {item.quantity > 1 ? (
-                        <span className="ml-2 rounded bg-secondary/60 px-2 py-0.5 text-xs text-primary">
+                        <span className="ml-2 inline-flex items-center rounded-md bg-primary/10 px-2 py-0.5 text-xs font-bold text-primary">
                           ×{item.quantity}
                         </span>
                       ) : null}
-                    </p>
+                    </div>
                     {item.variant?.name && item.variant.name !== item.product?.name ? (
                       <p className="text-sm text-muted-foreground">{item.variant.name}</p>
                     ) : null}
                   </div>
                   {listPrice != null ? (
-                    <span className="text-sm text-muted-foreground">{formatPrice(Number(listPrice))}</span>
+                    <div className="flex shrink-0 items-center justify-end text-right">
+                      {item.quantity > 1 ? (
+                        <div className="flex flex-wrap items-baseline justify-end gap-x-1.5 gap-y-0.5">
+                          <span className="text-sm font-semibold tabular-nums text-primary">
+                            {formatPrice(Number(listPrice) * item.quantity)}
+                          </span>
+                          <span className="text-xs font-normal tabular-nums text-muted-foreground">
+                            ({formatPrice(Number(listPrice))} each)
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-sm font-semibold tabular-nums text-primary">
+                          {formatPrice(Number(listPrice))}
+                        </span>
+                      )}
+                    </div>
                   ) : null}
                 </li>
               );

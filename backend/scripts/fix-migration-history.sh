@@ -7,6 +7,7 @@
 # Usage (from repo root or backend/):
 #   bash backend/scripts/fix-migration-history.sh
 #   cd backend && npm run prisma:fix-migrations
+#   node scripts/fix-migration-history.cjs
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
