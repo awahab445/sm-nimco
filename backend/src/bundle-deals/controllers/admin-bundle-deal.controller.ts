@@ -31,6 +31,41 @@ import { AdminJwtAuthGuard } from '../../admin/guards/admin-jwt-auth.guard';
 import { AdminPermissionsGuard } from '../../admin/guards/admin-permissions.guard';
 import { RequirePermissions } from '../../admin/decorators/require-permissions.decorator';
 
+function dealImagePublicPath(file: { path?: string; filename: string }): string {
+  const normalizedPath = (file.path ?? '').replace(/\\/g, '/');
+  return normalizedPath.startsWith('uploads/')
+    ? `/${normalizedPath}`
+    : `/uploads/deals/${file.filename}`;
+}
+
+const dealImageUploadOptions = {
+  fileFilter: (_req: unknown, file: { mimetype?: string; originalname?: string }, cb: (error: Error | null, acceptFile: boolean) => void) => {
+    const allowedMime = /^image\/(jpeg|png|webp|gif)$/i.test(file.mimetype || '');
+    const allowedExt = /\.(jpe?g|png|webp|gif)$/i.test(file.originalname || '');
+    if (allowedMime && allowedExt) {
+      cb(null, true);
+      return;
+    }
+    cb(
+      new BadRequestException(
+        'Only PNG, JPEG, WEBP, and GIF image files are allowed',
+      ) as any,
+      false,
+    );
+  },
+  storage: diskStorage({
+    destination: 'uploads/deals',
+    filename: (_req, file, cb) => {
+      const extension = extname(file.originalname || '').toLowerCase();
+      cb(null, `${randomUUID()}${extension}`);
+    },
+  }),
+};
+
+const optionalDealImagePipe = new ParseFilePipeBuilder()
+  .addMaxSizeValidator({ maxSize: 5 * 1024 * 1024 })
+  .build({ fileIsRequired: false });
+
 @Controller('admin/deals')
 @UseGuards(AdminJwtAuthGuard, AdminPermissionsGuard)
 @RequirePermissions('deals.manage')
@@ -63,31 +98,7 @@ export class AdminBundleDealController {
   }
 
   @Post('images/upload')
-  @UseInterceptors(
-    FileInterceptor('file', {
-      fileFilter: (_req, file, cb) => {
-        const allowedMime = /^image\/(jpeg|png|webp|gif)$/i.test(file.mimetype || '');
-        const allowedExt = /\.(jpe?g|png|webp|gif)$/i.test(file.originalname || '');
-        if (allowedMime && allowedExt) {
-          cb(null, true);
-          return;
-        }
-        cb(
-          new BadRequestException(
-            'Only PNG, JPEG, WEBP, and GIF image files are allowed',
-          ) as any,
-          false,
-        );
-      },
-      storage: diskStorage({
-        destination: 'uploads/deals',
-        filename: (_req, file, cb) => {
-          const extension = extname(file.originalname || '').toLowerCase();
-          cb(null, `${randomUUID()}${extension}`);
-        },
-      }),
-    }),
-  )
+  @UseInterceptors(FileInterceptor('file', dealImageUploadOptions))
   @HttpCode(HttpStatus.CREATED)
   async uploadImage(
     @UploadedFile(
@@ -95,14 +106,10 @@ export class AdminBundleDealController {
         .addMaxSizeValidator({ maxSize: 5 * 1024 * 1024 })
         .build({ fileIsRequired: true }),
     )
-    file: any,
+    file: { path?: string; filename: string },
   ) {
-    const normalizedPath = file.path.replace(/\\/g, '/');
-    const publicPath = normalizedPath.startsWith('uploads/')
-      ? `/${normalizedPath}`
-      : `/uploads/deals/${file.filename}`;
     return {
-      url: publicPath,
+      url: dealImagePublicPath(file),
       filename: file.filename,
     };
   }
@@ -114,15 +121,30 @@ export class AdminBundleDealController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
+  @UseInterceptors(FileInterceptor('image', dealImageUploadOptions))
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
-  async create(@Body() dto: CreateBundleDealDto) {
+  async create(
+    @Body() dto: CreateBundleDealDto,
+    @UploadedFile(optionalDealImagePipe) image?: { path?: string; filename: string },
+  ) {
+    if (image) {
+      dto.imageUrl = dealImagePublicPath(image);
+    }
     return this.bundleDealService.create(dto);
   }
 
   @Patch(':id')
   @HttpCode(HttpStatus.OK)
+  @UseInterceptors(FileInterceptor('image', dealImageUploadOptions))
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
-  async update(@Param('id') id: string, @Body() dto: UpdateBundleDealDto) {
+  async update(
+    @Param('id') id: string,
+    @Body() dto: UpdateBundleDealDto,
+    @UploadedFile(optionalDealImagePipe) image?: { path?: string; filename: string },
+  ) {
+    if (image) {
+      dto.imageUrl = dealImagePublicPath(image);
+    }
     return this.bundleDealService.update(id, dto);
   }
 

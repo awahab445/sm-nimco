@@ -89,6 +89,37 @@ export type BundlePricingPreview = {
   savingsPercent: number;
 };
 
+function toBundleDealFormData(
+  body: CreateBundleDealBody | UpdateBundleDealBody,
+  imageFile?: File | null,
+): FormData {
+  const form = new FormData();
+
+  if (body.title !== undefined) form.set('title', body.title);
+  if (body.slug !== undefined) form.set('slug', body.slug);
+  if (body.description !== undefined) form.set('description', body.description);
+  if (body.status !== undefined) form.set('status', body.status);
+  if (body.isFeatured !== undefined) form.set('isFeatured', String(body.isFeatured));
+  if (body.dealPrice !== undefined) form.set('dealPrice', String(body.dealPrice));
+  if (body.imageUrl !== undefined) {
+    form.set('imageUrl', body.imageUrl ?? '');
+  }
+  if (body.validFrom !== undefined) {
+    form.set('validFrom', body.validFrom ?? '');
+  }
+  if (body.validTo !== undefined) {
+    form.set('validTo', body.validTo ?? '');
+  }
+  if (body.items !== undefined) {
+    form.set('items', JSON.stringify(body.items));
+  }
+  if (imageFile) {
+    form.set('image', imageFile);
+  }
+
+  return form;
+}
+
 export async function fetchBundleDeals(params?: {
   q?: string;
   status?: BundleDealStatus;
@@ -112,14 +143,33 @@ export async function fetchBundleDeal(id: string): Promise<BundleDeal> {
   return fetchApi<BundleDeal>(`/admin/deals/${id}`);
 }
 
-export async function createBundleDeal(body: CreateBundleDealBody): Promise<BundleDeal> {
+export async function createBundleDeal(
+  body: CreateBundleDealBody,
+  imageFile?: File | null,
+): Promise<BundleDeal> {
+  if (imageFile) {
+    return fetchApi<BundleDeal>('/admin/deals', {
+      method: 'POST',
+      body: toBundleDealFormData(body, imageFile),
+    });
+  }
   return fetchApi<BundleDeal>('/admin/deals', {
     method: 'POST',
     body: JSON.stringify(body),
   });
 }
 
-export async function updateBundleDeal(id: string, body: UpdateBundleDealBody): Promise<BundleDeal> {
+export async function updateBundleDeal(
+  id: string,
+  body: UpdateBundleDealBody,
+  imageFile?: File | null,
+): Promise<BundleDeal> {
+  if (imageFile) {
+    return fetchApi<BundleDeal>(`/admin/deals/${id}`, {
+      method: 'PATCH',
+      body: toBundleDealFormData(body, imageFile),
+    });
+  }
   return fetchApi<BundleDeal>(`/admin/deals/${id}`, {
     method: 'PATCH',
     body: JSON.stringify(body),
@@ -140,6 +190,7 @@ export async function previewBundlePricing(body: {
   });
 }
 
+/** Standalone hero image upload (legacy); prefer passing imageFile to create/update. */
 export async function uploadBundleDealImage(file: File): Promise<{ url: string; filename: string }> {
   const form = new FormData();
   form.append('file', file);
@@ -152,8 +203,14 @@ export async function uploadBundleDealImage(file: File): Promise<{ url: string; 
     credentials: 'include',
   });
   if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error((err as { message?: string }).message || 'Upload failed');
+    let message = `Image upload failed (${res.status})`;
+    try {
+      const err = (await res.json()) as { message?: string };
+      if (err?.message) message = err.message;
+    } catch {
+      // Keep fallback message when response is not JSON.
+    }
+    throw new Error(message);
   }
   return res.json();
 }

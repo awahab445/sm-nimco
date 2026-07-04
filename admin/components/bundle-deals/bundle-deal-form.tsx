@@ -8,7 +8,6 @@ import {
   fetchBundleDeal,
   previewBundlePricing,
   updateBundleDeal,
-  uploadBundleDealImage,
   type BundleDeal,
   type BundleDealItemInput,
   type BundleDealStatus,
@@ -38,6 +37,14 @@ function formatRs(amount: number) {
   return `Rs. ${amount.toLocaleString('en-PK', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
 }
 
+function resolveAdminImageUrl(url: string): string {
+  const trimmed = url.trim();
+  if (!trimmed) return '';
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
+  const base = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000').replace(/\/$/, '');
+  return `${base}${trimmed.startsWith('/') ? trimmed : `/${trimmed}`}`;
+}
+
 type Props = {
   dealId?: string;
 };
@@ -59,6 +66,8 @@ export function BundleDealForm({ dealId }: Props) {
   const [isFeatured, setIsFeatured] = useState(false);
   const [dealPrice, setDealPrice] = useState('');
   const [imageUrl, setImageUrl] = useState('');
+  const [pendingImageFile, setPendingImageFile] = useState<File | null>(null);
+  const [pendingImagePreview, setPendingImagePreview] = useState<string | null>(null);
   const [validFrom, setValidFrom] = useState('');
   const [validTo, setValidTo] = useState('');
   const [selected, setSelected] = useState<SelectedRow[]>([]);
@@ -94,6 +103,11 @@ export function BundleDealForm({ dealId }: Props) {
       setIsFeatured(deal.isFeatured);
       setDealPrice(String(deal.dealPrice));
       setImageUrl(deal.imageUrl ?? '');
+      setPendingImageFile(null);
+      setPendingImagePreview((prev) => {
+        if (prev?.startsWith('blob:')) URL.revokeObjectURL(prev);
+        return null;
+      });
       setValidFrom(deal.validFrom ? deal.validFrom.slice(0, 16) : '');
       setValidTo(deal.validTo ? deal.validTo.slice(0, 16) : '');
 
@@ -128,6 +142,14 @@ export function BundleDealForm({ dealId }: Props) {
   useEffect(() => {
     if (isEdit) void loadDeal();
   }, [isEdit, loadDeal]);
+
+  useEffect(() => {
+    return () => {
+      if (pendingImagePreview?.startsWith('blob:')) {
+        URL.revokeObjectURL(pendingImagePreview);
+      }
+    };
+  }, [pendingImagePreview]);
 
   useEffect(() => {
     if (!title.trim() || slugTouched) return;
@@ -213,14 +235,16 @@ export function BundleDealForm({ dealId }: Props) {
     }
   };
 
-  const onImageUpload = async (file: File) => {
-    try {
-      const { url } = await uploadBundleDealImage(file);
-      setImageUrl(url);
-    } catch (e) {
-      setToast(formatApiError(e));
-    }
+  const onImageSelect = (file: File) => {
+    setPendingImageFile(file);
+    setPendingImagePreview((prev) => {
+      if (prev?.startsWith('blob:')) URL.revokeObjectURL(prev);
+      return URL.createObjectURL(file);
+    });
   };
+
+  const heroPreviewSrc =
+    pendingImagePreview ?? (imageUrl ? resolveAdminImageUrl(imageUrl) : '');
 
   const canSave = selected.length >= 3 && title.trim() && dealPrice.trim() && Number(dealPrice) >= 0;
 
@@ -237,18 +261,23 @@ export function BundleDealForm({ dealId }: Props) {
         status,
         isFeatured,
         dealPrice: Number(dealPrice),
-        imageUrl: imageUrl.trim() || undefined,
+        imageUrl: pendingImageFile ? undefined : imageUrl.trim() || undefined,
         validFrom: validFrom ? new Date(validFrom).toISOString() : undefined,
         validTo: validTo ? new Date(validTo).toISOString() : undefined,
         items: itemInputs,
       };
 
       if (isEdit && dealId) {
-        await updateBundleDeal(dealId, body);
+        const saved = await updateBundleDeal(dealId, body, pendingImageFile);
+        setImageUrl(saved.imageUrl ?? '');
+        setPendingImageFile(null);
+        setPendingImagePreview((prev) => {
+          if (prev?.startsWith('blob:')) URL.revokeObjectURL(prev);
+          return null;
+        });
         setToast('Bundle deal updated.');
-        router.push(`/bundle-deals/${dealId}`);
       } else {
-        const created = await createBundleDeal(body);
+        const created = await createBundleDeal(body, pendingImageFile);
         router.push(`/bundle-deals/${created.id}`);
       }
     } catch (err) {
@@ -354,9 +383,14 @@ export function BundleDealForm({ dealId }: Props) {
         </div>
         <div>
           <label className="block text-sm text-zinc-700 dark:text-zinc-300">Hero image</label>
-          {imageUrl ? (
+          {heroPreviewSrc ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={imageUrl} alt="" className="mt-2 h-32 w-auto rounded-lg border object-cover" />
+            <img src={heroPreviewSrc} alt="" className="mt-2 h-32 w-auto rounded-lg border object-cover" />
+          ) : null}
+          {pendingImageFile ? (
+            <p className="mt-2 text-xs text-zinc-500">
+              Selected: {pendingImageFile.name} — will upload when you save
+            </p>
           ) : null}
           <input
             type="file"
@@ -364,7 +398,8 @@ export function BundleDealForm({ dealId }: Props) {
             className="mt-2 block text-sm"
             onChange={(e) => {
               const file = e.target.files?.[0];
-              if (file) void onImageUpload(file);
+              if (file) onImageSelect(file);
+              e.target.value = '';
             }}
           />
         </div>
