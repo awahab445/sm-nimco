@@ -12,6 +12,7 @@ import { fetchAnalyticsConfig } from "@/lib/analytics/analytics-config.server";
 import { Header } from "@/components/layout/header";
 import { AnnouncementBar } from "@/components/layout/announcement-bar";
 import { Footer } from "@/components/layout/footer";
+import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav";
 import { WhatsAppWidget } from "@/components/whatsapp-widget";
 import { StorefrontToast } from "@/components/storefront-toast";
 import { GoogleTagManager } from "@/components/analytics/google-tag-manager";
@@ -56,12 +57,13 @@ export default async function RootLayout({
             >
               <AnnouncementBar />
               <Header />
-              <main className="min-w-0 flex-1 max-w-full bg-background">{children}</main>
+              <main className="min-w-0 flex-1 max-w-full bg-background pb-16 lg:pb-0">{children}</main>
               <Footer />
             </div>
             </CartProvider>
           </AuthProvider>
         </AnalyticsProvider>
+        <MobileBottomNav />
         <WhatsAppWidget />
         <StorefrontToast />
       </body>

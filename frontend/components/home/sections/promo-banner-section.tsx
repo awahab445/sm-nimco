@@ -22,33 +22,31 @@ export function PromoBannerSection({
 
   return (
     <section
-      className={`relative overflow-hidden rounded-2xl border border-border ${
-        isPrimary ? 'bg-primary text-primary-foreground' : 'bg-muted/50 text-foreground'
+      className={`promo-banner-chrome relative overflow-hidden rounded-2xl border ${
+        isPrimary ? '' : 'promo-banner-chrome--muted'
       }`}
     >
       {imageUrl && (
         <>
           <img src={imageUrl} alt="" className="absolute inset-0 h-full w-full object-cover opacity-30" />
-          <div className="absolute inset-0 bg-gradient-to-r from-background/95 to-background/40" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[var(--footer-background,var(--navbar-background))]/95 to-[var(--footer-background,var(--navbar-background))]/40" />
         </>
       )}
       <div className="relative flex flex-col gap-4 p-8 md:flex-row md:items-center md:justify-between md:p-10">
         <div className="max-w-xl">
-          <h2 className="text-xl font-bold tracking-tight md:text-2xl">{title}</h2>
+          <h2 className="promo-banner-chrome__title text-xl font-bold tracking-tight md:text-2xl">
+            {title}
+          </h2>
           {subtitle && (
-            <p className={`mt-2 text-sm md:text-base ${isPrimary ? 'text-primary-foreground/90' : 'text-muted-foreground'}`}>
-              {subtitle}
-            </p>
+            <p className="promo-banner-chrome__subtitle mt-2 text-sm md:text-base">{subtitle}</p>
           )}
         </div>
         {ctaLabel && ctaHref && (
           <Link
             href={ctaHref}
-            className={
-              isPrimary
-                ? storefrontUi.btnPrimaryInverted
-                : storefrontUi.btnPrimary
-            }
+            className={`shrink-0 ${storefrontUi.btnPrimary} ${
+              isPrimary ? 'px-6 py-3 shadow-md transition-shadow hover:shadow-lg' : ''
+            }`}
           >
             {ctaLabel}
           </Link>

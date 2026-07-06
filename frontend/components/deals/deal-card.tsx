@@ -3,6 +3,8 @@ import { formatPrice } from '@/lib/currency';
 import { resolveImageUrl } from '@/lib/resolve-image-url';
 import { storefrontUi } from '@/lib/storefront-ui';
 import type { StorefrontBundleDeal } from '@/lib/deals/deals.server';
+import { getBundleDiscountPercent } from '@/lib/deals/discount-badge';
+import { BundleDiscountBadge } from '@/components/deals/bundle-discount-badge';
 
 type Props = {
   deal: StorefrontBundleDeal;
@@ -12,6 +14,7 @@ type Props = {
 export function DealCard({ deal, featured }: Props) {
   const itemLabel = deal.itemCount != null ? `${deal.itemCount} items` : 'Bundle';
   const imageSrc = resolveImageUrl(deal.imageUrl);
+  const discountPercent = getBundleDiscountPercent(deal);
 
   return (
     <article
@@ -28,12 +31,17 @@ export function DealCard({ deal, featured }: Props) {
             className={`w-full object-cover ${featured ? 'h-64 md:h-full' : 'h-48'}`}
           />
         ) : (
-          <div className={`flex w-full items-center justify-center bg-secondary/40 text-muted-foreground ${featured ? 'h-64 md:h-full' : 'h-48'}`}>
+          <div
+            className={`flex w-full items-center justify-center bg-secondary/40 text-muted-foreground ${featured ? 'h-64 md:h-full' : 'h-48'}`}
+          >
             Bundle
           </div>
         )}
       </Link>
-      <div className={`flex flex-col p-5 ${featured ? 'md:w-1/2 md:justify-center' : ''}`}>
+      <div
+        className={`relative flex flex-col p-5 pr-20 ${featured ? 'md:w-1/2 md:justify-center' : ''}`}
+      >
+        {discountPercent != null ? <BundleDiscountBadge percent={discountPercent} /> : null}
         <p className="text-xs font-medium uppercase tracking-wide text-primary">{itemLabel}</p>
         <h2 className="mt-1 text-lg font-semibold text-foreground">
           <Link href={`/deals/${deal.slug}`} className="hover:text-primary">

@@ -20,7 +20,7 @@ export function CmsBlockSection({ blockIdentifier, contentHtml }: CmsBlockSectio
 
   return (
     <section
-      className="cms-block-section prose prose-zinc mx-auto max-w-none dark:prose-invert"
+      className="cms-block-section promo-banner-chrome rounded-2xl border p-8 md:p-10"
       data-cms-block={blockIdentifier}
       dangerouslySetInnerHTML={{ __html: safeHtml }}
     />
