@@ -25,8 +25,10 @@ export function normalizeProvisionedThemeId(value: string | null | undefined): P
   return 'tailwind';
 }
 
+export type StoreThemeCode = 'default' | 'ember' | 'mehfil_shereen';
+
 /** Maps admin-provisioned theme id to the internal store-themes.css preset key. */
-export function toStoreThemePresetId(theme: ProvisionedThemeId): 'default' | 'ember' | 'mehfil_shereen' {
+export function toStoreThemePresetId(theme: ProvisionedThemeId): StoreThemeCode {
   switch (theme) {
     case 'mehfil-e-shireen':
       return 'mehfil_shereen';

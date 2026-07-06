@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import "../styles/chrome-enhancements.css";
 import { fetchActiveTheme } from "@/lib/theme/theme.server";
 import { toStoreThemePresetId } from "@/lib/theme/types";
 import { STORE_NAME } from "@/lib/config";

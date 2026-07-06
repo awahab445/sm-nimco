@@ -1,6 +1,8 @@
 /**
  * Storefront design tokens — one system, multiple skins.
- * Switch preset by setting data-store-theme on <html> (see NEXT_PUBLIC_STORE_THEME).
+ * Switch preset by setting data-store-theme on <html> (from admin theme via toStoreThemePresetId).
+ * Store theme codes: default | ember | mehfil_shereen
+ * Chrome tokens (--navbar-*, --footer-*) are defined per preset below — not in globals [data-theme].
  * Dark appearance follows prefers-color-scheme; tokens stay aligned per preset.
  */
 
@@ -46,10 +48,15 @@
   --ring: #4f90f1;
   --popover: #ffffff;
   --popover-foreground: #1a2e40;
-  --navbar-background: #1e40af;
-  --navbar-foreground: #ffffff;
-  --navbar-muted-foreground: #dbeafe;
-  --navbar-border: #1e3a8a;
+  --navbar-background: #f0f7ff;
+  --navbar-foreground: #1a2e40;
+  --navbar-muted-foreground: #3577d9;
+  --navbar-border: #e3eef9;
+  --navbar-shadow: 0 1px 3px 0 color-mix(in srgb, #1a2e40 6%, transparent);
+  --footer-background: #f0f7ff;
+  --footer-foreground: #1a2e40;
+  --footer-muted-foreground: #3577d9;
+  --footer-border: #e3eef9;
   --mega-menu-shadow: 0 8px 32px -8px color-mix(in srgb, #4f90f1 14%, transparent);
 }
 
@@ -79,10 +86,15 @@
     --ring: #4f90f1;
     --popover: #ffffff;
     --popover-foreground: #1a2e40;
-    --navbar-background: #1e40af;
-    --navbar-foreground: #ffffff;
-    --navbar-muted-foreground: #dbeafe;
-    --navbar-border: #1e3a8a;
+    --navbar-background: #f0f7ff;
+    --navbar-foreground: #1a2e40;
+    --navbar-muted-foreground: #3577d9;
+    --navbar-border: #e3eef9;
+    --navbar-shadow: 0 1px 3px 0 color-mix(in srgb, #1a2e40 6%, transparent);
+    --footer-background: #f0f7ff;
+    --footer-foreground: #1a2e40;
+    --footer-muted-foreground: #3577d9;
+    --footer-border: #e3eef9;
     --mega-menu-shadow: 0 8px 32px -8px color-mix(in srgb, #4f90f1 14%, transparent);
   }
 }
@@ -167,6 +179,12 @@
   --ring: #ea580c;
   --popover: #ffffff;
   --popover-foreground: #1c1917;
+  /* Chrome (header/footer bar) — warm ember bar */
+  --navbar-background: #9a3412;
+  --navbar-foreground: #fff7ed;
+  --navbar-muted-foreground: #ffedd5;
+  --navbar-border: #7c2d12;
+  --mega-menu-shadow: 0 16px 48px -12px color-mix(in srgb, #1c1917 18%, transparent);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -194,6 +212,10 @@
     --ring: #fb923c;
     --popover: #292524;
     --popover-foreground: #fafaf9;
+    --navbar-background: #7c2d12;
+    --navbar-foreground: #fff7ed;
+    --navbar-muted-foreground: #ffedd5;
+    --navbar-border: #431407;
   }
 }
 

@@ -112,6 +112,21 @@ export function CartPreviewDropdown({ label = 'Cart', href = '/cart' }: CartPrev
 
   const [open, setOpen] = useState(false);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const prevCountRef = useRef(cartItemCount);
+  const [badgePulse, setBadgePulse] = useState(false);
+
+  useEffect(() => {
+    if (cartItemCount <= prevCountRef.current) {
+      prevCountRef.current = cartItemCount;
+      return;
+    }
+    prevCountRef.current = cartItemCount;
+    const startPulse = window.setTimeout(() => {
+      setBadgePulse(true);
+      window.setTimeout(() => setBadgePulse(false), 500);
+    }, 0);
+    return () => window.clearTimeout(startPulse);
+  }, [cartItemCount]);
 
   const cancelClose = useCallback(() => {
     if (closeTimer.current) {
@@ -123,12 +138,12 @@ export function CartPreviewDropdown({ label = 'Cart', href = '/cart' }: CartPrev
   const scheduleClose = useCallback(() => {
     cancelClose();
     closeTimer.current = setTimeout(() => setOpen(false), CLOSE_MS);
-  }, [cancelClose]);
+  }, [cancelClose, setOpen]);
 
   const openPreview = useCallback(() => {
     cancelClose();
     setOpen(true);
-  }, [cancelClose]);
+  }, [cancelClose, setOpen]);
 
   useEffect(() => {
     if (open) {
@@ -160,7 +175,7 @@ export function CartPreviewDropdown({ label = 'Cart', href = '/cart' }: CartPrev
     >
       <Link
         href={href}
-        className="header-cart-trigger relative inline-flex h-full items-center justify-center text-white transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-primary"
+        className="header-cart-trigger relative inline-flex h-full items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2"
         aria-label={
           cartItemCount > 0
             ? `${label}, ${cartItemCount} ${cartItemCount === 1 ? 'item' : 'items'}`
@@ -171,11 +186,11 @@ export function CartPreviewDropdown({ label = 'Cart', href = '/cart' }: CartPrev
         onFocus={openPreview}
         onBlur={scheduleClose}
       >
-        <span className="relative inline-flex h-6 w-6 items-center justify-center text-white [&_.cart-icon]:text-white">
-          <ShoppingBagIcon className="h-6 w-6 shrink-0 text-white" strokeWidth={2} aria-hidden />
+        <span className="relative inline-flex h-6 w-6 items-center justify-center [&_.cart-icon]:text-inherit">
+          <ShoppingBagIcon className="h-6 w-6 shrink-0" strokeWidth={2} aria-hidden />
           {hydrated && cartItemCount > 0 ? (
             <span
-              className="pointer-events-none absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-semibold leading-none text-white ring-2 ring-brand-primary"
+              className={`pointer-events-none absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-[10px] font-semibold leading-none text-destructive-foreground ring-2 ring-brand-primary ${badgePulse ? 'chrome-cart-badge--pulse' : ''}`}
               aria-hidden
             >
               {cartItemCount > 99 ? '99+' : cartItemCount}

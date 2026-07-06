@@ -20,7 +20,11 @@ type SuggestionItem = {
   images: Array<{ url: string }>;
 };
 
-export function SearchBar({ variant = 'default' }: { variant?: 'default' | 'header' }) {
+export function SearchBar({
+  variant = 'default',
+}: {
+  variant?: 'default' | 'header';
+}) {
   const router = useRouter();
   const hydrated = useHydrated();
   const [query, setQuery] = useState('');
@@ -100,7 +104,10 @@ export function SearchBar({ variant = 'default' }: { variant?: 'default' | 'head
   const isHeader = variant === 'header';
 
   return (
-    <div ref={containerRef} className="relative w-full max-w-xl">
+    <div
+      ref={containerRef}
+      className={`relative w-full max-w-xl ${isHeader ? 'chrome-search-bar header-search-bar' : ''}`}
+    >
       {hydrated ? (
         <form onSubmit={handleSubmit} role="search">
           <label htmlFor="header-search" className="sr-only">

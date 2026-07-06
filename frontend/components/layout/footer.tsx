@@ -33,51 +33,27 @@ export function Footer() {
     <footer
       className={
         IS_MEHFIL_THEME
-          ? 'border-t border-primary/25 bg-primary text-primary-foreground'
-          : 'border-t border-border bg-primary text-primary-foreground'
+          ? 'site-footer border-t border-primary/25 bg-primary text-primary-foreground'
+          : 'site-footer border-t border-border bg-primary text-primary-foreground'
       }
     >
       <div className="mx-auto w-full max-w-[100rem] px-4 py-12 sm:px-8 lg:px-12 xl:px-16">
         <div className="grid grid-cols-2 gap-10 md:grid-cols-4 lg:gap-14">
           <div className="col-span-2 md:col-span-1">
-            <p
-              className={
-                IS_MEHFIL_THEME
-                  ? 'text-sm font-semibold text-primary-foreground'
-                  : 'text-sm font-semibold text-primary-foreground'
-              }
-            >
-              {STORE_NAME}
-            </p>
-            <p
-              className={
-                IS_MEHFIL_THEME
-                  ? 'mt-3 max-w-xs text-sm text-primary-foreground/80'
-                  : 'mt-3 max-w-xs text-sm text-primary-foreground/80'
-              }
-            >
+            <p className="text-sm font-semibold text-primary-foreground">{STORE_NAME}</p>
+            <p className="mt-3 max-w-xs text-sm text-primary-foreground/80">
               Curated products, secure checkout, and order tracking — built for how people shop today.
             </p>
           </div>
           <div>
-            <h3
-              className={
-                IS_MEHFIL_THEME
-                  ? 'text-xs font-semibold uppercase tracking-wider text-primary-foreground'
-                  : 'text-xs font-semibold uppercase tracking-wider text-primary-foreground'
-              }
-            >
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-primary-foreground">
               Shop
             </h3>
             <ul className="mt-4 space-y-2">
               <li>
                 <Link
                   href="/products"
-                  className={
-                    IS_MEHFIL_THEME
-                      ? 'text-sm text-primary-foreground transition-colors hover:text-primary-foreground/80'
-                      : 'text-sm text-primary-foreground transition-colors hover:text-primary-foreground/80'
-                  }
+                  className="text-sm text-primary-foreground transition-colors hover:text-primary-foreground/80"
                 >
                   All products
                 </Link>
@@ -86,11 +62,7 @@ export function Footer() {
                 <li key={c.id}>
                   <Link
                     href={`/categories/${c.slug}`}
-                    className={
-                      IS_MEHFIL_THEME
-                        ? 'text-sm text-primary-foreground transition-colors hover:text-primary-foreground/80'
-                        : 'text-sm text-primary-foreground transition-colors hover:text-primary-foreground/80'
-                    }
+                    className="text-sm text-primary-foreground transition-colors hover:text-primary-foreground/80"
                   >
                     {c.name}
                   </Link>
@@ -99,24 +71,14 @@ export function Footer() {
             </ul>
           </div>
           <div>
-            <h3
-              className={
-                IS_MEHFIL_THEME
-                  ? 'text-xs font-semibold uppercase tracking-wider text-primary-foreground'
-                  : 'text-xs font-semibold uppercase tracking-wider text-primary-foreground'
-              }
-            >
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-primary-foreground">
               Customer care
             </h3>
             <ul className="mt-4 space-y-2">
               <li>
                 <Link
                   href="/track-order"
-                  className={
-                    IS_MEHFIL_THEME
-                      ? 'text-sm text-primary-foreground transition-colors hover:text-primary-foreground/80'
-                      : 'text-sm text-primary-foreground transition-colors hover:text-primary-foreground/80'
-                  }
+                  className="text-sm text-primary-foreground transition-colors hover:text-primary-foreground/80"
                 >
                   Track order
                 </Link>
@@ -124,11 +86,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/cart"
-                  className={
-                    IS_MEHFIL_THEME
-                      ? 'inline-flex items-center gap-2 text-sm text-primary-foreground transition-colors hover:text-primary-foreground/80'
-                      : 'inline-flex items-center gap-2 text-sm text-primary-foreground transition-colors hover:text-primary-foreground/80'
-                  }
+                  className="inline-flex items-center gap-2 text-sm text-primary-foreground transition-colors hover:text-primary-foreground/80"
                 >
                   <ShoppingBagIcon className="h-4 w-4 shrink-0 text-primary-foreground" strokeWidth={2} aria-hidden />
                   Shopping cart
@@ -137,11 +95,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/track-order"
-                  className={
-                    IS_MEHFIL_THEME
-                      ? 'text-sm text-primary-foreground transition-colors hover:text-primary-foreground/80'
-                      : 'text-sm text-primary-foreground transition-colors hover:text-primary-foreground/80'
-                  }
+                  className="text-sm text-primary-foreground transition-colors hover:text-primary-foreground/80"
                 >
                   Order help
                 </Link>
@@ -149,24 +103,14 @@ export function Footer() {
             </ul>
           </div>
           <div>
-            <h3
-              className={
-                IS_MEHFIL_THEME
-                  ? 'text-xs font-semibold uppercase tracking-wider text-primary-foreground'
-                  : 'text-xs font-semibold uppercase tracking-wider text-primary-foreground'
-              }
-            >
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-primary-foreground">
               Account
             </h3>
             <ul className="mt-4 space-y-2">
               <li>
                 <Link
                   href="/login"
-                  className={
-                    IS_MEHFIL_THEME
-                      ? 'text-sm text-primary-foreground transition-colors hover:text-primary-foreground/80'
-                      : 'text-sm text-primary-foreground transition-colors hover:text-primary-foreground/80'
-                  }
+                  className="text-sm text-primary-foreground transition-colors hover:text-primary-foreground/80"
                 >
                   Log in
                 </Link>
@@ -174,11 +118,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/register"
-                  className={
-                    IS_MEHFIL_THEME
-                      ? 'text-sm text-primary-foreground transition-colors hover:text-primary-foreground/80'
-                      : 'text-sm text-primary-foreground transition-colors hover:text-primary-foreground/80'
-                  }
+                  className="text-sm text-primary-foreground transition-colors hover:text-primary-foreground/80"
                 >
                   Create account
                 </Link>
@@ -186,11 +126,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/account"
-                  className={
-                    IS_MEHFIL_THEME
-                      ? 'text-sm text-primary-foreground transition-colors hover:text-primary-foreground/80'
-                      : 'text-sm text-primary-foreground transition-colors hover:text-primary-foreground/80'
-                  }
+                  className="text-sm text-primary-foreground transition-colors hover:text-primary-foreground/80"
                 >
                   My account
                 </Link>
@@ -198,11 +134,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/orders"
-                  className={
-                    IS_MEHFIL_THEME
-                      ? 'text-sm text-primary-foreground transition-colors hover:text-primary-foreground/80'
-                      : 'text-sm text-primary-foreground transition-colors hover:text-primary-foreground/80'
-                  }
+                  className="text-sm text-primary-foreground transition-colors hover:text-primary-foreground/80"
                 >
                   My orders
                 </Link>
@@ -218,50 +150,17 @@ export function Footer() {
               : 'mt-12 flex flex-col gap-6 border-t border-border pt-8 sm:flex-row sm:items-center sm:justify-between'
           }
         >
-          <p
-            className={
-              IS_MEHFIL_THEME
-                ? 'text-sm text-primary-foreground/80'
-                : 'text-sm text-primary-foreground/80'
-            }
-          >
+          <p className="text-sm text-primary-foreground/80">
             © {year} {STORE_NAME}. All rights reserved.
           </p>
-          <div
-            className={
-              IS_MEHFIL_THEME
-                ? 'flex flex-wrap gap-x-6 gap-y-2 text-sm text-primary-foreground'
-                : 'flex flex-wrap gap-x-6 gap-y-2 text-sm text-primary-foreground'
-            }
-          >
-            <Link
-              href="/products"
-              className={
-                IS_MEHFIL_THEME
-                  ? 'transition-colors hover:text-primary-foreground/80'
-                  : 'transition-colors hover:text-primary-foreground/80'
-              }
-            >
+          <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-primary-foreground">
+            <Link href="/products" className="transition-colors hover:text-primary-foreground/80">
               Shipping &amp; returns
             </Link>
-            <Link
-              href="/products"
-              className={
-                IS_MEHFIL_THEME
-                  ? 'transition-colors hover:text-primary-foreground/80'
-                  : 'transition-colors hover:text-primary-foreground/80'
-              }
-            >
+            <Link href="/products" className="transition-colors hover:text-primary-foreground/80">
               Privacy
             </Link>
-            <Link
-              href="/products"
-              className={
-                IS_MEHFIL_THEME
-                  ? 'transition-colors hover:text-primary-foreground/80'
-                  : 'transition-colors hover:text-primary-foreground/80'
-              }
-            >
+            <Link href="/products" className="transition-colors hover:text-primary-foreground/80">
               Terms
             </Link>
           </div>

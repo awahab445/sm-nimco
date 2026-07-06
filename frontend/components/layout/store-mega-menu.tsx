@@ -40,13 +40,13 @@ function CategoryBadge({ slug }: { slug: string }) {
   if (!kind) return null;
   if (kind === 'hot') {
     return (
-      <span className="ml-1.5 inline-flex shrink-0 items-center rounded px-1 py-0.5 text-[10px] font-bold uppercase leading-none text-white bg-red-500">
+      <span className="ml-1.5 inline-flex shrink-0 items-center rounded px-1 py-0.5 text-[10px] font-bold uppercase leading-none text-destructive-foreground bg-destructive">
         Hot
       </span>
     );
   }
   return (
-    <span className="ml-1.5 inline-flex shrink-0 items-center rounded px-1 py-0.5 text-[10px] font-bold uppercase leading-none text-white bg-emerald-600">
+    <span className="ml-1.5 inline-flex shrink-0 items-center rounded px-1 py-0.5 text-[10px] font-bold uppercase leading-none text-success-foreground bg-success">
       New
     </span>
   );
@@ -200,7 +200,11 @@ export function DesktopShopMegaMenu({
 
   if (roots.length === 0) {
     return (
-      <Link href="/products" className="header-nav-trigger text-sm font-medium text-white">
+      <Link
+        href="/products"
+        className={`chrome-nav-link header-nav-trigger text-sm font-medium ${isNavActive('/products', pathname) ? 'chrome-nav-link--active' : ''}`}
+        aria-current={isNavActive('/products', pathname) ? 'page' : undefined}
+      >
         Products
       </Link>
     );
@@ -241,7 +245,8 @@ export function DesktopShopMegaMenu({
           href={primaryHref}
           onMouseEnter={closeMenu}
           onFocus={closeMenu}
-          className="header-nav-trigger text-sm font-medium text-white"
+          className={`chrome-nav-link header-nav-trigger text-sm font-medium ${isNavActive(primaryHref, pathname) ? 'chrome-nav-link--active' : ''}`}
+          aria-current={isNavActive(primaryHref, pathname) ? 'page' : undefined}
         >
           {primaryLabel}
         </Link>
@@ -252,9 +257,9 @@ export function DesktopShopMegaMenu({
             onFocus={openMenu}
             aria-expanded={open}
             aria-haspopup="true"
-            className="header-nav-trigger cursor-pointer border-0 bg-transparent p-0 text-sm font-medium text-white"
+            className="chrome-nav-link header-nav-trigger cursor-pointer border-0 bg-transparent p-0 text-sm font-medium"
           >
-            <span className="text-white">{secondaryLabel}</span>
+            <span>{secondaryLabel}</span>
             <NavChevron />
           </button>
         ) : null}

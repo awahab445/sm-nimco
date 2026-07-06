@@ -10,7 +10,7 @@ import { useHydrated } from '@/lib/use-hydrated';
 const CLOSE_MS = 160;
 
 const guestMenuItemClass =
-  'block w-full px-4 py-2 text-left text-sm text-zinc-800 transition-all duration-200';
+  'block w-full px-4 py-2 text-left text-sm text-popover-foreground transition-all duration-200';
 
 export function UserMenuDropdown() {
   const router = useRouter();
@@ -51,7 +51,7 @@ export function UserMenuDropdown() {
       {hydrated ? (
         <button
           type="button"
-          className="inline-flex h-full items-center justify-center text-primary-foreground transition-colors hover:text-primary-foreground/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-foreground/40 focus-visible:ring-offset-2 focus-visible:ring-offset-primary"
+          className="inline-flex h-full items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2"
           aria-label={isAuthenticated ? 'Account menu' : 'Sign in menu'}
           aria-expanded={open}
           aria-haspopup="menu"
@@ -61,10 +61,7 @@ export function UserMenuDropdown() {
           <UserIcon className="h-6 w-6" strokeWidth={2} aria-hidden />
         </button>
       ) : (
-        <span
-          className="inline-flex h-full items-center justify-center text-white"
-          aria-hidden
-        >
+        <span className="inline-flex h-full items-center justify-center" aria-hidden>
           <UserIcon className="h-6 w-6" strokeWidth={2} />
         </span>
       )}

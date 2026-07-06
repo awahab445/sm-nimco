@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useId, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { createPortal } from 'react-dom';
 import { useAuthStore } from '@/lib/auth.store';
 import { useCartStore } from '@/lib/cart.store';
@@ -22,7 +23,6 @@ import { DesktopShopMegaMenu, MobileCategoryAccordions } from '@/components/layo
 import { UserMenuDropdown } from '@/components/layout/user-menu-dropdown';
 import { CartPreviewDropdown } from '@/components/layout/cart-preview-dropdown';
 import { ShoppingBagIcon } from '@/components/icons/shopping-bag-icon';
-import { storefrontUi } from '@/lib/storefront-ui';
 
 const DESKTOP_NAV_MIN_WIDTH = 1024;
 const DEFAULT_LOGO_WIDTH = 36;
@@ -44,6 +44,19 @@ function isCartHref(href: string): boolean {
   return h === '/cart' || h.endsWith('/cart');
 }
 
+function normalizeNavPath(href: string): string {
+  const base = href.trim().split('?')[0]?.split('#')[0] ?? '/';
+  if (base.length > 1 && base.endsWith('/')) return base.slice(0, -1);
+  return base || '/';
+}
+
+function isNavLinkActive(href: string, pathname: string): boolean {
+  const target = normalizeNavPath(href);
+  const current = normalizeNavPath(pathname);
+  if (target === '/') return current === '/';
+  return current === target || current.startsWith(`${target}/`);
+}
+
 function navListsEqual(a: StorefrontNavItem[], b: StorefrontNavItem[]): boolean {
   if (a.length !== b.length) return false;
   return a.every((item, i) => {
@@ -59,6 +72,7 @@ function navListsEqual(a: StorefrontNavItem[], b: StorefrontNavItem[]): boolean 
 }
 
 export function Header() {
+  const pathname = usePathname();
   const { isAuthenticated } = useAuthStore();
   const cart = useCartStore((s) => s.cart);
   const cartItemCount =
@@ -71,8 +85,19 @@ export function Header() {
   const [mainNav, setMainNav] = useState<StorefrontNavItem[]>(STOREFRONT_NAV_FALLBACK.header);
   const [megaMenu, setMegaMenu] = useState<StorefrontNavMegaNode[]>(STOREFRONT_NAV_FALLBACK.megaMenu);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [headerScrolled, setHeaderScrolled] = useState(false);
   const hydrated = useHydrated();
   const mobileNavTitleId = useId();
+
+  useEffect(() => {
+    const root = document.documentElement;
+    const theme = root.dataset.storeTheme ?? 'default';
+    if (theme !== 'default') return;
+    const onScroll = () => setHeaderScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -170,7 +195,8 @@ export function Header() {
       <Link
         key={item.id}
         href={item.href}
-        className="text-sm font-medium text-white transition-colors hover:text-white"
+        className={`chrome-nav-link text-sm font-medium transition-colors ${isNavLinkActive(item.href, pathname) ? 'chrome-nav-link--active' : ''}`}
+        aria-current={isNavLinkActive(item.href, pathname) ? 'page' : undefined}
       >
         {item.label}
       </Link>
@@ -185,6 +211,7 @@ export function Header() {
             href={item.href}
             className="block rounded-md px-3 py-3 text-base font-medium text-brand-text active:bg-brand-secondary/30 sm:py-2.5 sm:text-sm"
             onClick={closeMobileNav}
+            aria-current={isNavLinkActive(item.href, pathname) ? 'page' : undefined}
           >
             {item.label}
           </Link>
@@ -205,11 +232,11 @@ export function Header() {
           }
           onClick={closeMobileNav}
         >
-          <span className="relative inline-flex h-6 w-6 shrink-0 items-center justify-center text-white">
-            <ShoppingBagIcon className="h-6 w-6 text-white" strokeWidth={2} aria-hidden />
+          <span className="relative inline-flex h-6 w-6 shrink-0 items-center justify-center">
+            <ShoppingBagIcon className="h-6 w-6" strokeWidth={2} aria-hidden />
             {cartItemCount > 0 ? (
               <span
-                className="pointer-events-none absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-semibold leading-none text-white ring-2 ring-primary"
+                className="pointer-events-none absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-[10px] font-semibold leading-none text-destructive-foreground ring-2 ring-card"
                 aria-hidden
               >
                 {cartItemCount > 99 ? '99+' : cartItemCount}
@@ -303,15 +330,17 @@ export function Header() {
     ) : null;
 
   return (
-    <header className="site-header sticky top-0 z-[60] w-full max-w-full overflow-visible border-b relative bg-primary">
-      <div className="mx-auto flex min-h-14 w-full min-w-0 max-w-[100rem] items-center justify-between gap-2 py-1.5 px-4 sm:gap-3 sm:px-8 lg:gap-4 lg:px-12 xl:px-16">
+    <header
+      className={`site-header sticky top-0 z-[60] w-full max-w-full overflow-visible border-b relative ${headerScrolled ? 'is-scrolled' : ''}`}
+    >
+      <div className="site-header__inner mx-auto flex min-h-14 w-full min-w-0 max-w-[100rem] items-center justify-between gap-2 py-1.5 px-4 sm:gap-3 sm:px-8 lg:gap-4 lg:px-12 xl:px-16">
         <Link
           href="/"
           className="inline-flex shrink-0 items-center bg-transparent outline-none ring-0 focus-visible:ring-2 focus-visible:ring-primary-foreground/50 focus-visible:ring-offset-2 focus-visible:ring-offset-primary"
         >
           <div className="flex items-center gap-2">
             <div
-              className="flex shrink-0 items-center justify-center rounded-full bg-white p-1 shadow-sm"
+              className="site-header__logo-badge flex shrink-0 items-center justify-center rounded-full bg-white p-1 shadow-sm"
               style={{
                 width: `${logoWidth + 8}px`,
                 height: `${logoHeight + 8}px`,
@@ -327,7 +356,7 @@ export function Header() {
                 unoptimized={logoSrc.startsWith('http')}
               />
             </div>
-            <span className="ml-1 hidden text-lg font-bold tracking-wide text-primary-foreground lg:inline">M. Essa Chemicals</span>
+            <span className="site-header__store-name ml-1 hidden text-lg font-bold tracking-wide lg:inline">M. Essa Chemicals</span>
           </div>
         </Link>
 
@@ -349,7 +378,7 @@ export function Header() {
         {hydrated ? (
           <button
             type="button"
-            className="inline-flex shrink-0 items-center justify-center rounded-md border border-primary-foreground/30 bg-primary p-2.5 text-primary-foreground shadow-sm transition-colors hover:bg-primary-hover hover:text-primary-foreground active:brightness-95 lg:hidden"
+            className="site-header__menu-btn inline-flex shrink-0 items-center justify-center rounded-md border border-primary-foreground/30 bg-primary p-2.5 shadow-sm transition-colors hover:bg-primary-hover active:brightness-95 lg:hidden"
             aria-expanded={mobileNavOpen}
             aria-controls="mobile-main-nav"
             aria-haspopup="dialog"
@@ -368,10 +397,10 @@ export function Header() {
           </button>
         ) : (
           <span
-            className="inline-flex shrink-0 rounded-md border border-primary-foreground/30 bg-primary p-2.5 lg:hidden"
+            className="site-header__menu-btn inline-flex shrink-0 rounded-md border border-primary-foreground/30 bg-primary p-2.5 lg:hidden"
             aria-hidden
           >
-            <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </span>

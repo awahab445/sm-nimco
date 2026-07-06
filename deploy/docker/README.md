@@ -87,6 +87,8 @@ sudo bash deploy/docker/enable-https.sh
 | `export-from-host.sh` | Local | Export host Postgres + uploads for VPS |
 | `push-local-to-vps.sh` | Local | Export, upload, restore, sanitize URLs on VPS |
 | `sanitize-prod-urls.sh` | VPS | Rewrite localhost image/link URLs to production |
+| `restore-uploads.sh` | VPS | Fix / re-import image files into Docker volume |
+| `push-uploads-to-vps.sh` | Local | Upload only `backend/uploads` to VPS |
 
 ## Operations
 
@@ -202,3 +204,5 @@ After restore, log in with your **local admin credentials**. Re-check **Payment 
 | API P1000 auth failed | `POSTGRES_PASSWORD` in `docker.env` must match the Postgres volume; use `compose.sh down -v` only if you can wipe data |
 | CORS errors | `SHOP_URL` / `ADMIN_URL` must match browser origins exactly |
 | Build OOM | Ensure swap is enabled (`setup-docker-server.sh`); build one service at a time |
+| `/uploads/...` 404 on API | Image files missing from Docker volume — run `restore-uploads.sh` or `push-uploads-to-vps.sh` |
+| P3009 failed migration / API boot loop | `bash deploy/docker/fix-migration-history.sh` then `compose.sh up -d api` |
