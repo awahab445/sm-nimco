@@ -39,22 +39,25 @@ export function AnnouncementBar() {
   const trackStyle = { '--marquee-duration': `${durationSeconds}s` } as CSSProperties;
 
   return (
-    <div className="group relative left-1/2 right-1/2 z-[70] -ml-[50vw] -mr-[50vw] w-screen max-w-[100vw] overflow-hidden border-b border-secondary/80 bg-secondary py-2 text-primary">
-      <div className="flex min-w-full whitespace-nowrap">
+    <div
+      className="group relative left-1/2 right-1/2 z-[70] -ml-[50vw] -mr-[50vw] flex w-screen max-w-[100vw] items-center overflow-hidden border-b border-blue-700/80 py-1 text-white"
+      style={{ backgroundColor: 'var(--primary)', color: '#ffffff' }}
+    >
+      <div className="flex min-w-full items-center whitespace-nowrap text-white" style={{ color: '#ffffff' }}>
         <div
-          className="flex min-w-full shrink-0 animate-marquee justify-around gap-4 pr-4 group-hover:[animation-play-state:paused]"
+          className="flex min-w-full shrink-0 animate-marquee items-center justify-around gap-4 pr-4 text-white group-hover:[animation-play-state:paused]"
           style={trackStyle}
         >
-          <span className="ticker-chunk shrink-0 text-sm font-semibold">{announcementText}</span>
-          <span className="ticker-chunk shrink-0 text-sm font-semibold">{announcementText}</span>
+          <span className="ticker-chunk shrink-0 text-xs font-semibold leading-4 text-white" style={{ color: '#ffffff' }}>{announcementText}</span>
+          <span className="ticker-chunk shrink-0 text-xs font-semibold leading-4 text-white" style={{ color: '#ffffff' }}>{announcementText}</span>
         </div>
         <div
-          className="flex min-w-full shrink-0 animate-marquee justify-around gap-4 pr-4 group-hover:[animation-play-state:paused]"
+          className="flex min-w-full shrink-0 animate-marquee items-center justify-around gap-4 pr-4 text-white group-hover:[animation-play-state:paused]"
           style={trackStyle}
           aria-hidden
         >
-          <span className="ticker-chunk shrink-0 text-sm font-semibold">{announcementText}</span>
-          <span className="ticker-chunk shrink-0 text-sm font-semibold">{announcementText}</span>
+          <span className="ticker-chunk shrink-0 text-xs font-semibold leading-4 text-white" style={{ color: '#ffffff' }}>{announcementText}</span>
+          <span className="ticker-chunk shrink-0 text-xs font-semibold leading-4 text-white" style={{ color: '#ffffff' }}>{announcementText}</span>
         </div>
       </div>
     </div>
