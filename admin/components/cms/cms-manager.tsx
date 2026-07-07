@@ -730,6 +730,14 @@ function ActionRow({ onReset }: { onReset: () => void }) {
   );
 }
 
+function resolveAdminImageUrl(url: string): string {
+  const trimmed = url.trim();
+  if (!trimmed) return trimmed;
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
+  const base = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000').replace(/\/+$/, '');
+  return `${base}${trimmed.startsWith('/') ? trimmed : `/${trimmed}`}`;
+}
+
 function SlideFields({
   slide,
   sliderSlideWidthPx,
@@ -819,7 +827,7 @@ function SlideFields({
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={slide.imageUrl}
+            src={resolveAdminImageUrl(slide.imageUrl)}
             alt=""
             className={
               previewAspectLocked

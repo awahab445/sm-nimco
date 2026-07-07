@@ -71,6 +71,9 @@ const STOREFRONT_RESERVED_CMS_SLUGS = new Set(
     'profile',
     'register',
     'track-order',
+    'shipping-returns',
+    'privacy-policy',
+    'terms-conditions',
   ].map((s) => s.toLowerCase()),
 );
 

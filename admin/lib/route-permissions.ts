@@ -103,6 +103,7 @@ const RULES: RouteRule[] = [
 
   // ---- CMS -------------------------------------------------------------
   { test: prefix('/cms'), requirePermission: ['cms.manage'] },
+  { test: prefix('/settings/policy-pages'), requirePermission: ['cms.manage'] },
 
   { test: prefix('/store-navigation'), requirePermission: ['products.read'] },
 

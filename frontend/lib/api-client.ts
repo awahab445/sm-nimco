@@ -334,6 +334,22 @@ export const siteConfigApi = {
     fetchApi<{ data: StorefrontSiteConfig }>('/settings/site-config'),
 };
 
+export type StorefrontPolicyPage = {
+  id?: string;
+  title: string;
+  slug: string;
+  excerpt?: string | null;
+  metaTitle?: string | null;
+  metaDescription?: string | null;
+  contentHtml?: string | null;
+  updatedAt?: string;
+};
+
+export const pagesApi = {
+  getBySlug: (slug: string): Promise<StorefrontPolicyPage> =>
+    fetchApi<StorefrontPolicyPage>(`/pages/${encodeURIComponent(slug)}`),
+};
+
 export type PlpBrowseTreeNode = {
   id: string;
   label: string;

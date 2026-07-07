@@ -156,6 +156,13 @@ export const adminNavGroups: NavGroup[] = [
         requirePermission: ['products.read'],
       },
       {
+        href: '/settings/policy-pages',
+        label: 'Policy pages',
+        description: 'Shipping, privacy, and terms content',
+        phase: 'M',
+        requirePermission: ['cms.manage'],
+      },
+      {
         href: '/settings/site-config',
         label: 'Site settings',
         description: 'Store logo and branding dimensions',

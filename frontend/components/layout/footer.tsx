@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { STORE_NAME } from '@/lib/config';
 import { categoryApi, type CategoryTreeItem } from '@/lib/api-client';
+import { policyPageHref } from '@/lib/cms/policy-pages';
 import { ShoppingBagIcon } from '@/components/icons/shopping-bag-icon';
 
 const IS_MEHFIL_THEME =
@@ -154,13 +155,13 @@ export function Footer() {
             © {year} {STORE_NAME}. All rights reserved.
           </p>
           <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-primary-foreground">
-            <Link href="/products" className="transition-colors hover:text-primary-foreground/80">
+            <Link href={policyPageHref('shipping-returns')} className="transition-colors hover:text-primary-foreground/80">
               Shipping &amp; returns
             </Link>
-            <Link href="/products" className="transition-colors hover:text-primary-foreground/80">
+            <Link href={policyPageHref('privacy-policy')} className="transition-colors hover:text-primary-foreground/80">
               Privacy
             </Link>
-            <Link href="/products" className="transition-colors hover:text-primary-foreground/80">
+            <Link href={policyPageHref('terms-conditions')} className="transition-colors hover:text-primary-foreground/80">
               Terms
             </Link>
           </div>

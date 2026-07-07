@@ -144,7 +144,8 @@ export class AdminCmsController {
       : `/uploads/cms-slides/${file.filename}`;
     const baseUrl = publicBaseUrl || `${proto}://${host}`;
     return {
-      url: `${baseUrl}${publicPath}`,
+      url: publicPath,
+      absoluteUrl: `${baseUrl}${publicPath}`,
       filename: file.filename,
     };
   }

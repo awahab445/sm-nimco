@@ -1,4 +1,5 @@
 import { fetchApi } from '@/lib/api-client';
+import { resolveImageUrl } from '@/lib/resolve-image-url';
 import type { HomePageLayoutResponse, HomeSection } from './home-page-types';
 import { HOME_PAGE_DEFAULT_SECTIONS, HOME_SUBSCRIPTION_SECTION } from './home-page-defaults';
 
@@ -96,15 +97,15 @@ export async function getHomePageSections(): Promise<HomeSection[]> {
       }>(sliderPath, { cache: 'no-store' });
 
       const slides = (slider.slides ?? [])
-        .filter((s) => !!s.id && !!s.title)
         .map((s) => ({
           id: s.id,
-          title: s.title,
+          title: s.title?.trim() || 'Promotion',
           subtitle: s.subtitle ?? undefined,
-          imageUrl: s.imageUrl ?? undefined,
+          imageUrl: resolveImageUrl(s.imageUrl ?? undefined),
           ctaLabel: s.ctaLabel ?? undefined,
           ctaHref: s.ctaHref ?? undefined,
-        }));
+        }))
+        .filter((s) => !!s.id && !!s.imageUrl);
 
       if (slides.length === 0) return sections;
 

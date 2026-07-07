@@ -1,10 +1,12 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../catalog/services/prisma.service';
+import { isPolicyPageSlug } from '../constants/policy-page-slugs';
 import { UpsertCmsPageDto } from '../dto/upsert-cms-page.dto';
 import { UpsertCmsBlockDto } from '../dto/upsert-cms-block.dto';
 import { UpsertCmsSliderDto } from '../dto/upsert-cms-slider.dto';
 import { sanitizeCmsHtml } from '../../common/sanitize-html';
+import { normalizeCmsUploadImageUrl } from '../../common/normalize-upload-image-url';
 
 @Injectable()
 export class CmsService {
@@ -28,6 +30,62 @@ export class CmsService {
     return page;
   }
 
+  async getPageBySlug(slug: string) {
+    const page = await this.prisma.cmsPage.findUnique({ where: { slug } });
+    if (!page) throw new NotFoundException(`CMS page ${slug} not found`);
+    return page;
+  }
+
+  async upsertPageBySlug(
+    slug: string,
+    dto: {
+      title: string;
+      contentHtml?: string;
+      excerpt?: string;
+      metaTitle?: string;
+      metaDescription?: string;
+    },
+  ) {
+    if (!isPolicyPageSlug(slug)) {
+      throw new BadRequestException(
+        'Only policy page slugs can be upserted via this endpoint: shipping-returns, privacy-policy, terms-conditions',
+      );
+    }
+
+    const contentHtml =
+      dto.contentHtml !== undefined ? sanitizeCmsHtml(dto.contentHtml) : undefined;
+    const existing = await this.prisma.cmsPage.findUnique({ where: { slug } });
+
+    if (existing) {
+      return this.prisma.cmsPage.update({
+        where: { slug },
+        data: {
+          title: dto.title,
+          excerpt: dto.excerpt,
+          metaTitle: dto.metaTitle ?? dto.title,
+          metaDescription: dto.metaDescription ?? dto.excerpt,
+          ...(contentHtml !== undefined ? { contentHtml } : {}),
+          status: 'published',
+          publishedAt: existing.publishedAt ?? new Date(),
+        },
+      });
+    }
+
+    return this.prisma.cmsPage.create({
+      data: {
+        title: dto.title,
+        slug,
+        excerpt: dto.excerpt,
+        metaTitle: dto.metaTitle ?? dto.title,
+        metaDescription: dto.metaDescription ?? dto.excerpt,
+        contentHtml,
+        contentJson: {},
+        status: 'published',
+        publishedAt: new Date(),
+      },
+    });
+  }
+
   createPage(dto: UpsertCmsPageDto) {
     const contentJson = dto.contentJson as Prisma.InputJsonValue | undefined;
     const contentHtml = dto.contentHtml !== undefined ? sanitizeCmsHtml(dto.contentHtml) : undefined;
@@ -44,16 +102,25 @@ export class CmsService {
 
   async updatePage(id: string, dto: Partial<UpsertCmsPageDto>) {
     await this.getPageById(id);
-    const contentJson = dto.contentJson as Prisma.InputJsonValue | undefined;
-    const contentHtml = dto.contentHtml !== undefined ? sanitizeCmsHtml(dto.contentHtml) : undefined;
+    const data: Prisma.CmsPageUpdateInput = {};
+
+    if (dto.title !== undefined) data.title = dto.title;
+    if (dto.slug !== undefined) data.slug = dto.slug;
+    if (dto.status !== undefined) data.status = dto.status;
+    if (dto.excerpt !== undefined) data.excerpt = dto.excerpt;
+    if (dto.metaTitle !== undefined) data.metaTitle = dto.metaTitle;
+    if (dto.metaDescription !== undefined) data.metaDescription = dto.metaDescription;
+    if (dto.contentHtml !== undefined) data.contentHtml = sanitizeCmsHtml(dto.contentHtml);
+    if (dto.contentJson !== undefined) {
+      data.contentJson = dto.contentJson as Prisma.InputJsonValue;
+    }
+    if (dto.status === 'published') {
+      data.publishedAt = new Date();
+    }
+
     return this.prisma.cmsPage.update({
       where: { id },
-      data: {
-        ...dto,
-        ...(contentHtml !== undefined ? { contentHtml } : {}),
-        contentJson,
-        publishedAt: dto.status === 'published' ? new Date() : undefined,
-      },
+      data,
     });
   }
 
@@ -90,15 +157,20 @@ export class CmsService {
 
   async updateBlock(id: string, dto: Partial<UpsertCmsBlockDto>) {
     await this.getBlockById(id);
-    const contentJson = dto.contentJson as Prisma.InputJsonValue | undefined;
-    const contentHtml = dto.contentHtml !== undefined ? sanitizeCmsHtml(dto.contentHtml) : undefined;
+    const data: Prisma.CmsBlockUpdateInput = {};
+
+    if (dto.name !== undefined) data.name = dto.name;
+    if (dto.identifier !== undefined) data.identifier = dto.identifier;
+    if (dto.description !== undefined) data.description = dto.description;
+    if (dto.isActive !== undefined) data.isActive = dto.isActive;
+    if (dto.contentHtml !== undefined) data.contentHtml = sanitizeCmsHtml(dto.contentHtml);
+    if (dto.contentJson !== undefined) {
+      data.contentJson = dto.contentJson as Prisma.InputJsonValue;
+    }
+
     return this.prisma.cmsBlock.update({
       where: { id },
-      data: {
-        ...dto,
-        ...(contentHtml !== undefined ? { contentHtml } : {}),
-        contentJson,
-      },
+      data,
     });
   }
 
@@ -134,7 +206,13 @@ export class CmsService {
       },
     });
     if (!slider) throw new NotFoundException(`CMS slider ${identifier} not found`);
-    return slider;
+    return {
+      ...slider,
+      slides: slider.slides.map((slide) => ({
+        ...slide,
+        imageUrl: normalizeCmsUploadImageUrl(slide.imageUrl),
+      })),
+    };
   }
 
   async createSlider(dto: UpsertCmsSliderDto) {
@@ -149,6 +227,7 @@ export class CmsService {
         slides: {
           create: dto.slides.map((slide, index) => ({
             ...slide,
+            imageUrl: normalizeCmsUploadImageUrl(slide.imageUrl),
             sortOrder: slide.sortOrder ?? index,
             isActive: slide.isActive ?? true,
           })),
@@ -177,6 +256,7 @@ export class CmsService {
             ? {
                 create: dto.slides.map((slide, index) => ({
                   ...slide,
+                  imageUrl: normalizeCmsUploadImageUrl(slide.imageUrl),
                   sortOrder: slide.sortOrder ?? index,
                   isActive: slide.isActive ?? true,
                 })),

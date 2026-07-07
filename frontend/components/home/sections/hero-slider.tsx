@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import type { HeroSlide } from '@/lib/cms/home-page-types';
+import { resolveImageUrl } from '@/lib/resolve-image-url';
 import { storefrontUi } from '@/lib/storefront-ui';
 import { useHydrated } from '@/lib/use-hydrated';
 
@@ -54,7 +55,8 @@ export function HeroSlider({
   const slide = slides[safeIndex];
   const immersive = layout === 'immersive';
   const mehfil = IS_MEHFIL_THEME;
-  const hasImage = Boolean(slide.imageUrl);
+  const resolvedImageUrl = resolveImageUrl(slide.imageUrl);
+  const hasImage = Boolean(resolvedImageUrl);
 
   const shellClass = [
     immersive
@@ -109,9 +111,9 @@ export function HeroSlider({
 
   const imgFillBox = dimW > 0 && dimH > 0;
 
-  const bannerImg = slide.imageUrl ? (
+  const bannerImg = resolvedImageUrl ? (
     <img
-      src={slide.imageUrl}
+      src={resolvedImageUrl}
       alt={slide.title || 'Promotional banner'}
       width={imgWidth}
       height={imgHeight}
@@ -151,7 +153,7 @@ export function HeroSlider({
     );
 
   const linkedBanner =
-    slide.imageUrl && slide.ctaHref ? (
+    resolvedImageUrl && slide.ctaHref ? (
       <Link
         href={slide.ctaHref}
         className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { createPortal } from 'react-dom';
+import { bundleDealsApi } from '@/lib/api-client';
 import { BadgePercent, Home, ShoppingBag, Truck } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -11,13 +12,13 @@ type NavItem = {
   href: string;
   label: string;
   icon: LucideIcon;
-  badgeCount?: number;
+  showDealsBadge?: boolean;
 };
 
 const NAV_ITEMS: NavItem[] = [
   { href: '/', label: 'Home', icon: Home },
   { href: '/products', label: 'Products', icon: ShoppingBag },
-  { href: '/deals', label: 'Deals', icon: BadgePercent, badgeCount: 1 },
+  { href: '/deals', label: 'Deals', icon: BadgePercent, showDealsBadge: true },
   { href: '/track-order', label: 'Track Order', icon: Truck },
 ];
 
@@ -38,9 +39,25 @@ function isNavActive(href: string, pathname: string): boolean {
 export function MobileBottomNav() {
   const pathname = usePathname();
   const [hasMounted, setHasMounted] = useState(false);
+  const [dealsCount, setDealsCount] = useState(0);
 
   useEffect(() => {
     setHasMounted(true);
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    bundleDealsApi
+      .list()
+      .then((res) => {
+        if (!cancelled) setDealsCount(res.data?.length ?? 0);
+      })
+      .catch(() => {
+        if (!cancelled) setDealsCount(0);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   if (!hasMounted) {
@@ -54,8 +71,9 @@ export function MobileBottomNav() {
       style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom, 0px))' }}
     >
       <div className="flex w-full items-center justify-around">
-        {NAV_ITEMS.map(({ href, label, icon: Icon, badgeCount }) => {
+        {NAV_ITEMS.map(({ href, label, icon: Icon, showDealsBadge }) => {
           const active = isNavActive(href, pathname);
+          const badgeCount = showDealsBadge ? dealsCount : 0;
           return (
             <Link
               key={href}
