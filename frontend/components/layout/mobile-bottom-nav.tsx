@@ -4,19 +4,20 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { createPortal } from 'react-dom';
-import { Home, Percent, ShoppingBag, Truck } from 'lucide-react';
+import { BadgePercent, Home, ShoppingBag, Truck } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 type NavItem = {
   href: string;
   label: string;
   icon: LucideIcon;
+  badgeCount?: number;
 };
 
 const NAV_ITEMS: NavItem[] = [
   { href: '/', label: 'Home', icon: Home },
   { href: '/products', label: 'Products', icon: ShoppingBag },
-  { href: '/deals', label: 'Deals', icon: Percent },
+  { href: '/deals', label: 'Deals', icon: BadgePercent, badgeCount: 1 },
   { href: '/track-order', label: 'Track Order', icon: Truck },
 ];
 
@@ -53,7 +54,7 @@ export function MobileBottomNav() {
       style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom, 0px))' }}
     >
       <div className="flex w-full items-center justify-around">
-        {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+        {NAV_ITEMS.map(({ href, label, icon: Icon, badgeCount }) => {
           const active = isNavActive(href, pathname);
           return (
             <Link
@@ -64,7 +65,17 @@ export function MobileBottomNav() {
               }`}
               aria-current={active ? 'page' : undefined}
             >
-              <Icon className="h-5 w-5 shrink-0" strokeWidth={active ? 2.25 : 2} aria-hidden />
+              <span className="relative inline-flex h-5 w-5 shrink-0 items-center justify-center">
+                <Icon className="h-5 w-5" strokeWidth={active ? 2.25 : 2} aria-hidden />
+                {badgeCount != null && badgeCount > 0 ? (
+                  <span
+                    className="absolute -right-1.5 -top-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold leading-none text-white"
+                    aria-hidden
+                  >
+                    {badgeCount > 9 ? '9+' : badgeCount}
+                  </span>
+                ) : null}
+              </span>
               <span className="text-[10px] font-medium leading-none">{label}</span>
             </Link>
           );
