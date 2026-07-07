@@ -438,57 +438,7 @@ html[data-store-theme]:not([data-store-theme='default']) .cms-block-section.prom
   color: var(--navbar-muted-foreground);
 }
 
-/* Mobile bottom nav — portaled to body; must not inherit shell positioning rules */
-.mobile-bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 90;
-  border-top: 1px solid #f1f5f9;
-  background: rgba(255, 255, 255, 0.9);
-  padding: 0.5rem 1rem;
-  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.04);
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
-}
-
-.mobile-bottom-nav__inner {
-  display: flex;
-  width: 100%;
-  align-items: center;
-  justify-content: space-around;
-}
-
-.mobile-bottom-nav__link {
-  display: flex;
-  min-width: 0;
-  flex: 1;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.125rem;
-  color: #475569;
-  text-decoration: none;
-  transition: color 0.15s ease;
-}
-
-.mobile-bottom-nav__link:active,
-.mobile-bottom-nav__link--active {
-  color: #2563eb;
-}
-
-.mobile-bottom-nav__label {
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 0.025em;
-}
-
-@media (min-width: 1024px) {
-  .mobile-bottom-nav {
-    display: none !important;
-  }
-}
-
+/* Mobile bottom nav — portaled to body; styling lives in component (mobile-bottom-nav.tsx) */
 @media (prefers-reduced-motion: reduce) {
   .header-user-menu {
     animation: none;

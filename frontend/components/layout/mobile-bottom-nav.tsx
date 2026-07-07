@@ -48,22 +48,24 @@ export function MobileBottomNav() {
 
   return createPortal(
     <nav
-      className="mobile-bottom-nav"
+      className="mobile-bottom-nav fixed inset-x-0 bottom-0 z-[90] border-t border-gray-100 bg-white py-2 lg:hidden"
       aria-label="Mobile navigation"
       style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom, 0px))' }}
     >
-      <div className="mobile-bottom-nav__inner">
+      <div className="flex w-full items-center justify-around">
         {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
           const active = isNavActive(href, pathname);
           return (
             <Link
               key={href}
               href={href}
-              className={`mobile-bottom-nav__link${active ? ' mobile-bottom-nav__link--active' : ''}`}
+              className={`flex min-w-0 flex-1 flex-col items-center gap-0.5 no-underline transition-colors ${
+                active ? 'text-primary' : 'text-muted-foreground'
+              }`}
               aria-current={active ? 'page' : undefined}
             >
               <Icon className="h-5 w-5 shrink-0" strokeWidth={active ? 2.25 : 2} aria-hidden />
-              <span className="mobile-bottom-nav__label">{label}</span>
+              <span className="text-[10px] font-medium leading-none">{label}</span>
             </Link>
           );
         })}

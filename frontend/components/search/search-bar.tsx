@@ -23,7 +23,7 @@ type SuggestionItem = {
 export function SearchBar({
   variant = 'default',
 }: {
-  variant?: 'default' | 'header';
+  variant?: 'default' | 'header' | 'mobile-header';
 }) {
   const router = useRouter();
   const hydrated = useHydrated();
@@ -102,51 +102,82 @@ export function SearchBar({
   };
 
   const isHeader = variant === 'header';
+  const isMobileHeader = variant === 'mobile-header';
+  const searchInputId = isMobileHeader ? 'mobile-header-search' : 'header-search';
 
   return (
     <div
       ref={containerRef}
-      className={`relative w-full max-w-xl ${isHeader ? 'chrome-search-bar header-search-bar' : ''}`}
+      className={`relative w-full ${isMobileHeader ? 'max-w-none' : 'max-w-xl'} ${isHeader ? 'chrome-search-bar header-search-bar' : ''}`}
     >
       {hydrated ? (
         <form onSubmit={handleSubmit} role="search">
-          <label htmlFor="header-search" className="sr-only">
+          <label htmlFor={searchInputId} className="sr-only">
             Search products
           </label>
-          <div className="relative">
-            <input
-              id="header-search"
-              type="search"
-              autoComplete="off"
-              placeholder="Search products..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onFocus={() => query.trim().length >= MIN_QUERY_LENGTH && setOpen(true)}
-              className={
-                isHeader
-                  ? 'w-full rounded-lg border border-primary-foreground/30 bg-primary-foreground/15 py-2 pl-4 pr-10 text-sm text-primary-foreground placeholder:text-primary-foreground/70 focus:border-primary-foreground/50 focus:bg-primary-foreground/20 focus:outline-none focus:ring-2 focus:ring-primary-foreground/25'
-                  : 'w-full rounded-lg border border-input bg-card py-2 pl-4 pr-10 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:bg-card focus:outline-none focus:ring-2 focus:ring-primary/25'
-              }
-              aria-expanded={open}
-              aria-controls="search-suggestions"
-              aria-autocomplete="list"
-            />
-            <span
-              className={`pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 ${isHeader ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}
-              aria-hidden
-            >
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </span>
-          </div>
+          {isMobileHeader ? (
+            <div className="flex w-full overflow-hidden rounded-xl border border-gray-300 bg-white shadow-sm">
+              <input
+                id={searchInputId}
+                type="search"
+                autoComplete="off"
+                placeholder="Search products..."
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onFocus={() => query.trim().length >= MIN_QUERY_LENGTH && setOpen(true)}
+                className="min-w-0 flex-1 border-0 bg-transparent py-2.5 pl-3 pr-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-0"
+                aria-expanded={open}
+                aria-controls="search-suggestions"
+                aria-autocomplete="list"
+              />
+              <button
+                type="submit"
+                className="inline-flex h-10 w-10 shrink-0 items-center justify-center bg-primary text-white transition-colors hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2"
+                aria-label="Search products"
+              >
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </button>
+            </div>
+          ) : (
+            <div className="relative">
+              <input
+                id={searchInputId}
+                type="search"
+                autoComplete="off"
+                placeholder="Search products..."
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onFocus={() => query.trim().length >= MIN_QUERY_LENGTH && setOpen(true)}
+                className={
+                  isHeader
+                    ? 'w-full rounded-lg border border-primary-foreground/30 bg-primary-foreground/15 py-2 pl-4 pr-10 text-sm text-primary-foreground placeholder:text-primary-foreground/70 focus:border-primary-foreground/50 focus:bg-primary-foreground/20 focus:outline-none focus:ring-2 focus:ring-primary-foreground/25'
+                    : 'w-full rounded-lg border border-input bg-card py-2 pl-4 pr-10 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:bg-card focus:outline-none focus:ring-2 focus:ring-primary/25'
+                }
+                aria-expanded={open}
+                aria-controls="search-suggestions"
+                aria-autocomplete="list"
+              />
+              <span
+                className={`pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 ${isHeader ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}
+                aria-hidden
+              >
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </span>
+            </div>
+          )}
         </form>
       ) : (
         <div
           className={
-            isHeader
-              ? 'h-[38px] w-full rounded-lg border border-primary-foreground/30 bg-primary-foreground/15'
-              : 'h-[38px] w-full rounded-lg border border-input bg-card'
+            isMobileHeader
+              ? 'flex h-10 w-full overflow-hidden rounded-xl border border-gray-300 bg-white shadow-sm'
+              : isHeader
+                ? 'h-[38px] w-full rounded-lg border border-primary-foreground/30 bg-primary-foreground/15'
+                : 'h-[38px] w-full rounded-lg border border-input bg-card'
           }
           aria-hidden
         />

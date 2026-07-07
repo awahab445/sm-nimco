@@ -23,6 +23,7 @@ import { DesktopShopMegaMenu, MobileCategoryAccordions } from '@/components/layo
 import { UserMenuDropdown } from '@/components/layout/user-menu-dropdown';
 import { CartPreviewDropdown } from '@/components/layout/cart-preview-dropdown';
 import { ShoppingBagIcon } from '@/components/icons/shopping-bag-icon';
+import { UserIcon } from '@/components/icons/user-icon';
 
 const DESKTOP_NAV_MIN_WIDTH = 1024;
 const DEFAULT_LOGO_WIDTH = 36;
@@ -259,6 +260,60 @@ export function Header() {
     );
   }
 
+  const mobileMenuButton = hydrated ? (
+    <button
+      type="button"
+      className="site-header__menu-btn inline-flex shrink-0 items-center justify-center rounded-md p-2 text-brand-text transition-colors hover:bg-brand-secondary/30 hover:text-brand-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+      aria-expanded={mobileNavOpen}
+      aria-controls="mobile-main-nav"
+      aria-haspopup="dialog"
+      aria-label={mobileNavOpen ? 'Close menu' : 'Open menu'}
+      onClick={() => setMobileNavOpen((o) => !o)}
+    >
+      {mobileNavOpen ? (
+        <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      ) : (
+        <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      )}
+    </button>
+  ) : (
+    <span className="site-header__menu-btn inline-flex shrink-0 rounded-md p-2" aria-hidden>
+      <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+      </svg>
+    </span>
+  );
+
+  const mobileLogo = (
+    <Link
+      href="/"
+      className="inline-flex shrink-0 items-center bg-transparent outline-none ring-0 focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2"
+      aria-label="M. Essa Chemicals home"
+    >
+      <div
+        className="site-header__logo-badge flex shrink-0 items-center justify-center rounded-full bg-white p-1 shadow-sm"
+        style={{
+          width: `${logoWidth + 8}px`,
+          height: `${logoHeight + 8}px`,
+        }}
+      >
+        <Image
+          src={logoSrc}
+          alt="M. Essa Chemicals"
+          width={logoWidth}
+          height={logoHeight}
+          className="h-full w-full object-contain"
+          priority
+          unoptimized={logoSrc.startsWith('http')}
+        />
+      </div>
+    </Link>
+  );
+
   const mobileMenu =
     mobileNavOpen && hydrated ? (
       <div
@@ -333,7 +388,57 @@ export function Header() {
     <header
       className={`site-header sticky top-0 z-[60] w-full max-w-full overflow-visible border-b relative ${headerScrolled ? 'is-scrolled' : ''}`}
     >
-      <div className="site-header__inner mx-auto flex min-h-14 w-full min-w-0 max-w-[100rem] items-center justify-between gap-2 py-1.5 px-4 sm:gap-3 sm:px-8 lg:gap-4 lg:px-12 xl:px-16">
+      <div className="site-header__mobile md:hidden">
+        <div className="relative flex w-full items-center justify-between px-4 py-2">
+          <div className="flex shrink-0 items-center">{mobileMenuButton}</div>
+
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+            <div className="pointer-events-auto">{mobileLogo}</div>
+          </div>
+
+          <div className="flex shrink-0 items-center gap-3">
+            {hydrated ? (
+              <Link
+                href={isAuthenticated ? '/account' : '/login'}
+                className="inline-flex items-center justify-center rounded-md p-1 text-brand-text transition-colors hover:text-brand-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                aria-label={isAuthenticated ? 'My account' : 'Log in'}
+              >
+                <UserIcon className="h-6 w-6" strokeWidth={2} aria-hidden />
+              </Link>
+            ) : (
+              <span className="inline-flex items-center justify-center p-1" aria-hidden>
+                <UserIcon className="h-6 w-6" strokeWidth={2} />
+              </span>
+            )}
+
+            <Link
+              href={cartNavItem?.href ?? '/cart'}
+              className="relative inline-flex items-center justify-center rounded-md p-1 text-brand-text transition-colors hover:text-brand-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+              aria-label={
+                cartItemCount > 0
+                  ? `${cartNavItem?.label ?? 'Cart'}, ${cartItemCount} ${cartItemCount === 1 ? 'item' : 'items'}`
+                  : cartNavItem?.label ?? 'Cart'
+              }
+            >
+              <ShoppingBagIcon className="h-6 w-6" strokeWidth={2} aria-hidden />
+              {hydrated && cartItemCount > 0 ? (
+                <span
+                  className="pointer-events-none absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-[10px] font-semibold leading-none text-destructive-foreground ring-2 ring-card"
+                  aria-hidden
+                >
+                  {cartItemCount > 99 ? '99+' : cartItemCount}
+                </span>
+              ) : null}
+            </Link>
+          </div>
+        </div>
+
+        <div className="mt-2 w-full px-4 pb-2">
+          <SearchBar variant="mobile-header" />
+        </div>
+      </div>
+
+      <div className="site-header__inner mx-auto hidden min-h-14 w-full min-w-0 max-w-[100rem] items-center justify-between gap-2 py-1.5 px-4 sm:gap-3 sm:px-8 md:flex lg:gap-4 lg:px-12 xl:px-16">
         <Link
           href="/"
           className="inline-flex shrink-0 items-center bg-transparent outline-none ring-0 focus-visible:ring-2 focus-visible:ring-primary-foreground/50 focus-visible:ring-offset-2 focus-visible:ring-offset-primary"

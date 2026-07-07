@@ -24,7 +24,7 @@ function WhatsAppIcon({ className }: { className?: string }) {
 
 export function WhatsAppWidget() {
   return (
-    <div className="fixed bottom-6 right-6 z-[9999] motion-safe:animate-whatsapp-bounce">
+    <div className="fixed bottom-[70px] right-4 z-50 motion-safe:animate-whatsapp-bounce lg:bottom-6 lg:right-6 lg:z-[9999]">
       <a
         href={WHATSAPP_URL}
         target="_blank"
