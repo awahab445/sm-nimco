@@ -29,6 +29,13 @@ const dealInclude = {
           name: true,
           sku: true,
           price: true,
+          attributes: true,
+          optionValues: {
+            select: {
+              option: { select: { id: true, name: true, code: true } },
+              value: { select: { id: true, value: true, code: true } },
+            },
+          },
         },
       },
     },
@@ -95,7 +102,18 @@ export class BundleDealService {
         ...item,
         unitListPrice: item.unitListPrice != null ? Number(item.unitListPrice) : null,
         variant: item.variant
-          ? { ...item.variant, price: Number(item.variant.price) }
+          ? {
+              ...item.variant,
+              price: Number(item.variant.price),
+              variantAttributes: item.variant.optionValues
+                ?.map((entry: any) => {
+                  const optionName = entry.option?.name?.trim();
+                  const valueLabel = entry.value?.value?.trim();
+                  if (!optionName || !valueLabel) return null;
+                  return `${optionName}: ${valueLabel}`;
+                })
+                .filter((value: string | null): value is string => Boolean(value)),
+            }
           : null,
       })),
     };

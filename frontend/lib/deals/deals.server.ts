@@ -18,6 +18,12 @@ export type StorefrontBundleDealItem = {
     name: string;
     sku: string;
     price: number;
+    attributes?: Record<string, unknown> | null;
+    optionValues?: {
+      option: { id: string; name: string; code: string };
+      value: { id: string; value: string; code: string | null };
+    }[];
+    variantAttributes?: string[];
   } | null;
 };
 

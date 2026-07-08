@@ -4,6 +4,7 @@ import { formatPrice } from '@/lib/currency';
 import { resolveImageUrl } from '@/lib/resolve-image-url';
 import { DealPricingPanel } from '@/components/deals/deal-pricing-panel';
 import { fetchBundleDealBySlug } from '@/lib/deals/deals.server';
+import { formatVariantAttributes } from '@/lib/format-variant-attributes';
 import { storefrontUi } from '@/lib/storefront-ui';
 
 type Props = { params: Promise<{ slug: string }> };
@@ -55,10 +56,13 @@ export default async function DealDetailPage({ params }: Props) {
             {(deal.items ?? []).map((item) => {
               const image = resolveImageUrl(item.product?.images?.[0]?.url);
               const listPrice = item.unitListPrice ?? item.variant?.price;
+              const variantLabels =
+                item.variant?.variantAttributes?.filter((label) => label.trim().length > 0) ??
+                formatVariantAttributes((item.variant?.attributes as Record<string, unknown> | undefined) ?? undefined);
               return (
                 <li
                   key={item.id}
-                  className={`${storefrontUi.card} flex items-center gap-4 p-4`}
+                  className={`${storefrontUi.card} flex items-start gap-3 p-4 sm:items-center sm:gap-4`}
                 >
                   {image ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -79,12 +83,23 @@ export default async function DealDetailPage({ params }: Props) {
                         </span>
                       ) : null}
                     </div>
-                    {item.variant?.name && item.variant.name !== item.product?.name ? (
-                      <p className="text-sm text-muted-foreground">{item.variant.name}</p>
+                    {variantLabels.length > 0 ? (
+                      <div className="mt-1.5 flex flex-wrap gap-1.5">
+                        {variantLabels.map((label, index) => (
+                          <span
+                            key={`${item.id}-${index}-${label}`}
+                            className="inline-flex max-w-full items-center rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium leading-4 text-muted-foreground"
+                          >
+                            <span className="truncate">{label}</span>
+                          </span>
+                        ))}
+                      </div>
+                    ) : item.variant?.name && item.variant.name !== item.product?.name ? (
+                      <p className="mt-1 text-sm text-muted-foreground">{item.variant.name}</p>
                     ) : null}
                   </div>
                   {listPrice != null ? (
-                    <div className="flex shrink-0 items-center justify-end text-right">
+                    <div className="mt-1 flex shrink-0 items-center justify-end self-start text-right sm:mt-0 sm:self-center">
                       {item.quantity > 1 ? (
                         <div className="flex flex-wrap items-baseline justify-end gap-x-1.5 gap-y-0.5">
                           <span className="text-sm font-semibold tabular-nums text-primary">
