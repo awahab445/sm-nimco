@@ -1270,7 +1270,7 @@ export function OnePageCheckout() {
               to your cart.
               <br />
               <span className="mt-1 inline-block font-medium text-[#2f6fcb]">
-                Note: Shopping of Rs. 2000 or more qualifies for Free Delivery!
+                Note: Shopping of Rs.1500 or more qualifies for Free Delivery!
               </span>
             </p>
             <div className="mt-5 flex justify-end gap-2">

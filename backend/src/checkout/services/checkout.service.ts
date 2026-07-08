@@ -482,7 +482,7 @@ export class CheckoutService {
 
     if (updated.subtotal < this.minimumOrderValue) {
       throw new BadRequestException(
-        'A minimum order value of Rs. 800 is required to place an order. Please add more items to your cart. Note: Shopping of Rs. 2000 or more qualifies for Free Delivery!',
+        'A minimum order value of Rs. 800 is required to place an order. Please add more items to your cart. Note: Shopping of Rs. 1500 or more qualifies for Free Delivery!',
       );
     }
 

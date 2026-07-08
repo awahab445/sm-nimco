@@ -11,7 +11,7 @@ import { formatApiError } from '@/lib/api/error-message';
 
 const DEFAULT_LOGO_WIDTH = 36;
 const DEFAULT_LOGO_HEIGHT = 36;
-const DEFAULT_ANNOUNCEMENT_TEXT = 'Free Delivery on orders of Rs. 2000 or more!';
+const DEFAULT_ANNOUNCEMENT_TEXT = 'Free Delivery on orders of Rs. 1500 or more!';
 const ANNOUNCEMENT_MAX_LENGTH = 180;
 
 export function SiteConfigForm() {
