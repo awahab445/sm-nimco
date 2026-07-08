@@ -1113,9 +1113,16 @@ export function OnePageCheckout() {
                               );
                               if (attrLines.length > 0) {
                                 return (
-                                  <p className="mt-0.5 text-xs text-muted-foreground">
-                                    {attrLines.join(' · ')}
-                                  </p>
+                                  <div className="mt-1.5 flex flex-wrap gap-1.5">
+                                    {attrLines.map((line, lineIndex) => (
+                                      <span
+                                        key={`${item.variantId}-${lineIndex}-${line}`}
+                                        className="inline-flex max-w-full items-center rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium leading-4 text-muted-foreground"
+                                      >
+                                        <span className="truncate">{line}</span>
+                                      </span>
+                                    ))}
+                                  </div>
                                 );
                               }
                               if (item.variantName) {

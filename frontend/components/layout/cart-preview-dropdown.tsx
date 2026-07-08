@@ -24,13 +24,21 @@ type CartPreviewDropdownProps = {
 
 function CartBundlePreviewLine({
   bundle,
+  items,
   currency,
 }: {
   bundle: CartBundleRow;
+  items: CartItem[];
   currency: string;
 }) {
   const quantity = bundle.quantity ?? 0;
   const unitPrice = bundle.dealUnitPrice ?? 0;
+  const allBundleVariantChips = items
+    .filter((item) => item.bundleGroupId === bundle.bundleGroupId && item.isBundleComponent)
+    .flatMap((item) => formatVariantAttributes(item.variantAttributes ?? item.attributes ?? undefined))
+    .filter((label) => label.trim().length > 0);
+  const bundleVariantChips = allBundleVariantChips.slice(0, 3);
+  const hiddenVariantCount = Math.max(0, allBundleVariantChips.length - 3);
 
   return (
     <li className="flex gap-3 py-2.5">
@@ -41,6 +49,23 @@ function CartBundlePreviewLine({
         <p className="truncate text-sm font-medium text-foreground">
           {bundle.title?.trim() || 'Bundle deal'}
         </p>
+        {bundleVariantChips.length > 0 ? (
+          <div className="mt-1 flex flex-wrap gap-1">
+            {bundleVariantChips.map((chip, index) => (
+              <span
+                key={`${bundle.bundleGroupId}-${index}-${chip}`}
+                className="inline-flex max-w-full items-center rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium leading-4 text-muted-foreground"
+              >
+                <span className="truncate">{chip}</span>
+              </span>
+            ))}
+            {hiddenVariantCount > 0 ? (
+              <span className="inline-flex items-center rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium leading-4 text-muted-foreground">
+                +{hiddenVariantCount}
+              </span>
+            ) : null}
+          </div>
+        ) : null}
         <p className="mt-0.5 text-xs text-muted-foreground">
           {quantity} × {formatPrice(unitPrice, currency)}
         </p>
@@ -236,6 +261,7 @@ export function CartPreviewDropdown({ label = 'Cart', href = '/cart' }: CartPrev
                     <CartBundlePreviewLine
                       key={row.key}
                       bundle={row.bundle}
+                      items={items}
                       currency={displayCurrency}
                     />
                   ) : (

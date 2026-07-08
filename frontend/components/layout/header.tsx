@@ -291,26 +291,26 @@ export function Header() {
   const mobileLogo = (
     <Link
       href="/"
-      className="inline-flex shrink-0 items-center bg-transparent outline-none ring-0 focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2"
+      className="inline-flex max-w-full items-center justify-center bg-transparent outline-none ring-0 focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2"
       aria-label="M. Essa Chemicals home"
     >
-      <div
-        className="site-header__logo-badge flex shrink-0 items-center justify-center rounded-full bg-white p-1 shadow-sm"
-        style={{
-          width: `${logoWidth + 8}px`,
-          height: `${logoHeight + 8}px`,
-        }}
-      >
+      <span className="flex items-center justify-center gap-2.5">
         <Image
           src={logoSrc}
-          alt="M. Essa Chemicals"
+          alt="M. Essa Chemicals icon"
           width={logoWidth}
           height={logoHeight}
-          className="h-full w-full object-contain"
+          className="h-[3.75rem] w-auto shrink-0 object-contain"
           priority
           unoptimized={logoSrc.startsWith('http')}
         />
-      </div>
+        <span className="flex flex-col justify-center leading-[0.95] text-[#1f5f99]">
+          <span className="text-[16px] font-extrabold uppercase tracking-[0.1em]">M. ESSA</span>
+          <span className="mt-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#2676b5]">
+            CHEMICALS
+          </span>
+        </span>
+      </span>
     </Link>
   );
 
@@ -389,14 +389,14 @@ export function Header() {
       className={`site-header sticky top-0 z-[60] w-full max-w-full overflow-visible border-b relative ${headerScrolled ? 'is-scrolled' : ''}`}
     >
       <div className="site-header__mobile md:hidden">
-        <div className="relative flex w-full items-center justify-between px-4 py-2">
-          <div className="flex shrink-0 items-center">{mobileMenuButton}</div>
+        <div className="relative flex min-h-[4.5rem] w-full items-center justify-between px-4 py-2.5">
+          <div className="z-10 flex w-10 shrink-0 items-center justify-start">{mobileMenuButton}</div>
 
-          <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-16">
             <div className="pointer-events-auto">{mobileLogo}</div>
           </div>
 
-          <div className="flex shrink-0 items-center gap-3">
+          <div className="z-10 flex w-20 shrink-0 items-center justify-end gap-3">
             {hydrated ? (
               <Link
                 href={isAuthenticated ? '/account' : '/login'}

@@ -191,6 +191,14 @@ export default function CartPage() {
               <ul className="divide-y divide-border">
               {bundles.map((bundle) => {
                 const rowTotal = bundle.dealUnitPrice * bundle.quantity;
+                const allBundleVariantChips = items
+                  .filter((item) => item.bundleGroupId === bundle.bundleGroupId && item.isBundleComponent)
+                  .flatMap((item) =>
+                    formatVariantAttributes(item.variantAttributes ?? item.attributes ?? undefined),
+                  )
+                  .filter((label) => label.trim().length > 0);
+                const bundleVariantChips = allBundleVariantChips.slice(0, 5);
+                const extraChipCount = Math.max(0, allBundleVariantChips.length - bundleVariantChips.length);
                 return (
                   <li key={bundle.bundleGroupId} className="flex flex-wrap items-center gap-4 px-4 py-5 sm:px-6">
                     <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-secondary/50 text-xs font-medium text-primary">
@@ -198,6 +206,23 @@ export default function CartPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-foreground">{bundle.title}</p>
+                      {bundleVariantChips.length > 0 ? (
+                        <div className="mt-1.5 flex flex-wrap gap-1.5">
+                          {bundleVariantChips.map((chip, chipIndex) => (
+                            <span
+                              key={`${bundle.bundleGroupId}-${chipIndex}-${chip}`}
+                              className="inline-flex max-w-full items-center rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium leading-4 text-muted-foreground"
+                            >
+                              <span className="truncate">{chip}</span>
+                            </span>
+                          ))}
+                          {extraChipCount > 0 ? (
+                            <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium leading-4 text-muted-foreground">
+                              +{extraChipCount}
+                            </span>
+                          ) : null}
+                        </div>
+                      ) : null}
                       <Link href={`/deals/${bundle.slug}`} className="text-sm text-primary hover:underline">
                         View deal
                       </Link>
@@ -249,11 +274,18 @@ export default function CartPage() {
                       {item.productName ?? 'Product'}
                     </p>
                     {attrLines.length > 0 ? (
-                      <p className="text-sm text-muted-foreground">
-                        {attrLines.join(' · ')}
-                      </p>
+                      <div className="mt-1.5 flex flex-wrap gap-1.5">
+                        {attrLines.map((line, lineIndex) => (
+                          <span
+                            key={`${item.variantId}-${lineIndex}-${line}`}
+                            className="inline-flex max-w-full items-center rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium leading-4 text-muted-foreground"
+                          >
+                            <span className="truncate">{line}</span>
+                          </span>
+                        ))}
+                      </div>
                     ) : item.variantName ? (
-                      <p className="text-sm text-muted-foreground">{item.variantName}</p>
+                      <p className="mt-1 text-sm text-muted-foreground">{item.variantName}</p>
                     ) : null}
                     <p className="mt-1 text-sm text-muted-foreground">
                       {formatPrice(item.price, displayCurrency)} each

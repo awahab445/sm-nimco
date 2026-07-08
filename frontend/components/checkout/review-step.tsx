@@ -4,6 +4,7 @@ import { useCheckout } from '@/lib/checkout-context';
 import { useRouter } from 'next/navigation';
 import { useCartStore } from '@/lib/cart.store';
 import { formatPrice } from '@/lib/currency';
+import { formatVariantAttributes } from '@/lib/format-variant-attributes';
 import { storefrontUi } from '@/lib/storefront-ui';
 
 interface ReviewStepProps {
@@ -88,9 +89,29 @@ export function ReviewStep({ onBack }: ReviewStepProps) {
                     <div className="font-medium text-foreground">
                       {item.productName || `Product ${item.productId}`}
                     </div>
-                    {item.variantName && (
-                      <div className="text-sm text-muted-foreground">{item.variantName}</div>
-                    )}
+                    {(() => {
+                      const attrLines = formatVariantAttributes(
+                        item.variantAttributes ?? item.attributes,
+                      );
+                      if (attrLines.length > 0) {
+                        return (
+                          <div className="mt-1.5 flex flex-wrap gap-1.5">
+                            {attrLines.map((line, lineIndex) => (
+                              <span
+                                key={`${item.variantId}-${lineIndex}-${line}`}
+                                className="inline-flex max-w-full items-center rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium leading-4 text-muted-foreground"
+                              >
+                                <span className="truncate">{line}</span>
+                              </span>
+                            ))}
+                          </div>
+                        );
+                      }
+                      if (item.variantName) {
+                        return <div className="mt-0.5 text-sm text-muted-foreground">{item.variantName}</div>;
+                      }
+                      return null;
+                    })()}
                     <div className="text-sm text-muted-foreground">Quantity: {item.quantity}</div>
                   </div>
                   <div className="text-right">

@@ -24,6 +24,17 @@ type SelectedRow = BundleDealItemInput & {
   variantOptions: Array<{ id: string; name: string; price: number }>;
 };
 
+function isConfigurableRow(row: SelectedRow): boolean {
+  return row.variantOptions.length > 0;
+}
+
+function resolveVariantId(row: SelectedRow): string | undefined {
+  if (!isConfigurableRow(row)) return undefined;
+  const selected = row.variantId?.trim();
+  if (selected) return selected;
+  return row.variantOptions[0]?.id;
+}
+
 function slugify(title: string) {
   return title
     .toLowerCase()
@@ -83,7 +94,7 @@ export function BundleDealForm({ dealId }: Props) {
     () =>
       selected.map((row) => ({
         productId: row.productId,
-        variantId: row.variantId,
+        variantId: resolveVariantId(row),
         quantity: row.quantity,
       })),
     [selected],
@@ -118,7 +129,7 @@ export function BundleDealForm({ dealId }: Props) {
           return {
             key: `${item.productId}-${item.variantId ?? 'simple'}-${index}`,
             productId: item.productId,
-            variantId: item.variantId ?? undefined,
+            variantId: variants.length > 0 ? (item.variantId ?? variants[0]?.id) : undefined,
             quantity: item.quantity,
             productName: detail.name,
             productSku: detail.sku,
@@ -214,13 +225,13 @@ export function BundleDealForm({ dealId }: Props) {
       const row: SelectedRow = {
         key: `${product.id}-${Date.now()}`,
         productId: product.id,
-        variantId: isSimple ? product.id : defaultVariant?.id,
+        variantId: isSimple ? undefined : defaultVariant?.id,
         quantity: 1,
         productName: detail.name,
         productSku: detail.sku,
         thumbnail: detail.images?.[0]?.url ?? product.images?.[0]?.url,
         variantOptions: isSimple
-          ? [{ id: product.id, name: detail.name, price: Number(detail.basePrice) }]
+          ? []
           : variants.map((v) => ({
               id: v.id,
               name: v.name,
@@ -254,6 +265,14 @@ export function BundleDealForm({ dealId }: Props) {
     setSaving(true);
     setError(null);
     try {
+      const missingVariantRows = selected.filter(
+        (row) => isConfigurableRow(row) && !resolveVariantId(row),
+      );
+      if (missingVariantRows.length > 0) {
+        setError('Please select a variant/flavor for each configurable product in this bundle.');
+        return;
+      }
+
       const body = {
         title: title.trim(),
         slug: slug.trim() || undefined,
@@ -471,7 +490,7 @@ export function BundleDealForm({ dealId }: Props) {
                     onChange={(e) => {
                       const variantId = e.target.value;
                       setSelected((prev) =>
-                        prev.map((r, i) => (i === index ? { ...r, variantId } : r)),
+                        prev.map((r, i) => (i === index ? { ...r, variantId: variantId || undefined } : r)),
                       );
                     }}
                   >
