@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Shipping Labels</title>
+  <style>
+    @page {
+      size: 4in 6in;
+      margin: 0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      width: 4in;
+      font-family: 'Arial', 'Helvetica Neue', Helvetica, sans-serif;
+      font-size: 9pt;
+      line-height: 1.3;
+      color: #000;
+      background: #fff;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    .label-page {
+      width: 4in;
+      height: 6in;
+      padding: 0.12in 0.14in;
+      page-break-after: always;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .label-page:last-child {
+      page-break-after: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .header-table td {
+      vertical-align: top;
+      padding-bottom: 6px;
+    }
+
+    .brand-logo-wrap {
+      display: block;
+      width: 1.62in;
+      height: 0.92in;
+      overflow: hidden;
+      background-color: #ffffff;
+      background: #ffffff;
+      border: none;
+      filter: none;
+    }
+
+    .brand-logo {
+      display: block;
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      background-color: #ffffff;
+      background: #ffffff;
+      border: none;
+      filter: none;
+    }
+
+    .brand-name {
+      font-size: 12pt;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+    .order-meta {
+      text-align: right;
+      font-size: 7.5pt;
+    }
+
+    .order-number {
+      font-size: 10pt;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+    }
+
+    .divider {
+      border: none;
+      border-top: 2px solid #000;
+      margin: 4px 0 8px;
+    }
+
+    .divider-thin {
+      border: none;
+      border-top: 1px dashed #666;
+      margin: 6px 0;
+    }
+
+    .section-label {
+      font-size: 7pt;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #333;
+      margin-bottom: 4px;
+    }
+
+    .ship-to-box {
+      border: 2px solid #000;
+      padding: 7px 8px;
+      margin-bottom: 8px;
+      background: #f7f7f7;
+    }
+
+    .customer-name {
+      font-size: 11pt;
+      font-weight: 700;
+      margin-bottom: 3px;
+    }
+
+    .address-line {
+      font-size: 8.5pt;
+      line-height: 1.35;
+      white-space: pre-line;
+    }
+
+    .phone-line {
+      margin-top: 4px;
+      font-size: 8.5pt;
+      font-weight: 700;
+    }
+
+    .items-table {
+      margin-bottom: 6px;
+    }
+
+    .items-table th {
+      font-size: 7pt;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      text-align: left;
+      padding: 4px 0;
+      border-bottom: 1px solid #000;
+    }
+
+    .items-table th.qty,
+    .items-table td.qty {
+      width: 0.35in;
+      text-align: center;
+    }
+
+    .items-table th.total,
+    .items-table td.total {
+      width: 0.75in;
+      text-align: right;
+    }
+
+    .items-table td {
+      font-size: 8pt;
+      padding: 4px 0;
+      vertical-align: top;
+      border-bottom: 1px dotted #bbb;
+    }
+
+    .items-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .totals-table td {
+      font-size: 8pt;
+      padding: 2px 0;
+    }
+
+    .totals-table td.label {
+      color: #333;
+    }
+
+    .totals-table td.value {
+      text-align: right;
+      font-weight: 600;
+    }
+
+    .totals-table tr.discount td {
+      color: #b45309;
+    }
+
+    .totals-table tr.grand-total td {
+      font-size: 10pt;
+      font-weight: 700;
+      padding-top: 5px;
+      border-top: 2px solid #000;
+    }
+
+    .footer-table {
+      margin-top: 8px;
+      border-top: 2px solid #000;
+      padding-top: 6px;
+    }
+
+    .footer-table td {
+      vertical-align: bottom;
+      font-size: 8pt;
+    }
+
+    .payment-badge {
+      display: inline-block;
+      border: 1px solid #000;
+      padding: 3px 6px;
+      font-size: 7.5pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      background: #fff;
+    }
+
+    .footer-note {
+      text-align: right;
+      font-size: 7pt;
+      color: #555;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+  {{#each labels as |order|}}
+  <div class="label-page">
+  <table class="header-table">
+    <tr>
+      <td style="width:58%;">
+        <div class="brand-logo-wrap" style="background-color: #ffffff !important; background: #ffffff !important; display: block; width: 1.62in; height: 0.92in; overflow: hidden;">
+          <img src="{{{../logoBase64}}}" style="max-width: 100%; max-height: 100%; object-fit: contain; background-color: #ffffff !important; background: #ffffff !important; display: block;" />
+        </div>
+      </td>
+      <td class="order-meta">
+        <div class="order-number">#{{order.orderNumber}}</div>
+        <div>{{order.createdAt}}</div>
+        <div>{{order.itemCount}} item{{#unless order.singleItem}}s{{/unless}}</div>
+      </td>
+    </tr>
+  </table>
+
+  <hr class="divider" />
+
+  <div class="section-label">Ship To</div>
+  <div class="ship-to-box">
+    <div class="customer-name">{{order.customerName}}</div>
+    <div class="address-line">{{order.shippingAddress}}</div>
+    {{#if order.phone}}
+    <div class="phone-line">Tel: {{order.phone}}</div>
+    {{/if}}
+  </div>
+
+  <div class="section-label">Order Items</div>
+  <table class="items-table">
+    <thead>
+      <tr>
+        <th class="qty">Qty</th>
+        <th>Item</th>
+        <th class="total">Amount</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each order.items}}
+      <tr>
+        <td class="qty">{{quantity}}</td>
+        <td>{{name}}</td>
+        <td class="total">{{lineTotal}}</td>
+      </tr>
+      {{/each}}
+    </tbody>
+  </table>
+
+  <hr class="divider-thin" />
+
+  <table class="totals-table">
+    <tr>
+      <td class="label">Subtotal</td>
+      <td class="value">{{order.subtotal}}</td>
+    </tr>
+    {{#if order.hasDiscount}}
+    <tr class="discount">
+      <td class="label">Discount</td>
+      <td class="value">-{{order.discountTotal}}</td>
+    </tr>
+    {{/if}}
+    <tr>
+      <td class="label">Shipping</td>
+      <td class="value">{{order.shippingCharges}}</td>
+    </tr>
+    {{#if order.hasTax}}
+    <tr>
+      <td class="label">Tax</td>
+      <td class="value">{{order.taxTotal}}</td>
+    </tr>
+    {{/if}}
+    <tr class="grand-total">
+      <td class="label">Grand Total</td>
+      <td class="value">{{order.grandTotal}}</td>
+    </tr>
+  </table>
+
+  <table class="footer-table">
+    <tr>
+      <td>
+        <div class="section-label" style="margin-bottom:3px;">Payment</div>
+        <span class="payment-badge">{{order.paymentMethod}}</span>
+      </td>
+      <td style="text-align:right;">
+        <div class="section-label" style="margin-bottom:3px;">Currency</div>
+        <strong>{{order.currency}}</strong>
+      </td>
+    </tr>
+  </table>
+  <div class="footer-note">Thank you for your order — {{order.storeName}}</div>
+  </div>
+  {{/each}}
+</body>
+</html>

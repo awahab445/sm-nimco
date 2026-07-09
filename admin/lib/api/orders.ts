@@ -1,4 +1,5 @@
-import { fetchApi } from '../api-client';
+import { fetchApi, ApiError } from '../api-client';
+import { getToken } from '../auth-token';
 
 export type OrderStatus = 'pending' | 'processing' | 'completed' | 'cancelled';
 export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded';
@@ -121,4 +122,98 @@ export async function updateAdminOrderStatus(id: string, body: UpdateOrderStatus
     method: 'PUT',
     body: JSON.stringify(body),
   });
+}
+
+export async function downloadBulkPackageInserts(orderIds: string[]) {
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+  const token = getToken();
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+  };
+  if (token) headers.Authorization = `Bearer ${token}`;
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 120000);
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/admin/orders/bulk-package-inserts`, {
+      method: 'POST',
+      credentials: 'include',
+      headers,
+      body: JSON.stringify({ orderIds }),
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new ApiError(
+        (errorData as { message?: string })?.message ||
+          `Request failed: ${response.statusText}`,
+        response.status,
+        errorData,
+      );
+    }
+
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = 'package-inserts.pdf';
+    anchor.click();
+    URL.revokeObjectURL(url);
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      throw new ApiError('Package insert generation timed out. Try fewer orders.', 408);
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+export async function downloadBulkShippingLabels(orderIds: string[]) {
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+  const token = getToken();
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+  };
+  if (token) headers.Authorization = `Bearer ${token}`;
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 120000);
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/admin/orders/bulk-shipping-labels`, {
+      method: 'POST',
+      credentials: 'include',
+      headers,
+      body: JSON.stringify({ orderIds }),
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new ApiError(
+        (errorData as { message?: string })?.message ||
+          `Request failed: ${response.statusText}`,
+        response.status,
+        errorData,
+      );
+    }
+
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = 'shipping-labels.pdf';
+    anchor.click();
+    URL.revokeObjectURL(url);
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      throw new ApiError('Label generation timed out. Try fewer orders.', 408);
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeoutId);
+  }
 }

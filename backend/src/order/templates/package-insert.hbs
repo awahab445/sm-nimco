@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Package Insert — M. Essa Chemicals</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    @page {
+      size: 4in 6in;
+      margin: 0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      width: 4in;
+      font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+      color: #0f172a;
+      background: #ffffff;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    .insert-page {
+      width: 4in;
+      height: 6in;
+      page-break-after: always;
+      overflow: hidden;
+      position: relative;
+      background: linear-gradient(165deg, #f8fbff 0%, #ffffff 42%, #f0fdfa 100%);
+    }
+
+    .insert-page:last-child {
+      page-break-after: auto;
+    }
+
+    .insert-page::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 0.55in;
+      background: linear-gradient(135deg, #0f2d6e 0%, #1e40af 55%, #0891b2 100%);
+      z-index: 0;
+    }
+
+    .insert-inner {
+      position: relative;
+      z-index: 1;
+      height: 100%;
+      padding: 0.14in 0.16in 0.12in;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      text-align: center;
+      padding-top: 0.06in;
+      margin-bottom: 0.1in;
+    }
+
+    .logo-wrap {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.35in;
+      height: 0.62in;
+      margin: 0 auto 0.06in;
+      background: #ffffff;
+      border-radius: 10px;
+      padding: 4px 8px;
+      box-shadow: 0 4px 14px rgba(15, 45, 110, 0.18);
+    }
+
+    .logo-wrap img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .brand-text {
+      font-family: 'Poppins', sans-serif;
+      font-size: 11pt;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #ffffff;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+    }
+
+    .headline {
+      font-family: 'Poppins', sans-serif;
+      font-size: 11.5pt;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.25;
+      margin-top: 0.04in;
+    }
+
+    .order-pill {
+      display: inline-block;
+      margin-top: 0.06in;
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.18);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      color: #e0f2fe;
+      font-size: 6.5pt;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+    }
+
+    .welcome-card {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 0.12in 0.13in;
+      box-shadow: 0 8px 24px rgba(15, 45, 110, 0.1);
+      border: 1px solid #e2e8f0;
+      margin-bottom: 0.1in;
+    }
+
+    .welcome-title {
+      font-family: 'Poppins', sans-serif;
+      font-size: 9.5pt;
+      font-weight: 700;
+      color: #0f2d6e;
+      margin-bottom: 0.05in;
+    }
+
+    .welcome-greeting {
+      font-size: 8pt;
+      line-height: 1.45;
+      color: #334155;
+      margin-bottom: 0.05in;
+    }
+
+    .welcome-message {
+      font-size: 7.5pt;
+      line-height: 1.5;
+      color: #475569;
+      padding: 0.06in 0.08in;
+      border-left: 3px solid #06b6d4;
+      background: linear-gradient(90deg, #f0fdfa 0%, #ffffff 100%);
+      border-radius: 0 8px 8px 0;
+    }
+
+    .section-title {
+      font-family: 'Poppins', sans-serif;
+      font-size: 7.5pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #0f2d6e;
+      margin-bottom: 0.06in;
+      text-align: center;
+    }
+
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin-bottom: 0.1in;
+    }
+
+    .product-card {
+      background: #ffffff;
+      border-radius: 10px;
+      padding: 8px 5px;
+      text-align: center;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 4px 12px rgba(8, 145, 178, 0.08);
+    }
+
+    .product-icon {
+      font-size: 16pt;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .product-label {
+      font-size: 5.8pt;
+      font-weight: 600;
+      line-height: 1.3;
+      color: #1e293b;
+    }
+
+    .product-card:nth-child(1) {
+      border-top: 3px solid #1e40af;
+    }
+
+    .product-card:nth-child(2) {
+      border-top: 3px solid #06b6d4;
+    }
+
+    .product-card:nth-child(3) {
+      border-top: 3px solid #14b8a6;
+    }
+
+    .badges {
+      display: flex;
+      gap: 5px;
+      margin-bottom: 0.08in;
+    }
+
+    .badge {
+      flex: 1;
+      text-align: center;
+      background: linear-gradient(135deg, #0f2d6e 0%, #1e40af 100%);
+      color: #ffffff;
+      font-size: 5.5pt;
+      font-weight: 600;
+      line-height: 1.35;
+      padding: 6px 4px;
+      border-radius: 8px;
+      box-shadow: 0 3px 10px rgba(15, 45, 110, 0.2);
+    }
+
+    .badge.teal {
+      background: linear-gradient(135deg, #0e7490 0%, #06b6d4 100%);
+    }
+
+    .badge.cyan {
+      background: linear-gradient(135deg, #0f766e 0%, #14b8a6 100%);
+    }
+
+    .footer {
+      margin-top: auto;
+      text-align: center;
+      padding-top: 0.06in;
+      border-top: 1px dashed #cbd5e1;
+    }
+
+    .footer-social {
+      font-size: 6pt;
+      color: #64748b;
+      line-height: 1.5;
+    }
+
+    .footer-social strong {
+      color: #0f2d6e;
+      font-weight: 600;
+    }
+
+    .footer-url {
+      font-size: 6.5pt;
+      font-weight: 700;
+      color: #0891b2;
+      margin-top: 2px;
+    }
+  </style>
+</head>
+<body>
+  {{#each inserts as |order|}}
+  <div class="insert-page">
+    <div class="insert-inner">
+      <header class="header">
+        {{#if ../logoBase64}}
+        <div class="logo-wrap">
+          <img src="{{{../logoBase64}}}" alt="{{order.storeName}}" />
+        </div>
+        {{else}}
+        <div class="brand-text">{{order.storeName}}</div>
+        {{/if}}
+        <h1 class="headline">Thank You For Choosing Quality!</h1>
+        <span class="order-pill">Order {{order.orderNumber}}</span>
+      </header>
+
+      <section class="welcome-card">
+        <h2 class="welcome-title">Welcome to the {{order.storeName}} Family</h2>
+        <p class="welcome-greeting">
+          Dear {{order.customerName}}, thank you for trusting us with your order. We're delighted to have you as part of our growing community of satisfied customers across Pakistan.
+        </p>
+        <p class="welcome-message">
+          We manufacture premium household and industrial cleaning solutions with 100% satisfaction guaranteed.
+        </p>
+      </section>
+
+      <h3 class="section-title">Our Product Range</h3>
+      <div class="product-grid">
+        <div class="product-card">
+          <div class="product-icon">🧪</div>
+          <div class="product-label">Industrial &amp; Premium Chemicals</div>
+        </div>
+        <div class="product-card">
+          <div class="product-icon">🧼</div>
+          <div class="product-label">Premium Hand Washes &amp; Soaps</div>
+        </div>
+        <div class="product-card">
+          <div class="product-icon">🏠</div>
+          <div class="product-label">Household Cleaning Solutions (Bleach, Cleaners, etc.)</div>
+        </div>
+      </div>
+
+      <div class="badges">
+        <div class="badge">100% Quality Guaranteed</div>
+        <div class="badge teal">Proudly Made in Pakistan</div>
+        <div class="badge cyan">Customer Support: {{order.supportPhone}}</div>
+      </div>
+
+      <footer class="footer">
+        <div class="footer-social">
+          <strong>Follow us:</strong> @messa.chemicals &nbsp;|&nbsp; Facebook / Instagram
+        </div>
+        <div class="footer-url">{{order.storeUrl}}</div>
+      </footer>
+    </div>
+  </div>
+  {{/each}}
+</body>
+</html>

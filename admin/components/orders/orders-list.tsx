@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import {
   fetchAdminOrders,
+  downloadBulkShippingLabels,
+  downloadBulkPackageInserts,
   type Order,
   type OrderStatus,
   type PaymentStatus,
@@ -63,6 +65,14 @@ export function OrdersList() {
   const [sortBy, setSortBy] = useState<'createdAt' | 'updatedAt' | 'grandTotal'>('createdAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [page, setPage] = useState(1);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [labelsLoading, setLabelsLoading] = useState(false);
+  const [insertsLoading, setInsertsLoading] = useState(false);
+  const [labelsError, setLabelsError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setSelectedIds(new Set());
+  }, [page, customerIdFromUrl, statusFilter, paymentFilter, sortBy, sortOrder]);
 
   useEffect(() => {
     setPage(1);
@@ -102,6 +112,67 @@ export function OrdersList() {
           ...(paymentFilter ? { paymentStatus: paymentFilter } : {}),
         }).toString()}`
       : '/orders';
+
+  const allVisibleSelected =
+    rows.length > 0 && rows.every((order) => selectedIds.has(order.id));
+  const someVisibleSelected = rows.some((order) => selectedIds.has(order.id));
+
+  const toggleSelectAll = () => {
+    setSelectedIds((current) => {
+      if (allVisibleSelected) {
+        const next = new Set(current);
+        rows.forEach((order) => next.delete(order.id));
+        return next;
+      }
+      const next = new Set(current);
+      rows.forEach((order) => next.add(order.id));
+      return next;
+    });
+  };
+
+  const toggleSelectOne = (orderId: string) => {
+    setSelectedIds((current) => {
+      const next = new Set(current);
+      if (next.has(orderId)) {
+        next.delete(orderId);
+      } else {
+        next.add(orderId);
+      }
+      return next;
+    });
+  };
+
+  const handleDownloadLabels = async () => {
+    const orderIds = [...selectedIds];
+    if (orderIds.length === 0) return;
+
+    setLabelsError(null);
+    setLabelsLoading(true);
+    try {
+      await downloadBulkShippingLabels(orderIds);
+    } catch (e) {
+      setLabelsError(formatApiError(e));
+    } finally {
+      setLabelsLoading(false);
+    }
+  };
+
+  const handleDownloadInserts = async () => {
+    const orderIds = [...selectedIds];
+    if (orderIds.length === 0) return;
+
+    setLabelsError(null);
+    setInsertsLoading(true);
+    try {
+      await downloadBulkPackageInserts(orderIds);
+    } catch (e) {
+      setLabelsError(formatApiError(e));
+    } finally {
+      setInsertsLoading(false);
+    }
+  };
+
+  const bulkBusy = labelsLoading || insertsLoading;
 
   return (
     <div className="mx-auto max-w-6xl">
@@ -203,6 +274,44 @@ export function OrdersList() {
         </div>
       </div>
 
+      {selectedIds.size > 0 ? (
+        <div className="mt-4 flex flex-wrap items-center gap-3 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900/50">
+          <span className="text-zinc-700 dark:text-zinc-300">
+            {selectedIds.size} order{selectedIds.size === 1 ? '' : 's'} selected
+          </span>
+          <button
+            type="button"
+            disabled={bulkBusy}
+            onClick={() => void handleDownloadLabels()}
+            className="rounded-lg bg-zinc-900 px-3 py-1.5 font-medium text-white disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
+          >
+            {labelsLoading ? 'Generating labels…' : 'Download shipping labels'}
+          </button>
+          <button
+            type="button"
+            disabled={bulkBusy}
+            onClick={() => void handleDownloadInserts()}
+            className="rounded-lg bg-blue-700 px-3 py-1.5 font-medium text-white disabled:opacity-50"
+          >
+            {insertsLoading ? 'Generating inserts…' : 'Download package inserts'}
+          </button>
+          <button
+            type="button"
+            disabled={bulkBusy}
+            onClick={() => setSelectedIds(new Set())}
+            className="font-medium text-zinc-700 underline disabled:opacity-50 dark:text-zinc-300"
+          >
+            Clear selection
+          </button>
+        </div>
+      ) : null}
+
+      {labelsError ? (
+        <p className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-200">
+          {labelsError}
+        </p>
+      ) : null}
+
       {error ? (
         <p className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-200">
           {error}
@@ -218,6 +327,20 @@ export function OrdersList() {
           <table className="w-full min-w-[900px] text-left text-sm">
             <thead className="border-b border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900/50">
               <tr>
+                <th className="w-10 px-4 py-3">
+                  <input
+                    type="checkbox"
+                    aria-label="Select all orders on this page"
+                    checked={allVisibleSelected}
+                    ref={(input) => {
+                      if (input) {
+                        input.indeterminate = someVisibleSelected && !allVisibleSelected;
+                      }
+                    }}
+                    onChange={toggleSelectAll}
+                    className="h-4 w-4 rounded border-zinc-300"
+                  />
+                </th>
                 <th className="px-4 py-3 font-medium text-zinc-700 dark:text-zinc-300">Order</th>
                 <th className="px-4 py-3 font-medium text-zinc-700 dark:text-zinc-300">Customer</th>
                 <th className="px-4 py-3 font-medium text-zinc-700 dark:text-zinc-300">Status</th>
@@ -233,6 +356,15 @@ export function OrdersList() {
             <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
               {rows.map((o) => (
                 <tr key={o.id} className="hover:bg-zinc-50/80 dark:hover:bg-zinc-900/30">
+                  <td className="px-4 py-3">
+                    <input
+                      type="checkbox"
+                      aria-label={`Select order ${o.orderNumber}`}
+                      checked={selectedIds.has(o.id)}
+                      onChange={() => toggleSelectOne(o.id)}
+                      className="h-4 w-4 rounded border-zinc-300"
+                    />
+                  </td>
                   <td className="px-4 py-3">
                     <div className="font-medium text-zinc-900 dark:text-zinc-50">
                       {o.orderNumber}
