@@ -9,6 +9,7 @@ import {
 
 const MEASUREMENT_ID_REGEX = /^G-[A-Z0-9]{6,}$/;
 const GTM_ID_REGEX = /^GTM-[A-Z0-9]+$/;
+const META_PIXEL_ID_REGEX = /^\d{15,16}$/;
 
 export class UpdateGa4SettingsDto {
   @IsOptional()
@@ -24,6 +25,17 @@ export class UpdateGa4SettingsDto {
     message: 'gtmId must be a valid GTM container ID (e.g. GTM-XXXXXXX)',
   })
   gtmId?: string | null;
+
+  @IsOptional()
+  @IsString()
+  @Matches(META_PIXEL_ID_REGEX, {
+    message: 'metaPixelId must be a valid Meta Pixel ID (15–16 digits)',
+  })
+  metaPixelId?: string | null;
+
+  @IsOptional()
+  @IsBoolean()
+  metaPixelEnabled?: boolean;
 
   @IsOptional()
   @IsBoolean()
@@ -75,3 +87,4 @@ export class ToggleGa4SettingsDto {
 
 export const GA4_MEASUREMENT_ID_REGEX = MEASUREMENT_ID_REGEX;
 export const GTM_CONTAINER_ID_REGEX = GTM_ID_REGEX;
+export const META_PIXEL_ID_REGEX_EXPORT = META_PIXEL_ID_REGEX;

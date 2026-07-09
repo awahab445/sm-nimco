@@ -3,7 +3,9 @@
 import { useEffect } from 'react';
 import type { Ga4PublicConfig } from '@/lib/analytics/types';
 import { setAnalyticsConfig } from '@/lib/analytics/gtag';
+import { setMetaPixelConfig } from '@/lib/analytics/fbq';
 import { GoogleAnalyticsLoader } from './google-analytics';
+import { MetaPixel } from './meta-pixel';
 import { AnalyticsPageView } from './analytics-page-view';
 
 type Props = {
@@ -14,14 +16,20 @@ type Props = {
 export function AnalyticsProvider({ config, children }: Props) {
   useEffect(() => {
     setAnalyticsConfig(config);
+    setMetaPixelConfig(config);
   }, [config]);
 
-  const active = config.isEnabled && config.measurementId;
+  const gaActive = config.isEnabled && config.measurementId;
+  const metaActive = config.metaPixelEnabled && config.metaPixelId;
+  const trackPageViews =
+    (gaActive && config.trackPageViews) ||
+    (metaActive && config.trackPageViews);
 
   return (
     <>
-      {active ? <GoogleAnalyticsLoader config={config} /> : null}
-      {active && config.trackPageViews ? <AnalyticsPageView /> : null}
+      {gaActive ? <GoogleAnalyticsLoader config={config} /> : null}
+      {metaActive ? <MetaPixel pixelId={config.metaPixelId} /> : null}
+      {trackPageViews ? <AnalyticsPageView /> : null}
       {children}
     </>
   );

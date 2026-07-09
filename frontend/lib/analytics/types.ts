@@ -2,6 +2,8 @@ export type Ga4PublicConfig = {
   isEnabled: boolean;
   measurementId: string | null;
   gtmId: string | null;
+  metaPixelId: string | null;
+  metaPixelEnabled: boolean;
   debugMode: boolean;
   trackPageViews: boolean;
   trackCartEvents: boolean;
@@ -34,5 +36,7 @@ declare global {
   interface Window {
     gtag?: (...args: unknown[]) => void;
     dataLayer?: unknown[];
+    fbq?: (...args: unknown[]) => void;
+    _fbq?: unknown;
   }
 }

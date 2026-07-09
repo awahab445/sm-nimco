@@ -3,6 +3,7 @@ import type { AnalyticsGa4Settings } from '@prisma/client';
 import { PrismaService } from '../../catalog/services/prisma.service';
 import {
   GA4_MEASUREMENT_ID_REGEX,
+  META_PIXEL_ID_REGEX_EXPORT as META_PIXEL_ID_REGEX,
   ToggleGa4SettingsDto,
   UpdateGa4SettingsDto,
 } from '../dto/update-ga4-settings.dto';
@@ -11,6 +12,8 @@ export type PublicGa4Config = {
   isEnabled: boolean;
   measurementId: string | null;
   gtmId: string | null;
+  metaPixelId: string | null;
+  metaPixelEnabled: boolean;
   debugMode: boolean;
   trackPageViews: boolean;
   trackCartEvents: boolean;
@@ -39,6 +42,8 @@ export class AnalyticsSettingsService {
       isEnabled: row.isEnabled,
       measurementId: row.measurementId,
       gtmId: row.gtmId,
+      metaPixelId: row.metaPixelId,
+      metaPixelEnabled: row.metaPixelEnabled,
       debugMode: row.debugMode,
       trackPageViews: row.trackPageViews,
       trackCartEvents: row.trackCartEvents,
@@ -95,6 +100,19 @@ export class AnalyticsSettingsService {
     }
   }
 
+  private validateMetaPixelEnable(
+    metaPixelId: string | null | undefined,
+    metaPixelEnabled: boolean,
+  ): void {
+    if (!metaPixelEnabled) return;
+    const id = metaPixelId?.trim();
+    if (!id || !META_PIXEL_ID_REGEX.test(id)) {
+      throw new BadRequestException(
+        'A valid Meta Pixel ID (15–16 digits) is required before enabling Meta Pixel.',
+      );
+    }
+  }
+
   async updateSettings(
     dto: UpdateGa4SettingsDto,
     adminUserId?: string,
@@ -104,15 +122,24 @@ export class AnalyticsSettingsService {
       dto.measurementId !== undefined
         ? dto.measurementId?.trim() || null
         : current.measurementId;
+    const metaPixelId =
+      dto.metaPixelId !== undefined
+        ? dto.metaPixelId?.trim() || null
+        : current.metaPixelId;
     const isEnabled = dto.isEnabled ?? current.isEnabled;
+    const metaPixelEnabled =
+      dto.metaPixelEnabled ?? current.metaPixelEnabled;
 
     this.validateEnable(measurementId, isEnabled);
+    this.validateMetaPixelEnable(metaPixelId, metaPixelEnabled);
 
     const row = await this.prisma.analyticsGa4Settings.update({
       where: { id: this.singletonId },
       data: {
         ...(dto.measurementId !== undefined && { measurementId }),
         ...(dto.gtmId !== undefined && { gtmId: dto.gtmId?.trim() || null }),
+        ...(dto.metaPixelId !== undefined && { metaPixelId }),
+        ...(dto.metaPixelEnabled !== undefined && { metaPixelEnabled }),
         ...(dto.isEnabled !== undefined && { isEnabled: dto.isEnabled }),
         ...(dto.debugMode !== undefined && { debugMode: dto.debugMode }),
         ...(dto.trackPageViews !== undefined && {

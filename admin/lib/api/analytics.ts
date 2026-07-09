@@ -4,6 +4,8 @@ export type Ga4Settings = {
   id: string;
   measurementId: string | null;
   gtmId: string | null;
+  metaPixelId: string | null;
+  metaPixelEnabled: boolean;
   isEnabled: boolean;
   debugMode: boolean;
   trackPageViews: boolean;
@@ -23,6 +25,8 @@ export type Ga4SettingsInput = Partial<
     Ga4Settings,
     | 'measurementId'
     | 'gtmId'
+    | 'metaPixelId'
+    | 'metaPixelEnabled'
     | 'isEnabled'
     | 'debugMode'
     | 'trackPageViews'

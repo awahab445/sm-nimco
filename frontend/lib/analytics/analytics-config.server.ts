@@ -5,6 +5,8 @@ const DISABLED: Ga4PublicConfig = {
   isEnabled: false,
   measurementId: null,
   gtmId: null,
+  metaPixelId: null,
+  metaPixelEnabled: false,
   debugMode: false,
   trackPageViews: true,
   trackCartEvents: true,

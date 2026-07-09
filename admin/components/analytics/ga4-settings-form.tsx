@@ -14,6 +14,8 @@ export function Ga4SettingsForm() {
   const [settings, setSettings] = useState<Ga4Settings | null>(null);
   const [measurementId, setMeasurementId] = useState('');
   const [gtmId, setGtmId] = useState('');
+  const [metaPixelId, setMetaPixelId] = useState('');
+  const [metaPixelEnabled, setMetaPixelEnabled] = useState(false);
   const [debugMode, setDebugMode] = useState(false);
   const [trackPageViews, setTrackPageViews] = useState(true);
   const [trackCartEvents, setTrackCartEvents] = useState(true);
@@ -33,6 +35,8 @@ export function Ga4SettingsForm() {
     setSettings(data);
     setMeasurementId(data.measurementId ?? '');
     setGtmId(data.gtmId ?? '');
+    setMetaPixelId(data.metaPixelId ?? '');
+    setMetaPixelEnabled(data.metaPixelEnabled);
     setDebugMode(data.debugMode);
     setTrackPageViews(data.trackPageViews);
     setTrackCartEvents(data.trackCartEvents);
@@ -70,6 +74,8 @@ export function Ga4SettingsForm() {
       const data = await updateGa4Settings({
         measurementId: measurementId.trim() || null,
         gtmId: gtmId.trim() || null,
+        metaPixelId: metaPixelId.trim() || null,
+        metaPixelEnabled,
         debugMode,
         trackPageViews,
         trackCartEvents,
@@ -116,22 +122,36 @@ export function Ga4SettingsForm() {
           Analytics &amp; tagging
         </h1>
         <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-          Configure Google Analytics 4 and Google Tag Manager for the storefront. IDs are public;
-          no secrets are stored.
+          Configure Google Analytics 4, Google Tag Manager, and Meta Pixel for the storefront.
+          IDs are public; no secrets are stored.
         </p>
         {settings ? (
-          <p className="mt-2 text-sm">
-            Status:{' '}
-            <span
-              className={
-                settings.isEnabled
-                  ? 'font-medium text-emerald-700 dark:text-emerald-400'
-                  : 'font-medium text-zinc-500'
-              }
-            >
-              {settings.isEnabled ? 'Enabled' : 'Disabled'}
-            </span>
-          </p>
+          <div className="mt-2 space-y-1 text-sm">
+            <p>
+              GA4:{' '}
+              <span
+                className={
+                  settings.isEnabled
+                    ? 'font-medium text-emerald-700 dark:text-emerald-400'
+                    : 'font-medium text-zinc-500'
+                }
+              >
+                {settings.isEnabled ? 'Enabled' : 'Disabled'}
+              </span>
+            </p>
+            <p>
+              Meta Pixel:{' '}
+              <span
+                className={
+                  settings.metaPixelEnabled
+                    ? 'font-medium text-emerald-700 dark:text-emerald-400'
+                    : 'font-medium text-zinc-500'
+                }
+              >
+                {settings.metaPixelEnabled ? 'Enabled' : 'Disabled'}
+              </span>
+            </p>
+          </div>
         ) : null}
       </div>
 
@@ -169,6 +189,26 @@ export function Ga4SettingsForm() {
             <span className="mt-1 block text-xs text-zinc-500">
               Optional. When set, the GTM container loads on every storefront page.
             </span>
+          </label>
+          <label className="block text-sm">
+            <span className="text-zinc-700 dark:text-zinc-300">Meta Pixel ID</span>
+            <input
+              className="mt-1 w-full rounded-lg border border-zinc-300 px-3 py-2 font-mono text-sm dark:border-zinc-600 dark:bg-zinc-900"
+              value={metaPixelId}
+              onChange={(e) => setMetaPixelId(e.target.value)}
+              placeholder="1762477801846350"
+            />
+            <span className="mt-1 block text-xs text-zinc-500">
+              Your Facebook / Meta Pixel ID (15–16 digits). Enable below after saving.
+            </span>
+          </label>
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={metaPixelEnabled}
+              onChange={(e) => setMetaPixelEnabled(e.target.checked)}
+            />
+            Enable Meta Pixel tracking
           </label>
           <label className="block text-sm">
             <span className="text-zinc-700 dark:text-zinc-300">Currency</span>

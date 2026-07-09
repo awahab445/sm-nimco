@@ -8,6 +8,10 @@ import {
   sendGAEvent,
 } from './gtag';
 import {
+  canTrackMeta,
+  sendFBEvent,
+} from './fbq';
+import {
   cartItemToGa4Item,
   orderLineToGa4Item,
   productToGa4Item,
@@ -16,6 +20,22 @@ import {
 
 function currency(): string {
   return getAnalyticsConfig()?.currency ?? 'PKR';
+}
+
+function fbContentFromItems(items: Ga4Item[]): {
+  content_ids: string[];
+  contents: Array<{ id: string; quantity: number }>;
+  content_type: string;
+  value: number;
+  currency: string;
+} {
+  return {
+    content_ids: items.map((i) => i.item_id),
+    contents: items.map((i) => ({ id: i.item_id, quantity: i.quantity })),
+    content_type: 'product',
+    value: sumItemValue(items),
+    currency: currency(),
+  };
 }
 
 export function trackViewItemList(
@@ -38,7 +58,7 @@ export function trackViewItem(
   product: Product,
   options?: { variantName?: string; price?: number },
 ): void {
-  if (!canTrack('trackCartEvents')) return;
+  if (!canTrack('trackCartEvents') && !canTrackMeta('trackCartEvents')) return;
   const items = [
     productToGa4Item(product, {
       variantName: options?.variantName,
@@ -46,11 +66,32 @@ export function trackViewItem(
       quantity: 1,
     }),
   ];
-  sendGAEvent('view_item', {
-    currency: currency(),
-    value: sumItemValue(items),
-    items,
-  });
+  if (canTrack('trackCartEvents')) {
+    sendGAEvent('view_item', {
+      currency: currency(),
+      value: sumItemValue(items),
+      items,
+    });
+  }
+  if (canTrackMeta('trackCartEvents')) {
+    sendFBEvent('ViewContent', {
+      ...fbContentFromItems(items),
+      content_name: items[0]?.item_name,
+    });
+  }
+}
+
+function trackAddToCart(items: Ga4Item[]): void {
+  if (canTrack('trackCartEvents')) {
+    sendGAEvent('add_to_cart', {
+      currency: currency(),
+      value: sumItemValue(items),
+      items,
+    });
+  }
+  if (canTrackMeta('trackCartEvents')) {
+    sendFBEvent('AddToCart', fbContentFromItems(items));
+  }
 }
 
 export function trackAddToCartFromProduct(
@@ -58,7 +99,7 @@ export function trackAddToCartFromProduct(
   quantity: number,
   options?: { variantName?: string; price?: number },
 ): void {
-  if (!canTrack('trackCartEvents')) return;
+  if (!canTrack('trackCartEvents') && !canTrackMeta('trackCartEvents')) return;
   const items = [
     productToGa4Item(product, {
       variantName: options?.variantName,
@@ -66,23 +107,14 @@ export function trackAddToCartFromProduct(
       quantity,
     }),
   ];
-  sendGAEvent('add_to_cart', {
-    currency: currency(),
-    value: sumItemValue(items),
-    items,
-  });
+  trackAddToCart(items);
 }
 
 export function trackAddToCartFromCartItem(
   item: Parameters<typeof cartItemToGa4Item>[0],
 ): void {
-  if (!canTrack('trackCartEvents')) return;
-  const items = [cartItemToGa4Item(item)];
-  sendGAEvent('add_to_cart', {
-    currency: currency(),
-    value: sumItemValue(items),
-    items,
-  });
+  if (!canTrack('trackCartEvents') && !canTrackMeta('trackCartEvents')) return;
+  trackAddToCart([cartItemToGa4Item(item)]);
 }
 
 export function trackAddBundleToCart(
@@ -114,12 +146,15 @@ export function trackRemoveFromCart(
 }
 
 export function trackViewCart(items: Ga4Item[]): void {
-  if (!canTrack('trackCartEvents') || items.length === 0) return;
-  sendGAEvent('view_cart', {
-    currency: currency(),
-    value: sumItemValue(items),
-    items,
-  });
+  if (items.length === 0) return;
+  if (!canTrack('trackCartEvents') && !canTrackMeta('trackCartEvents')) return;
+  if (canTrack('trackCartEvents')) {
+    sendGAEvent('view_cart', {
+      currency: currency(),
+      value: sumItemValue(items),
+      items,
+    });
+  }
 }
 
 export function trackBeginCheckout(
@@ -127,14 +162,21 @@ export function trackBeginCheckout(
   items: Ga4Item[],
   coupon?: string,
 ): void {
-  if (!canTrack('trackCheckoutSteps')) return;
+  if (!canTrack('trackCheckoutSteps') && !canTrackMeta('trackCheckoutSteps')) {
+    return;
+  }
   if (!markOnce(`begin_checkout_${checkoutId}`)) return;
-  sendGAEvent('begin_checkout', {
-    currency: currency(),
-    value: sumItemValue(items),
-    coupon,
-    items,
-  });
+  if (canTrack('trackCheckoutSteps')) {
+    sendGAEvent('begin_checkout', {
+      currency: currency(),
+      value: sumItemValue(items),
+      coupon,
+      items,
+    });
+  }
+  if (canTrackMeta('trackCheckoutSteps')) {
+    sendFBEvent('InitiateCheckout', fbContentFromItems(items));
+  }
 }
 
 export function trackAddShippingInfo(
@@ -154,13 +196,20 @@ export function trackAddPaymentInfo(
   paymentType: string,
   items: Ga4Item[],
 ): void {
-  if (!canTrack('trackCheckoutSteps')) return;
-  sendGAEvent('add_payment_info', {
-    currency: currency(),
-    value: sumItemValue(items),
-    payment_type: paymentType,
-    items,
-  });
+  if (!canTrack('trackCheckoutSteps') && !canTrackMeta('trackCheckoutSteps')) {
+    return;
+  }
+  if (canTrack('trackCheckoutSteps')) {
+    sendGAEvent('add_payment_info', {
+      currency: currency(),
+      value: sumItemValue(items),
+      payment_type: paymentType,
+      items,
+    });
+  }
+  if (canTrackMeta('trackCheckoutSteps')) {
+    sendFBEvent('AddPaymentInfo', fbContentFromItems(items));
+  }
 }
 
 export function trackPurchase(order: {
@@ -177,18 +226,28 @@ export function trackPurchase(order: {
     quantity?: number;
   }>;
 }): void {
-  if (!canTrack('trackPurchases')) return;
+  if (!canTrack('trackPurchases') && !canTrackMeta('trackPurchases')) return;
   if (!markOnce(`purchase_${order.orderNumber}`)) return;
   const items = order.items.map((line) => orderLineToGa4Item(line));
-  sendGAEvent('purchase', {
-    transaction_id: order.orderNumber,
-    value: order.grandTotal,
-    currency: order.currency ?? currency(),
-    tax: order.taxTotal ?? 0,
-    shipping: order.shippingTotal ?? 0,
-    coupon: order.couponCode,
-    items,
-  });
+  const orderCurrency = order.currency ?? currency();
+  if (canTrack('trackPurchases')) {
+    sendGAEvent('purchase', {
+      transaction_id: order.orderNumber,
+      value: order.grandTotal,
+      currency: orderCurrency,
+      tax: order.taxTotal ?? 0,
+      shipping: order.shippingTotal ?? 0,
+      coupon: order.couponCode,
+      items,
+    });
+  }
+  if (canTrackMeta('trackPurchases')) {
+    sendFBEvent('Purchase', {
+      ...fbContentFromItems(items),
+      value: order.grandTotal,
+      currency: orderCurrency,
+    });
+  }
 }
 
 export function trackRefund(
@@ -213,8 +272,12 @@ export function trackCustomEvent(
 }
 
 export function trackPageView(path: string): void {
-  if (!canTrack('trackPageViews')) return;
-  sendGAEvent('page_view', {
-    page_path: path,
-  });
+  if (canTrack('trackPageViews')) {
+    sendGAEvent('page_view', {
+      page_path: path,
+    });
+  }
+  if (canTrackMeta('trackPageViews')) {
+    sendFBEvent('PageView');
+  }
 }
