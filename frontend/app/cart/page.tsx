@@ -34,11 +34,6 @@ export default function CartPage() {
   }>({ code: null, discountAmount: 0, isFreeShipping: false });
 
   useEffect(() => {
-    document.title = 'Your cart | E-commerce';
-    return () => { document.title = 'E-commerce'; };
-  }, []);
-
-  useEffect(() => {
     refreshCart();
   }, [refreshCart]);
 

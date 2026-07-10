@@ -1,22 +1,30 @@
 import Link from 'next/link';
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { formatPrice } from '@/lib/currency';
 import { resolveImageUrl } from '@/lib/resolve-image-url';
 import { DealPricingPanel } from '@/components/deals/deal-pricing-panel';
 import { fetchBundleDealBySlug } from '@/lib/deals/deals.server';
 import { formatVariantAttributes } from '@/lib/format-variant-attributes';
+import { buildPageMetadata, plainText } from '@/lib/seo';
 import { storefrontUi } from '@/lib/storefront-ui';
 
 type Props = { params: Promise<{ slug: string }> };
 
-export async function generateMetadata({ params }: Props) {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const deal = await fetchBundleDealBySlug(slug);
-  if (!deal) return { title: 'Deal not found' };
-  return {
+  if (!deal) {
+    return { title: 'Deal not found', robots: { index: false, follow: false } };
+  }
+  return buildPageMetadata({
     title: deal.title,
-    description: deal.description ?? `Bundle deal — save ${formatPrice(deal.savingsAmount)}`,
-  };
+    description:
+      plainText(deal.description) ||
+      `Bundle deal — save ${formatPrice(deal.savingsAmount)}`,
+    path: `/deals/${deal.slug}`,
+    image: resolveImageUrl(deal.imageUrl),
+  });
 }
 
 export default async function DealDetailPage({ params }: Props) {

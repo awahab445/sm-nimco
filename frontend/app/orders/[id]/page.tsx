@@ -192,15 +192,6 @@ export default function OrderDetailPage() {
     );
   };
 
-  useEffect(() => {
-    if (order) {
-      document.title = `Order #${order.orderNumber} | E-commerce`;
-    } else {
-      document.title = 'Order details | E-commerce';
-    }
-    return () => { document.title = 'E-commerce'; };
-  }, [order?.orderNumber]);
-
   if (loading) {
     return (
       <div className="flex min-h-[40vh] flex-col items-center justify-center py-16">

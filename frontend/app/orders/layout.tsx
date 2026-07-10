@@ -1,7 +1,11 @@
+import type { Metadata } from 'next';
 import { headers } from 'next/headers';
 import { AccountLayout } from '@/components/account/account-layout';
 import { getServerUser } from '@/lib/auth.server';
 import { redirect } from 'next/navigation';
+import { noIndexMetadata } from '@/lib/seo';
+
+export const metadata: Metadata = noIndexMetadata('Orders');
 
 export default async function OrdersLayoutWrapper({
   children,

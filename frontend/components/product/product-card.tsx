@@ -7,6 +7,7 @@ import type { Product } from '@/lib/api-client';
 import { useCartStore } from '@/lib/cart.store';
 import { notifyAddToCartError } from '@/lib/notify-add-to-cart';
 import { formatPrice } from '@/lib/currency';
+import { imageAlt } from '@/lib/seo';
 import { resolveImageUrl } from '@/lib/resolve-image-url';
 import { storefrontUi } from '@/lib/storefront-ui';
 
@@ -70,7 +71,7 @@ export function ProductCard({ product, showViewOnly = false, availableQuantity }
         {imageUrl ? (
           <img
             src={imageUrl}
-            alt={image?.alt ?? product.name}
+            alt={imageAlt(image, product.name)}
             className="h-full w-full object-cover transition group-hover:scale-105"
           />
         ) : (

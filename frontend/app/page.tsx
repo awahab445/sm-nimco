@@ -1,9 +1,49 @@
+import type { Metadata } from 'next';
 import { getHomePageSections } from '@/lib/cms/home-page.service';
 import { HomePageClient } from '@/components/home/home-page-client';
+import { JsonLd } from '@/components/seo/json-ld';
+import { STORE_NAME } from '@/lib/config';
+import { absoluteUrl, buildPageMetadata, getSiteUrl } from '@/lib/seo';
 
 export const revalidate = 0;
 
+export const metadata: Metadata = buildPageMetadata({
+  title: STORE_NAME,
+  description: `${STORE_NAME} — shop quality products with secure checkout and order tracking.`,
+  path: '/',
+  absoluteTitle: true,
+});
+
 export default async function HomePage() {
   const sections = await getHomePageSections();
-  return <HomePageClient sections={sections} />;
+  const siteUrl = getSiteUrl();
+
+  const organizationLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: STORE_NAME,
+    url: siteUrl,
+  };
+
+  const websiteLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: STORE_NAME,
+    url: siteUrl,
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: {
+        '@type': 'EntryPoint',
+        urlTemplate: `${absoluteUrl('/products')}?search={search_term_string}`,
+      },
+      'query-input': 'required name=search_term_string',
+    },
+  };
+
+  return (
+    <>
+      <JsonLd data={[organizationLd, websiteLd]} />
+      <HomePageClient sections={sections} />
+    </>
+  );
 }

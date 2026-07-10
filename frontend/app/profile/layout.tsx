@@ -1,6 +1,10 @@
+import type { Metadata } from 'next';
 import { AccountLayout } from '@/components/account/account-layout';
 import { getServerUser } from '@/lib/auth.server';
 import { redirect } from 'next/navigation';
+import { noIndexMetadata } from '@/lib/seo';
+
+export const metadata: Metadata = noIndexMetadata('Profile');
 
 export default async function ProfileLayoutWrapper({
   children,

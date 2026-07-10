@@ -1,10 +1,13 @@
 import { DealCard } from '@/components/deals/deal-card';
 import { fetchBundleDeals } from '@/lib/deals/deals.server';
+import { buildPageMetadata } from '@/lib/seo';
+import type { Metadata } from 'next';
 
-export const metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: 'Bundle Deals',
   description: 'Save more when you buy curated product bundles.',
-};
+  path: '/deals',
+});
 
 export default async function DealsPage() {
   const deals = await fetchBundleDeals();

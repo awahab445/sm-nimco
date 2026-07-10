@@ -8,7 +8,7 @@ import { createPortal } from 'react-dom';
 import { useAuthStore } from '@/lib/auth.store';
 import { useCartStore } from '@/lib/cart.store';
 import { useHydrated } from '@/lib/use-hydrated';
-import { getStoreLogoSrc } from '@/lib/config';
+import { getStoreLogoSrc, STORE_NAME } from '@/lib/config';
 import {
   siteConfigApi,
   storefrontNavApi,
@@ -292,12 +292,12 @@ export function Header() {
     <Link
       href="/"
       className="inline-flex max-w-full items-center justify-center bg-transparent outline-none ring-0 focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2"
-      aria-label="M. Essa Chemicals home"
+      aria-label={`${STORE_NAME} home`}
     >
       <span className="flex items-center justify-center gap-2.5">
         <Image
           src={logoSrc}
-          alt="M. Essa Chemicals icon"
+          alt={`${STORE_NAME} logo`}
           width={logoWidth}
           height={logoHeight}
           className="h-[3.75rem] w-auto shrink-0 object-contain"
@@ -453,7 +453,7 @@ export function Header() {
             >
               <Image
                 src={logoSrc}
-                alt="M. Essa Chemicals"
+                alt={STORE_NAME}
                 width={logoWidth}
                 height={logoHeight}
                 className="h-full w-full object-contain"

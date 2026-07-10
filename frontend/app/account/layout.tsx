@@ -1,8 +1,12 @@
+import type { Metadata } from 'next';
 import { AccountLayout } from '@/components/account/account-layout';
 import { getServerUser } from '@/lib/auth.server';
 import { redirect } from 'next/navigation';
+import { noIndexMetadata } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
+
+export const metadata: Metadata = noIndexMetadata('Account');
 
 export default async function AccountLayoutWrapper({
   children,

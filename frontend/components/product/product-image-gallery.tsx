@@ -5,6 +5,7 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import type { Swiper as SwiperClass } from 'swiper';
 import { FreeMode, Navigation } from 'swiper/modules';
 import { resolveImageUrl } from '@/lib/resolve-image-url';
+import { imageAlt } from '@/lib/seo';
 import type { ProductImage } from '@/lib/api-client';
 
 import 'swiper/css';
@@ -86,7 +87,7 @@ export function ProductImageGallery({ images, productName, selectedId, onSelect 
   }
 
   const zoomed = allowHoverZoom && zoomHover && imageUrl;
-  const mainAlt = active?.alt ?? productName;
+  const mainAlt = imageAlt(active, productName);
 
   return (
     <div className="product-image-gallery">
@@ -174,7 +175,7 @@ export function ProductImageGallery({ images, productName, selectedId, onSelect 
                     {thumbUrl ? (
                       <img
                         src={thumbUrl}
-                        alt={img.alt ?? productName}
+                        alt={imageAlt(img, productName)}
                         className="h-full w-full object-cover object-center"
                         loading="lazy"
                       />

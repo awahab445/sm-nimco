@@ -4,7 +4,6 @@ import "./globals.css";
 import "../styles/chrome-enhancements.css";
 import { fetchActiveTheme } from "@/lib/theme/theme.server";
 import { toStoreThemePresetId } from "@/lib/theme/types";
-import { STORE_NAME } from "@/lib/config";
 import { AuthProvider } from "@/components/auth-provider";
 import { CartProvider } from "@/components/cart-provider";
 import { AnalyticsProvider } from "@/components/analytics/analytics-provider";
@@ -16,6 +15,7 @@ import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav";
 import { WhatsAppWidget } from "@/components/whatsapp-widget";
 import { StorefrontToast } from "@/components/storefront-toast";
 import { GoogleTagManager } from "@/components/analytics/google-tag-manager";
+import { rootMetadata } from "@/lib/seo";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,10 +27,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: STORE_NAME,
-  description: `${STORE_NAME} — shop quality products with secure checkout and order tracking.`,
-};
+export const metadata: Metadata = rootMetadata();
 
 export default async function RootLayout({
   children,

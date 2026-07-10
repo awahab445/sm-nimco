@@ -109,6 +109,7 @@ export interface ProductImage {
   id: string;
   url: string;
   alt?: string;
+  altText?: string;
   isPrimary?: boolean;
   position?: number;
 }

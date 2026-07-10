@@ -104,11 +104,6 @@ export default function OrdersPage() {
     }
   };
 
-  useEffect(() => {
-    document.title = 'Order History | E-commerce';
-    return () => { document.title = 'E-commerce'; };
-  }, []);
-
   return (
     <div>
       <div className="mb-6">
