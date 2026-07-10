@@ -131,7 +131,7 @@ export function HeroSlider({
       sizes={sizesAttr}
       priority={isLcpSlide}
       fetchPriority={isLcpSlide ? 'high' : 'auto'}
-      quality={75}
+      quality={70}
     />
   ) : null;
 

@@ -11,9 +11,7 @@ import { fetchAnalyticsConfig } from "@/lib/analytics/analytics-config.server";
 import { Header } from "@/components/layout/header";
 import { AnnouncementBar } from "@/components/layout/announcement-bar";
 import { Footer } from "@/components/layout/footer";
-import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav";
-import { WhatsAppWidget } from "@/components/whatsapp-widget";
-import { StorefrontToast } from "@/components/storefront-toast";
+import { DeferredChrome } from "@/components/layout/deferred-chrome";
 import { GoogleTagManager } from "@/components/analytics/google-tag-manager";
 import { rootMetadata } from "@/lib/seo";
 
@@ -21,6 +19,7 @@ const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
   display: "swap",
+  adjustFontFallback: true,
 });
 
 export const metadata: Metadata = rootMetadata();
@@ -56,9 +55,7 @@ export default async function RootLayout({
             </CartProvider>
           </AuthProvider>
         </AnalyticsProvider>
-        <MobileBottomNav />
-        <WhatsAppWidget />
-        <StorefrontToast />
+        <DeferredChrome />
       </body>
     </html>
   );

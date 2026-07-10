@@ -1,5 +1,3 @@
-'use client';
-
 import type { HomeSection } from '@/lib/cms/home-page-types';
 import { HeroSlider, type HeroSliderLayout } from './sections/hero-slider';
 import { TrustBadgesSection } from './sections/trust-badges-section';
@@ -9,7 +7,7 @@ import { PromoBannerSection } from './sections/promo-banner-section';
 import { SubscriptionSection } from './sections/subscription-section';
 import { CmsBlockSection } from './sections/cms-block-section';
 
-export function HomeSectionRenderer({
+export async function HomeSectionRenderer({
   section,
   heroLayout = 'card',
 }: {

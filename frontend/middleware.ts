@@ -1,6 +1,6 @@
 /**
  * Next.js Middleware
- * Protects routes and handles authentication redirects
+ * Protects account/auth routes only — public pages skip Edge middleware for faster TTFB.
  */
 
 import { NextResponse } from 'next/server';
@@ -52,6 +52,14 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/account/:path*',
+    '/profile/:path*',
+    '/addresses/:path*',
+    '/orders',
+    '/orders/:path*',
+    '/login',
+    '/register',
+    '/forgot-password',
+    '/reset-password',
   ],
 };

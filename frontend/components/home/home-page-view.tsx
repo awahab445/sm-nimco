@@ -1,20 +1,17 @@
-'use client';
-
 import type { HomeSection } from '@/lib/cms/home-page-types';
 import { HomeSectionRenderer } from './home-section-renderer';
 
-interface HomePageClientProps {
+interface HomePageViewProps {
   sections: HomeSection[];
 }
 
 /**
- * Renders CMS-driven homepage blocks. Section order and content come from
- * `getHomePageSections()` (defaults or API).
+ * Server-rendered homepage layout. Only interactive islands (hero carousel,
+ * product cards, subscription form) hydrate on the client.
  */
-export function HomePageClient({ sections }: HomePageClientProps) {
+export function HomePageView({ sections }: HomePageViewProps) {
   const first = sections[0];
-  const useImmersiveLead =
-    first?.type === 'hero_slider' && first.slides.length > 0;
+  const useImmersiveLead = first?.type === 'hero_slider' && first.slides.length > 0;
   const bodySections = useImmersiveLead ? sections.slice(1) : sections;
 
   return (

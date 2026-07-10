@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { getHomePageSections } from '@/lib/cms/home-page.service';
-import { HomePageClient } from '@/components/home/home-page-client';
+import { HomePageView } from '@/components/home/home-page-view';
 import { JsonLd } from '@/components/seo/json-ld';
 import { STORE_NAME } from '@/lib/config';
 import { absoluteUrl, buildPageMetadata, getSiteUrl } from '@/lib/seo';
@@ -44,7 +44,7 @@ export default async function HomePage() {
   return (
     <>
       <JsonLd data={[organizationLd, websiteLd]} />
-      <HomePageClient sections={sections} />
+      <HomePageView sections={sections} />
     </>
   );
 }

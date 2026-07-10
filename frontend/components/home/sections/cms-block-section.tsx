@@ -1,5 +1,3 @@
-'use client';
-
 import { sanitizeCmsHtml } from '@/lib/sanitize-html';
 
 interface CmsBlockSectionProps {
