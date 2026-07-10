@@ -21,10 +21,12 @@ export class EncryptionService {
   private getMasterSecret(): string {
     const secret =
       process.env.MAIL_ENCRYPTION_KEY?.trim() ||
-      process.env.ENCRYPTION_KEY?.trim();
+      process.env.ENCRYPTION_KEY?.trim() ||
+      process.env.JWT_SECRET?.trim();
     if (!secret || secret.length < 32) {
       throw new InternalServerErrorException(
-        'MAIL_ENCRYPTION_KEY (or ENCRYPTION_KEY) must be set and at least 32 characters.',
+        'MAIL_ENCRYPTION_KEY (or ENCRYPTION_KEY / JWT_SECRET) must be set and at least 32 characters. ' +
+          'Add MAIL_ENCRYPTION_KEY to backend env (openssl rand -hex 32), then restart the API.',
       );
     }
     return secret;

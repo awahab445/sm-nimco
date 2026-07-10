@@ -43,6 +43,9 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
       BOOTSTRAP_TOKEN: ${BOOTSTRAP_TOKEN}
+      # Encrypts SMTP passwords saved in Admin → Mail (32+ chars; keep stable).
+      MAIL_ENCRYPTION_KEY: ${MAIL_ENCRYPTION_KEY:-${JWT_SECRET}}
+      MAIL_ENABLED: ${MAIL_ENABLED:-true}
       CORS_ORIGIN: ${SHOP_URL},${ADMIN_URL}
       FRONTEND_URL: ${SHOP_URL}
       APP_URL: ${API_URL}
