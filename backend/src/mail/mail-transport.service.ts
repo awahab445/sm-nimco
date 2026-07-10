@@ -1,5 +1,4 @@
 import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
-import * as nodemailer from 'nodemailer';
 import type { Transporter } from 'nodemailer';
 import type { MailMailbox } from '@prisma/client';
 import { MailMailboxService } from './services/mail-mailbox.service';
@@ -7,6 +6,10 @@ import {
   MailMailboxPurpose,
   type SmtpConfig,
 } from './types/mail-purpose.types';
+import {
+  createSmtpTransporter,
+  isTransientSmtpError,
+} from './smtp-transport.factory';
 
 export type SendMailPayload = {
   to: string;
@@ -18,6 +21,8 @@ export type SendMailPayload = {
 type CachedTransport = {
   transporter: Transporter;
   from: string;
+  mailboxId?: string;
+  endpoint: string;
 };
 
 @Injectable()
@@ -69,14 +74,12 @@ export class MailTransportService implements OnModuleDestroy {
     return `"${config.fromName}" <${config.fromAddress}>`;
   }
 
+  private endpointLabel(config: SmtpConfig): string {
+    return `${config.host}:${config.port} secure=${config.secure}`;
+  }
+
   private createTransporterFromConfig(config: SmtpConfig): Transporter {
-    return nodemailer.createTransport({
-      host: config.host,
-      port: config.port,
-      secure: config.secure,
-      auth: { user: config.user, pass: config.pass },
-      tls: { rejectUnauthorized: false },
-    });
+    return createSmtpTransporter(config);
   }
 
   private getEnvSmtpConfig(): SmtpConfig | null {
@@ -120,10 +123,12 @@ export class MailTransportService implements OnModuleDestroy {
     const cached: CachedTransport = {
       transporter,
       from: this.formatFrom(config),
+      mailboxId,
+      endpoint: this.endpointLabel(config),
     };
     this.transportCache.set(mailboxId, cached);
     this.logger.log(
-      `SMTP transport cached for mailbox ${mailboxId} → ${config.host}:${config.port}`,
+      `SMTP transport cached for mailbox ${mailboxId} → ${cached.endpoint}`,
     );
     return cached;
   }
@@ -133,19 +138,68 @@ export class MailTransportService implements OnModuleDestroy {
     if (!config) {
       throw new Error(
         'No mail mailbox configured for this purpose and SMTP env fallback is incomplete. ' +
-          'Set SMTP_HOST, SMTP_USER, and SMTP_PASS or create a mailbox in Admin → Mail.',
+          'Set SMTP_HOST, SMTP_USER, and SMTP_PASS or create a mailbox in Admin → Mail ' +
+          '(purpose AUTH or GENERAL) with Hostinger smtp.hostinger.com.',
       );
     }
     if (!this.envTransporter) {
       this.envTransporter = this.createTransporterFromConfig(config);
       this.logger.log(
-        `SMTP env fallback transport → ${config.host}:${config.port}`,
+        `SMTP env fallback transport → ${this.endpointLabel(config)}`,
       );
     }
     return {
       transporter: this.envTransporter,
       from: this.formatFrom(config),
+      endpoint: this.endpointLabel(config),
     };
+  }
+
+  private async sleep(ms: number): Promise<void> {
+    await new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  private async sendWithRetry(
+    transport: CachedTransport,
+    payload: {
+      from: string;
+      to: string;
+      subject: string;
+      html: string;
+      text: string;
+    },
+    rebuild: () => CachedTransport,
+  ): Promise<string> {
+    let lastError: unknown;
+    let active = transport;
+
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        const info = await active.transporter.sendMail(payload);
+        return String(info.messageId ?? '');
+      } catch (error) {
+        lastError = error;
+        if (!isTransientSmtpError(error) || attempt === 2) {
+          break;
+        }
+        const message = error instanceof Error ? error.message : String(error);
+        this.logger.warn(
+          `Transient SMTP error on ${active.endpoint} (attempt ${attempt}/2): ${message}. Retrying…`,
+        );
+        if (active.mailboxId) {
+          this.invalidateTransports(active.mailboxId);
+        } else if (this.envTransporter) {
+          this.envTransporter.close();
+          this.envTransporter = null;
+        }
+        await this.sleep(750);
+        active = rebuild();
+      }
+    }
+
+    throw lastError instanceof Error
+      ? lastError
+      : new Error(String(lastError));
   }
 
   async sendMail(
@@ -164,19 +218,25 @@ export class MailTransportService implements OnModuleDestroy {
 
     try {
       const resolved = await this.resolveMailbox(purpose);
-      const transport = resolved
-        ? this.getTransportForMailbox(resolved.mailbox.id, resolved.config)
-        : this.getEnvTransport();
+      const rebuild = (): CachedTransport =>
+        resolved
+          ? this.getTransportForMailbox(resolved.mailbox.id, resolved.config)
+          : this.getEnvTransport();
+      const transport = rebuild();
 
-      const info = await transport.transporter.sendMail({
-        from: transport.from,
-        to,
-        subject,
-        html,
-        text,
-      });
+      const messageId = await this.sendWithRetry(
+        transport,
+        {
+          from: transport.from,
+          to,
+          subject,
+          html,
+          text,
+        },
+        rebuild,
+      );
       this.logger.log(
-        `Email sent to ${to} (${subject}) purpose=${purpose} — messageId=${info.messageId}`,
+        `Email sent to ${to} (${subject}) purpose=${purpose} via ${transport.endpoint} — messageId=${messageId}`,
       );
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);

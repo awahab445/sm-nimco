@@ -4,7 +4,6 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import * as nodemailer from 'nodemailer';
 import type { MailMailbox } from '@prisma/client';
 import { PrismaService } from '../../catalog/services/prisma.service';
 import { EncryptionService } from '../../common/services/encryption.service';
@@ -16,6 +15,7 @@ import { CreateMailMailboxDto } from '../dto/create-mail-mailbox.dto';
 import { UpdateMailMailboxDto } from '../dto/update-mail-mailbox.dto';
 import { TestMailConnectionDto } from '../dto/test-mail-connection.dto';
 import { MASKED_SMTP_PASSWORD } from '../constants/mail.constants';
+import { createSmtpTransporter } from '../smtp-transport.factory';
 
 export type MailMailboxAdminDto = {
   id: string;
@@ -159,7 +159,7 @@ export class MailMailboxService {
     await this.prisma.mailMailbox.delete({ where: { id } });
   }
 
-  /** Resolve active mailbox for outbound email by purpose. */
+  /** Resolve active mailbox for outbound email by purpose (falls back to GENERAL). */
   async resolveForPurpose(
     purpose: MailMailboxPurpose,
   ): Promise<MailMailbox | null> {
@@ -167,8 +167,29 @@ export class MailMailboxService {
       where: { purpose, isActive: true, isDefault: true },
     });
     if (preferred) return preferred;
-    return this.prisma.mailMailbox.findFirst({
+
+    const byPurpose = await this.prisma.mailMailbox.findFirst({
       where: { purpose, isActive: true },
+      orderBy: { createdAt: 'asc' },
+    });
+    if (byPurpose) return byPurpose;
+
+    if (purpose === MailMailboxPurpose.GENERAL) {
+      return null;
+    }
+
+    // Allow a single Hostinger mailbox marked GENERAL to cover AUTH/ORDERS/etc.
+    const generalDefault = await this.prisma.mailMailbox.findFirst({
+      where: {
+        purpose: MailMailboxPurpose.GENERAL,
+        isActive: true,
+        isDefault: true,
+      },
+    });
+    if (generalDefault) return generalDefault;
+
+    return this.prisma.mailMailbox.findFirst({
+      where: { purpose: MailMailboxPurpose.GENERAL, isActive: true },
       orderBy: { createdAt: 'asc' },
     });
   }
@@ -190,7 +211,13 @@ export class MailMailboxService {
     return {
       host: mailbox.smtpHost,
       port: mailbox.smtpPort,
-      secure: mailbox.smtpSecure || mailbox.smtpPort === 465,
+      // Normalize Hostinger-style ports regardless of what was saved in admin.
+      secure:
+        mailbox.smtpPort === 465
+          ? true
+          : mailbox.smtpPort === 587
+            ? false
+            : mailbox.smtpSecure,
       user: mailbox.smtpUser,
       pass,
       fromName: mailbox.fromName,
@@ -210,15 +237,12 @@ export class MailMailboxService {
     dto: TestMailConnectionDto,
   ): Promise<{ ok: true; message: string }> {
     const secure = dto.smtpSecure ?? dto.smtpPort === 465;
-    const transporter = nodemailer.createTransport({
+    const transporter = createSmtpTransporter({
       host: dto.smtpHost.trim(),
       port: dto.smtpPort,
       secure,
-      auth: {
-        user: dto.smtpUser.trim(),
-        pass: dto.smtpPass,
-      },
-      tls: { rejectUnauthorized: false },
+      user: dto.smtpUser.trim(),
+      pass: dto.smtpPass,
     });
     try {
       await transporter.verify();
@@ -241,7 +265,10 @@ export class MailMailboxService {
       return { ok: true, message: 'SMTP connection verified successfully.' };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      throw new BadRequestException(`SMTP test failed: ${message}`);
+      throw new BadRequestException(
+        `SMTP test failed (${dto.smtpHost}:${dto.smtpPort}, secure=${secure}): ${message}. ` +
+          'For Hostinger try smtp.hostinger.com port 465 (SSL) or port 587 (STARTTLS).',
+      );
     } finally {
       transporter.close();
     }
