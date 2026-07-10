@@ -31,5 +31,8 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 
+# Drop build-time webpack/fetch caches so the container starts clean.
+RUN rm -rf .next/cache
+
 EXPOSE 3001
 CMD ["npm", "run", "start"]

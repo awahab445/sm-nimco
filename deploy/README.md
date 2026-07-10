@@ -49,7 +49,8 @@ Production-style deployment for a **single Ubuntu VPS**: NestJS API + PostgreSQL
 | [nginx/ecommerce-demo.conf.template](./nginx/ecommerce-demo.conf.template) | Nginx reverse proxy |
 | [scripts/setup-server.sh](./scripts/setup-server.sh) | OS packages + PostgreSQL role/DB |
 | [scripts/install-env.sh](./scripts/install-env.sh) | Writes `backend/.env`, `frontend/.env`, `admin/.env.local` |
-| [scripts/deploy.sh](./scripts/deploy.sh) | `npm ci`, build, `pm2 start` |
+| [scripts/deploy.sh](./scripts/deploy.sh) | `npm ci`, build, `pm2 start`, auto cache flush |
+| [scripts/flush-cache.sh](./scripts/flush-cache.sh) | Clears `.next/cache` + POSTs `/api/revalidate` |
 | [scripts/configure-nginx.sh](./scripts/configure-nginx.sh) | Nginx site + Certbot |
 | [scripts/bootstrap-demo.sh](./scripts/bootstrap-demo.sh) | Migrations, seed, first admin |
 
@@ -61,8 +62,11 @@ pm2 status
 pm2 logs ecommerce-api
 pm2 restart all
 
-# Redeploy after git pull
+# Redeploy after git pull (builds + flushes Next.js ISR automatically)
 bash deploy/scripts/deploy.sh
+
+# Manual cache flush only (running storefront)
+bash deploy/scripts/flush-cache.sh --runtime
 ```
 
 ## Demo hardening defaults

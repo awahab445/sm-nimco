@@ -37,4 +37,7 @@ esac
 bash "${COMPOSE}" up -d
 bash "${COMPOSE}" ps
 
+echo "=== Flush storefront ISR after redeploy ==="
+bash "${REPO_ROOT}/deploy/scripts/flush-cache.sh" --runtime
+
 echo "Redeploy complete."

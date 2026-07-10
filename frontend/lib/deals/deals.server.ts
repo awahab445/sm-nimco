@@ -1,4 +1,5 @@
 import { SERVER_API_BASE_URL } from '@/lib/api-base-url';
+import { CACHE_TAGS } from '@/lib/cache-tags';
 
 export type StorefrontBundleDealItem = {
   id: string;
@@ -43,11 +44,16 @@ export type StorefrontBundleDeal = {
   items?: StorefrontBundleDealItem[];
 };
 
+const DEALS_FETCH_CACHE = {
+  next: {
+    revalidate: 60,
+    tags: [CACHE_TAGS.deals, CACHE_TAGS.storefront],
+  },
+} as const;
+
 export async function fetchBundleDeals(): Promise<StorefrontBundleDeal[]> {
   try {
-    const res = await fetch(`${SERVER_API_BASE_URL}/deals`, {
-      next: { revalidate: 60 },
-    });
+    const res = await fetch(`${SERVER_API_BASE_URL}/deals`, DEALS_FETCH_CACHE);
     if (!res.ok) return [];
     const json = (await res.json()) as { data?: StorefrontBundleDeal[] };
     return json.data ?? [];
@@ -58,9 +64,10 @@ export async function fetchBundleDeals(): Promise<StorefrontBundleDeal[]> {
 
 export async function fetchBundleDealBySlug(slug: string): Promise<StorefrontBundleDeal | null> {
   try {
-    const res = await fetch(`${SERVER_API_BASE_URL}/deals/${encodeURIComponent(slug)}`, {
-      next: { revalidate: 60 },
-    });
+    const res = await fetch(
+      `${SERVER_API_BASE_URL}/deals/${encodeURIComponent(slug)}`,
+      DEALS_FETCH_CACHE,
+    );
     if (!res.ok) return null;
     const json = (await res.json()) as { data?: StorefrontBundleDeal };
     return json.data ?? null;

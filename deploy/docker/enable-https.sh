@@ -62,10 +62,12 @@ if [[ "${DEPLOY_USER}" != "root" ]]; then
   sudo -u "${DEPLOY_USER}" bash "${COMPOSE}" build storefront
   sudo -u "${DEPLOY_USER}" bash "${COMPOSE}" build admin
   sudo -u "${DEPLOY_USER}" bash "${COMPOSE}" up -d
+  sudo -u "${DEPLOY_USER}" bash "${REPO_ROOT}/deploy/scripts/flush-cache.sh" --runtime
 else
   bash "${COMPOSE}" build storefront
   bash "${COMPOSE}" build admin
   bash "${COMPOSE}" up -d
+  bash "${REPO_ROOT}/deploy/scripts/flush-cache.sh" --runtime
 fi
 
 echo ""

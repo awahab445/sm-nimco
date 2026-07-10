@@ -25,5 +25,7 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 
+RUN rm -rf .next/cache
+
 EXPOSE 3002
 CMD ["npx", "next", "start", "-p", "3002"]

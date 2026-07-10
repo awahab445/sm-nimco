@@ -66,6 +66,9 @@ for i in $(seq 1 60); do
   sleep 3
 done
 
+echo "=== Flush storefront ISR after containers are up ==="
+bash "${REPO_ROOT}/deploy/scripts/flush-cache.sh" --runtime
+
 DO_BOOTSTRAP=true
 if [[ "${SKIP_BOOTSTRAP_FLAG}" == true || "${SKIP_BOOTSTRAP:-}" == "true" ]]; then
   DO_BOOTSTRAP=false

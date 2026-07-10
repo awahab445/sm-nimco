@@ -1,7 +1,15 @@
 import { fetchApi } from '@/lib/api-client';
 import { resolveImageUrl } from '@/lib/resolve-image-url';
+import { CACHE_TAGS } from '@/lib/cache-tags';
 import type { HomePageLayoutResponse, HomeSection } from './home-page-types';
 import { HOME_PAGE_DEFAULT_SECTIONS, HOME_SUBSCRIPTION_SECTION } from './home-page-defaults';
+
+const HOME_FETCH_CACHE = {
+  next: {
+    revalidate: 60,
+    tags: [CACHE_TAGS.home, CACHE_TAGS.cms, CACHE_TAGS.storefront],
+  },
+} as const;
 
 function normalizeSections(raw: unknown): HomeSection[] | null {
   if (!raw || typeof raw !== 'object') return null;
@@ -29,7 +37,7 @@ async function resolveCmsBlockRefs(sections: HomeSection[]): Promise<HomeSection
     try {
       const block = await fetchApi<CmsBlockApiRow>(
         `/cms/blocks/${encodeURIComponent(blockIdentifier)}`,
-        { next: { revalidate: 60 } },
+        HOME_FETCH_CACHE,
       );
       const html = block.contentHtml?.trim();
       if (!html) continue;
@@ -94,7 +102,7 @@ export async function getHomePageSections(): Promise<HomeSection[]> {
           ctaLabel?: string | null;
           ctaHref?: string | null;
         }>;
-      }>(sliderPath, { next: { revalidate: 60 } });
+      }>(sliderPath, HOME_FETCH_CACHE);
 
       const slides = (slider.slides ?? [])
         .map((s) => ({
@@ -140,7 +148,7 @@ export async function getHomePageSections(): Promise<HomeSection[]> {
       | HomePageLayoutResponse
       | { data?: HomePageLayoutResponse }
       | { contentJson?: { sections?: HomeSection[] } }
-    >(path, { next: { revalidate: 60 } });
+    >(path, HOME_FETCH_CACHE);
     const payload =
       'contentJson' in data && data.contentJson
         ? { sections: data.contentJson.sections ?? [] }

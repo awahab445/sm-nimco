@@ -12,6 +12,9 @@ if [[ ! -f backend/.env ]]; then
   exit 1
 fi
 
+echo "=== Flush stale Next.js caches before build ==="
+bash "${SCRIPT_DIR}/flush-cache.sh" --disk
+
 echo "=== Backend ==="
 cd backend
 npm ci
@@ -38,5 +41,9 @@ else
 fi
 
 pm2 save
+
+echo "=== Flush storefront ISR after reload ==="
+bash "${SCRIPT_DIR}/flush-cache.sh" --runtime
+
 echo "Run 'pm2 startup' once and execute the printed command to survive reboots."
 echo "PM2 processes running. Use: pm2 status"

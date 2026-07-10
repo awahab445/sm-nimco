@@ -1,10 +1,11 @@
 import { SERVER_API_BASE_URL } from '@/lib/api-base-url';
 import type { Category, Product, ProductListResponse } from '@/lib/api-client';
+import { CACHE_TAGS } from '@/lib/cache-tags';
 
 async function fetchJson<T>(path: string, revalidate = 60): Promise<T | null> {
   try {
     const res = await fetch(`${SERVER_API_BASE_URL}${path}`, {
-      next: { revalidate },
+      next: { revalidate, tags: [CACHE_TAGS.catalog, CACHE_TAGS.storefront] },
     });
     if (!res.ok) return null;
     return (await res.json()) as T;
