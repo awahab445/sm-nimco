@@ -65,7 +65,9 @@ describe('AdminRoleService', () => {
 
     it('throws NotFoundException when role missing', async () => {
       prisma.adminRole.findUnique.mockResolvedValue(null);
-      await expect(service.remove(roleId, actorId)).rejects.toBeInstanceOf(NotFoundException);
+      await expect(service.remove(roleId, actorId)).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
     });
 
     it('forbids non-super from deleting system role', async () => {
@@ -76,7 +78,9 @@ describe('AdminRoleService', () => {
         isSystem: true,
         _count: { users: 0 },
       });
-      await expect(service.remove(roleId, actorId)).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(service.remove(roleId, actorId)).rejects.toBeInstanceOf(
+        ForbiddenException,
+      );
     });
 
     it('forbids non-super from deleting role assigned to users', async () => {
@@ -87,7 +91,9 @@ describe('AdminRoleService', () => {
         isSystem: false,
         _count: { users: 2 },
       });
-      await expect(service.remove(roleId, actorId)).rejects.toBeInstanceOf(ConflictException);
+      await expect(service.remove(roleId, actorId)).rejects.toBeInstanceOf(
+        ConflictException,
+      );
     });
 
     it('allows non-super to delete empty custom role', async () => {
@@ -105,7 +111,9 @@ describe('AdminRoleService', () => {
         slug: 'custom',
         wasSystem: false,
       });
-      expect(prisma.adminRole.delete).toHaveBeenCalledWith({ where: { id: roleId } });
+      expect(prisma.adminRole.delete).toHaveBeenCalledWith({
+        where: { id: roleId },
+      });
     });
 
     it('allows super-admin to delete system role with users assigned', async () => {
@@ -150,12 +158,16 @@ describe('AdminRoleService', () => {
         _count: { roles: 3 },
       });
       prisma.adminPermission.delete.mockResolvedValue({});
-      await expect(service.removePermission('temp.test', 'actor-1')).resolves.toEqual({
+      await expect(
+        service.removePermission('temp.test', 'actor-1'),
+      ).resolves.toEqual({
         key: 'temp.test',
         deleted: true,
         roleLinksRemoved: 3,
       });
-      expect(prisma.adminPermission.delete).toHaveBeenCalledWith({ where: { key: 'temp.test' } });
+      expect(prisma.adminPermission.delete).toHaveBeenCalledWith({
+        where: { key: 'temp.test' },
+      });
     });
   });
 
@@ -211,7 +223,9 @@ describe('AdminRoleService', () => {
         }),
       );
       expect(prisma.adminPermission.findMany).toHaveBeenCalledWith({
-        where: { key: { in: expect.arrayContaining(['products.read', 'custom.new']) } },
+        where: {
+          key: { in: expect.arrayContaining(['products.read', 'custom.new']) },
+        },
         select: { id: true, key: true },
       });
       expect(prisma.adminRole.create).toHaveBeenCalled();
@@ -238,7 +252,9 @@ describe('AdminRoleService', () => {
         slug: 'custom',
         isSystem: false,
       });
-      prisma.adminPermission.findMany.mockResolvedValue([{ id: 'p1', key: 'products.read' }]);
+      prisma.adminPermission.findMany.mockResolvedValue([
+        { id: 'p1', key: 'products.read' },
+      ]);
       const tx = {
         adminRole: {
           update: jest.fn().mockResolvedValue({}),
@@ -256,8 +272,8 @@ describe('AdminRoleService', () => {
           createMany: jest.fn().mockResolvedValue({ count: 1 }),
         },
       };
-      prisma.$transaction.mockImplementation(async (fn: (t: typeof tx) => Promise<unknown>) =>
-        fn(tx),
+      prisma.$transaction.mockImplementation(
+        async (fn: (t: typeof tx) => Promise<unknown>) => fn(tx),
       );
 
       const result = await service.update(roleId, {
@@ -265,7 +281,9 @@ describe('AdminRoleService', () => {
         permissionKeys: ['products.read'],
       });
 
-      expect(tx.adminRolePermission.deleteMany).toHaveBeenCalledWith({ where: { roleId } });
+      expect(tx.adminRolePermission.deleteMany).toHaveBeenCalledWith({
+        where: { roleId },
+      });
       expect(tx.adminRolePermission.createMany).toHaveBeenCalled();
       expect(result.slug).toBe('custom');
     });
@@ -275,7 +293,9 @@ describe('AdminRoleService', () => {
     it('throws BadRequestException when a key is unknown after upsert', async () => {
       prisma.adminRole.findUnique.mockResolvedValue(null);
       prisma.adminPermission.upsert.mockResolvedValue({});
-      prisma.adminPermission.findMany.mockResolvedValue([{ id: 'p1', key: 'products.read' }]);
+      prisma.adminPermission.findMany.mockResolvedValue([
+        { id: 'p1', key: 'products.read' },
+      ]);
 
       await expect(
         service.create({

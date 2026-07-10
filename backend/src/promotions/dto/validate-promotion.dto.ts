@@ -30,4 +30,3 @@ export class ValidatePromotionDto {
   @IsOptional()
   couponCode?: string;
 }
-

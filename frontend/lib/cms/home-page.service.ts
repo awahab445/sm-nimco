@@ -29,7 +29,7 @@ async function resolveCmsBlockRefs(sections: HomeSection[]): Promise<HomeSection
     try {
       const block = await fetchApi<CmsBlockApiRow>(
         `/cms/blocks/${encodeURIComponent(blockIdentifier)}`,
-        { cache: 'no-store' },
+        { next: { revalidate: 60 } },
       );
       const html = block.contentHtml?.trim();
       if (!html) continue;
@@ -94,7 +94,7 @@ export async function getHomePageSections(): Promise<HomeSection[]> {
           ctaLabel?: string | null;
           ctaHref?: string | null;
         }>;
-      }>(sliderPath, { cache: 'no-store' });
+      }>(sliderPath, { next: { revalidate: 60 } });
 
       const slides = (slider.slides ?? [])
         .map((s) => ({
@@ -140,7 +140,7 @@ export async function getHomePageSections(): Promise<HomeSection[]> {
       | HomePageLayoutResponse
       | { data?: HomePageLayoutResponse }
       | { contentJson?: { sections?: HomeSection[] } }
-    >(path, { cache: 'no-store' });
+    >(path, { next: { revalidate: 60 } });
     const payload =
       'contentJson' in data && data.contentJson
         ? { sections: data.contentJson.sections ?? [] }

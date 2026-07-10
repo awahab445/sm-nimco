@@ -89,7 +89,9 @@ export class CourierService {
    */
   registerProvider(provider: CourierProvider): void {
     this.providers.set(provider.code.toLowerCase(), provider);
-    this.logger.log(`Registered courier provider: ${provider.name} (${provider.code})`);
+    this.logger.log(
+      `Registered courier provider: ${provider.name} (${provider.code})`,
+    );
   }
 
   /**
@@ -127,10 +129,7 @@ export class CourierService {
       });
       return cost;
     } catch (error) {
-      this.logger.error(
-        `Failed to calculate cost via ${method.code}:`,
-        error,
-      );
+      this.logger.error(`Failed to calculate cost via ${method.code}:`, error);
       // Fallback to config cost
       return (method.config as any)?.cost || 0;
     }
@@ -236,11 +235,13 @@ class TcsProvider implements CourierProvider {
     return baseCost + weight * costPerKg;
   }
 
-  async createShipment(params: CreateShipmentParams): Promise<CreateShipmentResult> {
+  async createShipment(
+    params: CreateShipmentParams,
+  ): Promise<CreateShipmentResult> {
     // Placeholder: Implement actual TCS API call
     // This would make an HTTP request to TCS API to create shipment
     const trackingNumber = `TCS${Date.now()}${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
-    
+
     return {
       trackingNumber,
       trackingUrl: `https://tcs.com.pk/track/${trackingNumber}`,
@@ -255,7 +256,10 @@ class TcsProvider implements CourierProvider {
     };
   }
 
-  async trackShipment(trackingNumber: string, config: any): Promise<TrackingResult> {
+  async trackShipment(
+    trackingNumber: string,
+    config: any,
+  ): Promise<TrackingResult> {
     // Placeholder: Implement actual TCS API call
     // This would make an HTTP request to TCS API to get tracking info
     return {
@@ -296,10 +300,12 @@ class LeopardsProvider implements CourierProvider {
     return baseCost + weight * costPerKg;
   }
 
-  async createShipment(params: CreateShipmentParams): Promise<CreateShipmentResult> {
+  async createShipment(
+    params: CreateShipmentParams,
+  ): Promise<CreateShipmentResult> {
     // Placeholder: Implement actual Leopards API call
     const trackingNumber = `LEO${Date.now()}${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
-    
+
     return {
       trackingNumber,
       trackingUrl: `https://leopards.com.pk/track/${trackingNumber}`,
@@ -314,7 +320,10 @@ class LeopardsProvider implements CourierProvider {
     };
   }
 
-  async trackShipment(trackingNumber: string, config: any): Promise<TrackingResult> {
+  async trackShipment(
+    trackingNumber: string,
+    config: any,
+  ): Promise<TrackingResult> {
     // Placeholder: Implement actual Leopards API call
     return {
       status: 'in_transit',
@@ -337,4 +346,3 @@ class LeopardsProvider implements CourierProvider {
     };
   }
 }
-

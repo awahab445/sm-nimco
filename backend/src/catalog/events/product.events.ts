@@ -17,4 +17,3 @@ export class ProductStatusChangedEvent {
     public readonly newStatus: string,
   ) {}
 }
-

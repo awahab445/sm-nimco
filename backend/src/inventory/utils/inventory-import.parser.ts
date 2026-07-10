@@ -9,7 +9,10 @@ export type InventoryImportRow = {
 };
 
 function normalizeHeader(value: string): string {
-  return value.trim().toLowerCase().replace(/[\s_-]+/g, '_');
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[\s_-]+/g, '_');
 }
 
 function pickColumnKey(headers: string[], aliases: string[]): string | null {
@@ -28,11 +31,16 @@ const REASON_KEYS = ['reason', 'note', 'notes'];
 
 function parseDelta(value: unknown, rowNumber: number): number {
   if (value === null || value === undefined || value === '') {
-    throw new BadRequestException(`Row ${rowNumber}: quantity_delta is required`);
+    throw new BadRequestException(
+      `Row ${rowNumber}: quantity_delta is required`,
+    );
   }
-  const n = typeof value === 'number' ? value : parseInt(String(value).trim(), 10);
+  const n =
+    typeof value === 'number' ? value : parseInt(String(value).trim(), 10);
   if (!Number.isFinite(n)) {
-    throw new BadRequestException(`Row ${rowNumber}: quantity_delta must be a whole number`);
+    throw new BadRequestException(
+      `Row ${rowNumber}: quantity_delta must be a whole number`,
+    );
   }
   return n;
 }
@@ -46,7 +54,10 @@ function mapRecordToRow(
 ): InventoryImportRow | null {
   const variantId = String(record[variantKey] ?? '').trim();
   const rawDelta = record[deltaKey];
-  const hasDelta = rawDelta !== null && rawDelta !== undefined && String(rawDelta).trim() !== '';
+  const hasDelta =
+    rawDelta !== null &&
+    rawDelta !== undefined &&
+    String(rawDelta).trim() !== '';
 
   if (!variantId && !hasDelta) {
     return null;
@@ -61,7 +72,9 @@ function mapRecordToRow(
   }
 
   const reason =
-    reasonKey && record[reasonKey] != null && String(record[reasonKey]).trim() !== ''
+    reasonKey &&
+    record[reasonKey] != null &&
+    String(record[reasonKey]).trim() !== ''
       ? String(record[reasonKey]).trim()
       : undefined;
 
@@ -113,12 +126,18 @@ export function parseInventoryImportFile(
     const text = buffer.toString('utf-8').replace(/^\uFEFF/, '');
     const workbook = XLSX.read(text, { type: 'string' });
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
-    const rows = XLSX.utils.sheet_to_json<unknown[]>(sheet, { header: 1, defval: '' });
+    const rows = XLSX.utils.sheet_to_json<unknown[]>(sheet, {
+      header: 1,
+      defval: '',
+    });
     records = recordsFromSheetRows(rows);
   } else {
     const workbook = XLSX.read(buffer, { type: 'buffer' });
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
-    const rows = XLSX.utils.sheet_to_json<unknown[]>(sheet, { header: 1, defval: '' });
+    const rows = XLSX.utils.sheet_to_json<unknown[]>(sheet, {
+      header: 1,
+      defval: '',
+    });
     records = recordsFromSheetRows(rows);
   }
 
@@ -139,14 +158,22 @@ export function parseInventoryImportFile(
 
   const parsed: InventoryImportRow[] = [];
   records.forEach((record, index) => {
-    const row = mapRecordToRow(record, index + 2, variantKey, deltaKey, reasonKey);
+    const row = mapRecordToRow(
+      record,
+      index + 2,
+      variantKey,
+      deltaKey,
+      reasonKey,
+    );
     if (row) {
       parsed.push(row);
     }
   });
 
   if (!parsed.length) {
-    throw new BadRequestException('No non-zero quantity_delta rows found in import file');
+    throw new BadRequestException(
+      'No non-zero quantity_delta rows found in import file',
+    );
   }
 
   return parsed;

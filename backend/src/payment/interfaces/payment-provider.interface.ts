@@ -54,4 +54,3 @@ export interface PaymentProvider {
     config: PaymentMethodConfig,
   ): Promise<boolean>;
 }
-

@@ -12,7 +12,12 @@ import { BundleDealsModule } from '../bundle-deals/bundle-deals.module';
 const useRedis = process.env.REDIS_ENABLED !== 'false';
 
 @Module({
-  imports: [CatalogModule, InventoryModule, PromotionsModule, BundleDealsModule],
+  imports: [
+    CatalogModule,
+    InventoryModule,
+    PromotionsModule,
+    BundleDealsModule,
+  ],
   controllers: [CartController],
   providers: [
     CartService,
@@ -25,4 +30,3 @@ const useRedis = process.env.REDIS_ENABLED !== 'false';
   exports: [CartService, CartRedisService],
 })
 export class CartModule {}
-

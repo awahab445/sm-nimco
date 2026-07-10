@@ -110,7 +110,9 @@ export class MailMailboxService {
     id: string,
     dto: UpdateMailMailboxDto,
   ): Promise<MailMailboxAdminDto> {
-    const existing = await this.prisma.mailMailbox.findUnique({ where: { id } });
+    const existing = await this.prisma.mailMailbox.findUnique({
+      where: { id },
+    });
     if (!existing) {
       throw new NotFoundException('Mail mailbox not found');
     }
@@ -148,7 +150,9 @@ export class MailMailboxService {
   }
 
   async remove(id: string): Promise<void> {
-    const existing = await this.prisma.mailMailbox.findUnique({ where: { id } });
+    const existing = await this.prisma.mailMailbox.findUnique({
+      where: { id },
+    });
     if (!existing) {
       throw new NotFoundException('Mail mailbox not found');
     }
@@ -260,7 +264,10 @@ export class MailMailboxService {
     });
   }
 
-  private async assertUniqueCode(code: string, excludeId?: string): Promise<void> {
+  private async assertUniqueCode(
+    code: string,
+    excludeId?: string,
+  ): Promise<void> {
     const existing = await this.prisma.mailMailbox.findUnique({
       where: { code },
     });

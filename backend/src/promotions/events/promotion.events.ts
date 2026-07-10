@@ -30,4 +30,3 @@ export class CouponUsedEvent {
     public readonly customerId?: string,
   ) {}
 }
-

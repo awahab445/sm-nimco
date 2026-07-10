@@ -21,4 +21,3 @@ export class ShippingMethodDto {
   @Min(0)
   estimatedDays: number;
 }
-

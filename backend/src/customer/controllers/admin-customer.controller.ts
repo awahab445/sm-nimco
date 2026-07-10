@@ -77,10 +77,7 @@ export class AdminCustomerController {
   @Put(':id/assign-group')
   @RequirePermissions('customers.manage')
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
-  async assignGroup(
-    @Param('id') id: string,
-    @Body('groupId') groupId: string,
-  ) {
+  async assignGroup(@Param('id') id: string, @Body('groupId') groupId: string) {
     return this.customerService.assignGroup(id, groupId);
   }
 
@@ -95,4 +92,3 @@ export class AdminCustomerController {
     await this.customerService.delete(id);
   }
 }
-

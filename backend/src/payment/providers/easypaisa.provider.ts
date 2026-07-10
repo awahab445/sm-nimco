@@ -14,9 +14,9 @@ import { APP_CURRENCY } from '../../common/currency';
 
 /**
  * EasyPaisa Payment Gateway Provider
- * 
+ *
  * Implements REDIRECT flow for EasyPaisa payments in Pakistan.
- * 
+ *
  * Configuration format (stored in payment_methods.config):
  * {
  *   "merchantId": "EP12345",
@@ -25,7 +25,7 @@ import { APP_CURRENCY } from '../../common/currency';
  *   "paymentUrl": "https://easypaisa.com.pk/payment",
  *   "callbackUrl": "/payments/callback/easypaisa"
  * }
- * 
+ *
  * Payment Status Mapping:
  * - SUCCESS → captured
  * - PENDING → processing (authorized but not yet captured)
@@ -56,7 +56,7 @@ export class EasyPaisaProvider implements PaymentProvider {
   ): string {
     // Build hash string in order: merchantId, transactionId, amount, storeId
     const hashString = [merchantId, transactionId, amount, storeId].join('&');
-    
+
     // Generate HMAC-SHA256
     const hmac = crypto.createHmac('sha256', secretKey);
     hmac.update(hashString);
@@ -79,8 +79,15 @@ export class EasyPaisaProvider implements PaymentProvider {
     };
 
     // Validate required configuration
-    if (!easypaisaConfig.merchantId || !easypaisaConfig.storeId || !easypaisaConfig.secretKey || !easypaisaConfig.paymentUrl) {
-      throw new Error('EasyPaisa configuration incomplete. Required: merchantId, storeId, secretKey, paymentUrl');
+    if (
+      !easypaisaConfig.merchantId ||
+      !easypaisaConfig.storeId ||
+      !easypaisaConfig.secretKey ||
+      !easypaisaConfig.paymentUrl
+    ) {
+      throw new Error(
+        'EasyPaisa configuration incomplete. Required: merchantId, storeId, secretKey, paymentUrl',
+      );
     }
 
     // Generate unique transaction reference
@@ -154,25 +161,48 @@ export class EasyPaisaProvider implements PaymentProvider {
     };
 
     // Validate required configuration
-    if (!easypaisaConfig.merchantId || !easypaisaConfig.storeId || !easypaisaConfig.secretKey) {
-      throw new Error('EasyPaisa configuration incomplete. Required: merchantId, storeId, secretKey');
+    if (
+      !easypaisaConfig.merchantId ||
+      !easypaisaConfig.storeId ||
+      !easypaisaConfig.secretKey
+    ) {
+      throw new Error(
+        'EasyPaisa configuration incomplete. Required: merchantId, storeId, secretKey',
+      );
     }
 
     try {
       // Extract callback parameters (EasyPaisa may send these in various formats)
-      const transactionId = callbackData.transactionId || callbackData.transactionRefNumber || callbackData.txnRefNo || '';
+      const transactionId =
+        callbackData.transactionId ||
+        callbackData.transactionRefNumber ||
+        callbackData.txnRefNo ||
+        '';
       const orderId = callbackData.orderId || callbackData.billReference || '';
-      const amount = callbackData.amount || callbackData.orderAmount || callbackData.txnAmount || '0';
-      const status = callbackData.status || callbackData.responseCode || callbackData.paymentStatus || '';
-      const receivedChecksum = callbackData.checksum || callbackData.hash || callbackData.signature || '';
-      const responseMessage = callbackData.message || callbackData.responseMessage || '';
+      const amount =
+        callbackData.amount ||
+        callbackData.orderAmount ||
+        callbackData.txnAmount ||
+        '0';
+      const status =
+        callbackData.status ||
+        callbackData.responseCode ||
+        callbackData.paymentStatus ||
+        '';
+      const receivedChecksum =
+        callbackData.checksum ||
+        callbackData.hash ||
+        callbackData.signature ||
+        '';
+      const responseMessage =
+        callbackData.message || callbackData.responseMessage || '';
 
       // Validate required fields
       if (!transactionId || !orderId || !amount || !receivedChecksum) {
         // Security: Log suspicious callback attempt with missing required fields
         this.logger.warn(
           `[SECURITY] EasyPaisa callback missing required fields: transactionId=${transactionId}, orderId=${orderId}, amount=${amount}, checksum=${!!receivedChecksum}. ` +
-          `Full callback data: ${JSON.stringify(callbackData)}`,
+            `Full callback data: ${JSON.stringify(callbackData)}`,
         );
         return {
           isValid: false,
@@ -199,8 +229,8 @@ export class EasyPaisaProvider implements PaymentProvider {
         // Security: Log suspicious callback attempt with checksum mismatch
         this.logger.error(
           `[SECURITY] EasyPaisa callback checksum mismatch for transaction ${transactionId}, order ${orderId}. ` +
-          `Expected: ${calculatedChecksum.substring(0, 8)}..., Received: ${receivedChecksum.substring(0, 8)}... ` +
-          `IP/Request: ${JSON.stringify(callbackData)}`,
+            `Expected: ${calculatedChecksum.substring(0, 8)}..., Received: ${receivedChecksum.substring(0, 8)}... ` +
+            `IP/Request: ${JSON.stringify(callbackData)}`,
         );
         return {
           isValid: false,
@@ -218,10 +248,19 @@ export class EasyPaisaProvider implements PaymentProvider {
       // Status values may vary: "SUCCESS", "00", "000", "PENDING", "FAILED", etc.
       const statusUpper = String(status).toUpperCase();
       let paymentStatus: PaymentStatus;
-      
-      if (statusUpper === 'SUCCESS' || statusUpper === '00' || statusUpper === '000' || statusUpper === 'COMPLETED') {
+
+      if (
+        statusUpper === 'SUCCESS' ||
+        statusUpper === '00' ||
+        statusUpper === '000' ||
+        statusUpper === 'COMPLETED'
+      ) {
         paymentStatus = PaymentStatus.CAPTURED;
-      } else if (statusUpper === 'PENDING' || statusUpper === 'PROCESSING' || statusUpper === 'AUTHORIZED') {
+      } else if (
+        statusUpper === 'PENDING' ||
+        statusUpper === 'PROCESSING' ||
+        statusUpper === 'AUTHORIZED'
+      ) {
         paymentStatus = PaymentStatus.PROCESSING; // Maps to "processing" since "authorized" doesn't exist in enum
       } else {
         paymentStatus = PaymentStatus.FAILED;
@@ -239,7 +278,10 @@ export class EasyPaisaProvider implements PaymentProvider {
         currency: callbackData.currency || APP_CURRENCY,
         status: paymentStatus,
         gatewayResponse: callbackData,
-        error: paymentStatus === PaymentStatus.FAILED ? (responseMessage || 'Payment failed') : undefined,
+        error:
+          paymentStatus === PaymentStatus.FAILED
+            ? responseMessage || 'Payment failed'
+            : undefined,
       };
     } catch (error: any) {
       this.logger.error(
@@ -249,8 +291,11 @@ export class EasyPaisaProvider implements PaymentProvider {
       return {
         isValid: false,
         paymentId: callbackData.orderId || callbackData.billReference || '',
-        gatewayTransactionId: callbackData.transactionId || callbackData.transactionRefNumber || '',
-        amount: parseFloat(callbackData.amount || callbackData.orderAmount || '0'),
+        gatewayTransactionId:
+          callbackData.transactionId || callbackData.transactionRefNumber || '',
+        amount: parseFloat(
+          callbackData.amount || callbackData.orderAmount || '0',
+        ),
         currency: callbackData.currency || APP_CURRENCY,
         status: PaymentStatus.FAILED,
         gatewayResponse: callbackData,
@@ -259,4 +304,3 @@ export class EasyPaisaProvider implements PaymentProvider {
     }
   }
 }
-

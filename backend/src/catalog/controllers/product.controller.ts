@@ -27,11 +27,11 @@ export class ProductController {
 
   @Get('search')
   @HttpCode(HttpStatus.OK)
-  async search(
-    @Query('q') q: string,
-    @Query('limit') limit?: string,
-  ) {
-    return this.productService.findSearchSuggestions(q ?? '', limit ? parseInt(limit, 10) : undefined);
+  async search(@Query('q') q: string, @Query('limit') limit?: string) {
+    return this.productService.findSearchSuggestions(
+      q ?? '',
+      limit ? parseInt(limit, 10) : undefined,
+    );
   }
 
   @Get('id/:id')
@@ -46,4 +46,3 @@ export class ProductController {
     return this.productService.findOneBySlug(slug);
   }
 }
-

@@ -37,4 +37,3 @@ export class TaxEventHandlers {
     // Additional processing can be added here (e.g., invalidate cache, notify affected orders)
   }
 }
-

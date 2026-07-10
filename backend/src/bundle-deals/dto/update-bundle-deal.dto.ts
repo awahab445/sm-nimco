@@ -12,7 +12,12 @@ import {
 } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 import { BundleDealItemDto } from './bundle-deal-item.dto';
-import { BundleDealStatus, parseBooleanField, parseItemsField, parseNumberField } from './create-bundle-deal.dto';
+import {
+  BundleDealStatus,
+  parseBooleanField,
+  parseItemsField,
+  parseNumberField,
+} from './create-bundle-deal.dto';
 
 export class UpdateBundleDealDto {
   @IsOptional()

@@ -35,4 +35,3 @@ export class UpsertProductOptionsDto {
   @Type(() => ProductOptionSelectionDto)
   options!: ProductOptionSelectionDto[];
 }
-

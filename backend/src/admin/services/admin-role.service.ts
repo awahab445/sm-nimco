@@ -82,11 +82,17 @@ export class AdminRoleService {
 
   async create(dto: CreateAdminRoleDto) {
     if (dto.slug === SUPER_ADMIN_ROLE_SLUG) {
-      throw new ForbiddenException(`Cannot create another '${SUPER_ADMIN_ROLE_SLUG}' role.`);
+      throw new ForbiddenException(
+        `Cannot create another '${SUPER_ADMIN_ROLE_SLUG}' role.`,
+      );
     }
-    const existing = await this.prisma.adminRole.findUnique({ where: { slug: dto.slug } });
+    const existing = await this.prisma.adminRole.findUnique({
+      where: { slug: dto.slug },
+    });
     if (existing) {
-      throw new ConflictException(`Role with slug '${dto.slug}' already exists.`);
+      throw new ConflictException(
+        `Role with slug '${dto.slug}' already exists.`,
+      );
     }
 
     // Upsert any newly-minted permission keys first so they exist in the
@@ -138,7 +144,8 @@ export class AdminRoleService {
 
     const data: { name?: string; description?: string | null } = {};
     if (dto.name !== undefined) data.name = dto.name;
-    if (dto.description !== undefined) data.description = dto.description || null;
+    if (dto.description !== undefined)
+      data.description = dto.description || null;
 
     // Mint any new permission keys first so the subsequent `permissionKeys`
     // resolve cleanly. Done even when `permissionKeys` is omitted, since the
@@ -159,7 +166,10 @@ export class AdminRoleService {
         await tx.adminRolePermission.deleteMany({ where: { roleId: id } });
         if (permissionIds.length > 0) {
           await tx.adminRolePermission.createMany({
-            data: permissionIds.map((permissionId) => ({ roleId: id, permissionId })),
+            data: permissionIds.map((permissionId) => ({
+              roleId: id,
+              permissionId,
+            })),
           });
         }
       }
@@ -197,7 +207,12 @@ export class AdminRoleService {
   async remove(id: string, actorId: string) {
     const role = await this.prisma.adminRole.findUnique({
       where: { id },
-      select: { id: true, slug: true, isSystem: true, _count: { select: { users: true } } },
+      select: {
+        id: true,
+        slug: true,
+        isSystem: true,
+        _count: { select: { users: true } },
+      },
     });
     if (!role) throw new NotFoundException('Role not found');
 
@@ -285,13 +300,17 @@ export class AdminRoleService {
    * before we resolve a role's permission set. When `description` is omitted
    * on update we leave any existing description untouched.
    */
-  private async upsertCustomPermissions(items: NewPermissionDto[] | undefined): Promise<void> {
+  private async upsertCustomPermissions(
+    items: NewPermissionDto[] | undefined,
+  ): Promise<void> {
     if (!items?.length) return;
     for (const item of items) {
       await this.prisma.adminPermission.upsert({
         where: { key: item.key },
         update:
-          item.description !== undefined ? { description: item.description } : {},
+          item.description !== undefined
+            ? { description: item.description }
+            : {},
         create: {
           key: item.key,
           description: item.description ?? null,

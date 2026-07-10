@@ -33,7 +33,10 @@ export class AdminPagesController {
   @Post(':slug')
   @HttpCode(HttpStatus.OK)
   @RequirePermissions('cms.manage')
-  upsertPageBySlug(@Param('slug') slug: string, @Body() dto: UpsertPolicyPageBySlugDto) {
+  upsertPageBySlug(
+    @Param('slug') slug: string,
+    @Body() dto: UpsertPolicyPageBySlugDto,
+  ) {
     this.assertPolicySlug(slug);
     return this.cmsService.upsertPageBySlug(slug, dto);
   }

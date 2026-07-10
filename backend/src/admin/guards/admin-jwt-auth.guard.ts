@@ -15,7 +15,9 @@ export class AdminJwtAuthGuard extends AuthGuard('jwt') {
     _context: ExecutionContext,
   ): any {
     if (err || !user) {
-      throw err instanceof Error ? err : new UnauthorizedException('Invalid or missing token');
+      throw err instanceof Error
+        ? err
+        : new UnauthorizedException('Invalid or missing token');
     }
     if (user.typ !== 'admin') {
       throw new ForbiddenException('Admin session required');

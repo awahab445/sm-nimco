@@ -1,4 +1,13 @@
-import { IsString, IsOptional, IsBoolean, IsUUID, IsNumber, Min, Max, ValidateIf } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsBoolean,
+  IsUUID,
+  IsNumber,
+  Min,
+  Max,
+  ValidateIf,
+} from 'class-validator';
 
 export class UpdateCustomerGroupDto {
   @IsString()
@@ -27,4 +36,3 @@ export class UpdateCustomerGroupDto {
   @IsOptional()
   metadata?: Record<string, any>;
 }
-

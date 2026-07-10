@@ -81,4 +81,3 @@ export interface CreateIntentParams {
   returnUrl?: string;
   cancelUrl?: string;
 }
-

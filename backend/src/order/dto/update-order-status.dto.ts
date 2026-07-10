@@ -12,7 +12,12 @@ export class UpdateOrderStatusDto {
 
   @IsString()
   @IsOptional()
-  @IsIn(['unfulfilled', 'partially_fulfilled', 'fulfilled', 'shipped', 'delivered'])
+  @IsIn([
+    'unfulfilled',
+    'partially_fulfilled',
+    'fulfilled',
+    'shipped',
+    'delivered',
+  ])
   fulfillmentStatus?: string;
 }
-

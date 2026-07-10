@@ -39,7 +39,10 @@ export class TaxCalculationService {
     }
 
     // Calculate subtotal
-    const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const subtotal = items.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0,
+    );
 
     // Group items by tax class for calculation
     const itemsByTaxClass = new Map<string | null, TaxCalculationItem[]>();
@@ -81,13 +84,15 @@ export class TaxCalculationService {
       // Calculate tax for each item in this tax class
       for (const item of classItems) {
         const itemSubtotal = item.price * item.quantity;
-        let itemTaxableAmount = itemSubtotal;
+        const itemTaxableAmount = itemSubtotal;
         let itemTaxAmount = 0;
         const itemAppliedTaxes: CalculatedTax[] = [];
 
         // Apply all applicable taxes (support for compound taxes if needed)
         for (const tax of applicableTaxes) {
-          const taxClass = await this.taxService.findTaxClassById(tax.taxClassId);
+          const taxClass = await this.taxService.findTaxClassById(
+            tax.taxClassId,
+          );
 
           // Calculate taxable amount and tax amount based on inclusive/exclusive
           let taxableAmountForThisTax = itemTaxableAmount;
@@ -156,7 +161,10 @@ export class TaxCalculationService {
     }
 
     // Calculate totals
-    const taxTotal = calculatedItems.reduce((sum, item) => sum + item.taxAmount, 0);
+    const taxTotal = calculatedItems.reduce(
+      (sum, item) => sum + item.taxAmount,
+      0,
+    );
     const grandTotal = subtotal + taxTotal;
 
     const result: TaxCalculationResult = {
@@ -212,7 +220,7 @@ export class TaxCalculationService {
     });
 
     const taxClassMap = new Map<string, string | null>(
-      products.map((p) => [p.id, p.taxClassId as string | null]),
+      products.map((p) => [p.id, p.taxClassId]),
     );
 
     // Map items to TaxCalculationItem format
@@ -272,11 +280,12 @@ export class TaxCalculationService {
       orderTaxIds.push(taxRecord.id);
     }
 
-    this.logger.log(`Order taxes stored for order ${orderId}: ${orderTaxIds.length} tax record(s)`);
+    this.logger.log(
+      `Order taxes stored for order ${orderId}: ${orderTaxIds.length} tax record(s)`,
+    );
     return {
       taxTotal: calculation.taxTotal,
       orderTaxIds,
     };
   }
 }
-

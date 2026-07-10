@@ -20,4 +20,3 @@ export class AdjustStockDto {
   @IsOptional()
   reason?: string;
 }
-

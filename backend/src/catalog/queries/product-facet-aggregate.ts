@@ -1,6 +1,11 @@
 import { Prisma } from '@prisma/client';
 import { ProductQueryDto } from '../dto/product-query.dto';
-import { ProductQuery, expandCategoryFilterWithDescendants, readAttributeValue, WhereOmit } from './product.query';
+import {
+  ProductQuery,
+  expandCategoryFilterWithDescendants,
+  readAttributeValue,
+  WhereOmit,
+} from './product.query';
 import { PrismaService } from '../services/prisma.service';
 
 const FACET_SCAN_MAX = 8000;
@@ -28,7 +33,9 @@ export type FacetPanelAttribute = {
 
 export type ProductFacetsResponse = {
   matchingTotal: number;
-  filterPanels: Array<FacetPanelCategory | FacetPanelPrice | FacetPanelAttribute>;
+  filterPanels: Array<
+    FacetPanelCategory | FacetPanelPrice | FacetPanelAttribute
+  >;
   countsApproximated?: boolean;
 };
 
@@ -60,7 +67,10 @@ const facetSelect = {
 type FacetRow = Prisma.ProductGetPayload<{ select: typeof facetSelect }>;
 
 export class ProductFacetAggregate {
-  static async compute(prisma: PrismaService, query: ProductQueryDto): Promise<ProductFacetsResponse> {
+  static async compute(
+    prisma: PrismaService,
+    query: ProductQueryDto,
+  ): Promise<ProductFacetsResponse> {
     const merged = ProductQuery.mergeEffectiveQuery(query);
     const q = await expandCategoryFilterWithDescendants(prisma, merged);
     type LayoutRow = {
@@ -70,7 +80,12 @@ export class ProductFacetAggregate {
       kind: string;
       sortOrder: number;
       isActive: boolean;
-      options: Array<{ value: string; label: string | null; isActive: boolean; sortOrder: number }>;
+      options: Array<{
+        value: string;
+        label: string | null;
+        isActive: boolean;
+        sortOrder: number;
+      }>;
     };
     const layout = (await (prisma as any).storefrontFilter.findMany({
       where: { isActive: true },
@@ -86,7 +101,9 @@ export class ProductFacetAggregate {
     const fullWhere = ProductQuery.buildWhereClause(q);
     const matchingTotal = await prisma.product.count({ where: fullWhere });
 
-    const whereNoPrice = ProductQuery.buildWhereClause(q, { omit: new Set<WhereOmit>(['price']) });
+    const whereNoPrice = ProductQuery.buildWhereClause(q, {
+      omit: new Set<WhereOmit>(['price']),
+    });
     const agg = await prisma.product.aggregate({
       where: whereNoPrice,
       _min: { basePrice: true },
@@ -96,7 +113,9 @@ export class ProductFacetAggregate {
     const priceMax = toNumber(agg._max.basePrice) ?? 0;
 
     async function scan(omit: WhereOmit): Promise<FacetRow[] | null> {
-      const where = ProductQuery.buildWhereClause(q, { omit: new Set<WhereOmit>([omit]) });
+      const where = ProductQuery.buildWhereClause(q, {
+        omit: new Set<WhereOmit>([omit]),
+      });
       const c = await prisma.product.count({ where });
       if (c > FACET_SCAN_MAX) return null;
       return prisma.product.findMany({ where, select: facetSelect });
@@ -108,12 +127,16 @@ export class ProductFacetAggregate {
         .filter((f) => f.kind === 'ATTRIBUTE')
         .map((f) => scan(`attr:${f.code}` as WhereOmit)),
     ]);
-    const catRows = scanResults[0] as FacetRow[] | null;
-    const attrScans = scanResults.slice(1) as Array<FacetRow[] | null>;
+    const catRows = scanResults[0];
+    const attrScans = scanResults.slice(1);
 
-    const countsApproximated = catRows === null || attrScans.some((r) => r === null);
+    const countsApproximated =
+      catRows === null || attrScans.some((r) => r === null);
 
-    const categoryMap = new Map<string, { name: string; slug: string; count: number }>();
+    const categoryMap = new Map<
+      string,
+      { name: string; slug: string; count: number }
+    >();
     if (catRows) {
       for (const row of catRows) {
         for (const pc of row.categories) {
@@ -131,7 +154,10 @@ export class ProductFacetAggregate {
     }
 
     const attrLayouts = layout.filter((f) => f.kind === 'ATTRIBUTE');
-    const attrMaps = new Map<string, Map<string, { label: string; count: number }>>();
+    const attrMaps = new Map<
+      string,
+      Map<string, { label: string; count: number }>
+    >();
     attrLayouts.forEach((f, i) => {
       const rows = attrScans[i];
       const m = new Map<string, { label: string; count: number }>();
@@ -159,7 +185,12 @@ export class ProductFacetAggregate {
     for (const f of layout) {
       if (f.kind === 'CATEGORY') {
         const categories = Array.from(categoryMap.entries())
-          .map(([id, v]) => ({ id, name: v.name, slug: v.slug, count: v.count }))
+          .map(([id, v]) => ({
+            id,
+            name: v.name,
+            slug: v.slug,
+            count: v.count,
+          }))
           .sort((a, b) => b.count - a.count);
         filterPanels.push({
           kind: 'category',
@@ -191,7 +222,11 @@ export class ProductFacetAggregate {
           options = Array.from(fromProducts.entries())
             .map(([value, v]) => ({ value, label: v.label, count: v.count }))
             .sort((a, b) =>
-              f.code === 'brand' ? b.count - a.count : a.label.localeCompare(b.label, undefined, { sensitivity: 'base' }),
+              f.code === 'brand'
+                ? b.count - a.count
+                : a.label.localeCompare(b.label, undefined, {
+                    sensitivity: 'base',
+                  }),
             );
         }
         filterPanels.push({

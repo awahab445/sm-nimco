@@ -32,7 +32,9 @@ export type BundlePricingResult = {
 export class BundleDealPricingService {
   constructor(private readonly variantService: VariantService) {}
 
-  async resolveItems(items: BundleDealItemDto[]): Promise<ResolvedBundleItem[]> {
+  async resolveItems(
+    items: BundleDealItemDto[],
+  ): Promise<ResolvedBundleItem[]> {
     const resolved: ResolvedBundleItem[] = [];
 
     for (let i = 0; i < items.length; i++) {
@@ -77,7 +79,9 @@ export class BundleDealPricingService {
     dealPrice: number,
   ): Promise<BundlePricingResult> {
     if (items.length < 3) {
-      throw new BadRequestException('A bundle deal must include at least 3 products');
+      throw new BadRequestException(
+        'A bundle deal must include at least 3 products',
+      );
     }
 
     if (dealPrice < 0) {
@@ -85,7 +89,10 @@ export class BundleDealPricingService {
     }
 
     const resolved = await this.resolveItems(items);
-    const compareAtTotal = resolved.reduce((sum, r) => sum + r.lineListTotal, 0);
+    const compareAtTotal = resolved.reduce(
+      (sum, r) => sum + r.lineListTotal,
+      0,
+    );
 
     if (dealPrice > compareAtTotal) {
       throw new BadRequestException(
@@ -95,11 +102,15 @@ export class BundleDealPricingService {
 
     const savingsAmount = compareAtTotal - dealPrice;
     const savingsPercent =
-      compareAtTotal > 0 ? Number(((savingsAmount / compareAtTotal) * 100).toFixed(2)) : 0;
+      compareAtTotal > 0
+        ? Number(((savingsAmount / compareAtTotal) * 100).toFixed(2))
+        : 0;
 
     const allocations = resolved.map((item) => {
       const allocatedLineTotal =
-        compareAtTotal > 0 ? (item.lineListTotal / compareAtTotal) * dealPrice : 0;
+        compareAtTotal > 0
+          ? (item.lineListTotal / compareAtTotal) * dealPrice
+          : 0;
       const allocatedUnitPrice =
         item.quantity > 0 ? allocatedLineTotal / item.quantity : 0;
 
@@ -124,9 +135,16 @@ export class BundleDealPricingService {
   async preview(
     items: BundleDealItemDto[],
     dealPrice?: number,
-  ): Promise<Omit<BundlePricingResult, 'allocations'> & { allocations?: BundlePricingResult['allocations'] }> {
+  ): Promise<
+    Omit<BundlePricingResult, 'allocations'> & {
+      allocations?: BundlePricingResult['allocations'];
+    }
+  > {
     const resolved = await this.resolveItems(items);
-    const compareAtTotal = resolved.reduce((sum, r) => sum + r.lineListTotal, 0);
+    const compareAtTotal = resolved.reduce(
+      (sum, r) => sum + r.lineListTotal,
+      0,
+    );
     const effectiveDealPrice = dealPrice ?? compareAtTotal;
     const pricing = await this.computePricing(items, effectiveDealPrice);
     return pricing;

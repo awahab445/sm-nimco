@@ -96,4 +96,3 @@ export class CreateProductDto {
   @IsOptional()
   metaData?: Record<string, any>;
 }
-

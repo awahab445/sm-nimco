@@ -1,4 +1,13 @@
-import { IsString, IsNotEmpty, IsEmail, IsOptional, IsUUID, IsObject, IsUrl, ValidateIf } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsEmail,
+  IsOptional,
+  IsUUID,
+  IsObject,
+  IsUrl,
+  ValidateIf,
+} from 'class-validator';
 
 export class ConfirmCheckoutDto {
   @IsString()
@@ -33,13 +42,20 @@ export class ConfirmCheckoutDto {
   metadata?: Record<string, any>;
 
   @ValidateIf((o) => o.returnUrl != null && o.returnUrl !== '')
-  @IsUrl({ require_protocol: true, protocols: ['http', 'https'], require_tld: false })
+  @IsUrl({
+    require_protocol: true,
+    protocols: ['http', 'https'],
+    require_tld: false,
+  })
   @IsOptional()
   returnUrl?: string;
 
   @ValidateIf((o) => o.cancelUrl != null && o.cancelUrl !== '')
-  @IsUrl({ require_protocol: true, protocols: ['http', 'https'], require_tld: false })
+  @IsUrl({
+    require_protocol: true,
+    protocols: ['http', 'https'],
+    require_tld: false,
+  })
   @IsOptional()
   cancelUrl?: string;
 }
-

@@ -46,7 +46,9 @@ export class ImageService {
     await this.productService.findOneById(productId);
 
     if (createImageDto.variantId) {
-      const variant = await this.variantService.findOne(createImageDto.variantId);
+      const variant = await this.variantService.findOne(
+        createImageDto.variantId,
+      );
       if (variant.productId !== productId) {
         throw new BadRequestException(
           'Variant does not belong to the specified product',
@@ -55,7 +57,10 @@ export class ImageService {
     }
 
     if (createImageDto.isPrimary) {
-      await this.ensureSinglePrimary(productId, createImageDto.variantId || null);
+      await this.ensureSinglePrimary(
+        productId,
+        createImageDto.variantId || null,
+      );
     }
 
     const image = await this.prisma.productImage.create({
@@ -103,8 +108,12 @@ export class ImageService {
       where: { id },
       data: {
         ...(updateImageDto.url && { url: updateImageDto.url }),
-        ...(updateImageDto.altText !== undefined && { altText: updateImageDto.altText }),
-        ...(updateImageDto.position !== undefined && { position: updateImageDto.position }),
+        ...(updateImageDto.altText !== undefined && {
+          altText: updateImageDto.altText,
+        }),
+        ...(updateImageDto.position !== undefined && {
+          position: updateImageDto.position,
+        }),
         ...(updateImageDto.isPrimary !== undefined && {
           isPrimary: updateImageDto.isPrimary,
         }),
@@ -128,4 +137,3 @@ export class ImageService {
     return { message: 'Image deleted successfully' };
   }
 }
-

@@ -46,7 +46,10 @@ export class CartExpiredEvent {
 export class OrderCreatedEvent {
   constructor(
     public readonly orderId: string,
-    public readonly items: Array<{ variantId: string; quantity: number; reservationId?: string }>,
+    public readonly items: Array<{
+      variantId: string;
+      quantity: number;
+      reservationId?: string;
+    }>,
   ) {}
 }
-

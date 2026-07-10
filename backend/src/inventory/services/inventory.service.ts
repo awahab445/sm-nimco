@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../catalog/services/prisma.service';
 import { AdjustStockDto, DEFAULT_WAREHOUSE_ID } from '../dto/adjust-stock.dto';
@@ -23,7 +27,11 @@ export class InventoryService {
   private async resolveVariantOrSimpleProduct(
     variantId: string,
     tx: TransactionClient | PrismaService = this.prisma,
-  ): Promise<{ productId: string; variantId: string | null; isSimple: boolean }> {
+  ): Promise<{
+    productId: string;
+    variantId: string | null;
+    isSimple: boolean;
+  }> {
     const variant = await tx.productVariant.findUnique({
       where: { id: variantId },
       include: { product: true },
@@ -50,7 +58,9 @@ export class InventoryService {
       };
     }
 
-    throw new NotFoundException(`Product variant with ID ${variantId} not found`);
+    throw new NotFoundException(
+      `Product variant with ID ${variantId} not found`,
+    );
   }
 
   private async getOrCreateInventoryItemInTx(
@@ -58,10 +68,8 @@ export class InventoryService {
     variantId: string,
     warehouseId: string,
   ) {
-    const { productId, variantId: resolvedVariantId } = await this.resolveVariantOrSimpleProduct(
-      variantId,
-      tx,
-    );
+    const { productId, variantId: resolvedVariantId } =
+      await this.resolveVariantOrSimpleProduct(variantId, tx);
 
     const composite = {
       productId,
@@ -91,11 +99,9 @@ export class InventoryService {
   /**
    * Get or create inventory item for a variant (or simple product when variantId is productId).
    */
-  async getOrCreateInventoryItem(
-    variantId: string,
-    warehouseId: string,
-  ) {
-    const { productId, variantId: resolvedVariantId } = await this.resolveVariantOrSimpleProduct(variantId);
+  async getOrCreateInventoryItem(variantId: string, warehouseId: string) {
+    const { productId, variantId: resolvedVariantId } =
+      await this.resolveVariantOrSimpleProduct(variantId);
 
     const composite = {
       productId,
@@ -126,7 +132,8 @@ export class InventoryService {
    * Get inventory item by variant and warehouse (supports simple products when variantId === productId).
    */
   async getInventoryItem(variantId: string, warehouseId: string) {
-    const { productId, variantId: resolvedVariantId } = await this.resolveVariantOrSimpleProduct(variantId);
+    const { productId, variantId: resolvedVariantId } =
+      await this.resolveVariantOrSimpleProduct(variantId);
 
     let inventoryItem = await this.prisma.inventoryItem.findFirst({
       where: {
@@ -137,7 +144,10 @@ export class InventoryService {
     });
 
     if (!inventoryItem) {
-      inventoryItem = await this.getOrCreateInventoryItem(variantId, warehouseId);
+      inventoryItem = await this.getOrCreateInventoryItem(
+        variantId,
+        warehouseId,
+      );
     }
 
     return inventoryItem;
@@ -146,7 +156,10 @@ export class InventoryService {
   /**
    * Get available quantity for a variant (configurable or simple). Inventory is enforced for both.
    */
-  async getAvailableQuantity(variantId: string, warehouseId: string): Promise<number> {
+  async getAvailableQuantity(
+    variantId: string,
+    warehouseId: string,
+  ): Promise<number> {
     const inventoryItem = await this.getInventoryItem(variantId, warehouseId);
     return inventoryItem.availableQuantity;
   }
@@ -172,7 +185,10 @@ export class InventoryService {
     const { variantId, quantity, reason } = adjustStockDto;
 
     return await this.prisma.$transaction(async (tx) => {
-      const inventoryItem = await this.getOrCreateInventoryItem(variantId, warehouseId);
+      const inventoryItem = await this.getOrCreateInventoryItem(
+        variantId,
+        warehouseId,
+      );
 
       const previousQuantity = inventoryItem.quantity;
       const newQuantity = previousQuantity + quantity;
@@ -218,7 +234,9 @@ export class InventoryService {
     });
 
     if (!item) {
-      throw new NotFoundException(`Inventory item ${inventoryItemId} not found`);
+      throw new NotFoundException(
+        `Inventory item ${inventoryItemId} not found`,
+      );
     }
 
     return await this.prisma.inventoryItem.update({
@@ -234,7 +252,8 @@ export class InventoryService {
    */
   async getInventoryStatus(variantId: string, warehouseId: string) {
     const inventoryItem = await this.getInventoryItem(variantId, warehouseId);
-    const isLowStock = inventoryItem.availableQuantity <= inventoryItem.lowStockThreshold;
+    const isLowStock =
+      inventoryItem.availableQuantity <= inventoryItem.lowStockThreshold;
 
     return {
       variantId,
@@ -331,7 +350,9 @@ export class InventoryService {
       }> = [];
 
       for (const item of items) {
-        const resolved = await this.resolveVariantOrSimpleProduct(item.targetId);
+        const resolved = await this.resolveVariantOrSimpleProduct(
+          item.targetId,
+        );
         if (resolved.productId !== productId) {
           throw new BadRequestException(
             `Target ${item.targetId} does not belong to product ${productId}`,
@@ -431,7 +452,8 @@ export class InventoryService {
           },
         });
 
-        const reason = item.reason?.trim() || defaultReason?.trim() || undefined;
+        const reason =
+          item.reason?.trim() || defaultReason?.trim() || undefined;
 
         this.eventEmitter.emit(
           'stock.adjusted',
@@ -466,14 +488,22 @@ export class InventoryService {
     warehouseId: string = DEFAULT_WAREHOUSE_ID,
     defaultReason?: string,
   ) {
-    const rows = parseInventoryImportFile(file.buffer, file.originalname, file.mimetype);
+    const rows = parseInventoryImportFile(
+      file.buffer,
+      file.originalname,
+      file.mimetype,
+    );
     const items: BulkAdjustStockItemDto[] = rows.map((row) => ({
       variantId: row.variantId,
       quantity: row.quantityDelta,
       reason: row.reason,
     }));
 
-    const result = await this.bulkAdjustStock(items, warehouseId, defaultReason);
+    const result = await this.bulkAdjustStock(
+      items,
+      warehouseId,
+      defaultReason,
+    );
 
     return {
       ...result,
@@ -481,4 +511,3 @@ export class InventoryService {
     };
   }
 }
-

@@ -1,4 +1,8 @@
-export const STORE_THEME_IDS = ['mehfil-e-shireen', 'ember', 'tailwind'] as const;
+export const STORE_THEME_IDS = [
+  'mehfil-e-shireen',
+  'ember',
+  'tailwind',
+] as const;
 
 export type StoreThemeId = (typeof STORE_THEME_IDS)[number];
 
@@ -16,7 +20,9 @@ export function isStoreThemeId(value: string): value is StoreThemeId {
   return (STORE_THEME_IDS as readonly string[]).includes(value);
 }
 
-export function normalizeStoreThemeId(value: string | null | undefined): StoreThemeId {
+export function normalizeStoreThemeId(
+  value: string | null | undefined,
+): StoreThemeId {
   const raw = value?.trim().toLowerCase() ?? '';
   const mapped = LEGACY_THEME_MAP[raw] ?? raw;
   if (isStoreThemeId(mapped)) {

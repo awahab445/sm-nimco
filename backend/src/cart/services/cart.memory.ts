@@ -13,14 +13,19 @@ export class InMemoryCartService {
   private readonly store = new Map<string, Cart>();
 
   constructor() {
-    this.logger.log('Using in-memory cart storage (REDIS_ENABLED=false). Data is lost on restart.');
+    this.logger.log(
+      'Using in-memory cart storage (REDIS_ENABLED=false). Data is lost on restart.',
+    );
   }
 
   async getCart(cartId: string): Promise<Cart | null> {
     return this.store.get(cartId) ?? null;
   }
 
-  async createCart(cartId: string, currency: string = APP_CURRENCY): Promise<Cart> {
+  async createCart(
+    cartId: string,
+    currency: string = APP_CURRENCY,
+  ): Promise<Cart> {
     const cart: Cart = {
       id: cartId,
       items: [],

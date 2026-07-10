@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { storefrontUi } from '@/lib/storefront-ui';
+import { StorefrontImage } from '@/components/ui/storefront-image';
 
 interface PromoBannerSectionProps {
   title: string;
@@ -28,7 +29,15 @@ export function PromoBannerSection({
     >
       {imageUrl && (
         <>
-          <img src={imageUrl} alt="" className="absolute inset-0 h-full w-full object-cover opacity-30" />
+          <StorefrontImage
+            src={imageUrl}
+            alt=""
+            fill
+            sizes="100vw"
+            className="object-cover opacity-30"
+            loading="lazy"
+            quality={60}
+          />
           <div className="absolute inset-0 bg-gradient-to-r from-[var(--footer-background,var(--navbar-background))]/95 to-[var(--footer-background,var(--navbar-background))]/40" />
         </>
       )}

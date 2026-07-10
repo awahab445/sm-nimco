@@ -3,7 +3,10 @@ import * as nodemailer from 'nodemailer';
 import type { Transporter } from 'nodemailer';
 import type { MailMailbox } from '@prisma/client';
 import { MailMailboxService } from './services/mail-mailbox.service';
-import { MailMailboxPurpose, type SmtpConfig } from './types/mail-purpose.types';
+import {
+  MailMailboxPurpose,
+  type SmtpConfig,
+} from './types/mail-purpose.types';
 
 export type SendMailPayload = {
   to: string;
@@ -94,9 +97,7 @@ export class MailTransportService implements OnModuleDestroy {
         this.readEnv('STORE_NAME') ||
         'M. Essa Chemicals',
       fromAddress:
-        this.readEnv('MAIL_FROM_ADDRESS') ||
-        user ||
-        'noreply@localhost',
+        this.readEnv('MAIL_FROM_ADDRESS') || user || 'noreply@localhost',
     };
   }
 

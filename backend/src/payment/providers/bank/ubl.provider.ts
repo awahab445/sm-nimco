@@ -7,9 +7,9 @@ import * as crypto from 'crypto';
 
 /**
  * UBL (United Bank Limited) Payment Gateway Provider
- * 
+ *
  * Implements HOSTED_PAGE flow for UBL payments in Pakistan.
- * 
+ *
  * Configuration format (stored in payment_methods.config):
  * {
  *   "merchantId": "UBL12345",
@@ -18,7 +18,7 @@ import * as crypto from 'crypto';
  *   "paymentUrl": "https://ubl.com/payment",
  *   "callbackUrl": "/payments/callback/ubl"
  * }
- * 
+ *
  * Payment Status Mapping:
  * - SUCCESS / 00 / COMPLETED → captured
  * - PENDING / PROCESSING → processing
@@ -80,7 +80,8 @@ export class UblProvider extends BankHostedBaseProvider {
 
     const signatureString = signatureFields
       .map((field) => {
-        const value = callbackData[field] || callbackData[field.toLowerCase()] || '';
+        const value =
+          callbackData[field] || callbackData[field.toLowerCase()] || '';
         return `${field}=${value}`;
       })
       .join('&');
@@ -196,4 +197,3 @@ export class UblProvider extends BankHostedBaseProvider {
     return PaymentStatus.FAILED;
   }
 }
-

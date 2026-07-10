@@ -1,5 +1,9 @@
 import type { BrandConfig } from '../types/email.types';
-import { escapeHtml, renderEmailLayout, renderPrimaryButton } from './base.template';
+import {
+  escapeHtml,
+  renderEmailLayout,
+  renderPrimaryButton,
+} from './base.template';
 
 export function renderEmailVerificationEmail(options: {
   brand: BrandConfig;

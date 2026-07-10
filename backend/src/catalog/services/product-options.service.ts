@@ -47,7 +47,9 @@ export class ProductOptionsService {
           code,
           isActive: dto.isActive ?? true,
         },
-        include: { values: { orderBy: [{ sortOrder: 'asc' }, { value: 'asc' }] } },
+        include: {
+          values: { orderBy: [{ sortOrder: 'asc' }, { value: 'asc' }] },
+        },
       });
     } catch (e: any) {
       if (String(e?.code) === 'P2002') {
@@ -58,8 +60,11 @@ export class ProductOptionsService {
   }
 
   async updateOption(id: string, dto: UpdateProductOptionDto) {
-    const existing = await this.prisma.productOption.findUnique({ where: { id } });
-    if (!existing) throw new NotFoundException(`Product option ${id} not found`);
+    const existing = await this.prisma.productOption.findUnique({
+      where: { id },
+    });
+    if (!existing)
+      throw new NotFoundException(`Product option ${id} not found`);
     const nextCode = dto.code ? normalizeOptionCode(dto.code) : undefined;
     try {
       return await this.prisma.productOption.update({
@@ -69,7 +74,9 @@ export class ProductOptionsService {
           ...(nextCode !== undefined ? { code: nextCode } : {}),
           ...(dto.isActive !== undefined ? { isActive: dto.isActive } : {}),
         },
-        include: { values: { orderBy: [{ sortOrder: 'asc' }, { value: 'asc' }] } },
+        include: {
+          values: { orderBy: [{ sortOrder: 'asc' }, { value: 'asc' }] },
+        },
       });
     } catch (e: any) {
       if (String(e?.code) === 'P2002') {
@@ -80,15 +87,21 @@ export class ProductOptionsService {
   }
 
   async deleteOption(id: string) {
-    const existing = await this.prisma.productOption.findUnique({ where: { id } });
-    if (!existing) throw new NotFoundException(`Product option ${id} not found`);
+    const existing = await this.prisma.productOption.findUnique({
+      where: { id },
+    });
+    if (!existing)
+      throw new NotFoundException(`Product option ${id} not found`);
     await this.prisma.productOption.delete({ where: { id } });
     return { message: 'Option deleted successfully' };
   }
 
   async createOptionValue(optionId: string, dto: CreateProductOptionValueDto) {
-    const option = await this.prisma.productOption.findUnique({ where: { id: optionId } });
-    if (!option) throw new NotFoundException(`Product option ${optionId} not found`);
+    const option = await this.prisma.productOption.findUnique({
+      where: { id: optionId },
+    });
+    if (!option)
+      throw new NotFoundException(`Product option ${optionId} not found`);
     try {
       return await this.prisma.productOptionValue.create({
         data: {
@@ -101,15 +114,20 @@ export class ProductOptionsService {
       });
     } catch (e: any) {
       if (String(e?.code) === 'P2002') {
-        throw new ConflictException(`Value "${dto.value}" already exists for option ${option.code}`);
+        throw new ConflictException(
+          `Value "${dto.value}" already exists for option ${option.code}`,
+        );
       }
       throw e;
     }
   }
 
   async updateOptionValue(valueId: string, dto: UpdateProductOptionValueDto) {
-    const existing = await this.prisma.productOptionValue.findUnique({ where: { id: valueId } });
-    if (!existing) throw new NotFoundException(`Option value ${valueId} not found`);
+    const existing = await this.prisma.productOptionValue.findUnique({
+      where: { id: valueId },
+    });
+    if (!existing)
+      throw new NotFoundException(`Option value ${valueId} not found`);
     try {
       return await this.prisma.productOptionValue.update({
         where: { id: valueId },
@@ -122,15 +140,20 @@ export class ProductOptionsService {
       });
     } catch (e: any) {
       if (String(e?.code) === 'P2002') {
-        throw new ConflictException(`Value "${dto.value}" already exists for this option`);
+        throw new ConflictException(
+          `Value "${dto.value}" already exists for this option`,
+        );
       }
       throw e;
     }
   }
 
   async deleteOptionValue(valueId: string) {
-    const existing = await this.prisma.productOptionValue.findUnique({ where: { id: valueId } });
-    if (!existing) throw new NotFoundException(`Option value ${valueId} not found`);
+    const existing = await this.prisma.productOptionValue.findUnique({
+      where: { id: valueId },
+    });
+    if (!existing)
+      throw new NotFoundException(`Option value ${valueId} not found`);
     await this.prisma.productOptionValue.delete({ where: { id: valueId } });
     return { message: 'Option value deleted successfully' };
   }
@@ -141,7 +164,11 @@ export class ProductOptionsService {
       where: { productId },
       orderBy: [{ position: 'asc' }],
       include: {
-        option: { include: { values: { orderBy: [{ sortOrder: 'asc' }, { value: 'asc' }] } } },
+        option: {
+          include: {
+            values: { orderBy: [{ sortOrder: 'asc' }, { value: 'asc' }] },
+          },
+        },
         values: { include: { value: true } },
       },
     });
@@ -157,7 +184,9 @@ export class ProductOptionsService {
     const optionIds = dto.options.map((o) => o.optionId);
     const uniqueOptionIds = new Set(optionIds);
     if (uniqueOptionIds.size !== optionIds.length) {
-      throw new BadRequestException('Duplicate optionId entries are not allowed');
+      throw new BadRequestException(
+        'Duplicate optionId entries are not allowed',
+      );
     }
 
     const options = await this.prisma.productOption.findMany({
@@ -181,7 +210,9 @@ export class ProductOptionsService {
     for (const sel of dto.options) {
       for (const vid of sel.valueIds) {
         if (valueToOption.get(vid) !== sel.optionId) {
-          throw new BadRequestException('Selected values must belong to their option');
+          throw new BadRequestException(
+            'Selected values must belong to their option',
+          );
         }
       }
     }
@@ -212,4 +243,3 @@ export class ProductOptionsService {
     return this.getProductOptions(productId);
   }
 }
-

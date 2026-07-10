@@ -130,15 +130,14 @@ export class ShippingEligibilityEvaluator {
       return new Map();
     }
 
-    const customerGroups = await this.prisma.shippingMethodCustomerGroup.findMany(
-      {
+    const customerGroups =
+      await this.prisma.shippingMethodCustomerGroup.findMany({
         where: {
           shippingMethodId: {
             in: methodIds,
           },
         },
-      },
-    );
+      });
 
     // Group by shipping method ID
     const groupsByMethod = new Map<string, any[]>();
@@ -153,4 +152,3 @@ export class ShippingEligibilityEvaluator {
     return groupsByMethod;
   }
 }
-

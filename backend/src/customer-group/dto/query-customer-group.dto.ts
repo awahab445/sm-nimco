@@ -9,4 +9,3 @@ export class QueryCustomerGroupDto {
   @IsOptional()
   search?: string; // Search by name or description
 }
-

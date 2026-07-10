@@ -112,4 +112,3 @@ export class CreateOrderDto {
   @IsOptional()
   metadata?: Record<string, any>;
 }
-

@@ -152,8 +152,12 @@ export class AdminProductController {
   @UseInterceptors(
     FileInterceptor('file', {
       fileFilter: (_req, file, cb) => {
-        const allowedMime = /^image\/(jpeg|png|webp|gif)$/i.test(file.mimetype || '');
-        const allowedExt = /\.(jpe?g|png|webp|gif)$/i.test(file.originalname || '');
+        const allowedMime = /^image\/(jpeg|png|webp|gif)$/i.test(
+          file.mimetype || '',
+        );
+        const allowedExt = /\.(jpe?g|png|webp|gif)$/i.test(
+          file.originalname || '',
+        );
         if (allowedMime && allowedExt) {
           cb(null, true);
           return;
@@ -185,7 +189,8 @@ export class AdminProductController {
     @Req() req: Request,
   ) {
     const publicBaseUrl = process.env.PUBLIC_BASE_URL?.trim();
-    const protoRaw = (req.headers['x-forwarded-proto'] as string | undefined) || req.protocol;
+    const protoRaw =
+      (req.headers['x-forwarded-proto'] as string | undefined) || req.protocol;
     const proto = protoRaw === 'https' ? 'https' : 'http';
     const host = req.get('host')?.trim() || 'localhost:3000';
     const normalizedPath = file.path.replace(/\\/g, '/');
@@ -240,4 +245,3 @@ export class AdminProductController {
     await this.productService.removeCategoryFromProduct(productId, categoryId);
   }
 }
-

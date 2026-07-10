@@ -37,7 +37,11 @@ export class JazzCashProvider implements PaymentProvider {
       cancelUrl?: string;
     };
 
-    if (!jazzcashConfig.merchantId || !jazzcashConfig.password || !jazzcashConfig.integritySalt) {
+    if (
+      !jazzcashConfig.merchantId ||
+      !jazzcashConfig.password ||
+      !jazzcashConfig.integritySalt
+    ) {
       throw new Error('JazzCash configuration incomplete');
     }
 
@@ -54,7 +58,10 @@ export class JazzCashProvider implements PaymentProvider {
       pp_TxnRefNo: gatewayTransactionId,
       pp_Amount: params.amount.toFixed(2),
       pp_TxnCurrency: params.currency || APP_CURRENCY,
-      pp_TxnDateTime: new Date().toISOString().replace(/[-:]/g, '').split('.')[0],
+      pp_TxnDateTime: new Date()
+        .toISOString()
+        .replace(/[-:]/g, '')
+        .split('.')[0],
       pp_BillReference: params.orderId,
       pp_Description: `Order ${params.orderId}`,
       pp_TxnExpiryDateTime: new Date(Date.now() + 30 * 60 * 1000)
@@ -87,7 +94,10 @@ export class JazzCashProvider implements PaymentProvider {
       paymentData.pp_Version,
     ].join('&');
 
-    const secureHash = crypto.createHash('sha256').update(hashString).digest('hex');
+    const secureHash = crypto
+      .createHash('sha256')
+      .update(hashString)
+      .digest('hex');
     paymentData.pp_SecureHash = secureHash;
 
     // Build redirect URL
@@ -155,10 +165,15 @@ export class JazzCashProvider implements PaymentProvider {
         callbackData.pp_Version || '',
       ].join('&');
 
-      const calculatedHash = crypto.createHash('sha256').update(hashString).digest('hex');
+      const calculatedHash = crypto
+        .createHash('sha256')
+        .update(hashString)
+        .digest('hex');
 
       if (calculatedHash !== receivedHash) {
-        this.logger.warn(`JazzCash callback hash mismatch for order ${pp_BillReference}`);
+        this.logger.warn(
+          `JazzCash callback hash mismatch for order ${pp_BillReference}`,
+        );
         return {
           isValid: false,
           paymentId: pp_BillReference || '',
@@ -189,7 +204,10 @@ export class JazzCashProvider implements PaymentProvider {
         error: isSuccess ? undefined : pp_ResponseMessage || 'Payment failed',
       };
     } catch (error: any) {
-      this.logger.error(`Failed to verify JazzCash callback: ${error.message}`, error);
+      this.logger.error(
+        `Failed to verify JazzCash callback: ${error.message}`,
+        error,
+      );
       return {
         isValid: false,
         paymentId: callbackData.pp_BillReference || '',
@@ -203,4 +221,3 @@ export class JazzCashProvider implements PaymentProvider {
     }
   }
 }
-

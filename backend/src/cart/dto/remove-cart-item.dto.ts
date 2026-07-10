@@ -3,4 +3,3 @@
 export class RemoveCartItemDto {
   // Empty for now, but can be extended with validation if needed
 }
-

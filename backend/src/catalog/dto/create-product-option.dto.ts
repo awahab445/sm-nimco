@@ -1,4 +1,10 @@
-import { IsBoolean, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
+import {
+  IsBoolean,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MaxLength,
+} from 'class-validator';
 
 export class CreateProductOptionDto {
   @IsString()
@@ -15,4 +21,3 @@ export class CreateProductOptionDto {
   @IsBoolean()
   isActive?: boolean;
 }
-

@@ -24,14 +24,14 @@ export interface BankHostedConfig {
 
 /**
  * Base class for bank-hosted page payment providers (UBL, HBL, etc.)
- * 
+ *
  * Provides common functionality for:
  * - Generating redirect payloads
  * - Signing requests using secretKey
  * - Building hosted payment URLs
  * - Verifying callback signatures
  * - Normalizing bank response format
- * 
+ *
  * Subclasses should override:
  * - getProviderCode(): string
  * - generateSignature(): string (if signature algorithm differs)
@@ -237,7 +237,11 @@ export abstract class BankHostedBaseProvider implements PaymentProvider {
     );
 
     // Build redirect payload
-    const payload = this.buildRedirectPayload(params, bankConfig, gatewayTransactionId);
+    const payload = this.buildRedirectPayload(
+      params,
+      bankConfig,
+      gatewayTransactionId,
+    );
 
     // Generate signature
     const signature = this.generateSignature(payload, bankConfig.secretKey);
@@ -284,7 +288,12 @@ export abstract class BankHostedBaseProvider implements PaymentProvider {
       const fields = this.extractCallbackFields(callbackData);
 
       // Validate required fields
-      if (!fields.transactionId || !fields.orderId || !fields.amount || !fields.signature) {
+      if (
+        !fields.transactionId ||
+        !fields.orderId ||
+        !fields.amount ||
+        !fields.signature
+      ) {
         this.logger.warn(
           `[SECURITY] ${this.getProviderCode()} callback missing required fields: ` +
             `transactionId=${fields.transactionId}, orderId=${fields.orderId}, ` +
@@ -343,7 +352,10 @@ export abstract class BankHostedBaseProvider implements PaymentProvider {
         currency: fields.currency,
         status: paymentStatus,
         gatewayResponse: callbackData,
-        error: paymentStatus === PaymentStatus.FAILED ? (fields.message || 'Payment failed') : undefined,
+        error:
+          paymentStatus === PaymentStatus.FAILED
+            ? fields.message || 'Payment failed'
+            : undefined,
       };
     } catch (error: any) {
       this.logger.error(
@@ -353,8 +365,11 @@ export abstract class BankHostedBaseProvider implements PaymentProvider {
       return {
         isValid: false,
         paymentId: callbackData.orderId || callbackData.orderRef || '',
-        gatewayTransactionId: callbackData.transactionId || callbackData.transactionRef || '',
-        amount: parseFloat(callbackData.amount || callbackData.orderAmount || '0'),
+        gatewayTransactionId:
+          callbackData.transactionId || callbackData.transactionRef || '',
+        amount: parseFloat(
+          callbackData.amount || callbackData.orderAmount || '0',
+        ),
         currency: callbackData.currency || APP_CURRENCY,
         status: PaymentStatus.FAILED,
         gatewayResponse: callbackData,
@@ -381,4 +396,3 @@ export abstract class BankHostedBaseProvider implements PaymentProvider {
     return config as BankHostedConfig;
   }
 }
-

@@ -1,4 +1,12 @@
-import { Body, Controller, HttpCode, HttpStatus, Post, UsePipes, ValidationPipe } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Post,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
 import { SubscriptionService } from './subscription.service';
 import { SubscribeDto } from './dto/subscribe.dto';
 

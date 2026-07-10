@@ -4,11 +4,18 @@ import { AdminProductListQueryDto } from '../dto/admin-product-list-query.dto';
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-export type WhereOmit = 'categories' | 'price' | 'customAttributes' | `attr:${string}`;
+export type WhereOmit =
+  | 'categories'
+  | 'price'
+  | 'customAttributes'
+  | `attr:${string}`;
 
 export type ProductQueryAttr = Record<string, string[]>;
 
-export type EffectiveProductQuery = Omit<ProductQueryDto, 'brands' | 'sizes' | 'attr'> & {
+export type EffectiveProductQuery = Omit<
+  ProductQueryDto,
+  'brands' | 'sizes' | 'attr'
+> & {
   /** Merged from `attr` JSON query + legacy `brands` / `sizes` params. */
   attr?: ProductQueryAttr;
 };
@@ -41,7 +48,9 @@ export function readAttributeValue(attrs: unknown, key: string): string | null {
 
   const optionValues = a.optionValues ?? a.option_values;
   const nested =
-    optionValues && typeof optionValues === 'object' && !Array.isArray(optionValues)
+    optionValues &&
+    typeof optionValues === 'object' &&
+    !Array.isArray(optionValues)
       ? (optionValues as Record<string, unknown>)
       : null;
 
@@ -66,13 +75,13 @@ function attributeJsonPaths(key: string): string[][] {
       ['optionValues', 'Size'],
     ];
   }
-  return [
-    [key],
-    ['optionValues', key],
-  ];
+  return [[key], ['optionValues', key]];
 }
 
-function buildAttributeValueMatch(key: string, value: string): Record<string, unknown>[] {
+function buildAttributeValueMatch(
+  key: string,
+  value: string,
+): Record<string, unknown>[] {
   const paths = attributeJsonPaths(key);
   const productMatches = paths.map((path) => ({
     attributes: { path, equals: value },
@@ -104,7 +113,11 @@ function parseAttrQueryString(raw: string): ProductQueryAttr {
       const o = JSON.parse(candidate) as unknown;
       if (!o || typeof o !== 'object' || Array.isArray(o)) continue;
       for (const [k, v] of Object.entries(o as Record<string, unknown>)) {
-        if (Array.isArray(v)) attr[k] = v.map(String).map((x) => x.trim()).filter(Boolean);
+        if (Array.isArray(v))
+          attr[k] = v
+            .map(String)
+            .map((x) => x.trim())
+            .filter(Boolean);
         else if (typeof v === 'string' && v.trim()) attr[k] = splitCommaList(v);
       }
       return attr;
@@ -117,7 +130,13 @@ function parseAttrQueryString(raw: string): ProductQueryAttr {
 
 /** Include selected categories and all active descendants (PLP parent browse nodes). */
 export async function expandCategoryFilterWithDescendants(
-  prisma: { category: { findMany: (args: object) => Promise<Array<{ id: string; parentId: string | null }>> } },
+  prisma: {
+    category: {
+      findMany: (
+        args: object,
+      ) => Promise<Array<{ id: string; parentId: string | null }>>;
+    };
+  },
   query: EffectiveProductQuery,
 ): Promise<EffectiveProductQuery> {
   if (!query.category?.trim()) return query;
@@ -145,7 +164,9 @@ export async function expandCategoryFilterWithDescendants(
   return { ...query, category: [...expanded].join(',') };
 }
 
-export function parsePriceRangeString(price?: string): { min: number; max: number } | null {
+export function parsePriceRangeString(
+  price?: string,
+): { min: number; max: number } | null {
   if (!price || typeof price !== 'string') return null;
   const m = price.trim().match(/^(\d+(?:\.\d+)?)-(\d+(?:\.\d+)?)$/);
   if (!m) return null;
@@ -182,7 +203,10 @@ export class ProductQuery {
   /**
    * Storefront product list filters. Use `omit` when computing facet counts for one dimension.
    */
-  static buildWhereClause(query: EffectiveProductQuery, options?: BuildWhereOptions): Record<string, unknown> {
+  static buildWhereClause(
+    query: EffectiveProductQuery,
+    options?: BuildWhereOptions,
+  ): Record<string, unknown> {
     const omit = options?.omit ?? new Set<WhereOmit>();
     const and: Record<string, unknown>[] = [];
 
@@ -225,7 +249,9 @@ export class ProductQuery {
     const attr = query.attr;
     if (attr && Object.keys(attr).length > 0) {
       for (const [key, values] of Object.entries(attr)) {
-        const vals = (Array.isArray(values) ? values : []).map((v) => String(v).trim()).filter(Boolean);
+        const vals = (Array.isArray(values) ? values : [])
+          .map((v) => String(v).trim())
+          .filter(Boolean);
         if (vals.length === 0) continue;
         const omitKey = `attr:${key}` as WhereOmit;
         if (omit.has(omitKey)) continue;
@@ -235,7 +261,11 @@ export class ProductQuery {
       }
     }
 
-    if (!omit.has('customAttributes') && query.attributes && Object.keys(query.attributes).length > 0) {
+    if (
+      !omit.has('customAttributes') &&
+      query.attributes &&
+      Object.keys(query.attributes).length > 0
+    ) {
       for (const [key, value] of Object.entries(query.attributes)) {
         and.push({
           attributes: { path: [key], equals: value },
@@ -243,7 +273,8 @@ export class ProductQuery {
       }
     }
 
-    const searchTerm = typeof query.search === 'string' ? query.search.trim() : '';
+    const searchTerm =
+      typeof query.search === 'string' ? query.search.trim() : '';
     if (searchTerm.length >= 2) {
       and.push({
         OR: [
@@ -271,7 +302,9 @@ export class ProductQuery {
   }
 
   /** Admin catalog list: non-deleted only; optional status and filters */
-  static buildAdminWhereClause(query: AdminProductListQueryDto | ProductQueryDto) {
+  static buildAdminWhereClause(
+    query: AdminProductListQueryDto | ProductQueryDto,
+  ) {
     const where: Record<string, unknown> = {
       deletedAt: null,
     };
@@ -288,8 +321,12 @@ export class ProductQuery {
       };
     }
 
-    const hasPriceAndAttributesFilters = 'minPrice' in query || 'maxPrice' in query || 'attributes' in query;
-    if (hasPriceAndAttributesFilters && (query.minPrice !== undefined || query.maxPrice !== undefined)) {
+    const hasPriceAndAttributesFilters =
+      'minPrice' in query || 'maxPrice' in query || 'attributes' in query;
+    if (
+      hasPriceAndAttributesFilters &&
+      (query.minPrice !== undefined || query.maxPrice !== undefined)
+    ) {
       const priceFilter: Record<string, number> = {};
       if (query.minPrice !== undefined) {
         priceFilter.gte = query.minPrice;
@@ -300,21 +337,30 @@ export class ProductQuery {
       where.basePrice = priceFilter;
     }
 
-    if (hasPriceAndAttributesFilters && query.attributes && Object.keys(query.attributes).length > 0) {
-      const attributeFilters = Object.entries(query.attributes).map(([key, value]) => ({
-        attributes: {
-          path: [key],
-          equals: value,
-        },
-      }));
+    if (
+      hasPriceAndAttributesFilters &&
+      query.attributes &&
+      Object.keys(query.attributes).length > 0
+    ) {
+      const attributeFilters = Object.entries(query.attributes).map(
+        ([key, value]) => ({
+          attributes: {
+            path: [key],
+            equals: value,
+          },
+        }),
+      );
 
       if (attributeFilters.length === 1) {
         where.attributes = attributeFilters[0].attributes;
       } else if (attributeFilters.length > 1) {
-        where.AND = attributeFilters.map((filter) => ({ attributes: filter.attributes }));
+        where.AND = attributeFilters.map((filter) => ({
+          attributes: filter.attributes,
+        }));
       }
     }
-    const searchTerm = typeof query.search === 'string' ? query.search.trim() : '';
+    const searchTerm =
+      typeof query.search === 'string' ? query.search.trim() : '';
     if (searchTerm.length >= 2) {
       where.OR = [
         { name: { contains: searchTerm, mode: 'insensitive' } },
@@ -336,7 +382,10 @@ export class ProductQuery {
   }
 
   static buildAdminListInclude(): {
-    images: { take: number; orderBy: ({ isPrimary: 'desc' } | { position: 'asc' })[] };
+    images: {
+      take: number;
+      orderBy: ({ isPrimary: 'desc' } | { position: 'asc' })[];
+    };
     categories: {
       orderBy: { position: 'asc' };
       include: { category: { select: { id: true; name: true; slug: true } } };
@@ -374,7 +423,11 @@ export class ProductQuery {
     options: {
       orderBy: { position: 'asc' };
       include: {
-        option: { include: { values: { orderBy: ({ sortOrder: 'asc' } | { value: 'asc' })[] } } };
+        option: {
+          include: {
+            values: { orderBy: ({ sortOrder: 'asc' } | { value: 'asc' })[] };
+          };
+        };
         values: { include: { value: true } };
       };
     };
@@ -422,7 +475,11 @@ export class ProductQuery {
     options: {
       orderBy: { position: 'asc' };
       include: {
-        option: { include: { values: { orderBy: ({ sortOrder: 'asc' } | { value: 'asc' })[] } } };
+        option: {
+          include: {
+            values: { orderBy: ({ sortOrder: 'asc' } | { value: 'asc' })[] };
+          };
+        };
         values: { include: { value: true } };
       };
     };
@@ -464,4 +521,3 @@ export class ProductQuery {
     return { skip, take: limit, page };
   }
 }
-

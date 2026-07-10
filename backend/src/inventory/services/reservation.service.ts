@@ -61,10 +61,11 @@ export class ReservationService {
       }
 
       // Get or create inventory item
-      const inventoryItem = await this.inventoryService.getOrCreateInventoryItem(
-        variantId,
-        warehouseId,
-      );
+      const inventoryItem =
+        await this.inventoryService.getOrCreateInventoryItem(
+          variantId,
+          warehouseId,
+        );
 
       // Check again within transaction (double-check locking)
       const currentItem = await tx.inventoryItem.findUnique({
@@ -75,7 +76,8 @@ export class ReservationService {
         throw new NotFoundException('Inventory item not found');
       }
 
-      const availableQuantity = currentItem.quantity - currentItem.reservedQuantity;
+      const availableQuantity =
+        currentItem.quantity - currentItem.reservedQuantity;
 
       if (availableQuantity < quantity) {
         throw new ConflictException(
@@ -103,7 +105,8 @@ export class ReservationService {
         where: { id: inventoryItem.id },
         data: {
           reservedQuantity: currentItem.reservedQuantity + quantity,
-          availableQuantity: currentItem.quantity - (currentItem.reservedQuantity + quantity),
+          availableQuantity:
+            currentItem.quantity - (currentItem.reservedQuantity + quantity),
         },
       });
 
@@ -166,7 +169,10 @@ export class ReservationService {
       const inventoryItem = reservation.inventoryItem;
 
       // Update reserved quantity
-      const newReservedQuantity = Math.max(0, inventoryItem.reservedQuantity - reservation.quantity);
+      const newReservedQuantity = Math.max(
+        0,
+        inventoryItem.reservedQuantity - reservation.quantity,
+      );
 
       await tx.inventoryItem.update({
         where: { id: inventoryItem.id },
@@ -219,14 +225,17 @@ export class ReservationService {
       }
 
       if (reservation.expiresAt < new Date()) {
-        throw new BadRequestException(`Reservation ${reservationId} has expired`);
+        throw new BadRequestException(
+          `Reservation ${reservationId} has expired`,
+        );
       }
 
       const inventoryItem = reservation.inventoryItem;
 
       // Reduce quantity and reserved quantity
       const newQuantity = inventoryItem.quantity - reservation.quantity;
-      const newReservedQuantity = inventoryItem.reservedQuantity - reservation.quantity;
+      const newReservedQuantity =
+        inventoryItem.reservedQuantity - reservation.quantity;
 
       if (newQuantity < 0) {
         throw new BadRequestException(
@@ -273,7 +282,10 @@ export class ReservationService {
   /**
    * Release all reservations for a reference (e.g., cart)
    */
-  async releaseReservationsByReference(referenceType: string, referenceId: string) {
+  async releaseReservationsByReference(
+    referenceType: string,
+    referenceId: string,
+  ) {
     const reservations = await this.prisma.inventoryReservation.findMany({
       where: {
         referenceType,
@@ -303,14 +315,16 @@ export class ReservationService {
   async cleanupExpiredReservations() {
     const now = new Date();
 
-    const expiredReservations = await this.prisma.inventoryReservation.findMany({
-      where: {
-        expiresAt: {
-          lt: now,
+    const expiredReservations = await this.prisma.inventoryReservation.findMany(
+      {
+        where: {
+          expiresAt: {
+            lt: now,
+          },
         },
+        include: { inventoryItem: true },
       },
-      include: { inventoryItem: true },
-    });
+    );
 
     const results = await Promise.all(
       expiredReservations.map((reservation) =>
@@ -326,4 +340,3 @@ export class ReservationService {
     };
   }
 }
-

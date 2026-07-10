@@ -38,7 +38,9 @@ export class PaymentFactory {
 
     if (!provider) {
       this.logger.error(`Payment provider not found: ${providerCode}`);
-      throw new NotFoundException(`Payment provider '${providerCode}' is not supported`);
+      throw new NotFoundException(
+        `Payment provider '${providerCode}' is not supported`,
+      );
     }
 
     return provider;
@@ -51,4 +53,3 @@ export class PaymentFactory {
     return Array.from(this.providers.keys());
   }
 }
-

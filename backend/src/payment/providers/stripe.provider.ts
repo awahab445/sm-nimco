@@ -76,8 +76,13 @@ export class StripeProvider implements PaymentProvider {
         },
       };
     } catch (error: any) {
-      this.logger.error(`Failed to create Stripe payment intent: ${error.message}`, error);
-      throw new Error(`Stripe payment intent creation failed: ${error.message}`);
+      this.logger.error(
+        `Failed to create Stripe payment intent: ${error.message}`,
+        error,
+      );
+      throw new Error(
+        `Stripe payment intent creation failed: ${error.message}`,
+      );
     }
   }
 
@@ -112,7 +117,8 @@ export class StripeProvider implements PaymentProvider {
             currency: '',
             status: PaymentStatus.FAILED,
             gatewayResponse: callbackData,
-            error: 'Stripe webhook signature verification requires raw body and stripe-signature header',
+            error:
+              'Stripe webhook signature verification requires raw body and stripe-signature header',
           };
         }
         event = stripe.webhooks.constructEvent(
@@ -136,7 +142,7 @@ export class StripeProvider implements PaymentProvider {
       }
 
       if (event.type === 'payment_intent.succeeded') {
-        const paymentIntent = event.data.object as Stripe.PaymentIntent;
+        const paymentIntent = event.data.object;
 
         return {
           isValid: true,
@@ -148,7 +154,7 @@ export class StripeProvider implements PaymentProvider {
           gatewayResponse: paymentIntent as any,
         };
       } else if (event.type === 'payment_intent.payment_failed') {
-        const paymentIntent = event.data.object as Stripe.PaymentIntent;
+        const paymentIntent = event.data.object;
 
         return {
           isValid: true,
@@ -173,7 +179,10 @@ export class StripeProvider implements PaymentProvider {
         error: `Unhandled event type: ${event.type}`,
       };
     } catch (error: any) {
-      this.logger.error(`Failed to verify Stripe callback: ${error.message}`, error);
+      this.logger.error(
+        `Failed to verify Stripe callback: ${error.message}`,
+        error,
+      );
       return {
         isValid: false,
         paymentId: '',
@@ -187,9 +196,14 @@ export class StripeProvider implements PaymentProvider {
     }
   }
 
-  async capture(paymentId: string, config: PaymentMethodConfig): Promise<boolean> {
+  async capture(
+    paymentId: string,
+    config: PaymentMethodConfig,
+  ): Promise<boolean> {
     // Stripe payments are captured automatically, but we can implement manual capture if needed
-    this.logger.warn('Stripe capture not implemented - payments are auto-captured');
+    this.logger.warn(
+      'Stripe capture not implemented - payments are auto-captured',
+    );
     return false;
   }
 
@@ -219,9 +233,11 @@ export class StripeProvider implements PaymentProvider {
       this.logger.log(`Stripe refund processed for payment ${paymentId}`);
       return true;
     } catch (error: any) {
-      this.logger.error(`Failed to process Stripe refund: ${error.message}`, error);
+      this.logger.error(
+        `Failed to process Stripe refund: ${error.message}`,
+        error,
+      );
       return false;
     }
   }
 }
-

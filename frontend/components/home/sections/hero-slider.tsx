@@ -6,6 +6,7 @@ import type { HeroSlide } from '@/lib/cms/home-page-types';
 import { resolveImageUrl } from '@/lib/resolve-image-url';
 import { storefrontUi } from '@/lib/storefront-ui';
 import { useHydrated } from '@/lib/use-hydrated';
+import { StorefrontImage } from '@/components/ui/storefront-image';
 
 export type HeroSliderLayout = 'card' | 'immersive';
 
@@ -57,6 +58,7 @@ export function HeroSlider({
   const mehfil = IS_MEHFIL_THEME;
   const resolvedImageUrl = resolveImageUrl(slide.imageUrl);
   const hasImage = Boolean(resolvedImageUrl);
+  const isLcpSlide = safeIndex === 0;
 
   const shellClass = [
     immersive
@@ -112,7 +114,7 @@ export function HeroSlider({
   const imgFillBox = dimW > 0 && dimH > 0;
 
   const bannerImg = resolvedImageUrl ? (
-    <img
+    <StorefrontImage
       src={resolvedImageUrl}
       alt={slide.title || 'Promotional banner'}
       width={imgWidth}
@@ -126,9 +128,10 @@ export function HeroSlider({
               ? 'mx-auto block h-auto max-h-full w-full max-w-full object-contain object-center'
               : 'block h-auto w-full object-contain object-center'
       }
-      loading={safeIndex === 0 ? 'eager' : 'lazy'}
-      decoding="async"
       sizes={sizesAttr}
+      priority={isLcpSlide}
+      fetchPriority={isLcpSlide ? 'high' : 'auto'}
+      quality={75}
     />
   ) : null;
 

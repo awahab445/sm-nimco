@@ -44,10 +44,7 @@ export class AdminAnalyticsController {
 
   @Post('toggle')
   @RequirePermissions('analytics.manage')
-  async toggle(
-    @Body() dto: ToggleGa4SettingsDto,
-    @Req() req: AdminRequest,
-  ) {
+  async toggle(@Body() dto: ToggleGa4SettingsDto, @Req() req: AdminRequest) {
     const adminUserId = req.user?.sub ?? req.user?.id;
     const data = await this.analyticsSettings.toggleEnabled(dto, adminUserId);
     return { data };

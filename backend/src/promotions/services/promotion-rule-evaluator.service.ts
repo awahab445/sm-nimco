@@ -1,5 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Promotion, PromotionCustomerGroup } from '../entities/promotion.entity';
+import {
+  Promotion,
+  PromotionCustomerGroup,
+} from '../entities/promotion.entity';
 import { EligibilityContext } from './rules-engine.service';
 
 export interface RuleEvaluationResult {
@@ -15,7 +18,7 @@ export interface CustomerGroupRule {
 
 /**
  * PromotionRuleEvaluator Service
- * 
+ *
  * Provides a clear, unit-testable rule evaluation pipeline for promotions.
  * Handles customer group eligibility with inclusion/exclusion rules.
  */
@@ -25,7 +28,7 @@ export class PromotionRuleEvaluatorService {
 
   /**
    * Evaluate customer group eligibility for a promotion
-   * 
+   *
    * Rules:
    * 1. If appliesToAllGroups is true, promotion applies to all groups (unless excluded)
    * 2. If appliesToAllGroups is false, only eligible groups can use the promotion
@@ -89,8 +92,12 @@ export class PromotionRuleEvaluatorService {
     promotion: Promotion,
     promotionCustomerGroups: PromotionCustomerGroup[],
   ): CustomerGroupRule {
-    const eligibleGroups = promotionCustomerGroups.filter((pcg) => !pcg.isExcluded);
-    const excludedGroups = promotionCustomerGroups.filter((pcg) => pcg.isExcluded);
+    const eligibleGroups = promotionCustomerGroups.filter(
+      (pcg) => !pcg.isExcluded,
+    );
+    const excludedGroups = promotionCustomerGroups.filter(
+      (pcg) => pcg.isExcluded,
+    );
 
     return {
       appliesToAllGroups: promotion.appliesToAllGroups,
@@ -138,7 +145,10 @@ export class PromotionRuleEvaluatorService {
     context: EligibilityContext,
   ): RuleEvaluationResult {
     // Check total usage limit
-    if (promotion.usageLimit && promotion.currentUsage >= promotion.usageLimit) {
+    if (
+      promotion.usageLimit &&
+      promotion.currentUsage >= promotion.usageLimit
+    ) {
       return {
         eligible: false,
         reason: 'Promotion usage limit reached',
@@ -161,7 +171,10 @@ export class PromotionRuleEvaluatorService {
   ): RuleEvaluationResult {
     // If promotion has a code, it must match
     if (promotion.code) {
-      if (!context.couponCode || context.couponCode.toLowerCase() !== promotion.code.toLowerCase()) {
+      if (
+        !context.couponCode ||
+        context.couponCode.toLowerCase() !== promotion.code.toLowerCase()
+      ) {
         return {
           eligible: false,
           reason: 'Invalid or missing coupon code',
@@ -174,13 +187,13 @@ export class PromotionRuleEvaluatorService {
 
   /**
    * Comprehensive rule evaluation pipeline
-   * 
+   *
    * Evaluates all rules in order:
    * 1. Promotion status and validity
    * 2. Coupon code (if required)
    * 3. Usage limits
    * 4. Customer group eligibility
-   * 
+   *
    * Returns the first failing rule or success if all pass
    */
   evaluateAllRules(
@@ -221,7 +234,7 @@ export class PromotionRuleEvaluatorService {
 
   /**
    * Check if two promotions can be stacked
-   * 
+   *
    * Rules:
    * - If either promotion is exclusive, they cannot be stacked
    * - Both promotions must be stackable
@@ -236,4 +249,3 @@ export class PromotionRuleEvaluatorService {
     return promotion1.isStackable && promotion2.isStackable;
   }
 }
-

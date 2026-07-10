@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  Logger,
+} from '@nestjs/common';
 import { PrismaService } from '../../catalog/services/prisma.service';
 import { CartRedisService, Cart } from '../../cart/services/cart.redis';
 import { VariantService } from '../../catalog/services/variant.service';
@@ -74,11 +79,16 @@ export class OrderFactory {
       const shippingTotal = Number(checkoutTotals.shippingTotal) || 0;
       const taxTotal = Number(checkoutTotals.taxTotal) || 0;
       const resolvedSubtotal =
-        Number(checkoutTotals.subtotal) > 0 ? Number(checkoutTotals.subtotal) : subtotal;
+        Number(checkoutTotals.subtotal) > 0
+          ? Number(checkoutTotals.subtotal)
+          : subtotal;
       const grandTotal =
         Number(checkoutTotals.grandTotal) > 0
           ? Number(checkoutTotals.grandTotal)
-          : Math.max(0, resolvedSubtotal - discountTotal + shippingTotal + taxTotal);
+          : Math.max(
+              0,
+              resolvedSubtotal - discountTotal + shippingTotal + taxTotal,
+            );
 
       return {
         subtotal: resolvedSubtotal,
@@ -217,7 +227,7 @@ export class OrderFactory {
       const discountAmount = 0; // Can be calculated from applied discounts
       const itemKey = `${cartItem.productId}:${cartItem.variantId}`;
       const taxAmount = itemTaxMap.get(itemKey) || 0;
-      const rowTotal = (unitPrice * quantity) - discountAmount + taxAmount;
+      const rowTotal = unitPrice * quantity - discountAmount + taxAmount;
 
       orderItemsData.push({
         productId: cartItem.productId,
@@ -240,8 +250,10 @@ export class OrderFactory {
             ? {
                 bundleDealId: cartItem.bundleDealId,
                 bundleGroupId: cartItem.bundleGroupId,
-                bundleTitle: cart.bundleGroups?.[cartItem.bundleGroupId!]?.title,
-                bundleQuantity: cart.bundleGroups?.[cartItem.bundleGroupId!]?.quantity,
+                bundleTitle:
+                  cart.bundleGroups?.[cartItem.bundleGroupId!]?.title,
+                bundleQuantity:
+                  cart.bundleGroups?.[cartItem.bundleGroupId!]?.quantity,
                 listPrice: cartItem.listPrice,
                 allocatedDealPrice: unitPrice,
               }
@@ -290,4 +302,3 @@ export class OrderFactory {
     };
   }
 }
-

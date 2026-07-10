@@ -57,13 +57,18 @@ export class StorefrontFilterService {
     });
   }
 
-  private async assertUniqueKind(kind: string, excludeId?: string): Promise<void> {
+  private async assertUniqueKind(
+    kind: string,
+    excludeId?: string,
+  ): Promise<void> {
     if (kind === 'CATEGORY' || kind === 'PRICE') {
       const existing = await this.db.storefrontFilter.findFirst({
         where: { kind, ...(excludeId ? { NOT: { id: excludeId } } : {}) },
       });
       if (existing) {
-        throw new ConflictException(`A ${kind} filter already exists. Only one ${kind} filter is allowed.`);
+        throw new ConflictException(
+          `A ${kind} filter already exists. Only one ${kind} filter is allowed.`,
+        );
       }
     }
   }
@@ -84,7 +89,12 @@ export class StorefrontFilterService {
         include: { options: true },
       });
     } catch (e: unknown) {
-      if (e && typeof e === 'object' && 'code' in e && (e as { code?: string }).code === 'P2002') {
+      if (
+        e &&
+        typeof e === 'object' &&
+        'code' in e &&
+        (e as { code?: string }).code === 'P2002'
+      ) {
         throw new ConflictException(`Filter code "${code}" is already in use.`);
       }
       throw e;
@@ -99,7 +109,10 @@ export class StorefrontFilterService {
       const taken = await this.db.storefrontFilter.findFirst({
         where: { code: dto.code.trim(), NOT: { id } },
       });
-      if (taken) throw new ConflictException(`Code "${dto.code.trim()}" is already in use.`);
+      if (taken)
+        throw new ConflictException(
+          `Code "${dto.code.trim()}" is already in use.`,
+        );
     }
 
     try {
@@ -111,10 +124,17 @@ export class StorefrontFilterService {
           ...(dto.sortOrder !== undefined ? { sortOrder: dto.sortOrder } : {}),
           ...(dto.isActive !== undefined ? { isActive: dto.isActive } : {}),
         },
-        include: { options: { orderBy: [{ sortOrder: 'asc' }, { value: 'asc' }] } },
+        include: {
+          options: { orderBy: [{ sortOrder: 'asc' }, { value: 'asc' }] },
+        },
       });
     } catch (e: unknown) {
-      if (e && typeof e === 'object' && 'code' in e && (e as { code?: string }).code === 'P2002') {
+      if (
+        e &&
+        typeof e === 'object' &&
+        'code' in e &&
+        (e as { code?: string }).code === 'P2002'
+      ) {
         throw new ConflictException('That filter code is already in use.');
       }
       throw e;
@@ -129,10 +149,14 @@ export class StorefrontFilterService {
   }
 
   async createOption(filterId: string, dto: CreateStorefrontFilterOptionDto) {
-    const filter = await this.db.storefrontFilter.findUnique({ where: { id: filterId } });
+    const filter = await this.db.storefrontFilter.findUnique({
+      where: { id: filterId },
+    });
     if (!filter) throw new NotFoundException('Filter not found');
     if (filter.kind !== 'ATTRIBUTE') {
-      throw new BadRequestException('Options can only be added to ATTRIBUTE filters.');
+      throw new BadRequestException(
+        'Options can only be added to ATTRIBUTE filters.',
+      );
     }
     const value = dto.value.trim();
     if (!value) throw new BadRequestException('value is required');
@@ -147,8 +171,15 @@ export class StorefrontFilterService {
         },
       });
     } catch (e: unknown) {
-      if (e && typeof e === 'object' && 'code' in e && (e as { code?: string }).code === 'P2002') {
-        throw new ConflictException(`Option value "${value}" already exists for this filter.`);
+      if (
+        e &&
+        typeof e === 'object' &&
+        'code' in e &&
+        (e as { code?: string }).code === 'P2002'
+      ) {
+        throw new ConflictException(
+          `Option value "${value}" already exists for this filter.`,
+        );
       }
       throw e;
     }
@@ -161,33 +192,48 @@ export class StorefrontFilterService {
     });
     if (!opt) throw new NotFoundException('Option not found');
     const nextVal = dto.value !== undefined ? dto.value.trim() : opt.value;
-    if (dto.value !== undefined && !nextVal) throw new BadRequestException('value cannot be empty');
+    if (dto.value !== undefined && !nextVal)
+      throw new BadRequestException('value cannot be empty');
     try {
       return await this.db.storefrontFilterOption.update({
         where: { id: optionId },
         data: {
           ...(dto.value !== undefined ? { value: nextVal } : {}),
-          ...(dto.label !== undefined ? { label: dto.label?.trim() || null } : {}),
+          ...(dto.label !== undefined
+            ? { label: dto.label?.trim() || null }
+            : {}),
           ...(dto.sortOrder !== undefined ? { sortOrder: dto.sortOrder } : {}),
           ...(dto.isActive !== undefined ? { isActive: dto.isActive } : {}),
         },
       });
     } catch (e: unknown) {
-      if (e && typeof e === 'object' && 'code' in e && (e as { code?: string }).code === 'P2002') {
-        throw new ConflictException('That option value already exists for this filter.');
+      if (
+        e &&
+        typeof e === 'object' &&
+        'code' in e &&
+        (e as { code?: string }).code === 'P2002'
+      ) {
+        throw new ConflictException(
+          'That option value already exists for this filter.',
+        );
       }
       throw e;
     }
   }
 
   async deleteOption(optionId: string) {
-    const opt = await this.db.storefrontFilterOption.findUnique({ where: { id: optionId } });
+    const opt = await this.db.storefrontFilterOption.findUnique({
+      where: { id: optionId },
+    });
     if (!opt) throw new NotFoundException('Option not found');
     await this.db.storefrontFilterOption.delete({ where: { id: optionId } });
     return { id: optionId };
   }
 
-  private resolveNavHref(nav: { href: string; category?: { slug: string } | null }): string {
+  private resolveNavHref(nav: {
+    href: string;
+    category?: { slug: string } | null;
+  }): string {
     if (nav.category?.slug) return `/categories/${nav.category.slug}`;
     const h = nav.href?.trim();
     return h || '/products';
@@ -199,7 +245,14 @@ export class StorefrontFilterService {
   }
 
   private resolveCategoryId(
-    nav: { categoryId?: string | null; href?: string; category?: { id?: string; slug?: string } | null } | null | undefined,
+    nav:
+      | {
+          categoryId?: string | null;
+          href?: string;
+          category?: { id?: string; slug?: string } | null;
+        }
+      | null
+      | undefined,
     slugToId: Map<string, string>,
   ): string | null {
     if (!nav) return null;
@@ -210,7 +263,10 @@ export class StorefrontFilterService {
     return null;
   }
 
-  private buildBrowseTree(flat: TreeRow[], slugToId: Map<string, string>): PlpBrowseTreeNode[] {
+  private buildBrowseTree(
+    flat: TreeRow[],
+    slugToId: Map<string, string>,
+  ): PlpBrowseTreeNode[] {
     const byParent = new Map<string | null, TreeRow[]>();
     for (const row of flat) {
       const key = row.parentId;
@@ -241,10 +297,14 @@ export class StorefrontFilterService {
   }
 
   private async getCategoryFilterOrThrow(filterId: string) {
-    const filter = await this.db.storefrontFilter.findUnique({ where: { id: filterId } });
+    const filter = await this.db.storefrontFilter.findUnique({
+      where: { id: filterId },
+    });
     if (!filter) throw new NotFoundException('Filter not found');
     if (filter.kind !== 'CATEGORY') {
-      throw new BadRequestException('Browse tree is only available for CATEGORY filters.');
+      throw new BadRequestException(
+        'Browse tree is only available for CATEGORY filters.',
+      );
     }
     return filter;
   }
@@ -256,13 +316,18 @@ export class StorefrontFilterService {
       orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }],
       include: {
         navLink: {
-          include: { category: { select: { id: true, name: true, slug: true } } },
+          include: {
+            category: { select: { id: true, name: true, slug: true } },
+          },
         },
       },
     });
   }
 
-  async findPublicBrowseTree(): Promise<{ label: string; tree: PlpBrowseTreeNode[] } | null> {
+  async findPublicBrowseTree(): Promise<{
+    label: string;
+    tree: PlpBrowseTreeNode[];
+  } | null> {
     const filter = await this.db.storefrontFilter.findFirst({
       where: { kind: 'CATEGORY', isActive: true },
       orderBy: { sortOrder: 'asc' },
@@ -274,7 +339,9 @@ export class StorefrontFilterService {
       orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }],
       include: {
         navLink: {
-          include: { category: { select: { id: true, name: true, slug: true } } },
+          include: {
+            category: { select: { id: true, name: true, slug: true } },
+          },
         },
       },
     });
@@ -283,7 +350,8 @@ export class StorefrontFilterService {
     for (const r of rows as TreeRow[]) {
       const nav = r.navLink;
       if (!nav) continue;
-      if (nav.category?.id && nav.category.slug) slugToId.set(nav.category.slug, nav.category.id);
+      if (nav.category?.id && nav.category.slug)
+        slugToId.set(nav.category.slug, nav.category.id);
       const slug = this.slugFromHref(nav.href ?? '');
       if (slug && nav.categoryId) slugToId.set(slug, nav.categoryId);
     }
@@ -302,11 +370,16 @@ export class StorefrontFilterService {
       for (const c of cats) slugToId.set(c.slug, c.id);
     }
 
-    const activeRows = rows.filter((r: TreeRow) => r.navLink?.isActive !== false) as TreeRow[];
+    const activeRows = rows.filter(
+      (r: TreeRow) => r.navLink?.isActive !== false,
+    ) as TreeRow[];
     if (activeRows.length === 0) {
       return { label: filter.name, tree: [] };
     }
-    return { label: filter.name, tree: this.buildBrowseTree(activeRows, slugToId) };
+    return {
+      label: filter.name,
+      tree: this.buildBrowseTree(activeRows, slugToId),
+    };
   }
 
   async syncBrowseTreeFromNavigation(filterId: string) {
@@ -318,7 +391,9 @@ export class StorefrontFilterService {
     });
 
     await this.db.$transaction(async (tx: any) => {
-      const existing = await tx.storefrontFilterTreeNode.findMany({ where: { filterId } });
+      const existing = await tx.storefrontFilterTreeNode.findMany({
+        where: { filterId },
+      });
       const byNavId = new Map<string, { id: string }>();
       for (const row of existing) {
         if (row.navLinkId) byNavId.set(row.navLinkId, row);
@@ -326,7 +401,9 @@ export class StorefrontFilterService {
 
       const navIdToTreeId = new Map<string, string>();
 
-      for (const nav of navLinks.filter((n: { parentId: string | null }) => !n.parentId)) {
+      for (const nav of navLinks.filter(
+        (n: { parentId: string | null }) => !n.parentId,
+      )) {
         const prev = byNavId.get(nav.id);
         const node = prev
           ? await tx.storefrontFilterTreeNode.update({
@@ -345,8 +422,10 @@ export class StorefrontFilterService {
         navIdToTreeId.set(nav.id, node.id);
       }
 
-      for (const nav of navLinks.filter((n: { parentId: string | null }) => n.parentId)) {
-        const parentTreeId = navIdToTreeId.get(nav.parentId!);
+      for (const nav of navLinks.filter(
+        (n: { parentId: string | null }) => n.parentId,
+      )) {
+        const parentTreeId = navIdToTreeId.get(nav.parentId);
         if (!parentTreeId) continue;
         const prev = byNavId.get(nav.id);
         const node = prev
@@ -367,7 +446,10 @@ export class StorefrontFilterService {
       }
 
       const validNavIds = new Set(navLinks.map((n: { id: string }) => n.id));
-      const stale = existing.filter((r: { navLinkId: string | null }) => r.navLinkId && !validNavIds.has(r.navLinkId));
+      const stale = existing.filter(
+        (r: { navLinkId: string | null }) =>
+          r.navLinkId && !validNavIds.has(r.navLinkId),
+      );
       if (stale.length) {
         await tx.storefrontFilterTreeNode.deleteMany({
           where: { id: { in: stale.map((s: { id: string }) => s.id) } },
@@ -378,8 +460,13 @@ export class StorefrontFilterService {
     return this.listBrowseTreeForAdmin(filterId);
   }
 
-  async updateBrowseTreeNode(nodeId: string, dto: UpdateFilterBrowseTreeNodeDto) {
-    const row = await this.db.storefrontFilterTreeNode.findUnique({ where: { id: nodeId } });
+  async updateBrowseTreeNode(
+    nodeId: string,
+    dto: UpdateFilterBrowseTreeNodeDto,
+  ) {
+    const row = await this.db.storefrontFilterTreeNode.findUnique({
+      where: { id: nodeId },
+    });
     if (!row) throw new NotFoundException('Browse tree node not found');
     if (dto.parentId !== undefined && dto.parentId === nodeId) {
       throw new BadRequestException('A node cannot be its own parent.');
@@ -392,7 +479,11 @@ export class StorefrontFilterService {
         ...(dto.parentId !== undefined ? { parentId: dto.parentId } : {}),
       },
       include: {
-        navLink: { include: { category: { select: { id: true, name: true, slug: true } } } },
+        navLink: {
+          include: {
+            category: { select: { id: true, name: true, slug: true } },
+          },
+        },
       },
     });
   }

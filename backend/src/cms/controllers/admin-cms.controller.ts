@@ -86,7 +86,10 @@ export class AdminCmsController {
 
   @Patch('blocks/:id')
   @RequirePermissions('cms.manage')
-  updateBlock(@Param('id') id: string, @Body() dto: Partial<UpsertCmsBlockDto>) {
+  updateBlock(
+    @Param('id') id: string,
+    @Body() dto: Partial<UpsertCmsBlockDto>,
+  ) {
     return this.cmsService.updateBlock(id, dto);
   }
 
@@ -102,8 +105,12 @@ export class AdminCmsController {
   @UseInterceptors(
     FileInterceptor('file', {
       fileFilter: (_req, file, cb) => {
-        const allowedMime = /^image\/(jpeg|png|webp|gif|avif)$/i.test(file.mimetype || '');
-        const allowedExt = /\.(jpe?g|png|webp|gif|avif)$/i.test(file.originalname || '');
+        const allowedMime = /^image\/(jpeg|png|webp|gif|avif)$/i.test(
+          file.mimetype || '',
+        );
+        const allowedExt = /\.(jpe?g|png|webp|gif|avif)$/i.test(
+          file.originalname || '',
+        );
         if (allowedMime && allowedExt) {
           cb(null, true);
           return;
@@ -135,7 +142,8 @@ export class AdminCmsController {
     @Req() req: Request,
   ) {
     const publicBaseUrl = process.env.PUBLIC_BASE_URL?.trim();
-    const protoRaw = (req.headers['x-forwarded-proto'] as string | undefined) || req.protocol;
+    const protoRaw =
+      (req.headers['x-forwarded-proto'] as string | undefined) || req.protocol;
     const proto = protoRaw === 'https' ? 'https' : 'http';
     const host = req.get('host')?.trim() || 'localhost:3000';
     const normalizedPath = file.path.replace(/\\/g, '/');
@@ -171,7 +179,10 @@ export class AdminCmsController {
 
   @Patch('sliders/:id')
   @RequirePermissions('cms.manage')
-  updateSlider(@Param('id') id: string, @Body() dto: Partial<UpsertCmsSliderDto>) {
+  updateSlider(
+    @Param('id') id: string,
+    @Body() dto: Partial<UpsertCmsSliderDto>,
+  ) {
     return this.cmsService.updateSlider(id, dto);
   }
 

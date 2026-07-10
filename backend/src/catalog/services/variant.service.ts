@@ -16,7 +16,10 @@ export class VariantService {
     private readonly productService: ProductService,
   ) {}
 
-  async validateSkuUniqueness(sku: string, excludeVariantId?: string): Promise<void> {
+  async validateSkuUniqueness(
+    sku: string,
+    excludeVariantId?: string,
+  ): Promise<void> {
     const variant = await this.prisma.productVariant.findUnique({
       where: { sku },
       select: { id: true },
@@ -166,9 +169,15 @@ export class VariantService {
       data: {
         ...(updateVariantDto.sku && { sku: updateVariantDto.sku }),
         ...(updateVariantDto.name && { name: updateVariantDto.name }),
-        ...(updateVariantDto.price !== undefined && { price: updateVariantDto.price }),
-        ...(updateVariantDto.cost !== undefined && { cost: updateVariantDto.cost }),
-        ...(updateVariantDto.weight !== undefined && { weight: updateVariantDto.weight }),
+        ...(updateVariantDto.price !== undefined && {
+          price: updateVariantDto.price,
+        }),
+        ...(updateVariantDto.cost !== undefined && {
+          cost: updateVariantDto.cost,
+        }),
+        ...(updateVariantDto.weight !== undefined && {
+          weight: updateVariantDto.weight,
+        }),
         ...(updateVariantDto.attributes !== undefined && {
           attributes: updateVariantDto.attributes,
         }),
@@ -207,7 +216,9 @@ export class VariantService {
       .replace(/^-|-$/g, '');
   }
 
-  private buildSignature(pairs: Array<{ optionId: string; valueId: string }>): string {
+  private buildSignature(
+    pairs: Array<{ optionId: string; valueId: string }>,
+  ): string {
     return pairs
       .slice()
       .sort((a, b) => a.optionId.localeCompare(b.optionId))
@@ -260,7 +271,10 @@ export class VariantService {
         values: po.values
           .map((v) => v.value)
           .filter((v) => v.isActive)
-          .sort((a, b) => (a.sortOrder - b.sortOrder) || a.value.localeCompare(b.value)),
+          .sort(
+            (a, b) =>
+              a.sortOrder - b.sortOrder || a.value.localeCompare(b.value),
+          ),
       }))
       .filter((o) => {
         if (o.isRequired && o.values.length === 0) return true;
@@ -277,11 +291,20 @@ export class VariantService {
 
     const optionsForCombos = usable.filter((o) => o.values.length > 0);
     if (optionsForCombos.length === 0) {
-      throw new BadRequestException('Select at least one option value before creating combinations');
+      throw new BadRequestException(
+        'Select at least one option value before creating combinations',
+      );
     }
 
     // Cartesian product of option values (ordered by product option position)
-    type ComboPick = { optionId: string; optionCode: string; optionName: string; valueId: string; value: string; valueCode?: string | null };
+    type ComboPick = {
+      optionId: string;
+      optionCode: string;
+      optionName: string;
+      valueId: string;
+      value: string;
+      valueCode?: string | null;
+    };
     const combos: ComboPick[][] = [];
     const build = (idx: number, acc: ComboPick[]) => {
       if (idx >= optionsForCombos.length) {
@@ -290,14 +313,19 @@ export class VariantService {
       }
       const opt = optionsForCombos[idx];
       for (const val of opt.values) {
-        build(idx + 1, acc.concat([{
-          optionId: opt.optionId,
-          optionCode: opt.optionCode,
-          optionName: opt.optionName,
-          valueId: val.id,
-          value: val.value,
-          valueCode: val.code,
-        }]));
+        build(
+          idx + 1,
+          acc.concat([
+            {
+              optionId: opt.optionId,
+              optionCode: opt.optionCode,
+              optionName: opt.optionName,
+              valueId: val.id,
+              value: val.value,
+              valueCode: val.code,
+            },
+          ]),
+        );
       }
     };
     build(0, []);
@@ -313,16 +341,25 @@ export class VariantService {
 
     const existingSignatures = new Set(
       existingVariants.map((v) =>
-        this.buildSignature(v.optionValues.map((p) => ({ optionId: p.optionId, valueId: p.valueId }))),
+        this.buildSignature(
+          v.optionValues.map((p) => ({
+            optionId: p.optionId,
+            valueId: p.valueId,
+          })),
+        ),
       ),
     );
-    const existingSkus = new Set(existingVariants.map((v) => v.sku.toUpperCase()));
+    const existingSkus = new Set(
+      existingVariants.map((v) => v.sku.toUpperCase()),
+    );
 
     let created = 0;
     let skipped = 0;
 
     for (const picks of combos) {
-      const signature = this.buildSignature(picks.map((p) => ({ optionId: p.optionId, valueId: p.valueId })));
+      const signature = this.buildSignature(
+        picks.map((p) => ({ optionId: p.optionId, valueId: p.valueId })),
+      );
       if (existingSignatures.has(signature)) {
         skipped += 1;
         continue;
@@ -393,4 +430,3 @@ export class VariantService {
     };
   }
 }
-

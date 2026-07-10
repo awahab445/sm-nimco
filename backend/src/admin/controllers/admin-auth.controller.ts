@@ -27,7 +27,10 @@ export class AdminAuthController {
   @Post('login')
   @HttpCode(HttpStatus.OK)
   @UsePipes(new ValidationPipe({ whitelist: true }))
-  async login(@Body() dto: LoginDto, @Res({ passthrough: true }) res: Response) {
+  async login(
+    @Body() dto: LoginDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const result = await this.adminAuthService.login(dto);
     setAdminAuthCookie(res, result.access_token);
     return result;

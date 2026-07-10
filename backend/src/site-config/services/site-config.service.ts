@@ -89,7 +89,8 @@ export class SiteConfigService {
       where: { id: this.singletonId },
       data: {
         ...(dto.logoUrl !== undefined && {
-          logoUrl: dto.logoUrl === null ? null : this.normalizeLogoUrl(dto.logoUrl),
+          logoUrl:
+            dto.logoUrl === null ? null : this.normalizeLogoUrl(dto.logoUrl),
         }),
         ...(dto.logoWidth !== undefined && { logoWidth: dto.logoWidth }),
         ...(dto.logoHeight !== undefined && { logoHeight: dto.logoHeight }),

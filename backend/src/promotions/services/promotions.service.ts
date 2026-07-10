@@ -46,7 +46,9 @@ export class PromotionsService {
         where: { code: dto.code },
       });
       if (existing) {
-        throw new BadRequestException(`Promotion code ${dto.code} already exists`);
+        throw new BadRequestException(
+          `Promotion code ${dto.code} already exists`,
+        );
       }
     }
 
@@ -58,8 +60,14 @@ export class PromotionsService {
     const appliesToAllGroups = dto.appliesToAllGroups ?? false;
 
     // Validate customer group configuration
-    if (appliesToAllGroups && (dto.eligibleCustomerGroupIds?.length || dto.excludedCustomerGroupIds?.length)) {
-      this.logger.warn('Promotion applies to all groups, but specific groups are also specified. Specific groups will be ignored.');
+    if (
+      appliesToAllGroups &&
+      (dto.eligibleCustomerGroupIds?.length ||
+        dto.excludedCustomerGroupIds?.length)
+    ) {
+      this.logger.warn(
+        'Promotion applies to all groups, but specific groups are also specified. Specific groups will be ignored.',
+      );
     }
 
     // Create promotion
@@ -70,7 +78,9 @@ export class PromotionsService {
         description: dto.description || null,
         type: dto.type,
         status,
-        discountValue: dto.discountValue ? parseFloat(dto.discountValue.toString()) : null,
+        discountValue: dto.discountValue
+          ? parseFloat(dto.discountValue.toString())
+          : null,
         discountType: dto.discountType ?? 'percentage',
         scope,
         isStackable,
@@ -136,7 +146,10 @@ export class PromotionsService {
     }
 
     // Create promotion customer groups if provided
-    if (!appliesToAllGroups && (dto.eligibleCustomerGroupIds || dto.excludedCustomerGroupIds)) {
+    if (
+      !appliesToAllGroups &&
+      (dto.eligibleCustomerGroupIds || dto.excludedCustomerGroupIds)
+    ) {
       const promotionCustomerGroups: Array<{
         promotionId: string;
         customerGroupId: string;
@@ -185,7 +198,9 @@ export class PromotionsService {
       }
     }
 
-    this.logger.log(`Created promotion: ${promotion.id} (${promotion.code || 'N/A'})`);
+    this.logger.log(
+      `Created promotion: ${promotion.id} (${promotion.code || 'N/A'})`,
+    );
 
     return this.getPromotion(promotion.id);
   }
@@ -301,16 +316,10 @@ export class PromotionsService {
         status: 'active',
         AND: [
           {
-            OR: [
-              { startDate: null },
-              { startDate: { lte: now } },
-            ],
+            OR: [{ startDate: null }, { startDate: { lte: now } }],
           },
           {
-            OR: [
-              { endDate: null },
-              { endDate: { gte: now } },
-            ],
+            OR: [{ endDate: null }, { endDate: { gte: now } }],
           },
         ],
       },
@@ -344,13 +353,18 @@ export class PromotionsService {
     if (dto.couponCode) {
       const couponPromotion = await this.getPromotionByCode(dto.couponCode);
       if (couponPromotion && couponPromotion.status === 'active') {
-        promotionsToCheck = [couponPromotion, ...activePromotions.filter((p) => p.id !== couponPromotion.id)];
+        promotionsToCheck = [
+          couponPromotion,
+          ...activePromotions.filter((p) => p.id !== couponPromotion.id),
+        ];
       }
     }
 
     // Filter by promotion IDs if provided
     if (dto.promotionIds && dto.promotionIds.length > 0) {
-      promotionsToCheck = promotionsToCheck.filter((p) => dto.promotionIds!.includes(p.id));
+      promotionsToCheck = promotionsToCheck.filter((p) =>
+        dto.promotionIds!.includes(p.id),
+      );
     }
 
     // Check eligibility and apply promotions
@@ -369,9 +383,10 @@ export class PromotionsService {
       });
 
       // Get promotion customer groups
-      const promotionCustomerGroups = await this.prisma.promotionCustomerGroup.findMany({
-        where: { promotionId: promotion.id },
-      });
+      const promotionCustomerGroups =
+        await this.prisma.promotionCustomerGroup.findMany({
+          where: { promotionId: promotion.id },
+        });
 
       // Build eligibility context
       const context = {
@@ -396,7 +411,10 @@ export class PromotionsService {
       );
 
       // Also check other conditions (min order amount, products, categories) using rules engine
-      const otherConditionsResult = this.rulesEngine.checkConditions(promotion.conditions, context);
+      const otherConditionsResult = this.rulesEngine.checkConditions(
+        promotion.conditions,
+        context,
+      );
       if (!otherConditionsResult.eligible) {
         continue;
       }
@@ -462,7 +480,9 @@ export class PromotionsService {
           couponCode: promotion.code,
           discountAmount,
           subtotalBefore: subtotal,
-          subtotalAfter: subtotal - appliedPromotions.reduce((sum, p) => sum + p.discountAmount, 0),
+          subtotalAfter:
+            subtotal -
+            appliedPromotions.reduce((sum, p) => sum + p.discountAmount, 0),
           status: 'applied',
         });
 
@@ -526,9 +546,10 @@ export class PromotionsService {
     const promotion = await this.getPromotion(dto.promotionId);
 
     // Get promotion customer groups
-    const promotionCustomerGroups = await this.prisma.promotionCustomerGroup.findMany({
-      where: { promotionId: promotion.id },
-    });
+    const promotionCustomerGroups =
+      await this.prisma.promotionCustomerGroup.findMany({
+        where: { promotionId: promotion.id },
+      });
 
     const context = {
       subtotal: dto.subtotal,
@@ -552,7 +573,10 @@ export class PromotionsService {
     );
 
     // Also check other conditions (min order amount, products, categories) using rules engine
-    const otherConditionsResult = this.rulesEngine.checkConditions(promotion.conditions, context);
+    const otherConditionsResult = this.rulesEngine.checkConditions(
+      promotion.conditions,
+      context,
+    );
     if (!otherConditionsResult.eligible) {
       return otherConditionsResult;
     }
@@ -644,7 +668,9 @@ export class PromotionsService {
         new PromotionExpiredEvent(promotion.id, promotion.code),
       );
 
-      this.logger.log(`Expired promotion: ${promotion.id} (${promotion.code || 'N/A'})`);
+      this.logger.log(
+        `Expired promotion: ${promotion.id} (${promotion.code || 'N/A'})`,
+      );
     }
   }
 
@@ -691,13 +717,15 @@ export class PromotionsService {
       description: promotion.description,
       type: promotion.type,
       status: promotion.status,
-      discountValue: promotion.discountValue ? parseFloat(promotion.discountValue.toString()) : null,
+      discountValue: promotion.discountValue
+        ? parseFloat(promotion.discountValue.toString())
+        : null,
       discountType: promotion.discountType,
       scope: promotion.scope,
       isStackable: promotion.isStackable,
       isExclusive: promotion.isExclusive,
       appliesToAllGroups: promotion.appliesToAllGroups ?? false,
-      conditions: promotion.conditions as any,
+      conditions: promotion.conditions,
       usageLimit: promotion.usageLimit,
       usageLimitPerUser: promotion.usageLimitPerUser,
       currentUsage: promotion.currentUsage,
@@ -719,12 +747,14 @@ export class PromotionsService {
     }
 
     if (Array.isArray(promotion.promotionCustomerGroups)) {
-      base.promotionCustomerGroups = promotion.promotionCustomerGroups.map((cg: any) => ({
-        id: cg.id,
-        promotionId: cg.promotionId,
-        customerGroupId: cg.customerGroupId,
-        isExcluded: cg.isExcluded,
-      }));
+      base.promotionCustomerGroups = promotion.promotionCustomerGroups.map(
+        (cg: any) => ({
+          id: cg.id,
+          promotionId: cg.promotionId,
+          customerGroupId: cg.customerGroupId,
+          isExcluded: cg.isExcluded,
+        }),
+      );
     }
 
     return base;
@@ -751,4 +781,3 @@ export class PromotionsService {
     };
   }
 }
-

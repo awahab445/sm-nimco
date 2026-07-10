@@ -7,6 +7,7 @@ import { FreeMode, Navigation } from 'swiper/modules';
 import { resolveImageUrl } from '@/lib/resolve-image-url';
 import { imageAlt } from '@/lib/seo';
 import type { ProductImage } from '@/lib/api-client';
+import { StorefrontImage } from '@/components/ui/storefront-image';
 
 import 'swiper/css';
 import 'swiper/css/free-mode';
@@ -105,17 +106,19 @@ export function ProductImageGallery({ images, productName, selectedId, onSelect 
           }}
         >
           {imageUrl ? (
-            <img
+            <StorefrontImage
               src={imageUrl}
               alt={mainAlt}
-              className="h-full w-full object-cover object-center transition-transform duration-200 ease-out will-change-transform"
+              fill
+              sizes="(min-width: 1024px) 50vw, 100vw"
+              className="object-cover object-center transition-transform duration-200 ease-out will-change-transform"
               style={{
                 transformOrigin: zoomOrigin,
                 transform: zoomed ? 'scale(2.25)' : 'scale(1)',
               }}
-              sizes="(min-width: 1024px) 50vw, 100vw"
-              decoding="async"
+              priority
               fetchPriority="high"
+              quality={75}
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center text-muted-foreground">No image</div>
@@ -173,11 +176,14 @@ export function ProductImageGallery({ images, productName, selectedId, onSelect 
                     aria-current={isActive}
                   >
                     {thumbUrl ? (
-                      <img
+                      <StorefrontImage
                         src={thumbUrl}
                         alt={imageAlt(img, productName)}
-                        className="h-full w-full object-cover object-center"
+                        fill
+                        sizes="80px"
+                        className="object-cover object-center"
                         loading="lazy"
+                        quality={60}
                       />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center text-[9px] text-muted-foreground">
@@ -213,7 +219,7 @@ export function ProductImageGallery({ images, productName, selectedId, onSelect 
               <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" />
             </svg>
           </button>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
+          {/* eslint-disable-next-line @next/next/no-img-element -- full-res lightbox; avoid optimizer constraints */}
           <img
             src={imageUrl}
             alt={mainAlt}

@@ -55,4 +55,3 @@ export class ShippingEventHandlers {
     // Additional processing can be added here (e.g., send delivery confirmation email)
   }
 }
-

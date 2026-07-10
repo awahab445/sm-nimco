@@ -6,6 +6,8 @@ describe('buildPermissionKey', () => {
   });
 
   it('supports dotted entities', () => {
-    expect(buildPermissionKey('admin.users', 'create')).toBe('admin.users.create');
+    expect(buildPermissionKey('admin.users', 'create')).toBe(
+      'admin.users.create',
+    );
   });
 });

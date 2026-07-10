@@ -43,4 +43,3 @@ export class PaymentFailedEvent {
     public readonly reason?: string,
   ) {}
 }
-

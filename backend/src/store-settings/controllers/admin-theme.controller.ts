@@ -26,7 +26,10 @@ export class AdminThemeController {
   @HttpCode(HttpStatus.OK)
   async updateTheme(@Body() dto: UpdateThemeDto, @Req() req: AdminRequest) {
     const adminUserId = req.user?.sub ?? req.user?.id;
-    const data = await this.storeSettingsService.updateTheme(dto.theme, adminUserId);
+    const data = await this.storeSettingsService.updateTheme(
+      dto.theme,
+      adminUserId,
+    );
     return { data };
   }
 }

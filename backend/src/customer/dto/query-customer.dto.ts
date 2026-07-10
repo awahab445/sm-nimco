@@ -13,4 +13,3 @@ export class QueryCustomerDto {
   @IsOptional()
   search?: string; // Search by email, firstName, lastName
 }
-

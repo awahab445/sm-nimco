@@ -1,4 +1,9 @@
-import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  OnModuleInit,
+  OnModuleDestroy,
+} from '@nestjs/common';
 import Redis from 'ioredis';
 
 export interface CheckoutAddress {
@@ -124,10 +129,18 @@ export class CheckoutRedisService implements OnModuleInit, OnModuleDestroy {
   /**
    * Create a new checkout session
    */
-  async createCheckout(checkoutId: string, session: Omit<CheckoutSession, 'id' | 'createdAt' | 'updatedAt' | 'expiresAt'>): Promise<CheckoutSession> {
+  async createCheckout(
+    checkoutId: string,
+    session: Omit<
+      CheckoutSession,
+      'id' | 'createdAt' | 'updatedAt' | 'expiresAt'
+    >,
+  ): Promise<CheckoutSession> {
     try {
       const now = new Date();
-      const expiresAt = new Date(now.getTime() + this.CHECKOUT_TTL_SECONDS * 1000);
+      const expiresAt = new Date(
+        now.getTime() + this.CHECKOUT_TTL_SECONDS * 1000,
+      );
 
       const checkout: CheckoutSession = {
         ...session,
@@ -138,7 +151,11 @@ export class CheckoutRedisService implements OnModuleInit, OnModuleDestroy {
       };
 
       const key = `checkout:${checkoutId}`;
-      await this.client.setex(key, this.CHECKOUT_TTL_SECONDS, JSON.stringify(checkout));
+      await this.client.setex(
+        key,
+        this.CHECKOUT_TTL_SECONDS,
+        JSON.stringify(checkout),
+      );
 
       return checkout;
     } catch (error) {
@@ -154,13 +171,19 @@ export class CheckoutRedisService implements OnModuleInit, OnModuleDestroy {
     try {
       const key = `checkout:${checkout.id}`;
       checkout.updatedAt = new Date().toISOString();
-      
+
       // Extend TTL on update
       const now = new Date();
-      const expiresAt = new Date(now.getTime() + this.CHECKOUT_TTL_SECONDS * 1000);
+      const expiresAt = new Date(
+        now.getTime() + this.CHECKOUT_TTL_SECONDS * 1000,
+      );
       checkout.expiresAt = expiresAt.toISOString();
 
-      await this.client.setex(key, this.CHECKOUT_TTL_SECONDS, JSON.stringify(checkout));
+      await this.client.setex(
+        key,
+        this.CHECKOUT_TTL_SECONDS,
+        JSON.stringify(checkout),
+      );
     } catch (error) {
       this.logger.error(`Failed to update checkout ${checkout.id}:`, error);
       throw new Error(`Failed to update checkout: ${error.message}`);
@@ -189,7 +212,10 @@ export class CheckoutRedisService implements OnModuleInit, OnModuleDestroy {
       const exists = await this.client.exists(key);
       return exists === 1;
     } catch (error) {
-      this.logger.error(`Failed to check checkout existence ${checkoutId}:`, error);
+      this.logger.error(
+        `Failed to check checkout existence ${checkoutId}:`,
+        error,
+      );
       return false;
     }
   }
@@ -202,9 +228,11 @@ export class CheckoutRedisService implements OnModuleInit, OnModuleDestroy {
       const key = `checkout:${checkoutId}`;
       await this.client.expire(key, this.CHECKOUT_TTL_SECONDS);
     } catch (error) {
-      this.logger.error(`Failed to extend TTL for checkout ${checkoutId}:`, error);
+      this.logger.error(
+        `Failed to extend TTL for checkout ${checkoutId}:`,
+        error,
+      );
       // Don't throw - TTL extension failure shouldn't break the operation
     }
   }
 }
-

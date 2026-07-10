@@ -56,7 +56,10 @@ export class CheckoutController {
     @Body() updateAddressDto: UpdateAddressDto,
   ) {
     this.logger.log(`Updating addresses for checkout ${checkoutId}`);
-    return await this.checkoutService.updateAddresses(checkoutId, updateAddressDto);
+    return await this.checkoutService.updateAddresses(
+      checkoutId,
+      updateAddressDto,
+    );
   }
 
   /**
@@ -70,7 +73,10 @@ export class CheckoutController {
     @Body() shippingMethodDto: ShippingMethodDto,
   ) {
     this.logger.log(`Updating shipping method for checkout ${checkoutId}`);
-    return await this.checkoutService.updateShippingMethod(checkoutId, shippingMethodDto);
+    return await this.checkoutService.updateShippingMethod(
+      checkoutId,
+      shippingMethodDto,
+    );
   }
 
   /**
@@ -112,8 +118,14 @@ export class CheckoutController {
     @Param('variantId') variantId: string,
     @Body() updateDto: UpdateCheckoutItemDto,
   ) {
-    this.logger.log(`Updating item ${variantId} quantity for checkout ${checkoutId}`);
-    return await this.checkoutService.updateCheckoutItem(checkoutId, variantId, updateDto);
+    this.logger.log(
+      `Updating item ${variantId} quantity for checkout ${checkoutId}`,
+    );
+    return await this.checkoutService.updateCheckoutItem(
+      checkoutId,
+      variantId,
+      updateDto,
+    );
   }
 
   /**
@@ -127,7 +139,9 @@ export class CheckoutController {
     @Body() confirmCheckoutDto: ConfirmCheckoutDto,
   ) {
     this.logger.log(`Confirming checkout ${checkoutId}`);
-    return await this.checkoutService.confirmCheckout(checkoutId, confirmCheckoutDto);
+    return await this.checkoutService.confirmCheckout(
+      checkoutId,
+      confirmCheckoutDto,
+    );
   }
 }
-

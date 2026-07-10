@@ -1,4 +1,16 @@
-import { Controller, Post, Get, Body, Query, HttpCode, HttpStatus, BadRequestException, UseGuards, UseInterceptors, UploadedFile } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  Query,
+  HttpCode,
+  HttpStatus,
+  BadRequestException,
+  UseGuards,
+  UseInterceptors,
+  UploadedFile,
+} from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { InventoryService } from '../services/inventory.service';
@@ -28,8 +40,14 @@ export class AdminInventoryController {
     if (!variantId || typeof variantId !== 'string' || !variantId.trim()) {
       throw new BadRequestException('Query parameter variantId is required');
     }
-    const wh = (warehouseId && warehouseId.trim()) ? warehouseId.trim() : DEFAULT_WAREHOUSE_ID;
-    const status = await this.inventoryService.getInventoryStatus(variantId.trim(), wh);
+    const wh =
+      warehouseId && warehouseId.trim()
+        ? warehouseId.trim()
+        : DEFAULT_WAREHOUSE_ID;
+    const status = await this.inventoryService.getInventoryStatus(
+      variantId.trim(),
+      wh,
+    );
     return { success: true, data: status };
   }
 
@@ -43,8 +61,14 @@ export class AdminInventoryController {
     if (!productId || typeof productId !== 'string' || !productId.trim()) {
       throw new BadRequestException('Query parameter productId is required');
     }
-    const wh = (warehouseId && warehouseId.trim()) ? warehouseId.trim() : DEFAULT_WAREHOUSE_ID;
-    const matrix = await this.inventoryService.getProductInventoryMatrix(productId.trim(), wh);
+    const wh =
+      warehouseId && warehouseId.trim()
+        ? warehouseId.trim()
+        : DEFAULT_WAREHOUSE_ID;
+    const matrix = await this.inventoryService.getProductInventoryMatrix(
+      productId.trim(),
+      wh,
+    );
     return { success: true, data: matrix };
   }
 
@@ -52,7 +76,8 @@ export class AdminInventoryController {
   @RequirePermissions('inventory.manage')
   @HttpCode(HttpStatus.OK)
   async adjustStock(@Body() adjustStockDto: AdjustStockDto) {
-    const inventoryItem = await this.inventoryService.adjustStock(adjustStockDto);
+    const inventoryItem =
+      await this.inventoryService.adjustStock(adjustStockDto);
     return {
       success: true,
       data: {
@@ -77,9 +102,10 @@ export class AdminInventoryController {
     if (!productId || typeof productId !== 'string' || !productId.trim()) {
       throw new BadRequestException('Query parameter productId is required');
     }
-    const wh = (dto.warehouseId && dto.warehouseId.trim())
-      ? dto.warehouseId.trim()
-      : DEFAULT_WAREHOUSE_ID;
+    const wh =
+      dto.warehouseId && dto.warehouseId.trim()
+        ? dto.warehouseId.trim()
+        : DEFAULT_WAREHOUSE_ID;
     const result = await this.inventoryService.setProductInventoryQuantities(
       productId.trim(),
       wh,
@@ -92,9 +118,10 @@ export class AdminInventoryController {
   @RequirePermissions('inventory.manage')
   @HttpCode(HttpStatus.OK)
   async bulkAdjustStock(@Body() dto: BulkAdjustStockDto) {
-    const wh = (dto.warehouseId && dto.warehouseId.trim())
-      ? dto.warehouseId.trim()
-      : DEFAULT_WAREHOUSE_ID;
+    const wh =
+      dto.warehouseId && dto.warehouseId.trim()
+        ? dto.warehouseId.trim()
+        : DEFAULT_WAREHOUSE_ID;
     const result = await this.inventoryService.bulkAdjustStock(
       dto.items,
       wh,
@@ -124,7 +151,9 @@ export class AdminInventoryController {
           return;
         }
         cb(
-          new BadRequestException('Only .csv and .xlsx files are supported') as any,
+          new BadRequestException(
+            'Only .csv and .xlsx files are supported',
+          ) as any,
           false,
         );
       },
@@ -132,14 +161,20 @@ export class AdminInventoryController {
   )
   @HttpCode(HttpStatus.OK)
   async bulkImportStock(
-    @UploadedFile() file: { buffer: Buffer; originalname: string; mimetype?: string } | undefined,
+    @UploadedFile()
+    file:
+      | { buffer: Buffer; originalname: string; mimetype?: string }
+      | undefined,
     @Query('warehouseId') warehouseId?: string,
     @Query('defaultReason') defaultReason?: string,
   ) {
     if (!file?.buffer?.length) {
       throw new BadRequestException('A .csv or .xlsx file is required');
     }
-    const wh = (warehouseId && warehouseId.trim()) ? warehouseId.trim() : DEFAULT_WAREHOUSE_ID;
+    const wh =
+      warehouseId && warehouseId.trim()
+        ? warehouseId.trim()
+        : DEFAULT_WAREHOUSE_ID;
     const result = await this.inventoryService.bulkImportStock(
       {
         buffer: file.buffer,
@@ -152,4 +187,3 @@ export class AdminInventoryController {
     return { success: true, data: result };
   }
 }
-

@@ -91,4 +91,3 @@ export class AdminCustomerGroupController {
     await this.customerGroupService.delete(id);
   }
 }
-

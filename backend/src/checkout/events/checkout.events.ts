@@ -38,4 +38,3 @@ export class PaymentIntentCreatedEvent {
     public readonly currency: string,
   ) {}
 }
-

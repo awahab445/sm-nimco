@@ -65,7 +65,9 @@ export class ShippingLabelService {
   }
 
   async generateBulkLabels(orderIds: string[]): Promise<Buffer> {
-    const uniqueIds = [...new Set(orderIds.map((id) => id.trim()).filter(Boolean))];
+    const uniqueIds = [
+      ...new Set(orderIds.map((id) => id.trim()).filter(Boolean)),
+    ];
     if (uniqueIds.length === 0) {
       throw new BadRequestException('At least one order ID is required.');
     }
@@ -93,10 +95,7 @@ export class ShippingLabelService {
     const paymentMethodByOrderId = new Map<string, string>();
     for (const payment of payments) {
       if (!paymentMethodByOrderId.has(payment.orderId)) {
-        paymentMethodByOrderId.set(
-          payment.orderId,
-          payment.paymentMethod.name,
-        );
+        paymentMethodByOrderId.set(payment.orderId, payment.paymentMethod.name);
       }
     }
 
@@ -344,7 +343,10 @@ export class ShippingLabelService {
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'Unknown PDF render error';
-      this.logger.error(`Failed to generate shipping label PDF: ${message}`, error);
+      this.logger.error(
+        `Failed to generate shipping label PDF: ${message}`,
+        error,
+      );
       throw new BadRequestException(
         `Unable to generate shipping labels PDF: ${message}`,
       );

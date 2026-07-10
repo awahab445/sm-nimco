@@ -49,7 +49,9 @@ export class PaymentController {
   ) {
     const callbackData = {
       ...request.query,
-      ...(typeof request.body === 'object' && request.body !== null ? request.body : {}),
+      ...(typeof request.body === 'object' && request.body !== null
+        ? request.body
+        : {}),
     };
 
     await this.paymentService.verifyCallback(provider, callbackData, {
@@ -78,8 +80,14 @@ export class PaymentController {
 
   @Get('order/:orderId')
   @UseGuards(JwtAuthGuard)
-  async getPaymentsByOrder(@Param('orderId') orderId: string, @Req() request: any) {
-    return this.paymentService.getPaymentsByOrderAuthorized(orderId, request.user);
+  async getPaymentsByOrder(
+    @Param('orderId') orderId: string,
+    @Req() request: any,
+  ) {
+    return this.paymentService.getPaymentsByOrderAuthorized(
+      orderId,
+      request.user,
+    );
   }
 
   @Get('cod/pending')

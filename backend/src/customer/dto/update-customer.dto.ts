@@ -1,4 +1,10 @@
-import { IsString, IsOptional, IsUUID, IsBoolean, IsEmail } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsUUID,
+  IsBoolean,
+  IsEmail,
+} from 'class-validator';
 
 export class UpdateCustomerDto {
   @IsString()
@@ -29,4 +35,3 @@ export class UpdateCustomerDto {
   @IsOptional()
   metadata?: Record<string, any>;
 }
-

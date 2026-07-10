@@ -87,7 +87,10 @@ export class InventoryController {
     await Promise.all(
       variantIds.map(async (variantId) => {
         try {
-          const qty = await this.inventoryService.getAvailableQuantity(variantId, warehouseId);
+          const qty = await this.inventoryService.getAvailableQuantity(
+            variantId,
+            warehouseId,
+          );
           data[variantId] = qty;
         } catch {
           data[variantId] = 0;

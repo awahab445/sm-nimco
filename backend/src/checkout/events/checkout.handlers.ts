@@ -27,7 +27,10 @@ export class CheckoutEventHandlers {
       // Note: Checkout is already completed at this point, so we don't cancel it
       // The order service handles order cancellation
     } catch (error) {
-      this.logger.error(`Failed to handle payment failure for order ${event.orderId}:`, error);
+      this.logger.error(
+        `Failed to handle payment failure for order ${event.orderId}:`,
+        error,
+      );
     }
   }
 
@@ -44,7 +47,10 @@ export class CheckoutEventHandlers {
       // Checkout is already marked as completed in confirmCheckout
       // This handler is here for potential cleanup or additional processing
     } catch (error) {
-      this.logger.error(`Failed to handle order creation ${event.orderId}:`, error);
+      this.logger.error(
+        `Failed to handle order creation ${event.orderId}:`,
+        error,
+      );
     }
   }
 
@@ -55,11 +61,16 @@ export class CheckoutEventHandlers {
   @OnEvent('checkout.expired')
   async handleCheckoutExpired(event: CheckoutExpiredEvent) {
     try {
-      await this.checkoutService.cancelCheckout(event.checkoutId, 'Session expired');
+      await this.checkoutService.cancelCheckout(
+        event.checkoutId,
+        'Session expired',
+      );
       this.logger.log(`Checkout ${event.checkoutId} expired and cleaned up`);
     } catch (error) {
-      this.logger.error(`Failed to handle checkout expiration ${event.checkoutId}:`, error);
+      this.logger.error(
+        `Failed to handle checkout expiration ${event.checkoutId}:`,
+        error,
+      );
     }
   }
 }
-

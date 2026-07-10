@@ -13,4 +13,3 @@ export class ReleaseStockDto {
   @IsOptional()
   referenceId?: string;
 }
-

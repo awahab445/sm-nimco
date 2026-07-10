@@ -80,10 +80,19 @@ describe('AdminRbacService', () => {
       prisma.adminUser.findUnique.mockResolvedValue(
         makeUser({
           isActive: false,
-          roles: [{ role: { slug: 'manager', permissions: [{ permission: { key: 'products.read' } }] } }],
+          roles: [
+            {
+              role: {
+                slug: 'manager',
+                permissions: [{ permission: { key: 'products.read' } }],
+              },
+            },
+          ],
         }),
       );
-      await expect(service.userHasPermission('u1', 'products.read')).resolves.toBe(false);
+      await expect(
+        service.userHasPermission('u1', 'products.read'),
+      ).resolves.toBe(false);
     });
 
     it('returns true for exact permission key', async () => {
@@ -100,7 +109,9 @@ describe('AdminRbacService', () => {
           ],
         }),
       );
-      await expect(service.userHasPermission('u1', 'products.read')).resolves.toBe(true);
+      await expect(
+        service.userHasPermission('u1', 'products.read'),
+      ).resolves.toBe(true);
     });
 
     it('returns true when user has products.manage and key is products.read (wildcard)', async () => {
@@ -117,9 +128,15 @@ describe('AdminRbacService', () => {
           ],
         }),
       );
-      await expect(service.userHasPermission('u1', 'products.read')).resolves.toBe(true);
-      await expect(service.userHasPermission('u1', 'products.update')).resolves.toBe(true);
-      await expect(service.userHasPermission('u1', 'products.delete')).resolves.toBe(true);
+      await expect(
+        service.userHasPermission('u1', 'products.read'),
+      ).resolves.toBe(true);
+      await expect(
+        service.userHasPermission('u1', 'products.update'),
+      ).resolves.toBe(true);
+      await expect(
+        service.userHasPermission('u1', 'products.delete'),
+      ).resolves.toBe(true);
     });
 
     it('does not treat products.manage as satisfying orders.read', async () => {
@@ -136,7 +153,9 @@ describe('AdminRbacService', () => {
           ],
         }),
       );
-      await expect(service.userHasPermission('u1', 'orders.read')).resolves.toBe(false);
+      await expect(
+        service.userHasPermission('u1', 'orders.read'),
+      ).resolves.toBe(false);
     });
 
     it('returns true for admin.access.full', async () => {
@@ -153,7 +172,9 @@ describe('AdminRbacService', () => {
           ],
         }),
       );
-      await expect(service.userHasPermission('u1', 'products.read')).resolves.toBe(true);
+      await expect(
+        service.userHasPermission('u1', 'products.read'),
+      ).resolves.toBe(true);
     });
 
     it('returns true for super-admin role regardless of permissions', async () => {
@@ -163,7 +184,9 @@ describe('AdminRbacService', () => {
           roles: [{ role: { slug: SUPER_ADMIN_ROLE_SLUG, permissions: [] } }],
         }),
       );
-      await expect(service.userHasPermission('u1', 'anything.here')).resolves.toBe(true);
+      await expect(
+        service.userHasPermission('u1', 'anything.here'),
+      ).resolves.toBe(true);
     });
   });
 
@@ -182,7 +205,9 @@ describe('AdminRbacService', () => {
           ],
         }),
       );
-      await expect(service.userHasAllPermissions('u1', ['products.read'])).resolves.toBe(true);
+      await expect(
+        service.userHasAllPermissions('u1', ['products.read']),
+      ).resolves.toBe(true);
       await expect(
         service.userHasAllPermissions('u1', ['products.read', 'orders.read']),
       ).resolves.toBe(false);
@@ -191,9 +216,9 @@ describe('AdminRbacService', () => {
 
   describe('checkPermission', () => {
     it('throws UnauthorizedException when adminUserId is null', async () => {
-      await expect(service.checkPermission(null, 'products', 'read')).rejects.toBeInstanceOf(
-        UnauthorizedException,
-      );
+      await expect(
+        service.checkPermission(null, 'products', 'read'),
+      ).rejects.toBeInstanceOf(UnauthorizedException);
     });
 
     it('throws ForbiddenException when permission missing', async () => {
@@ -210,12 +235,12 @@ describe('AdminRbacService', () => {
           ],
         }),
       );
-      await expect(service.checkPermission('u1', 'products', 'read')).rejects.toThrow(
-        ForbiddenException,
-      );
-      await expect(service.checkPermission('u1', 'products', 'read')).rejects.toThrow(
-        /Missing permission: products\.read/,
-      );
+      await expect(
+        service.checkPermission('u1', 'products', 'read'),
+      ).rejects.toThrow(ForbiddenException);
+      await expect(
+        service.checkPermission('u1', 'products', 'read'),
+      ).rejects.toThrow(/Missing permission: products\.read/);
     });
 
     it('resolves when entity.action is granted via manage wildcard', async () => {
@@ -232,7 +257,9 @@ describe('AdminRbacService', () => {
           ],
         }),
       );
-      await expect(service.checkPermission('u1', 'products', 'read')).resolves.toBeUndefined();
+      await expect(
+        service.checkPermission('u1', 'products', 'read'),
+      ).resolves.toBeUndefined();
     });
   });
 
@@ -241,10 +268,19 @@ describe('AdminRbacService', () => {
       prisma.adminUser.findUnique.mockResolvedValue(
         makeUser({
           isActive: false,
-          roles: [{ role: { slug: 'manager', permissions: [{ permission: { key: 'products.read' } }] } }],
+          roles: [
+            {
+              role: {
+                slug: 'manager',
+                permissions: [{ permission: { key: 'products.read' } }],
+              },
+            },
+          ],
         }),
       );
-      await expect(service.getEffectivePermissionKeys('u1')).resolves.toEqual([]);
+      await expect(service.getEffectivePermissionKeys('u1')).resolves.toEqual(
+        [],
+      );
     });
 
     it('returns all permission keys from DB for super-admin', async () => {
@@ -258,7 +294,10 @@ describe('AdminRbacService', () => {
         { key: 'a' },
         { key: 'b' },
       ]);
-      await expect(service.getEffectivePermissionKeys('u1')).resolves.toEqual(['a', 'b']);
+      await expect(service.getEffectivePermissionKeys('u1')).resolves.toEqual([
+        'a',
+        'b',
+      ]);
     });
 
     it('returns deduped explicit keys for non-super user', async () => {

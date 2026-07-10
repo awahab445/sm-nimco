@@ -24,14 +24,18 @@ export type JwtValidatePayload =
     };
 
 /** Use on routes protected by {@link CustomerJwtAuthGuard}. */
-export type CustomerJwtPayload = Extract<JwtValidatePayload, { typ: 'customer' }>;
+export type CustomerJwtPayload = Extract<
+  JwtValidatePayload,
+  { typ: 'customer' }
+>;
 
 function extractJwtFromRequest(req: Request): string | null {
   const bearer = ExtractJwt.fromAuthHeaderAsBearerToken()(req);
   if (bearer) {
     return bearer;
   }
-  const cookies = (req as Request & { cookies?: Record<string, string> }).cookies;
+  const cookies = (req as Request & { cookies?: Record<string, string> })
+    .cookies;
   if (!cookies) {
     return null;
   }
@@ -56,7 +60,9 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
         where: { id: payload.sub },
       });
       if (!admin || !admin.isActive) {
-        throw new UnauthorizedException('Admin user is inactive or no longer exists');
+        throw new UnauthorizedException(
+          'Admin user is inactive or no longer exists',
+        );
       }
       return {
         typ: 'admin',

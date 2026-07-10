@@ -8,7 +8,10 @@ export class StorefrontBundleDealController {
   @Get()
   @Header('Cache-Control', 'public, max-age=60')
   async list() {
-    const result = await this.bundleDealService.listDeals({ activeOnly: true, limit: 50 });
+    const result = await this.bundleDealService.listDeals({
+      activeOnly: true,
+      limit: 50,
+    });
     return { data: result.data };
   }
 

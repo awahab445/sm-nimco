@@ -7,7 +7,10 @@ import {
 import { PrismaService } from './prisma.service';
 import { CreateProductDto, ProductStatus } from '../dto/create-product.dto';
 import { UpdateProductDto } from '../dto/update-product.dto';
-import { ProductQuery, expandCategoryFilterWithDescendants } from '../queries/product.query';
+import {
+  ProductQuery,
+  expandCategoryFilterWithDescendants,
+} from '../queries/product.query';
 import { ProductQueryDto } from '../dto/product-query.dto';
 import { ProductFacetAggregate } from '../queries/product-facet-aggregate';
 import { AdminProductListQueryDto } from '../dto/admin-product-list-query.dto';
@@ -17,7 +20,7 @@ export class ProductService {
   constructor(private readonly prisma: PrismaService) {}
 
   async generateSlug(name: string, existingId?: string): Promise<string> {
-    let baseSlug = name
+    const baseSlug = name
       .toLowerCase()
       .trim()
       .replace(/[^\w\s-]/g, '')
@@ -42,7 +45,10 @@ export class ProductService {
     }
   }
 
-  async validateSkuUniqueness(sku: string, excludeProductId?: string): Promise<void> {
+  async validateSkuUniqueness(
+    sku: string,
+    excludeProductId?: string,
+  ): Promise<void> {
     const product = await this.prisma.product.findUnique({
       where: { sku },
       select: { id: true },
@@ -66,8 +72,7 @@ export class ProductService {
     await this.validateSkuUniqueness(createProductDto.sku);
 
     const slug =
-      createProductDto.slug ||
-      (await this.generateSlug(createProductDto.name));
+      createProductDto.slug || (await this.generateSlug(createProductDto.name));
 
     const product = await this.prisma.product.create({
       data: {
@@ -128,7 +133,9 @@ export class ProductService {
   async findAllAdmin(query: AdminProductListQueryDto) {
     const where = ProductQuery.buildAdminWhereClause(query);
     const include = ProductQuery.buildAdminListInclude();
-    const { skip, take, page } = ProductQuery.buildPaginationParams(query as ProductQueryDto);
+    const { skip, take, page } = ProductQuery.buildPaginationParams(
+      query as ProductQueryDto,
+    );
 
     const [products, total] = await Promise.all([
       this.prisma.product.findMany({
@@ -161,7 +168,11 @@ export class ProductService {
     if (searchTerm.length < 2) {
       return { data: [], total: 0 };
     }
-    const where = ProductQuery.buildWhereClause(ProductQuery.mergeEffectiveQuery({ search: searchTerm } as ProductQueryDto));
+    const where = ProductQuery.buildWhereClause(
+      ProductQuery.mergeEffectiveQuery({
+        search: searchTerm,
+      } as ProductQueryDto),
+    );
     const products = await this.prisma.product.findMany({
       where,
       take,
@@ -178,7 +189,8 @@ export class ProductService {
         },
       },
     });
-    const total = searchTerm.length >= 2 ? await this.prisma.product.count({ where }) : 0;
+    const total =
+      searchTerm.length >= 2 ? await this.prisma.product.count({ where }) : 0;
     return { data: products, total };
   }
 
@@ -359,4 +371,3 @@ export class ProductService {
     });
   }
 }
-

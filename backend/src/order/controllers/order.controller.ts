@@ -59,13 +59,17 @@ export class OrderController {
     @Param('orderNumber') orderNumber: string,
     @Req() request: any,
   ) {
-    const customerId = request.user?.typ === 'customer' ? request.user.customerId : undefined;
+    const customerId =
+      request.user?.typ === 'customer' ? request.user.customerId : undefined;
     return this.orderService.findOneByOrderNumber(orderNumber, customerId);
   }
 
   @Get()
   @UseGuards(CustomerJwtAuthGuard)
-  async findAll(@Query() query: OrderQueryDto & { customerEmail?: string }, @Req() request: any) {
+  async findAll(
+    @Query() query: OrderQueryDto & { customerEmail?: string },
+    @Req() request: any,
+  ) {
     const customerId = request.user?.customerId || undefined;
     return this.orderService.findAll(query, customerId);
   }
@@ -73,7 +77,8 @@ export class OrderController {
   @Get(':id')
   @UseGuards(JwtAuthGuard)
   async findOne(@Param('id') id: string, @Req() request: any) {
-    const customerId = request.user?.typ === 'customer' ? request.user.customerId : undefined;
+    const customerId =
+      request.user?.typ === 'customer' ? request.user.customerId : undefined;
     return this.orderService.findOneById(id, customerId);
   }
 }

@@ -94,7 +94,10 @@ export class AdminSiteConfigController {
       patchDto.logoUrl = publicPath;
     }
 
-    const data = await this.siteConfigService.updateConfig(patchDto, adminUserId);
+    const data = await this.siteConfigService.updateConfig(
+      patchDto,
+      adminUserId,
+    );
     return { data };
   }
 }

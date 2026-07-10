@@ -1,4 +1,8 @@
-import { PromotionType, PromotionScope, PromotionConditions } from '../dto/create-promotion.dto';
+import {
+  PromotionType,
+  PromotionScope,
+  PromotionConditions,
+} from '../dto/create-promotion.dto';
 
 export interface Promotion {
   id: string;
@@ -63,4 +67,3 @@ export interface AppliedPromotion {
   discountAmount: number;
   promotion: Promotion;
 }
-

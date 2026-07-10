@@ -66,7 +66,7 @@ export class BundleDealService {
   }
 
   async generateSlug(title: string, existingId?: string): Promise<string> {
-    let baseSlug = title
+    const baseSlug = title
       .toLowerCase()
       .trim()
       .replace(/[^\w\s-]/g, '')
@@ -97,10 +97,12 @@ export class BundleDealService {
       dealPrice: Number(deal.dealPrice),
       compareAtTotal: Number(deal.compareAtTotal),
       savingsAmount: Number(deal.savingsAmount),
-      savingsPercent: deal.savingsPercent != null ? Number(deal.savingsPercent) : null,
+      savingsPercent:
+        deal.savingsPercent != null ? Number(deal.savingsPercent) : null,
       items: deal.items?.map((item: any) => ({
         ...item,
-        unitListPrice: item.unitListPrice != null ? Number(item.unitListPrice) : null,
+        unitListPrice:
+          item.unitListPrice != null ? Number(item.unitListPrice) : null,
         variant: item.variant
           ? {
               ...item.variant,
@@ -112,7 +114,9 @@ export class BundleDealService {
                   if (!optionName || !valueLabel) return null;
                   return `${optionName}: ${valueLabel}`;
                 })
-                .filter((value: string | null): value is string => Boolean(value)),
+                .filter((value: string | null): value is string =>
+                  Boolean(value),
+                ),
             }
           : null,
       })),
@@ -214,7 +218,10 @@ export class BundleDealService {
     return this.mapDeal(deal);
   }
 
-  private async buildItemsData(items: BundleDealItemDto[], pricing: Awaited<ReturnType<BundleDealPricingService['computePricing']>>) {
+  private async buildItemsData(
+    items: BundleDealItemDto[],
+    pricing: Awaited<ReturnType<BundleDealPricingService['computePricing']>>,
+  ) {
     return items.map((item, index) => {
       const resolved = pricing.items[index];
       return {
@@ -228,7 +235,10 @@ export class BundleDealService {
   }
 
   async create(dto: CreateBundleDealDto) {
-    const pricing = await this.pricingService.computePricing(dto.items, dto.dealPrice);
+    const pricing = await this.pricingService.computePricing(
+      dto.items,
+      dto.dealPrice,
+    );
     const slug = dto.slug?.trim() || (await this.generateSlug(dto.title));
     const itemsData = await this.buildItemsData(dto.items, pricing);
 
@@ -257,13 +267,17 @@ export class BundleDealService {
   async update(id: string, dto: UpdateBundleDealDto) {
     const existing = await this.findById(id);
 
-    let pricing: Awaited<ReturnType<BundleDealPricingService['computePricing']>> | null = null;
+    let pricing: Awaited<
+      ReturnType<BundleDealPricingService['computePricing']>
+    > | null = null;
     if (dto.items || dto.dealPrice != null) {
-      const items = dto.items ?? existing.items.map((i: any) => ({
-        productId: i.productId,
-        variantId: i.variantId ?? undefined,
-        quantity: i.quantity,
-      }));
+      const items =
+        dto.items ??
+        existing.items.map((i: any) => ({
+          productId: i.productId,
+          variantId: i.variantId ?? undefined,
+          quantity: i.quantity,
+        }));
       const dealPrice = dto.dealPrice ?? existing.dealPrice;
       pricing = await this.pricingService.computePricing(items, dealPrice);
     }
@@ -271,17 +285,25 @@ export class BundleDealService {
     let slug = existing.slug;
     if (dto.slug?.trim() && dto.slug.trim() !== existing.slug) {
       slug = await this.generateSlug(dto.slug.trim(), id);
-    } else if (dto.title?.trim() && dto.title.trim() !== existing.title && !dto.slug) {
+    } else if (
+      dto.title?.trim() &&
+      dto.title.trim() !== existing.title &&
+      !dto.slug
+    ) {
       slug = await this.generateSlug(dto.title.trim(), id);
     }
 
     const updateData: Prisma.BundleDealUpdateInput = {
       ...(dto.title != null ? { title: dto.title.trim() } : {}),
       slug,
-      ...(dto.description !== undefined ? { description: dto.description?.trim() || null } : {}),
+      ...(dto.description !== undefined
+        ? { description: dto.description?.trim() || null }
+        : {}),
       ...(dto.status != null ? { status: dto.status } : {}),
       ...(dto.isFeatured != null ? { isFeatured: dto.isFeatured } : {}),
-      ...(dto.imageUrl !== undefined ? { imageUrl: dto.imageUrl?.trim() || null } : {}),
+      ...(dto.imageUrl !== undefined
+        ? { imageUrl: dto.imageUrl?.trim() || null }
+        : {}),
       ...(dto.validFrom !== undefined
         ? { validFrom: dto.validFrom ? new Date(dto.validFrom) : null }
         : {}),
@@ -338,11 +360,15 @@ export class BundleDealService {
     }
 
     if (!this.isCurrentlyActive(deal)) {
-      throw new BadRequestException('This bundle deal is not currently available');
+      throw new BadRequestException(
+        'This bundle deal is not currently available',
+      );
     }
 
     if (deal.items.length < 3) {
-      throw new BadRequestException('Bundle deal is misconfigured (fewer than 3 items)');
+      throw new BadRequestException(
+        'Bundle deal is misconfigured (fewer than 3 items)',
+      );
     }
 
     return this.mapDeal(deal);

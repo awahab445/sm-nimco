@@ -48,22 +48,26 @@ export interface ShippingMethodCustomerGroup {
   updatedAt: Date;
 }
 
-export type ShippingMethodType = 'flat_rate' | 'weight_based' | 'amount_based' | 'courier_api';
+export type ShippingMethodType =
+  | 'flat_rate'
+  | 'weight_based'
+  | 'amount_based'
+  | 'courier_api';
 
 export interface ShippingMethodConfig {
   // For flat_rate
   cost?: number;
-  
+
   // For weight_based
   baseCost?: number;
   costPerKg?: number;
   minWeight?: number;
   maxWeight?: number;
-  
+
   // For amount_based
   freeAbove?: number;
   costBelow?: number;
-  
+
   // For courier_api
   provider?: string;
   serviceType?: string;
@@ -89,5 +93,9 @@ export interface OrderShipping {
   updatedAt: Date;
 }
 
-export type ShippingStatus = 'pending' | 'shipped' | 'in_transit' | 'delivered' | 'cancelled';
-
+export type ShippingStatus =
+  | 'pending'
+  | 'shipped'
+  | 'in_transit'
+  | 'delivered'
+  | 'cancelled';

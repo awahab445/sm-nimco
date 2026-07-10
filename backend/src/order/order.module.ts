@@ -30,4 +30,3 @@ import { AdminRbacService } from '../admin/services/admin-rbac.service';
   exports: [OrderService],
 })
 export class OrderModule {}
-

@@ -18,7 +18,7 @@ const WEAK_SECRETS = new Set([
 function corsOriginsFromEnv(): string | string[] {
   const fallback = ['http://localhost:3001', 'http://localhost:3002'];
   const raw = process.env.CORS_ORIGIN?.trim();
-  
+
   if (!raw) return fallback;
 
   const list = raw
@@ -36,7 +36,9 @@ function validateProductionEnv(): void {
 
   const jwtSecret = process.env.JWT_SECRET?.trim();
   if (!jwtSecret || WEAK_SECRETS.has(jwtSecret) || jwtSecret.length < 32) {
-    throw new Error('JWT_SECRET must be set to a strong value (32+ chars) in production.');
+    throw new Error(
+      'JWT_SECRET must be set to a strong value (32+ chars) in production.',
+    );
   }
 
   if (!process.env.DATABASE_URL?.trim()) {
@@ -61,7 +63,7 @@ async function bootstrap() {
   validateProductionEnv();
 
   const app = await NestFactory.create(AppModule, { rawBody: true });
-  
+
   // Create directories asynchronously (Non-blocking)
   const uploadsRoot = join(process.cwd(), 'uploads');
   const uploadDirs = [
@@ -79,7 +81,16 @@ async function bootstrap() {
   // Security Middlewares
   app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
   app.use(cookieParser());
-  app.use('/uploads', express.static(uploadsRoot));
+  // UUID-named upload files are immutable; long cache helps LCP/repeat visits.
+  app.use(
+    '/uploads',
+    express.static(uploadsRoot, {
+      maxAge: '30d',
+      immutable: true,
+      etag: true,
+      lastModified: true,
+    }),
+  );
 
   // CORS Setup
   app.enableCors({

@@ -1,4 +1,10 @@
-import { IsBoolean, IsEnum, IsObject, IsOptional, IsString } from 'class-validator';
+import {
+  IsBoolean,
+  IsEnum,
+  IsObject,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { PaymentFlowType, PaymentProviderCode } from '../types/payment.types';
 
 export class CreateAdminPaymentMethodDto {

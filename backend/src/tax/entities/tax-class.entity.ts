@@ -22,4 +22,3 @@ export interface Tax {
   createdAt: Date;
   updatedAt: Date;
 }
-

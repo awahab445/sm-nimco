@@ -10,6 +10,7 @@ import { formatPrice } from '@/lib/currency';
 import { imageAlt } from '@/lib/seo';
 import { resolveImageUrl } from '@/lib/resolve-image-url';
 import { storefrontUi } from '@/lib/storefront-ui';
+import { StorefrontImage } from '@/components/ui/storefront-image';
 
 /** Matches primary actions elsewhere on product cards (same as Add to cart). */
 const productCardPrimaryCtaClass = storefrontUi.btnPrimaryBlock;
@@ -69,10 +70,14 @@ export function ProductCard({ product, showViewOnly = false, availableQuantity }
     <div className="group flex flex-col overflow-hidden rounded-lg border border-border bg-card text-foreground shadow-product-card transition-all hover:border-primary/35 hover:shadow-md">
       <Link href={`/products/${product.slug}`} className="relative aspect-square overflow-hidden bg-secondary/30">
         {imageUrl ? (
-          <img
+          <StorefrontImage
             src={imageUrl}
             alt={imageAlt(image, product.name)}
-            className="h-full w-full object-cover transition group-hover:scale-105"
+            fill
+            sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+            className="object-cover transition group-hover:scale-105"
+            loading="lazy"
+            quality={70}
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-muted-foreground">

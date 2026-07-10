@@ -23,4 +23,3 @@ import { AdminRbacService } from '../admin/services/admin-rbac.service';
   exports: [InventoryService, ReservationService],
 })
 export class InventoryModule {}
-

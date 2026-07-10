@@ -228,8 +228,7 @@ export class ShippingService {
     const updateData: any = {};
     if (dto.code !== undefined) updateData.code = dto.code;
     if (dto.name !== undefined) updateData.name = dto.name;
-    if (dto.description !== undefined)
-      updateData.description = dto.description;
+    if (dto.description !== undefined) updateData.description = dto.description;
     if (dto.type !== undefined) updateData.type = dto.type;
     if (dto.config !== undefined) updateData.config = dto.config;
     if (dto.minOrderAmount !== undefined)
@@ -322,8 +321,7 @@ export class ShippingService {
       data: {
         shippingMethodId: methodId,
         customerGroupId,
-        discountPercent:
-          discountPercent !== undefined ? discountPercent : null,
+        discountPercent: discountPercent !== undefined ? discountPercent : null,
         fixedCost: fixedCost !== undefined ? fixedCost : null,
         metadata: metadata || {},
       },
@@ -512,12 +510,7 @@ export class ShippingService {
         }
 
         // Calculate base shipping cost
-        let cost = this.calculateCost(
-          method,
-          totalAmount,
-          totalWeight,
-          items,
-        );
+        let cost = this.calculateCost(method, totalAmount, totalWeight, items);
 
         // Apply group-specific pricing if available
         if (eligibility.groupPricing) {
@@ -527,7 +520,10 @@ export class ShippingService {
           } else if (eligibility.groupPricing.discountPercent !== null) {
             // Apply percentage discount
             const discount =
-              (cost * this.parseShippingAmount(eligibility.groupPricing.discountPercent)) /
+              (cost *
+                this.parseShippingAmount(
+                  eligibility.groupPricing.discountPercent,
+                )) /
               100;
             cost = cost - discount;
             this.logger.debug(
@@ -790,7 +786,11 @@ export class ShippingService {
     // Emit event
     this.eventEmitter.emit(
       'shipping.assigned',
-      new ShippingAssignedEvent(orderId, orderShipping.id, dto.shippingMethodId),
+      new ShippingAssignedEvent(
+        orderId,
+        orderShipping.id,
+        dto.shippingMethodId,
+      ),
     );
 
     this.logger.log(
@@ -813,9 +813,7 @@ export class ShippingService {
     });
 
     if (!orderShipping) {
-      throw new NotFoundException(
-        `Shipping not found for order ${orderId}`,
-      );
+      throw new NotFoundException(`Shipping not found for order ${orderId}`);
     }
 
     return this.mapToOrderShippingEntity(orderShipping);
@@ -834,7 +832,9 @@ export class ShippingService {
         select: { customerId: true },
       });
       if (!order || order.customerId !== actor.customerId) {
-        throw new ForbiddenException('You do not have access to this order shipping');
+        throw new ForbiddenException(
+          'You do not have access to this order shipping',
+        );
       }
     }
     return this.getOrderShipping(orderId);
@@ -854,9 +854,7 @@ export class ShippingService {
     });
 
     if (!orderShipping) {
-      throw new NotFoundException(
-        `Shipping not found for order ${orderId}`,
-      );
+      throw new NotFoundException(`Shipping not found for order ${orderId}`);
     }
 
     const updateData: any = {
@@ -915,9 +913,7 @@ export class ShippingService {
       );
     }
 
-    this.logger.log(
-      `Shipping status updated for order ${orderId}: ${status}`,
-    );
+    this.logger.log(`Shipping status updated for order ${orderId}: ${status}`);
 
     return this.mapToOrderShippingEntity(updated);
   }
@@ -947,7 +943,7 @@ export class ShippingService {
       code: method.code,
       name: method.name,
       description: method.description,
-      type: method.type as any,
+      type: method.type,
       config: method.config as ShippingMethodConfig,
       minOrderAmount: method.minOrderAmount
         ? parseFloat(method.minOrderAmount.toString())
@@ -1008,4 +1004,3 @@ export class ShippingService {
     };
   }
 }
-

@@ -71,7 +71,10 @@ export class AdminProductOptionValuesController {
   @Patch(':id')
   @RequirePermissions('products.manage')
   @HttpCode(HttpStatus.OK)
-  async update(@Param('id') id: string, @Body() dto: UpdateProductOptionValueDto) {
+  async update(
+    @Param('id') id: string,
+    @Body() dto: UpdateProductOptionValueDto,
+  ) {
     return this.optionsService.updateOptionValue(id, dto);
   }
 
@@ -82,4 +85,3 @@ export class AdminProductOptionValuesController {
     return this.optionsService.deleteOptionValue(id);
   }
 }
-

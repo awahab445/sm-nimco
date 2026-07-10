@@ -1,8 +1,15 @@
 import type { BrandConfig, OrderEmailDetails } from '../types/email.types';
 import { formatCurrency } from '../utils/format-currency';
-import { escapeHtml, renderEmailLayout, renderPrimaryButton } from './base.template';
+import {
+  escapeHtml,
+  renderEmailLayout,
+  renderPrimaryButton,
+} from './base.template';
 
-function renderOrderItemsTable(order: OrderEmailDetails, brand: BrandConfig): string {
+function renderOrderItemsTable(
+  order: OrderEmailDetails,
+  brand: BrandConfig,
+): string {
   const rows = order.items
     .map(
       (item) => `

@@ -28,7 +28,10 @@ export class AdminAuthService {
   ) {}
 
   async login(dto: LoginDto): Promise<AdminAuthResponse> {
-    const user = await this.adminUserService.validateCredentials(dto.email, dto.password);
+    const user = await this.adminUserService.validateCredentials(
+      dto.email,
+      dto.password,
+    );
     if (!user) {
       throw new UnauthorizedException('Invalid email or password');
     }

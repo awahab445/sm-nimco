@@ -31,7 +31,10 @@ import { AdminJwtAuthGuard } from '../../admin/guards/admin-jwt-auth.guard';
 import { AdminPermissionsGuard } from '../../admin/guards/admin-permissions.guard';
 import { RequirePermissions } from '../../admin/decorators/require-permissions.decorator';
 
-function dealImagePublicPath(file: { path?: string; filename: string }): string {
+function dealImagePublicPath(file: {
+  path?: string;
+  filename: string;
+}): string {
   const normalizedPath = (file.path ?? '').replace(/\\/g, '/');
   return normalizedPath.startsWith('uploads/')
     ? `/${normalizedPath}`
@@ -39,8 +42,14 @@ function dealImagePublicPath(file: { path?: string; filename: string }): string 
 }
 
 const dealImageUploadOptions = {
-  fileFilter: (_req: unknown, file: { mimetype?: string; originalname?: string }, cb: (error: Error | null, acceptFile: boolean) => void) => {
-    const allowedMime = /^image\/(jpeg|png|webp|gif)$/i.test(file.mimetype || '');
+  fileFilter: (
+    _req: unknown,
+    file: { mimetype?: string; originalname?: string },
+    cb: (error: Error | null, acceptFile: boolean) => void,
+  ) => {
+    const allowedMime = /^image\/(jpeg|png|webp|gif)$/i.test(
+      file.mimetype || '',
+    );
     const allowedExt = /\.(jpe?g|png|webp|gif)$/i.test(file.originalname || '');
     if (allowedMime && allowedExt) {
       cb(null, true);
@@ -106,7 +115,10 @@ export class AdminBundleDealController {
         .addMaxSizeValidator({ maxSize: 5 * 1024 * 1024 })
         .build({ fileIsRequired: true }),
     )
-    file: { path?: string; filename: string },
+    file: {
+      path?: string;
+      filename: string;
+    },
   ) {
     return {
       url: dealImagePublicPath(file),
@@ -125,7 +137,8 @@ export class AdminBundleDealController {
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
   async create(
     @Body() dto: CreateBundleDealDto,
-    @UploadedFile(optionalDealImagePipe) image?: { path?: string; filename: string },
+    @UploadedFile(optionalDealImagePipe)
+    image?: { path?: string; filename: string },
   ) {
     if (image) {
       dto.imageUrl = dealImagePublicPath(image);
@@ -140,7 +153,8 @@ export class AdminBundleDealController {
   async update(
     @Param('id') id: string,
     @Body() dto: UpdateBundleDealDto,
-    @UploadedFile(optionalDealImagePipe) image?: { path?: string; filename: string },
+    @UploadedFile(optionalDealImagePipe)
+    image?: { path?: string; filename: string },
   ) {
     if (image) {
       dto.imageUrl = dealImagePublicPath(image);

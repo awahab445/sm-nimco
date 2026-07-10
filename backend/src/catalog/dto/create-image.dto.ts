@@ -28,4 +28,3 @@ export class CreateImageDto {
   @IsOptional()
   variantId?: string;
 }
-

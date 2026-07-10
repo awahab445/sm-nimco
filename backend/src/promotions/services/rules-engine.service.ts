@@ -18,7 +18,10 @@ export class RulesEngineService {
   /**
    * Check if a promotion is eligible for the given context
    */
-  isEligible(promotion: Promotion, context: EligibilityContext): {
+  isEligible(
+    promotion: Promotion,
+    context: EligibilityContext,
+  ): {
     eligible: boolean;
     reason?: string;
   } {
@@ -39,18 +42,27 @@ export class RulesEngineService {
 
     // Check coupon code match (if promotion requires a code)
     if (promotion.code) {
-      if (!context.couponCode || context.couponCode.toLowerCase() !== promotion.code.toLowerCase()) {
+      if (
+        !context.couponCode ||
+        context.couponCode.toLowerCase() !== promotion.code.toLowerCase()
+      ) {
         return { eligible: false, reason: 'Invalid coupon code' };
       }
     }
 
     // Check usage limits
-    if (promotion.usageLimit && promotion.currentUsage >= promotion.usageLimit) {
+    if (
+      promotion.usageLimit &&
+      promotion.currentUsage >= promotion.usageLimit
+    ) {
       return { eligible: false, reason: 'Promotion usage limit reached' };
     }
 
     // Check conditions
-    const conditionsResult = this.checkConditions(promotion.conditions, context);
+    const conditionsResult = this.checkConditions(
+      promotion.conditions,
+      context,
+    );
     if (!conditionsResult.eligible) {
       return conditionsResult;
     }
@@ -184,7 +196,11 @@ export class RulesEngineService {
   getApplicableAmount(
     promotion: Promotion,
     items: CartItem[],
-    promotionProducts?: Array<{ productId?: string | null; variantId?: string | null; categoryId?: string | null }>,
+    promotionProducts?: Array<{
+      productId?: string | null;
+      variantId?: string | null;
+      categoryId?: string | null;
+    }>,
   ): number {
     if (promotion.scope === 'cart') {
       return items.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -218,4 +234,3 @@ export class RulesEngineService {
     return applicableAmount;
   }
 }
-

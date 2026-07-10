@@ -12,7 +12,9 @@ import {
  * Idempotent: upserts permissions, system roles, and role–permission links.
  * Safe to call from `prisma db seed` and from bootstrap when roles are missing.
  */
-export async function ensureAdminRbacSeeded(prisma: PrismaClient): Promise<void> {
+export async function ensureAdminRbacSeeded(
+  prisma: PrismaClient,
+): Promise<void> {
   // ---- Rename migration: catalog.* -> products.* --------------------------
   // Historical: `catalog.read` and `catalog.manage` were the coarse keys for
   // products / categories / product-options. They've been collapsed into
@@ -50,12 +52,14 @@ export async function ensureAdminRbacSeeded(prisma: PrismaClient): Promise<void>
     where: { slug: MANAGER_ROLE_SLUG },
     update: {
       name: 'Operations Manager',
-      description: 'Day-to-day commerce operations without user/role administration.',
+      description:
+        'Day-to-day commerce operations without user/role administration.',
     },
     create: {
       slug: MANAGER_ROLE_SLUG,
       name: 'Operations Manager',
-      description: 'Day-to-day commerce operations without user/role administration.',
+      description:
+        'Day-to-day commerce operations without user/role administration.',
       isSystem: true,
     },
   });
@@ -74,10 +78,17 @@ export async function ensureAdminRbacSeeded(prisma: PrismaClient): Promise<void>
     },
   });
 
-  const allPermIds = await prisma.adminPermission.findMany({ select: { id: true } });
-  await prisma.adminRolePermission.deleteMany({ where: { roleId: superRole.id } });
+  const allPermIds = await prisma.adminPermission.findMany({
+    select: { id: true },
+  });
+  await prisma.adminRolePermission.deleteMany({
+    where: { roleId: superRole.id },
+  });
   await prisma.adminRolePermission.createMany({
-    data: allPermIds.map(({ id }) => ({ roleId: superRole.id, permissionId: id })),
+    data: allPermIds.map(({ id }) => ({
+      roleId: superRole.id,
+      permissionId: id,
+    })),
   });
 
   async function assignKeysToRole(roleId: string, keys: string[]) {
@@ -105,7 +116,9 @@ export async function ensureAdminRbacSeeded(prisma: PrismaClient): Promise<void>
  * Renamed `newsletter.manage` → `subscriptions.manage` (email subscription list in admin).
  * Preserves grants on custom roles before dropping the legacy permission row.
  */
-async function migrateNewsletterManageToSubscriptionsManage(prisma: PrismaClient): Promise<void> {
+async function migrateNewsletterManageToSubscriptionsManage(
+  prisma: PrismaClient,
+): Promise<void> {
   const oldKey = 'newsletter.manage';
   const newKey = 'subscriptions.manage';
   const description = 'View storefront email subscriptions (subscriber list)';
@@ -141,8 +154,14 @@ async function migrateNewsletterManageToSubscriptionsManage(prisma: PrismaClient
   await prisma.adminPermission.delete({ where: { id: oldPerm.id } });
 }
 
-async function migrateLegacyCatalogPermissions(prisma: PrismaClient): Promise<void> {
-  const renames: Array<{ oldKey: string; newKey: string; description: string }> = [
+async function migrateLegacyCatalogPermissions(
+  prisma: PrismaClient,
+): Promise<void> {
+  const renames: Array<{
+    oldKey: string;
+    newKey: string;
+    description: string;
+  }> = [
     {
       oldKey: 'catalog.read',
       newKey: 'products.read',

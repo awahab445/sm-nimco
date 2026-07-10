@@ -5,6 +5,7 @@ import { storefrontUi } from '@/lib/storefront-ui';
 import type { StorefrontBundleDeal } from '@/lib/deals/deals.server';
 import { getBundleDiscountPercent } from '@/lib/deals/discount-badge';
 import { BundleDiscountBadge } from '@/components/deals/bundle-discount-badge';
+import { StorefrontImage } from '@/components/ui/storefront-image';
 
 type Props = {
   deal: StorefrontBundleDeal;
@@ -22,18 +23,22 @@ export function DealCard({ deal, featured }: Props) {
         featured ? 'md:col-span-2 md:flex' : ''
       }`}
     >
-      <Link href={`/deals/${deal.slug}`} className={featured ? 'md:w-1/2' : 'block'}>
+      <Link
+        href={`/deals/${deal.slug}`}
+        className={`relative block ${featured ? 'md:w-1/2' : ''} ${featured ? 'h-64 md:h-auto md:min-h-[16rem]' : 'h-48'}`}
+      >
         {imageSrc ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <StorefrontImage
             src={imageSrc}
             alt={deal.title}
-            className={`w-full object-cover ${featured ? 'h-64 md:h-full' : 'h-48'}`}
+            fill
+            sizes={featured ? '(min-width: 768px) 50vw, 100vw' : '(min-width: 768px) 33vw, 100vw'}
+            className="object-cover"
+            loading="lazy"
+            quality={70}
           />
         ) : (
-          <div
-            className={`flex w-full items-center justify-center bg-secondary/40 text-muted-foreground ${featured ? 'h-64 md:h-full' : 'h-48'}`}
-          >
+          <div className="flex h-full w-full items-center justify-center bg-secondary/40 text-muted-foreground">
             Bundle
           </div>
         )}

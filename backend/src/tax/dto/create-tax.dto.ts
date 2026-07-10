@@ -51,4 +51,3 @@ export class CreateTaxDto {
   @IsOptional()
   metadata?: Record<string, any>;
 }
-

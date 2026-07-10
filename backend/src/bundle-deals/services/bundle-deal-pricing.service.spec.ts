@@ -34,9 +34,24 @@ describe('BundleDealPricingService', () => {
 
   it('computes compare-at, savings, and proportional allocation', async () => {
     (variantService.findOneOrForSimpleProduct as jest.Mock)
-      .mockResolvedValueOnce({ id: 'v1', productId: 'p1', price: 100, name: 'A' })
-      .mockResolvedValueOnce({ id: 'v2', productId: 'p2', price: 200, name: 'B' })
-      .mockResolvedValueOnce({ id: 'v3', productId: 'p3', price: 300, name: 'C' });
+      .mockResolvedValueOnce({
+        id: 'v1',
+        productId: 'p1',
+        price: 100,
+        name: 'A',
+      })
+      .mockResolvedValueOnce({
+        id: 'v2',
+        productId: 'p2',
+        price: 200,
+        name: 'B',
+      })
+      .mockResolvedValueOnce({
+        id: 'v3',
+        productId: 'p3',
+        price: 300,
+        name: 'C',
+      });
 
     const result = await service.computePricing(
       [

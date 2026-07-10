@@ -41,4 +41,3 @@ export interface TaxCalculationResult {
   taxTotal: number;
   grandTotal: number;
 }
-

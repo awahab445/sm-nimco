@@ -9,8 +9,11 @@ import { PrismaService } from './prisma.service';
 export class CategoryService {
   constructor(private readonly prisma: PrismaService) {}
 
-  private async generateSlug(name: string, existingId?: string): Promise<string> {
-    let base = name
+  private async generateSlug(
+    name: string,
+    existingId?: string,
+  ): Promise<string> {
+    const base = name
       .toLowerCase()
       .trim()
       .replace(/[^\w\s-]/g, '')
@@ -124,10 +127,17 @@ export class CategoryService {
     return category;
   }
 
-  async create(data: { name: string; slug?: string; description?: string; parentId?: string; position?: number }) {
+  async create(data: {
+    name: string;
+    slug?: string;
+    description?: string;
+    parentId?: string;
+    position?: number;
+  }) {
     const slug = data.slug || (await this.generateSlug(data.name));
     const existing = await this.prisma.category.findUnique({ where: { slug } });
-    if (existing) throw new ConflictException(`Category with slug ${slug} already exists`);
+    if (existing)
+      throw new ConflictException(`Category with slug ${slug} already exists`);
     return this.prisma.category.create({
       data: {
         name: data.name,
@@ -154,8 +164,10 @@ export class CategoryService {
     const updateData: any = {};
     if (data.name !== undefined) updateData.name = data.name;
     if (data.slug !== undefined) updateData.slug = data.slug;
-    else if (data.name) updateData.slug = await this.generateSlug(data.name, id);
-    if (data.description !== undefined) updateData.description = data.description;
+    else if (data.name)
+      updateData.slug = await this.generateSlug(data.name, id);
+    if (data.description !== undefined)
+      updateData.description = data.description;
     if (data.parentId !== undefined) updateData.parentId = data.parentId;
     if (data.position !== undefined) updateData.position = data.position;
     if (data.isActive !== undefined) updateData.isActive = data.isActive;
@@ -164,7 +176,10 @@ export class CategoryService {
 
   async remove(id: string) {
     await this.findById(id);
-    await this.prisma.category.updateMany({ where: { parentId: id }, data: { parentId: null } });
+    await this.prisma.category.updateMany({
+      where: { parentId: id },
+      data: { parentId: null },
+    });
     await this.prisma.productCategory.deleteMany({ where: { categoryId: id } });
     return this.prisma.category.delete({ where: { id } });
   }

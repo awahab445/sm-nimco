@@ -11,10 +11,14 @@ function escapeHtml(value: string): string {
 
 function socialLinksHtml(brand: BrandConfig): string {
   const links: Array<{ label: string; url: string }> = [];
-  if (brand.social.facebook) links.push({ label: 'Facebook', url: brand.social.facebook });
-  if (brand.social.instagram) links.push({ label: 'Instagram', url: brand.social.instagram });
-  if (brand.social.twitter) links.push({ label: 'Twitter', url: brand.social.twitter });
-  if (brand.social.linkedin) links.push({ label: 'LinkedIn', url: brand.social.linkedin });
+  if (brand.social.facebook)
+    links.push({ label: 'Facebook', url: brand.social.facebook });
+  if (brand.social.instagram)
+    links.push({ label: 'Instagram', url: brand.social.instagram });
+  if (brand.social.twitter)
+    links.push({ label: 'Twitter', url: brand.social.twitter });
+  if (brand.social.linkedin)
+    links.push({ label: 'LinkedIn', url: brand.social.linkedin });
 
   if (links.length === 0) {
     return `
@@ -92,7 +96,11 @@ export function renderEmailLayout(options: {
 </html>`;
 }
 
-export function renderPrimaryButton(href: string, label: string, brand: BrandConfig): string {
+export function renderPrimaryButton(
+  href: string,
+  label: string,
+  brand: BrandConfig,
+): string {
   return `
     <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:24px 0;">
       <tr>

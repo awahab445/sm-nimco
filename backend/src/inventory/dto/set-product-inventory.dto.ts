@@ -31,4 +31,3 @@ export class SetProductInventoryDto {
   @Type(() => SetProductInventoryItemDto)
   items!: SetProductInventoryItemDto[];
 }
-

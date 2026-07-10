@@ -43,4 +43,3 @@ export class CreateVariantDto {
   @IsOptional()
   isActive?: boolean;
 }
-

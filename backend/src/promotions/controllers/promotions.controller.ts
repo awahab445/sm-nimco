@@ -52,7 +52,9 @@ export class PromotionsController {
     if (all) {
       const user = request?.user;
       if (!user || user.typ !== 'admin') {
-        throw new ForbiddenException('Admin access required for allStatuses list');
+        throw new ForbiddenException(
+          'Admin access required for allStatuses list',
+        );
       }
       const allowed = await this.rbac.userHasAllPermissions(user.adminUserId, [
         'promotions.manage',

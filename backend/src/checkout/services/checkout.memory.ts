@@ -12,7 +12,9 @@ export class InMemoryCheckoutService {
   private readonly store = new Map<string, CheckoutSession>();
 
   constructor() {
-    this.logger.log('Using in-memory checkout storage (REDIS_ENABLED=false). Data is lost on restart.');
+    this.logger.log(
+      'Using in-memory checkout storage (REDIS_ENABLED=false). Data is lost on restart.',
+    );
   }
 
   async getCheckout(checkoutId: string): Promise<CheckoutSession | null> {
@@ -21,7 +23,10 @@ export class InMemoryCheckoutService {
 
   async createCheckout(
     checkoutId: string,
-    session: Omit<CheckoutSession, 'id' | 'createdAt' | 'updatedAt' | 'expiresAt'>,
+    session: Omit<
+      CheckoutSession,
+      'id' | 'createdAt' | 'updatedAt' | 'expiresAt'
+    >,
   ): Promise<CheckoutSession> {
     const now = new Date();
     const expiresAt = new Date(now.getTime() + 30 * 60 * 1000);

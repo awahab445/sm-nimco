@@ -59,4 +59,3 @@ import { AdminRbacService } from '../admin/services/admin-rbac.service';
   ],
 })
 export class CatalogModule {}
-

@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { PrismaService } from '../catalog/services/prisma.service';
 import { CreateAddressDto } from './dto/create-address.dto';
 import { UpdateAddressDto } from './dto/update-address.dto';
@@ -105,8 +101,12 @@ export class AddressService {
         ...(dto.firstName !== undefined && { firstName: dto.firstName }),
         ...(dto.lastName !== undefined && { lastName: dto.lastName }),
         ...(dto.company !== undefined && { company: dto.company }),
-        ...(dto.addressLine1 !== undefined && { addressLine1: dto.addressLine1 }),
-        ...(dto.addressLine2 !== undefined && { addressLine2: dto.addressLine2 }),
+        ...(dto.addressLine1 !== undefined && {
+          addressLine1: dto.addressLine1,
+        }),
+        ...(dto.addressLine2 !== undefined && {
+          addressLine2: dto.addressLine2,
+        }),
         ...(dto.city !== undefined && { city: dto.city }),
         ...(dto.state !== undefined && { state: dto.state }),
         ...(dto.postalCode !== undefined && { postalCode: dto.postalCode }),

@@ -22,4 +22,3 @@ import { AdminRbacService } from '../admin/services/admin-rbac.service';
   exports: [CustomerService],
 })
 export class CustomerModule {}
-

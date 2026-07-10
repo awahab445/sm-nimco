@@ -1,6 +1,13 @@
-import type { BrandConfig, OrderCancellationEmailDetails } from '../types/email.types';
+import type {
+  BrandConfig,
+  OrderCancellationEmailDetails,
+} from '../types/email.types';
 import { formatCurrency } from '../utils/format-currency';
-import { escapeHtml, renderEmailLayout, renderPrimaryButton } from './base.template';
+import {
+  escapeHtml,
+  renderEmailLayout,
+  renderPrimaryButton,
+} from './base.template';
 
 export function renderOrderCancellationEmail(options: {
   brand: BrandConfig;

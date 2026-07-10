@@ -1,4 +1,10 @@
-import { IsString, IsNotEmpty, IsOptional, MaxLength, IsObject } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  MaxLength,
+  IsObject,
+} from 'class-validator';
 
 export class CreateTaxClassDto {
   @IsString()
@@ -19,4 +25,3 @@ export class CreateTaxClassDto {
   @IsOptional()
   metadata?: Record<string, any>;
 }
-

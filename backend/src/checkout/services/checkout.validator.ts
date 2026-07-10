@@ -1,4 +1,9 @@
-import { Injectable, BadRequestException, NotFoundException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+  Logger,
+} from '@nestjs/common';
 import { CheckoutSession } from './checkout.redis';
 import { ReservationService } from '../../inventory/services/reservation.service';
 import { InventoryService } from '../../inventory/services/inventory.service';
@@ -15,7 +20,10 @@ export class CheckoutValidatorService {
   /**
    * Validate checkout session is in valid state for operations
    */
-  validateCheckoutState(checkout: CheckoutSession, allowedStatuses: CheckoutSession['status'][] = ['pending']): void {
+  validateCheckoutState(
+    checkout: CheckoutSession,
+    allowedStatuses: CheckoutSession['status'][] = ['pending'],
+  ): void {
     if (!allowedStatuses.includes(checkout.status)) {
       throw new BadRequestException(
         `Checkout is in ${checkout.status} status and cannot be modified`,
@@ -72,7 +80,9 @@ export class CheckoutValidatorService {
    * Note: We validate that reservations exist by checking availability
    * The actual reservation validation happens during order creation
    */
-  async validateInventoryReservations(checkout: CheckoutSession): Promise<void> {
+  async validateInventoryReservations(
+    checkout: CheckoutSession,
+  ): Promise<void> {
     for (const item of checkout.items) {
       if (!item.reservationId) {
         throw new BadRequestException(
@@ -89,7 +99,9 @@ export class CheckoutValidatorService {
   /**
    * Validate cart snapshot matches current inventory availability
    */
-  async validateInventoryAvailability(checkout: CheckoutSession): Promise<void> {
+  async validateInventoryAvailability(
+    checkout: CheckoutSession,
+  ): Promise<void> {
     for (const item of checkout.items) {
       const hasStock = await this.inventoryService.hasSufficientStock(
         item.variantId,
@@ -123,4 +135,3 @@ export class CheckoutValidatorService {
     await this.validateInventoryAvailability(checkout);
   }
 }
-

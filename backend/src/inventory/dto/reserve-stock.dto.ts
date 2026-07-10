@@ -22,4 +22,3 @@ export class ReserveStockDto {
   @Min(1)
   expiresInMinutes?: number; // Default 15 minutes
 }
-

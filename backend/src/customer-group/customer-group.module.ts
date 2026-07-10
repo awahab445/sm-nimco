@@ -18,4 +18,3 @@ import { AdminRbacService } from '../admin/services/admin-rbac.service';
   exports: [CustomerGroupService],
 })
 export class CustomerGroupModule {}
-

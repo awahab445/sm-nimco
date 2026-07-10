@@ -21,4 +21,3 @@ export class UpdateShippingStatusDto {
   @IsString()
   trackingUrl?: string;
 }
-

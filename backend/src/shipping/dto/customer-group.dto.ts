@@ -44,4 +44,3 @@ export class UpdateCustomerGroupPricingDto {
   @IsOptional()
   metadata?: Record<string, any>;
 }
-

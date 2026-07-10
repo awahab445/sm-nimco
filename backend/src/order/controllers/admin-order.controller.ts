@@ -52,7 +52,9 @@ export class AdminOrderController {
   async bulkShippingLabels(
     @Body() dto: BulkShippingLabelsDto,
   ): Promise<StreamableFile> {
-    const pdf = await this.shippingLabelService.generateBulkLabels(dto.orderIds);
+    const pdf = await this.shippingLabelService.generateBulkLabels(
+      dto.orderIds,
+    );
     return new StreamableFile(pdf);
   }
 
@@ -67,7 +69,9 @@ export class AdminOrderController {
   async bulkPackageInserts(
     @Body() dto: BulkShippingLabelsDto,
   ): Promise<StreamableFile> {
-    const pdf = await this.packageInsertService.generateBulkInserts(dto.orderIds);
+    const pdf = await this.packageInsertService.generateBulkInserts(
+      dto.orderIds,
+    );
     return new StreamableFile(pdf);
   }
 

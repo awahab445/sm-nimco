@@ -23,7 +23,10 @@ import { AdminRbacService } from '../admin/services/admin-rbac.service';
     AdminJwtAuthGuard,
     AdminPermissionsGuard,
   ],
-  exports: [PromotionsService, RulesEngineService, PromotionRuleEvaluatorService],
+  exports: [
+    PromotionsService,
+    RulesEngineService,
+    PromotionRuleEvaluatorService,
+  ],
 })
 export class PromotionsModule {}
-

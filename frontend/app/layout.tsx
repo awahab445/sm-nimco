@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist } from "next/font/google";
 import "./globals.css";
 import "../styles/chrome-enhancements.css";
 import { fetchActiveTheme } from "@/lib/theme/theme.server";
@@ -20,11 +20,7 @@ import { rootMetadata } from "@/lib/seo";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = rootMetadata();
@@ -40,7 +36,7 @@ export default async function RootLayout({
 
   return (
     <html lang="en" data-store-theme={storeTheme} data-theme={activeTheme}>
-      <body className={`${geistSans.variable} ${geistMono.variable} bg-background text-foreground antialiased`}>
+      <body className={`${geistSans.variable} bg-background text-foreground antialiased`}>
         <GoogleTagManager gtmId={analyticsConfig.gtmId} />
         <AnalyticsProvider config={analyticsConfig}>
           <AuthProvider>

@@ -3,7 +3,9 @@ import { StorefrontFilterService } from '../services/storefront-filter.service';
 
 @Controller('storefront')
 export class StorefrontFilterController {
-  constructor(private readonly storefrontFilterService: StorefrontFilterService) {}
+  constructor(
+    private readonly storefrontFilterService: StorefrontFilterService,
+  ) {}
 
   @Get('plp-browse-tree')
   @HttpCode(HttpStatus.OK)

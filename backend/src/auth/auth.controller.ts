@@ -37,7 +37,10 @@ export class AuthController {
   @Post('login')
   @HttpCode(HttpStatus.OK)
   @UsePipes(new ValidationPipe({ whitelist: true }))
-  async login(@Body() loginDto: LoginDto, @Res({ passthrough: true }) res: Response) {
+  async login(
+    @Body() loginDto: LoginDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const result = await this.authService.login(loginDto);
     setCustomerAuthCookie(res, result.access_token);
     return result;
@@ -78,7 +81,10 @@ export class AuthController {
     @Body() dto: SetPasswordDto,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const result = await this.authService.setPasswordWithToken(dto.token, dto.password);
+    const result = await this.authService.setPasswordWithToken(
+      dto.token,
+      dto.password,
+    );
     setCustomerAuthCookie(res, result.access_token);
     return result;
   }

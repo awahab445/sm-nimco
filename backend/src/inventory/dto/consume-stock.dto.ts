@@ -5,4 +5,3 @@ export class ConsumeStockDto {
   @IsNotEmpty()
   reservationId: string;
 }
-

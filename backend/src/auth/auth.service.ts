@@ -80,7 +80,10 @@ export class AuthService {
     lastName?: string | null;
     email: string;
   }): string {
-    return [customer.firstName, customer.lastName].filter(Boolean).join(' ') || customer.email;
+    return (
+      [customer.firstName, customer.lastName].filter(Boolean).join(' ') ||
+      customer.email
+    );
   }
 
   private async sendVerificationForCustomer(
@@ -173,8 +176,14 @@ export class AuthService {
         },
         include: { customerGroup: true },
       });
-      this.logger.log(`Converted guest to registered (pending verification): ${updated.id} (${email})`);
-      await this.sendVerificationForCustomer(updated.id, email, this.displayName(updated));
+      this.logger.log(
+        `Converted guest to registered (pending verification): ${updated.id} (${email})`,
+      );
+      await this.sendVerificationForCustomer(
+        updated.id,
+        email,
+        this.displayName(updated),
+      );
       return {
         message:
           'Registration successful. Please check your email to verify your account before signing in.',
@@ -204,7 +213,9 @@ export class AuthService {
       },
       include: { customerGroup: true },
     });
-    this.logger.log(`Registered customer (pending verification): ${customer.id} (${email})`);
+    this.logger.log(
+      `Registered customer (pending verification): ${customer.id} (${email})`,
+    );
     await this.emailService.sendEmailVerificationEmail(
       email,
       this.displayName(customer),
@@ -254,8 +265,13 @@ export class AuthService {
       include: { customerGroup: true },
     });
 
-    this.logger.log(`Email verified for customer: ${updated.id} (${updated.email})`);
-    void this.emailService.sendWelcomeEmail(updated.email, this.displayName(updated));
+    this.logger.log(
+      `Email verified for customer: ${updated.id} (${updated.email})`,
+    );
+    void this.emailService.sendWelcomeEmail(
+      updated.email,
+      this.displayName(updated),
+    );
 
     const auth = this.buildAuthResponse(updated);
     return {
@@ -284,12 +300,20 @@ export class AuthService {
 
     if (!customer) {
       this.logger.warn(`requestAccountCreation: no customer for ${normalized}`);
-      return { message: 'If an order was placed with this email, you will receive a link to create your password.' };
+      return {
+        message:
+          'If an order was placed with this email, you will receive a link to create your password.',
+      };
     }
 
     if (!customer.isGuest || customer.passwordHash) {
-      this.logger.warn(`requestAccountCreation: not a guest or already has password: ${normalized}`);
-      return { message: 'If an order was placed with this email, you will receive a link to create your password.' };
+      this.logger.warn(
+        `requestAccountCreation: not a guest or already has password: ${normalized}`,
+      );
+      return {
+        message:
+          'If an order was placed with this email, you will receive a link to create your password.',
+      };
     }
 
     const token = crypto.randomBytes(32).toString('hex');
@@ -304,24 +328,36 @@ export class AuthService {
 
     await this.emailService.sendAccountCreationLink(normalized, token);
     this.logger.log(`Account creation token created for ${normalized}`);
-    return { message: 'If an order was placed with this email, you will receive a link to create your password.' };
+    return {
+      message:
+        'If an order was placed with this email, you will receive a link to create your password.',
+    };
   }
 
   /**
    * Set password using one-time token (from email link). Converts guest to registered and returns JWT.
    */
-  async setPasswordWithToken(token: string, password: string): Promise<AuthResponse> {
+  async setPasswordWithToken(
+    token: string,
+    password: string,
+  ): Promise<AuthResponse> {
     const record = await this.prisma.accountCreationToken.findUnique({
       where: { token },
     });
 
     if (!record) {
-      throw new BadRequestException('Invalid or expired link. Please request a new one.');
+      throw new BadRequestException(
+        'Invalid or expired link. Please request a new one.',
+      );
     }
 
     if (new Date() > record.expiresAt) {
-      await this.prisma.accountCreationToken.delete({ where: { id: record.id } }).catch(() => {});
-      throw new BadRequestException('This link has expired. Please request a new one.');
+      await this.prisma.accountCreationToken
+        .delete({ where: { id: record.id } })
+        .catch(() => {});
+      throw new BadRequestException(
+        'This link has expired. Please request a new one.',
+      );
     }
 
     const customer = await this.prisma.customer.findUnique({
@@ -330,8 +366,12 @@ export class AuthService {
     });
 
     if (!customer || !customer.isGuest) {
-      await this.prisma.accountCreationToken.delete({ where: { id: record.id } }).catch(() => {});
-      throw new BadRequestException('Invalid or expired link. Please request a new one.');
+      await this.prisma.accountCreationToken
+        .delete({ where: { id: record.id } })
+        .catch(() => {});
+      throw new BadRequestException(
+        'Invalid or expired link. Please request a new one.',
+      );
     }
 
     const passwordHash = await bcrypt.hash(password, this.SALT_ROUNDS);
@@ -346,9 +386,13 @@ export class AuthService {
       include: { customerGroup: true },
     });
 
-    await this.prisma.accountCreationToken.delete({ where: { id: record.id } }).catch(() => {});
+    await this.prisma.accountCreationToken
+      .delete({ where: { id: record.id } })
+      .catch(() => {});
 
-    this.logger.log(`Guest converted to registered via set-password: ${updated.id} (${record.email})`);
+    this.logger.log(
+      `Guest converted to registered via set-password: ${updated.id} (${record.email})`,
+    );
     return this.buildAuthResponse(updated);
   }
 
@@ -366,7 +410,9 @@ export class AuthService {
     });
 
     if (!customer || !customer.passwordHash) {
-      this.logger.warn(`forgotPassword: no registered account for ${normalized}`);
+      this.logger.warn(
+        `forgotPassword: no registered account for ${normalized}`,
+      );
       return { message: genericMessage };
     }
 
@@ -394,7 +440,10 @@ export class AuthService {
   /**
    * Reset password using a valid, non-expired token from the email link.
    */
-  async resetPassword(token: string, password: string): Promise<{ message: string }> {
+  async resetPassword(
+    token: string,
+    password: string,
+  ): Promise<{ message: string }> {
     const normalizedToken = token?.trim();
     if (!normalizedToken) {
       throw new BadRequestException('Reset token is required.');
@@ -422,9 +471,14 @@ export class AuthService {
       },
     });
 
-    this.logger.log(`Password reset for customer: ${customer.id} (${customer.email})`);
+    this.logger.log(
+      `Password reset for customer: ${customer.id} (${customer.email})`,
+    );
 
-    return { message: 'Your password has been reset successfully. You can now sign in.' };
+    return {
+      message:
+        'Your password has been reset successfully. You can now sign in.',
+    };
   }
 
   /**

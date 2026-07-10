@@ -7,7 +7,11 @@ describe('parseInventoryImportFile', () => {
 abc-123,10,Received
 def-456,-2,
 `;
-    const rows = parseInventoryImportFile(Buffer.from(csv, 'utf-8'), 'import.csv', 'text/csv');
+    const rows = parseInventoryImportFile(
+      Buffer.from(csv, 'utf-8'),
+      'import.csv',
+      'text/csv',
+    );
     expect(rows).toHaveLength(2);
     expect(rows[0]).toMatchObject({
       variantId: 'abc-123',
@@ -24,9 +28,9 @@ def-456,-2,
 
   it('skips rows with zero delta and throws when no valid rows remain', () => {
     const csv = `variant_id,quantity_delta\nabc-123,0\n`;
-    expect(() => parseInventoryImportFile(Buffer.from(csv, 'utf-8'), 'import.csv')).toThrow(
-      BadRequestException,
-    );
+    expect(() =>
+      parseInventoryImportFile(Buffer.from(csv, 'utf-8'), 'import.csv'),
+    ).toThrow(BadRequestException);
   });
 
   it('rejects unsupported file types', () => {

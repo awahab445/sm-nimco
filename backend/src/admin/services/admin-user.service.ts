@@ -22,9 +22,13 @@ export class AdminUserService {
   async create(dto: CreateAdminUserDto, _createdByAdminId: string) {
     const email = dto.email.toLowerCase().trim();
 
-    const existing = await this.prisma.adminUser.findUnique({ where: { email } });
+    const existing = await this.prisma.adminUser.findUnique({
+      where: { email },
+    });
     if (existing) {
-      throw new ConflictException('An admin user with this email already exists');
+      throw new ConflictException(
+        'An admin user with this email already exists',
+      );
     }
 
     const roles = await this.prisma.adminRole.findMany({
@@ -47,7 +51,9 @@ export class AdminUserService {
         },
       },
       include: {
-        roles: { include: { role: { select: { id: true, slug: true, name: true } } } },
+        roles: {
+          include: { role: { select: { id: true, slug: true, name: true } } },
+        },
       },
     });
 
@@ -59,7 +65,9 @@ export class AdminUserService {
     const user = await this.prisma.adminUser.findUnique({
       where: { email: normalized },
       include: {
-        roles: { include: { role: { select: { id: true, slug: true, name: true } } } },
+        roles: {
+          include: { role: { select: { id: true, slug: true, name: true } } },
+        },
       },
     });
 
@@ -84,7 +92,9 @@ export class AdminUserService {
     const user = await this.prisma.adminUser.findUnique({
       where: { id },
       include: {
-        roles: { include: { role: { select: { id: true, slug: true, name: true } } } },
+        roles: {
+          include: { role: { select: { id: true, slug: true, name: true } } },
+        },
       },
     });
     if (!user) {
@@ -97,7 +107,9 @@ export class AdminUserService {
     const users = await this.prisma.adminUser.findMany({
       orderBy: { createdAt: 'desc' },
       include: {
-        roles: { include: { role: { select: { id: true, slug: true, name: true } } } },
+        roles: {
+          include: { role: { select: { id: true, slug: true, name: true } } },
+        },
       },
     });
     return users.map((u) => this.serializeUser(u));
@@ -170,7 +182,9 @@ export class AdminUserService {
       return tx.adminUser.findUniqueOrThrow({
         where: { id },
         include: {
-          roles: { include: { role: { select: { id: true, slug: true, name: true } } } },
+          roles: {
+            include: { role: { select: { id: true, slug: true, name: true } } },
+          },
         },
       });
     });

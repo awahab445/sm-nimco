@@ -76,13 +76,15 @@ describe('OrderFactory', () => {
     it('should throw NotFoundException when cart does not exist', async () => {
       mockCartRedis.getCart.mockResolvedValue(null);
 
-      await expect(factory.createOrderData(validCreateOrderDto)).rejects.toThrow(
-        NotFoundException,
+      await expect(
+        factory.createOrderData(validCreateOrderDto),
+      ).rejects.toThrow(NotFoundException);
+      await expect(
+        factory.createOrderData(validCreateOrderDto),
+      ).rejects.toThrow('Cart test-cart-id not found');
+      expect(mockCartRedis.getCart).toHaveBeenCalledWith(
+        validCreateOrderDto.cartId,
       );
-      await expect(factory.createOrderData(validCreateOrderDto)).rejects.toThrow(
-        'Cart test-cart-id not found',
-      );
-      expect(mockCartRedis.getCart).toHaveBeenCalledWith(validCreateOrderDto.cartId);
     });
 
     it('should throw BadRequestException when cart has no items', async () => {
@@ -94,12 +96,12 @@ describe('OrderFactory', () => {
         updatedAt: new Date().toISOString(),
       });
 
-      await expect(factory.createOrderData(validCreateOrderDto)).rejects.toThrow(
-        BadRequestException,
-      );
-      await expect(factory.createOrderData(validCreateOrderDto)).rejects.toThrow(
-        'Cannot create order from empty cart',
-      );
+      await expect(
+        factory.createOrderData(validCreateOrderDto),
+      ).rejects.toThrow(BadRequestException);
+      await expect(
+        factory.createOrderData(validCreateOrderDto),
+      ).rejects.toThrow('Cannot create order from empty cart');
     });
 
     it('persists checkout shipping and grand total when totals are provided', async () => {
@@ -119,7 +121,9 @@ describe('OrderFactory', () => {
         updatedAt: new Date().toISOString(),
       });
       mockPrisma.order.findFirst.mockResolvedValue(null);
-      mockPrisma.product.findMany.mockResolvedValue([{ id: 'prod-1', taxClassId: null }]);
+      mockPrisma.product.findMany.mockResolvedValue([
+        { id: 'prod-1', taxClassId: null },
+      ]);
       mockPrisma.product.findUnique.mockResolvedValue({
         name: 'Test Product',
         images: [],

@@ -186,4 +186,3 @@ export class UpdateMethodDto {
   @IsObject()
   metadata?: Record<string, any>;
 }
-

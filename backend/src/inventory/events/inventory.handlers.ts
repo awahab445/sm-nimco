@@ -10,7 +10,10 @@ export class InventoryEventHandlers {
   @OnEvent('cart.expired')
   async handleCartExpired(event: CartExpiredEvent) {
     // Release all reservations for the expired cart
-    await this.reservationService.releaseReservationsByReference('cart', event.cartId);
+    await this.reservationService.releaseReservationsByReference(
+      'cart',
+      event.cartId,
+    );
   }
 
   @OnEvent('order.created')
@@ -26,7 +29,10 @@ export class InventoryEventHandlers {
         } catch (error) {
           // Log error but don't fail the order creation
           // In production, you might want to handle this differently
-          console.error(`Failed to consume stock for reservation ${item.reservationId}:`, error);
+          console.error(
+            `Failed to consume stock for reservation ${item.reservationId}:`,
+            error,
+          );
         }
       } else {
         // If no reservation, create one and immediately consume it
@@ -54,4 +60,3 @@ export class InventoryEventHandlers {
     }
   }
 }
-

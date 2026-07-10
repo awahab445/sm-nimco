@@ -1,6 +1,14 @@
 import sanitizeHtml from 'sanitize-html';
 
-const CMS_ALLOWED_TAGS = sanitizeHtml.defaults.allowedTags.concat(['img', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6']);
+const CMS_ALLOWED_TAGS = sanitizeHtml.defaults.allowedTags.concat([
+  'img',
+  'h1',
+  'h2',
+  'h3',
+  'h4',
+  'h5',
+  'h6',
+]);
 
 /** Strip dangerous markup from CMS HTML before persistence or render. */
 export function sanitizeCmsHtml(html: string | null | undefined): string {

@@ -30,7 +30,9 @@ export class TaxService {
     });
 
     if (existing) {
-      throw new BadRequestException(`Tax class with code '${dto.code}' already exists`);
+      throw new BadRequestException(
+        `Tax class with code '${dto.code}' already exists`,
+      );
     }
 
     const taxClass = await this.prisma.taxClass.create({
@@ -84,7 +86,10 @@ export class TaxService {
   /**
    * Update tax class
    */
-  async updateTaxClass(id: string, dto: Partial<CreateTaxClassDto>): Promise<TaxClass> {
+  async updateTaxClass(
+    id: string,
+    dto: Partial<CreateTaxClassDto>,
+  ): Promise<TaxClass> {
     // Check if tax class exists
     await this.findTaxClassById(id);
 
@@ -95,7 +100,9 @@ export class TaxService {
       });
 
       if (existing && existing.id !== id) {
-        throw new BadRequestException(`Tax class with code '${dto.code}' already exists`);
+        throw new BadRequestException(
+          `Tax class with code '${dto.code}' already exists`,
+        );
       }
     }
 
@@ -104,7 +111,9 @@ export class TaxService {
       data: {
         ...(dto.code && { code: dto.code }),
         ...(dto.name && { name: dto.name }),
-        ...(dto.description !== undefined && { description: dto.description || null }),
+        ...(dto.description !== undefined && {
+          description: dto.description || null,
+        }),
         ...(dto.metadata !== undefined && { metadata: dto.metadata || {} }),
       },
     });
@@ -146,7 +155,11 @@ export class TaxService {
     await this.findTaxClassById(dto.taxClassId);
 
     // Validate date range
-    if (dto.startDate && dto.endDate && new Date(dto.startDate) > new Date(dto.endDate)) {
+    if (
+      dto.startDate &&
+      dto.endDate &&
+      new Date(dto.startDate) > new Date(dto.endDate)
+    ) {
       throw new BadRequestException('Start date must be before end date');
     }
 
@@ -164,7 +177,9 @@ export class TaxService {
       },
     });
 
-    this.logger.log(`Tax created: ${tax.id} (${dto.country}${dto.region ? `, ${dto.region}` : ''} - ${dto.rate}%)`);
+    this.logger.log(
+      `Tax created: ${tax.id} (${dto.country}${dto.region ? `, ${dto.region}` : ''} - ${dto.rate}%)`,
+    );
     return this.mapTaxFromPrisma(tax);
   }
 
@@ -214,16 +229,10 @@ export class TaxService {
         isActive: true,
         AND: [
           {
-            OR: [
-              { startDate: null },
-              { startDate: { lte: now } },
-            ],
+            OR: [{ startDate: null }, { startDate: { lte: now } }],
           },
           {
-            OR: [
-              { endDate: null },
-              { endDate: { gte: now } },
-            ],
+            OR: [{ endDate: null }, { endDate: { gte: now } }],
           },
         ],
       },
@@ -242,7 +251,9 @@ export class TaxService {
 
     // Validate date range if both are being updated
     if (dto.startDate !== undefined && dto.endDate !== undefined) {
-      const startDate = dto.startDate ? new Date(dto.startDate) : existingTax.startDate;
+      const startDate = dto.startDate
+        ? new Date(dto.startDate)
+        : existingTax.startDate;
       const endDate = dto.endDate ? new Date(dto.endDate) : existingTax.endDate;
       if (startDate && endDate && startDate > endDate) {
         throw new BadRequestException('Start date must be before end date');
@@ -258,8 +269,12 @@ export class TaxService {
         ...(dto.rate !== undefined && { rate: dto.rate }),
         ...(dto.isInclusive !== undefined && { isInclusive: dto.isInclusive }),
         ...(dto.isActive !== undefined && { isActive: dto.isActive }),
-        ...(dto.startDate !== undefined && { startDate: dto.startDate ? new Date(dto.startDate) : null }),
-        ...(dto.endDate !== undefined && { endDate: dto.endDate ? new Date(dto.endDate) : null }),
+        ...(dto.startDate !== undefined && {
+          startDate: dto.startDate ? new Date(dto.startDate) : null,
+        }),
+        ...(dto.endDate !== undefined && {
+          endDate: dto.endDate ? new Date(dto.endDate) : null,
+        }),
         ...(dto.metadata !== undefined && { metadata: dto.metadata || {} }),
       },
       include: { taxClass: true },
@@ -268,16 +283,12 @@ export class TaxService {
     // Emit event
     this.eventEmitter.emit(
       'tax.updated',
-      new TaxUpdatedEvent(
-        tax.id,
-        tax.taxClassId,
-        {
-          ...(dto.rate !== undefined && { rate: Number(tax.rate) }),
-          ...(dto.isActive !== undefined && { isActive: tax.isActive }),
-          ...(dto.startDate !== undefined && { startDate: tax.startDate }),
-          ...(dto.endDate !== undefined && { endDate: tax.endDate }),
-        },
-      ),
+      new TaxUpdatedEvent(tax.id, tax.taxClassId, {
+        ...(dto.rate !== undefined && { rate: Number(tax.rate) }),
+        ...(dto.isActive !== undefined && { isActive: tax.isActive }),
+        ...(dto.startDate !== undefined && { startDate: tax.startDate }),
+        ...(dto.endDate !== undefined && { endDate: tax.endDate }),
+      }),
     );
 
     this.logger.log(`Tax updated: ${tax.id}`);
@@ -317,4 +328,3 @@ export class TaxService {
     };
   }
 }
-

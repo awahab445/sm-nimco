@@ -17,21 +17,26 @@ export class AdminPermissionsGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const required = this.reflector.getAllAndOverride<string[]>(ADMIN_PERMISSIONS_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
+    const required = this.reflector.getAllAndOverride<string[]>(
+      ADMIN_PERMISSIONS_KEY,
+      [context.getHandler(), context.getClass()],
+    );
     if (!required?.length) {
       return true;
     }
 
-    const req = context.switchToHttp().getRequest<{ user: JwtValidatePayload }>();
+    const req = context
+      .switchToHttp()
+      .getRequest<{ user: JwtValidatePayload }>();
     const user = req.user;
     if (!user || user.typ !== 'admin') {
       throw new ForbiddenException('Admin session required');
     }
 
-    const ok = await this.rbac.userHasAllPermissions(user.adminUserId, required);
+    const ok = await this.rbac.userHasAllPermissions(
+      user.adminUserId,
+      required,
+    );
     if (!ok) {
       throw new ForbiddenException('Insufficient permissions');
     }

@@ -1,4 +1,9 @@
-import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  OnModuleInit,
+  OnModuleDestroy,
+} from '@nestjs/common';
 import Redis from 'ioredis';
 import { APP_CURRENCY } from '../../common/currency';
 
@@ -105,7 +110,10 @@ export class CartRedisService implements OnModuleInit, OnModuleDestroy {
   /**
    * Create a new cart
    */
-  async createCart(cartId: string, currency: string = APP_CURRENCY): Promise<Cart> {
+  async createCart(
+    cartId: string,
+    currency: string = APP_CURRENCY,
+  ): Promise<Cart> {
     try {
       const cart: Cart = {
         id: cartId,
@@ -179,4 +187,3 @@ export class CartRedisService implements OnModuleInit, OnModuleDestroy {
     }
   }
 }
-

@@ -2,9 +2,15 @@ import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { PrismaService } from '../../catalog/services/prisma.service';
 import { EmailService } from '../email.service';
-import { OrderCreatedEvent, OrderCancelledEvent } from '../../order/events/order.events';
+import {
+  OrderCreatedEvent,
+  OrderCancelledEvent,
+} from '../../order/events/order.events';
 import { decimalToNumber } from '../utils/format-currency';
-import type { OrderCancellationEmailDetails, OrderEmailDetails } from '../types/email.types';
+import type {
+  OrderCancellationEmailDetails,
+  OrderEmailDetails,
+} from '../types/email.types';
 
 @Injectable()
 export class MailEventHandlers {
@@ -91,15 +97,22 @@ export class MailEventHandlers {
       });
 
       if (!order?.customerEmail) {
-        this.logger.warn(`Order ${event.orderId} has no customer email; skipping placement email`);
+        this.logger.warn(
+          `Order ${event.orderId} has no customer email; skipping placement email`,
+        );
         return;
       }
 
       const orderDetails = this.buildOrderEmailDetails(order);
-      await this.emailService.sendOrderPlacementEmail(order.customerEmail, orderDetails);
+      await this.emailService.sendOrderPlacementEmail(
+        order.customerEmail,
+        orderDetails,
+      );
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      this.logger.error(`Failed to send order placement email for ${event.orderId}: ${message}`);
+      this.logger.error(
+        `Failed to send order placement email for ${event.orderId}: ${message}`,
+      );
     }
   }
 
@@ -112,12 +125,16 @@ export class MailEventHandlers {
       });
 
       if (!order?.customerEmail) {
-        this.logger.warn(`Order ${event.orderId} has no customer email; skipping cancellation email`);
+        this.logger.warn(
+          `Order ${event.orderId} has no customer email; skipping cancellation email`,
+        );
         return;
       }
 
       const baseDetails = this.buildOrderEmailDetails(order);
-      const { refundStatus, refundMessage } = this.resolveRefundStatus(order.paymentStatus);
+      const { refundStatus, refundMessage } = this.resolveRefundStatus(
+        order.paymentStatus,
+      );
 
       const cancellationDetails: OrderCancellationEmailDetails = {
         ...baseDetails,
@@ -133,7 +150,9 @@ export class MailEventHandlers {
       );
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      this.logger.error(`Failed to send order cancellation email for ${event.orderId}: ${message}`);
+      this.logger.error(
+        `Failed to send order cancellation email for ${event.orderId}: ${message}`,
+      );
     }
   }
 }

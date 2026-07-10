@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { PrismaService } from '../../catalog/services/prisma.service';
 import { SUPER_ADMIN_ROLE_SLUG } from '../constants/permissions';
 import { buildPermissionKey } from '../decorators/check-permission.decorator';
@@ -59,7 +63,10 @@ export class AdminRbacService {
     return user.roles.some((r) => r.role.slug === SUPER_ADMIN_ROLE_SLUG);
   }
 
-  async userHasPermission(adminUserId: string, permissionKey: string): Promise<boolean> {
+  async userHasPermission(
+    adminUserId: string,
+    permissionKey: string,
+  ): Promise<boolean> {
     const user = await this.prisma.adminUser.findUnique({
       where: { id: adminUserId },
       include: {
@@ -105,7 +112,10 @@ export class AdminRbacService {
     return false;
   }
 
-  async userHasAllPermissions(adminUserId: string, keys: string[]): Promise<boolean> {
+  async userHasAllPermissions(
+    adminUserId: string,
+    keys: string[],
+  ): Promise<boolean> {
     for (const k of keys) {
       if (!(await this.userHasPermission(adminUserId, k))) {
         return false;
@@ -155,7 +165,9 @@ export class AdminRbacService {
     }
 
     if (isSuper) {
-      const all = await this.prisma.adminPermission.findMany({ select: { key: true } });
+      const all = await this.prisma.adminPermission.findMany({
+        select: { key: true },
+      });
       return all.map((p) => p.key);
     }
 

@@ -33,8 +33,10 @@ export type RbacEntity =
 export type RbacAction = 'create' | 'read' | 'update' | 'delete' | 'manage';
 
 /** Build the canonical permission key checked against `admin_permissions.key`. */
-export const buildPermissionKey = (entity: RbacEntity | string, action: RbacAction | string) =>
-  `${entity}.${action}` as const;
+export const buildPermissionKey = (
+  entity: RbacEntity | string,
+  action: RbacAction | string,
+) => `${entity}.${action}` as const;
 
 /**
  * Controller-level middleware: requires an authenticated admin whose roles grant

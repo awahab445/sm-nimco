@@ -1,4 +1,9 @@
-import { IsString, IsNotEmpty, IsOptional, ValidateNested } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class AddressDto {
@@ -58,4 +63,3 @@ export class UpdateAddressDto {
   @IsOptional()
   shippingAddress?: AddressDto;
 }
-

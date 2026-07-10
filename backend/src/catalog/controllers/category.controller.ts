@@ -1,4 +1,11 @@
-import { Controller, Get, Param, Query, HttpCode, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Query,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
 import { CategoryService } from '../services/category.service';
 
 @Controller('categories')
@@ -15,7 +22,8 @@ export class CategoryController {
     @Query('tree') tree?: string,
     @Query('parentId') parentId?: string,
   ) {
-    const parentIdVal = parentId === 'null' || parentId === '' ? null : parentId;
+    const parentIdVal =
+      parentId === 'null' || parentId === '' ? null : parentId;
     return this.categoryService.findAll({
       tree: tree === 'true',
       parentId: parentIdVal,

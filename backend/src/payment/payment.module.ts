@@ -31,4 +31,3 @@ import { CatalogModule } from '../catalog/catalog.module';
   exports: [PaymentService],
 })
 export class PaymentModule {}
-

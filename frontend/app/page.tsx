@@ -5,7 +5,8 @@ import { JsonLd } from '@/components/seo/json-ld';
 import { STORE_NAME } from '@/lib/config';
 import { absoluteUrl, buildPageMetadata, getSiteUrl } from '@/lib/seo';
 
-export const revalidate = 0;
+/** ISR: keep homepage fresh for CMS edits without forcing every request to SSR. */
+export const revalidate = 60;
 
 export const metadata: Metadata = buildPageMetadata({
   title: STORE_NAME,

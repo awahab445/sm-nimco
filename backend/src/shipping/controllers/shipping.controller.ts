@@ -16,7 +16,10 @@ import { ShippingService } from '../services/shipping.service';
 import { CreateZoneDto, UpdateZoneDto } from '../dto/create-zone.dto';
 import { CreateMethodDto, UpdateMethodDto } from '../dto/create-method.dto';
 import { CalculateShippingDto } from '../dto/calculate-shipping.dto';
-import { AssignShippingDto, UpdateShippingStatusDto } from '../dto/assign-shipping.dto';
+import {
+  AssignShippingDto,
+  UpdateShippingStatusDto,
+} from '../dto/assign-shipping.dto';
 import {
   AssignCustomerGroupDto,
   UpdateCustomerGroupPricingDto,
@@ -46,8 +49,14 @@ export class ShippingController {
    */
   @Get('order/:orderId')
   @UseGuards(JwtAuthGuard)
-  async getOrderShipping(@Param('orderId') orderId: string, @Req() request: any) {
-    return this.shippingService.getOrderShippingAuthorized(orderId, request.user);
+  async getOrderShipping(
+    @Param('orderId') orderId: string,
+    @Req() request: any,
+  ) {
+    return this.shippingService.getOrderShippingAuthorized(
+      orderId,
+      request.user,
+    );
   }
 }
 
@@ -101,10 +110,7 @@ export class AdminShippingController {
   @Put('zones/:id')
   @RequirePermissions('shipping.manage')
   @HttpCode(HttpStatus.OK)
-  async updateZone(
-    @Param('id') id: string,
-    @Body() dto: UpdateZoneDto,
-  ) {
+  async updateZone(@Param('id') id: string, @Body() dto: UpdateZoneDto) {
     return this.shippingService.updateZone(id, dto);
   }
 
@@ -144,7 +150,10 @@ export class AdminShippingController {
     @Param('zoneId') zoneId: string,
     @Query('includeInactive') includeInactive?: string,
   ) {
-    return this.shippingService.getMethodsByZone(zoneId, includeInactive === 'true');
+    return this.shippingService.getMethodsByZone(
+      zoneId,
+      includeInactive === 'true',
+    );
   }
 
   /**
@@ -164,10 +173,7 @@ export class AdminShippingController {
   @Put('methods/:id')
   @RequirePermissions('shipping.manage')
   @HttpCode(HttpStatus.OK)
-  async updateMethod(
-    @Param('id') id: string,
-    @Body() dto: UpdateMethodDto,
-  ) {
+  async updateMethod(@Param('id') id: string, @Body() dto: UpdateMethodDto) {
     return this.shippingService.updateMethod(id, dto);
   }
 
@@ -290,4 +296,3 @@ export class AdminShippingController {
     await this.shippingService.removeCustomerGroup(methodId, customerGroupId);
   }
 }
-

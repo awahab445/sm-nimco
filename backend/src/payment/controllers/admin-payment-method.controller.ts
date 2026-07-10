@@ -58,7 +58,10 @@ export class AdminPaymentMethodController {
    */
   @Patch(':id')
   @RequirePermissions('payments.manage')
-  async update(@Param('id') id: string, @Body() dto: UpdateAdminPaymentMethodDto) {
+  async update(
+    @Param('id') id: string,
+    @Body() dto: UpdateAdminPaymentMethodDto,
+  ) {
     return this.paymentService.updatePaymentMethodAdmin(id, dto);
   }
 

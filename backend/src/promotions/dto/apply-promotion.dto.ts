@@ -62,4 +62,3 @@ export class ApplyPromotionToCheckoutDto {
   @IsOptional()
   customerGroupId?: string;
 }
-

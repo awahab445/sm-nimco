@@ -1,4 +1,8 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../catalog/services/prisma.service';
 import { isPolicyPageSlug } from '../constants/policy-page-slugs';
@@ -53,7 +57,9 @@ export class CmsService {
     }
 
     const contentHtml =
-      dto.contentHtml !== undefined ? sanitizeCmsHtml(dto.contentHtml) : undefined;
+      dto.contentHtml !== undefined
+        ? sanitizeCmsHtml(dto.contentHtml)
+        : undefined;
     const existing = await this.prisma.cmsPage.findUnique({ where: { slug } });
 
     if (existing) {
@@ -88,7 +94,10 @@ export class CmsService {
 
   createPage(dto: UpsertCmsPageDto) {
     const contentJson = dto.contentJson as Prisma.InputJsonValue | undefined;
-    const contentHtml = dto.contentHtml !== undefined ? sanitizeCmsHtml(dto.contentHtml) : undefined;
+    const contentHtml =
+      dto.contentHtml !== undefined
+        ? sanitizeCmsHtml(dto.contentHtml)
+        : undefined;
     return this.prisma.cmsPage.create({
       data: {
         ...dto,
@@ -109,8 +118,10 @@ export class CmsService {
     if (dto.status !== undefined) data.status = dto.status;
     if (dto.excerpt !== undefined) data.excerpt = dto.excerpt;
     if (dto.metaTitle !== undefined) data.metaTitle = dto.metaTitle;
-    if (dto.metaDescription !== undefined) data.metaDescription = dto.metaDescription;
-    if (dto.contentHtml !== undefined) data.contentHtml = sanitizeCmsHtml(dto.contentHtml);
+    if (dto.metaDescription !== undefined)
+      data.metaDescription = dto.metaDescription;
+    if (dto.contentHtml !== undefined)
+      data.contentHtml = sanitizeCmsHtml(dto.contentHtml);
     if (dto.contentJson !== undefined) {
       data.contentJson = dto.contentJson as Prisma.InputJsonValue;
     }
@@ -143,15 +154,24 @@ export class CmsService {
     const block = await this.prisma.cmsBlock.findFirst({
       where: { identifier, isActive: true },
     });
-    if (!block) throw new NotFoundException(`CMS block ${identifier} not found`);
+    if (!block)
+      throw new NotFoundException(`CMS block ${identifier} not found`);
     return block;
   }
 
   createBlock(dto: UpsertCmsBlockDto) {
     const contentJson = dto.contentJson as Prisma.InputJsonValue | undefined;
-    const contentHtml = dto.contentHtml !== undefined ? sanitizeCmsHtml(dto.contentHtml) : undefined;
+    const contentHtml =
+      dto.contentHtml !== undefined
+        ? sanitizeCmsHtml(dto.contentHtml)
+        : undefined;
     return this.prisma.cmsBlock.create({
-      data: { ...dto, contentHtml, contentJson, isActive: dto.isActive ?? true },
+      data: {
+        ...dto,
+        contentHtml,
+        contentJson,
+        isActive: dto.isActive ?? true,
+      },
     });
   }
 
@@ -163,7 +183,8 @@ export class CmsService {
     if (dto.identifier !== undefined) data.identifier = dto.identifier;
     if (dto.description !== undefined) data.description = dto.description;
     if (dto.isActive !== undefined) data.isActive = dto.isActive;
-    if (dto.contentHtml !== undefined) data.contentHtml = sanitizeCmsHtml(dto.contentHtml);
+    if (dto.contentHtml !== undefined)
+      data.contentHtml = sanitizeCmsHtml(dto.contentHtml);
     if (dto.contentJson !== undefined) {
       data.contentJson = dto.contentJson as Prisma.InputJsonValue;
     }
@@ -205,7 +226,8 @@ export class CmsService {
         },
       },
     });
-    if (!slider) throw new NotFoundException(`CMS slider ${identifier} not found`);
+    if (!slider)
+      throw new NotFoundException(`CMS slider ${identifier} not found`);
     return {
       ...slider,
       slides: slider.slides.map((slide) => ({

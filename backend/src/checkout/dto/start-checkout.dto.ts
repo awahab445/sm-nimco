@@ -1,4 +1,10 @@
-import { IsString, IsNotEmpty, IsUUID, IsOptional, IsEmail } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsUUID,
+  IsOptional,
+  IsEmail,
+} from 'class-validator';
 
 export class StartCheckoutDto {
   @IsString()
@@ -16,4 +22,3 @@ export class StartCheckoutDto {
   @IsUUID()
   customerId?: string;
 }
-

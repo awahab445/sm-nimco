@@ -127,8 +127,7 @@ export class AnalyticsSettingsService {
         ? dto.metaPixelId?.trim() || null
         : current.metaPixelId;
     const isEnabled = dto.isEnabled ?? current.isEnabled;
-    const metaPixelEnabled =
-      dto.metaPixelEnabled ?? current.metaPixelEnabled;
+    const metaPixelEnabled = dto.metaPixelEnabled ?? current.metaPixelEnabled;
 
     this.validateEnable(measurementId, isEnabled);
     this.validateMetaPixelEnable(metaPixelId, metaPixelEnabled);

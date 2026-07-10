@@ -59,8 +59,11 @@ export class CheckoutTotalsService {
       const promotionItems = await Promise.all(
         items.map(async (item) => {
           try {
-            const product = await this.productService.findOneById(item.productId);
-            const categoryIds = product.categories?.map((cat) => cat.categoryId) || [];
+            const product = await this.productService.findOneById(
+              item.productId,
+            );
+            const categoryIds =
+              product.categories?.map((cat) => cat.categoryId) || [];
             return {
               productId: item.productId,
               variantId: item.variantId,
@@ -69,7 +72,10 @@ export class CheckoutTotalsService {
               categoryIds,
             };
           } catch (error) {
-            this.logger.warn(`Failed to fetch product ${item.productId} for promotion:`, error);
+            this.logger.warn(
+              `Failed to fetch product ${item.productId} for promotion:`,
+              error,
+            );
             return {
               productId: item.productId,
               variantId: item.variantId,
@@ -97,8 +103,13 @@ export class CheckoutTotalsService {
       );
 
       // Calculate promotion discount
-      promotionDiscount = appliedPromotions.reduce((sum, p) => sum + p.discountAmount, 0);
-      freeShippingApplied = appliedPromotions.some((p) => p.promotion.type === 'free_shipping');
+      promotionDiscount = appliedPromotions.reduce(
+        (sum, p) => sum + p.discountAmount,
+        0,
+      );
+      freeShippingApplied = appliedPromotions.some(
+        (p) => p.promotion.type === 'free_shipping',
+      );
 
       return {
         discountTotal: promotionDiscount,
@@ -113,9 +124,7 @@ export class CheckoutTotalsService {
   /**
    * Calculate shipping total
    */
-  calculateShippingTotal(
-    shippingMethod?: CheckoutShippingMethod,
-  ): number {
+  calculateShippingTotal(shippingMethod?: CheckoutShippingMethod): number {
     if (!shippingMethod) {
       return 0;
     }
@@ -151,10 +160,15 @@ export class CheckoutTotalsService {
       let customerGroupTaxClassId: string | null = null;
       if (checkout.customerGroupId) {
         try {
-          const customerGroup = await this.customerGroupService.findOne(checkout.customerGroupId);
+          const customerGroup = await this.customerGroupService.findOne(
+            checkout.customerGroupId,
+          );
           customerGroupTaxClassId = customerGroup.taxClassId || null;
         } catch (error) {
-          this.logger.warn(`Failed to fetch customer group for tax calculation:`, error);
+          this.logger.warn(
+            `Failed to fetch customer group for tax calculation:`,
+            error,
+          );
         }
       }
 
@@ -163,9 +177,12 @@ export class CheckoutTotalsService {
       const taxItems: TaxCalculationItem[] = await Promise.all(
         items.map(async (item) => {
           try {
-            const product = await this.productService.findOneById(item.productId);
+            const product = await this.productService.findOneById(
+              item.productId,
+            );
             // Use product tax class, or fallback to customer group tax class
-            const taxClassId = product.taxClassId || customerGroupTaxClassId || null;
+            const taxClassId =
+              product.taxClassId || customerGroupTaxClassId || null;
             return {
               productId: item.productId,
               variantId: item.variantId,
@@ -174,7 +191,10 @@ export class CheckoutTotalsService {
               quantity: item.quantity,
             };
           } catch (error) {
-            this.logger.warn(`Failed to fetch product ${item.productId} for tax calculation:`, error);
+            this.logger.warn(
+              `Failed to fetch product ${item.productId} for tax calculation:`,
+              error,
+            );
             return {
               productId: item.productId,
               variantId: item.variantId,
@@ -194,7 +214,8 @@ export class CheckoutTotalsService {
       // This is a simplification - in reality, discounts might apply per-item
       const taxCalculationItems: TaxCalculationItem[] = taxItems.map((item) => {
         const itemSubtotal = item.price * item.quantity;
-        const discountRatio = subtotal > 0 ? (subtotal - discountTotal) / subtotal : 1;
+        const discountRatio =
+          subtotal > 0 ? (subtotal - discountTotal) / subtotal : 1;
         const adjustedPrice = item.price * discountRatio;
         return {
           ...item,
@@ -227,12 +248,13 @@ export class CheckoutTotalsService {
     options?: { recordPromotionRedemptions?: boolean },
   ): Promise<TotalsCalculation> {
     const subtotal = this.calculateSubtotal(checkout.items);
-    const { discountTotal, freeShippingApplied } = await this.calculateDiscountTotal(
-      subtotal,
-      checkout.items,
-      checkout,
-      options,
-    );
+    const { discountTotal, freeShippingApplied } =
+      await this.calculateDiscountTotal(
+        subtotal,
+        checkout.items,
+        checkout,
+        options,
+      );
     const shippingTotal =
       freeShippingApplied || subtotal >= this.freeDeliveryThreshold
         ? 0
@@ -265,7 +287,7 @@ export class CheckoutTotalsService {
     options?: { recordPromotionRedemptions?: boolean },
   ): Promise<CheckoutSession> {
     const totals = await this.calculateTotals(checkout, options);
-    
+
     return {
       ...checkout,
       ...totals,
@@ -273,4 +295,3 @@ export class CheckoutTotalsService {
     };
   }
 }
-

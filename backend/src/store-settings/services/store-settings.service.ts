@@ -56,7 +56,10 @@ export class StoreSettingsService {
     return this.toAdmin(row);
   }
 
-  async updateTheme(theme: string, adminUserId?: string): Promise<AdminThemeSettings> {
+  async updateTheme(
+    theme: string,
+    adminUserId?: string,
+  ): Promise<AdminThemeSettings> {
     if (!isStoreThemeId(theme)) {
       throw new BadRequestException(
         `Invalid theme "${theme}". Allowed values: mehfil-e-shireen, ember, tailwind.`,

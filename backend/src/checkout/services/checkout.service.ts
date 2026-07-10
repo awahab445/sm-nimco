@@ -6,7 +6,12 @@ import {
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { randomUUID } from 'crypto';
-import { CheckoutRedisService, CheckoutSession, CheckoutAddress, CheckoutShippingMethod } from './checkout.redis';
+import {
+  CheckoutRedisService,
+  CheckoutSession,
+  CheckoutAddress,
+  CheckoutShippingMethod,
+} from './checkout.redis';
 import { CheckoutTotalsService } from './checkout.totals';
 import { CheckoutValidatorService } from './checkout.validator';
 import { CartRedisService, Cart } from '../../cart/services/cart.redis';
@@ -53,7 +58,9 @@ export class CheckoutService {
    * Start checkout from cart
    * Creates or fetches customer and assigns customer group
    */
-  async startCheckout(startCheckoutDto: StartCheckoutDto): Promise<{ checkoutId: string }> {
+  async startCheckout(
+    startCheckoutDto: StartCheckoutDto,
+  ): Promise<{ checkoutId: string }> {
     const { cartId, customerEmail, customerId } = startCheckoutDto;
 
     // Load cart from Redis
@@ -79,23 +86,32 @@ export class CheckoutService {
         resolvedCustomerId = customer.id;
         resolvedCustomerGroupId = customer.customerGroupId;
         resolvedCustomerEmail = customer.email;
-        this.logger.log(`Using existing customer: ${resolvedCustomerId} with group: ${resolvedCustomerGroupId}`);
+        this.logger.log(
+          `Using existing customer: ${resolvedCustomerId} with group: ${resolvedCustomerGroupId}`,
+        );
       } catch (error) {
         this.logger.warn(`Failed to fetch customer ${customerId}:`, error);
         throw new NotFoundException(`Customer ${customerId} not found`);
       }
     } else if (customerEmail) {
       // Create or fetch customer by email (guest if doesn't exist)
-      const customer = await this.customerService.getOrCreateByEmail(customerEmail, true);
+      const customer = await this.customerService.getOrCreateByEmail(
+        customerEmail,
+        true,
+      );
       resolvedCustomerId = customer.id;
       resolvedCustomerGroupId = customer.customerGroupId;
       resolvedCustomerEmail = customer.email;
-      this.logger.log(`Resolved customer: ${resolvedCustomerId} (${customerEmail}) with group: ${resolvedCustomerGroupId}`);
+      this.logger.log(
+        `Resolved customer: ${resolvedCustomerId} (${customerEmail}) with group: ${resolvedCustomerGroupId}`,
+      );
     } else {
       // No customer provided - this should not happen in normal flow
       // But we'll create a guest customer with a placeholder email
       // In production, you might want to require email at checkout start
-      this.logger.warn('No customer email or ID provided at checkout start. Customer will be required at confirmation.');
+      this.logger.warn(
+        'No customer email or ID provided at checkout start. Customer will be required at confirmation.',
+      );
     }
 
     // If we still don't have a customer group, use default
@@ -103,7 +119,9 @@ export class CheckoutService {
       try {
         const defaultGroup = await this.customerGroupService.findDefault();
         resolvedCustomerGroupId = defaultGroup.id;
-        this.logger.log(`Using default customer group: ${resolvedCustomerGroupId}`);
+        this.logger.log(
+          `Using default customer group: ${resolvedCustomerGroupId}`,
+        );
       } catch (error) {
         this.logger.warn('Failed to get default customer group:', error);
         // Continue without group - totals calculation will handle gracefully
@@ -145,10 +163,14 @@ export class CheckoutService {
     };
 
     // Calculate initial totals with customer group context
-    const initialTotals = await this.checkoutTotals.calculateTotals(initialCheckout);
+    const initialTotals =
+      await this.checkoutTotals.calculateTotals(initialCheckout);
 
     // Create checkout session
-    const checkout: Omit<CheckoutSession, 'id' | 'createdAt' | 'updatedAt' | 'expiresAt'> = {
+    const checkout: Omit<
+      CheckoutSession,
+      'id' | 'createdAt' | 'updatedAt' | 'expiresAt'
+    > = {
       cartId,
       items: checkoutItems,
       currency: cart.currency,
@@ -159,19 +181,38 @@ export class CheckoutService {
       ...initialTotals,
     };
 
-    const session = await this.checkoutRedis.createCheckout(checkoutId, checkout);
+    const session = await this.checkoutRedis.createCheckout(
+      checkoutId,
+      checkout,
+    );
 
     // Emit event
-    this.eventEmitter.emit('checkout.started', new CheckoutStartedEvent(checkoutId, cartId));
+    this.eventEmitter.emit(
+      'checkout.started',
+      new CheckoutStartedEvent(checkoutId, cartId),
+    );
 
-    this.logger.log(`Checkout started: ${checkoutId} from cart ${cartId} for customer ${resolvedCustomerId || 'pending'}`);
+    this.logger.log(
+      `Checkout started: ${checkoutId} from cart ${cartId} for customer ${resolvedCustomerId || 'pending'}`,
+    );
     return { checkoutId };
   }
 
   /**
    * Get checkout session
    */
-  async getCheckout(checkoutId: string): Promise<CheckoutSession & { items: Array<CheckoutSession['items'][0] & { productName?: string; productImage?: string; variantName?: string; variantAttributes?: Record<string, unknown> }> }> {
+  async getCheckout(checkoutId: string): Promise<
+    CheckoutSession & {
+      items: Array<
+        CheckoutSession['items'][0] & {
+          productName?: string;
+          productImage?: string;
+          variantName?: string;
+          variantAttributes?: Record<string, unknown>;
+        }
+      >;
+    }
+  > {
     const checkout = await this.checkoutRedis.getCheckout(checkoutId);
     if (!checkout) {
       throw new NotFoundException(`Checkout ${checkoutId} not found`);
@@ -189,9 +230,14 @@ export class CheckoutService {
             item.variantId,
             item.productId,
           );
-          const imgs = variant.images as { isPrimary?: boolean; url: string }[] | undefined;
+          const imgs = variant.images as
+            | { isPrimary?: boolean; url: string }[]
+            | undefined;
           const primaryImage = imgs?.find((img) => img.isPrimary) || imgs?.[0];
-          const variantObj = variant as { product?: { name?: unknown }; name?: unknown };
+          const variantObj = variant as {
+            product?: { name?: unknown };
+            name?: unknown;
+          };
           let productName: string | null = null;
           if (variantObj.product?.name != null) {
             productName = String(variantObj.product.name);
@@ -200,29 +246,39 @@ export class CheckoutService {
           }
           if (!productName || productName.trim() === '') {
             try {
-              const product = await this.productService.findOneById(item.productId);
+              const product = await this.productService.findOneById(
+                item.productId,
+              );
               productName = product?.name != null ? String(product.name) : null;
             } catch {
               // keep null
             }
           }
           const variantAttributes =
-            variant.attributes && typeof variant.attributes === 'object' && !Array.isArray(variant.attributes)
+            variant.attributes &&
+            typeof variant.attributes === 'object' &&
+            !Array.isArray(variant.attributes)
               ? (variant.attributes as Record<string, unknown>)
-              : item.attributes ?? {};
+              : (item.attributes ?? {});
 
           return {
             ...item,
             productName: productName?.trim() || 'Product',
-            variantName: variant.name != null ? String(variant.name) : undefined,
+            variantName:
+              variant.name != null ? String(variant.name) : undefined,
             productImage: primaryImage?.url,
             variantAttributes,
           };
         } catch (error) {
-          this.logger.warn(`Failed to fetch product details for variant ${item.variantId}:`, error);
+          this.logger.warn(
+            `Failed to fetch product details for variant ${item.variantId}:`,
+            error,
+          );
           let fallbackName = 'Product';
           try {
-            const product = await this.productService.findOneById(item.productId);
+            const product = await this.productService.findOneById(
+              item.productId,
+            );
             if (product?.name) fallbackName = String(product.name);
           } catch {
             // ignore
@@ -274,7 +330,10 @@ export class CheckoutService {
     await this.checkoutRedis.updateCheckout(updated);
 
     // Emit event
-    this.eventEmitter.emit('checkout.updated', new CheckoutUpdatedEvent(checkoutId));
+    this.eventEmitter.emit(
+      'checkout.updated',
+      new CheckoutUpdatedEvent(checkoutId),
+    );
 
     this.logger.log(`Addresses updated for checkout ${checkoutId}`);
     return updated;
@@ -314,7 +373,10 @@ export class CheckoutService {
     await this.checkoutRedis.updateCheckout(updated);
 
     // Emit event
-    this.eventEmitter.emit('checkout.updated', new CheckoutUpdatedEvent(checkoutId));
+    this.eventEmitter.emit(
+      'checkout.updated',
+      new CheckoutUpdatedEvent(checkoutId),
+    );
 
     this.logger.log(`Shipping method updated for checkout ${checkoutId}`);
     return updated;
@@ -343,8 +405,13 @@ export class CheckoutService {
 
     const updated = await this.checkoutTotals.recalculateAndUpdate(checkout);
     await this.checkoutRedis.updateCheckout(updated);
-    this.eventEmitter.emit('checkout.updated', new CheckoutUpdatedEvent(checkoutId));
-    this.logger.log(`Guest customer set for checkout ${checkoutId}: ${customer.id}`);
+    this.eventEmitter.emit(
+      'checkout.updated',
+      new CheckoutUpdatedEvent(checkoutId),
+    );
+    this.logger.log(
+      `Guest customer set for checkout ${checkoutId}: ${customer.id}`,
+    );
     return updated;
   }
 
@@ -365,8 +432,13 @@ export class CheckoutService {
 
     const updated = await this.checkoutTotals.recalculateAndUpdate(checkout);
     await this.checkoutRedis.updateCheckout(updated);
-    this.eventEmitter.emit('checkout.updated', new CheckoutUpdatedEvent(checkoutId));
-    this.logger.log(`Coupon ${checkoutId}: ${updated.couponCode ? `applied "${updated.couponCode}"` : 'cleared'}`);
+    this.eventEmitter.emit(
+      'checkout.updated',
+      new CheckoutUpdatedEvent(checkoutId),
+    );
+    this.logger.log(
+      `Coupon ${checkoutId}: ${updated.couponCode ? `applied "${updated.couponCode}"` : 'cleared'}`,
+    );
     // Return same enriched payload as GET /checkout (totals read back from store).
     return this.getCheckout(checkoutId);
   }
@@ -378,7 +450,17 @@ export class CheckoutService {
     checkoutId: string,
     variantId: string,
     updateDto: UpdateCheckoutItemDto,
-  ): Promise<CheckoutSession & { items: Array<CheckoutSession['items'][0] & { productName?: string; productImage?: string; variantName?: string }> }> {
+  ): Promise<
+    CheckoutSession & {
+      items: Array<
+        CheckoutSession['items'][0] & {
+          productName?: string;
+          productImage?: string;
+          variantName?: string;
+        }
+      >;
+    }
+  > {
     const rawCheckout = await this.checkoutRedis.getCheckout(checkoutId);
     if (!rawCheckout) {
       throw new NotFoundException(`Checkout ${checkoutId} not found`);
@@ -386,9 +468,13 @@ export class CheckoutService {
 
     this.checkoutValidator.validateCheckoutState(rawCheckout, ['pending']);
 
-    const itemIndex = rawCheckout.items.findIndex((item) => item.variantId === variantId);
+    const itemIndex = rawCheckout.items.findIndex(
+      (item) => item.variantId === variantId,
+    );
     if (itemIndex === -1) {
-      throw new NotFoundException(`Item with variant ${variantId} not found in checkout`);
+      throw new NotFoundException(
+        `Item with variant ${variantId} not found in checkout`,
+      );
     }
 
     const { quantity } = updateDto;
@@ -396,7 +482,10 @@ export class CheckoutService {
     if (quantity === 0) {
       rawCheckout.items.splice(itemIndex, 1);
     } else {
-      rawCheckout.items[itemIndex] = { ...rawCheckout.items[itemIndex], quantity };
+      rawCheckout.items[itemIndex] = {
+        ...rawCheckout.items[itemIndex],
+        quantity,
+      };
     }
 
     if (rawCheckout.items.length === 0) {
@@ -406,8 +495,13 @@ export class CheckoutService {
     const updated = await this.checkoutTotals.recalculateAndUpdate(rawCheckout);
     await this.checkoutRedis.updateCheckout(updated);
 
-    this.eventEmitter.emit('checkout.updated', new CheckoutUpdatedEvent(checkoutId));
-    this.logger.log(`Checkout ${checkoutId} item ${variantId} quantity updated to ${quantity}`);
+    this.eventEmitter.emit(
+      'checkout.updated',
+      new CheckoutUpdatedEvent(checkoutId),
+    );
+    this.logger.log(
+      `Checkout ${checkoutId} item ${variantId} quantity updated to ${quantity}`,
+    );
 
     return this.getCheckout(checkoutId);
   }
@@ -424,13 +518,20 @@ export class CheckoutService {
 
     // Resolve customer - prefer checkout session customer, then DTO, then create guest
     let customerId = checkout.customerId || confirmCheckoutDto.customerId;
-    let customerGroupId = checkout.customerGroupId || confirmCheckoutDto.customerGroupId;
-    let customerEmail = (confirmCheckoutDto.customerEmail || checkout.customerEmail || '')
+    let customerGroupId =
+      checkout.customerGroupId || confirmCheckoutDto.customerGroupId;
+    const customerEmail = (
+      confirmCheckoutDto.customerEmail ||
+      checkout.customerEmail ||
+      ''
+    )
       .trim()
       .toLowerCase();
 
     if (!customerEmail) {
-      throw new BadRequestException('Customer email is required to confirm checkout');
+      throw new BadRequestException(
+        'Customer email is required to confirm checkout',
+      );
     }
 
     // Resolve customer if not already set
@@ -442,16 +543,23 @@ export class CheckoutService {
       );
       customerId = customer.id;
       customerGroupId = customer.customerGroupId;
-      this.logger.log(`Resolved customer: ${customerId} (${customerEmail}) with group: ${customerGroupId}`);
+      this.logger.log(
+        `Resolved customer: ${customerId} (${customerEmail}) with group: ${customerGroupId}`,
+      );
     } else {
       // If customer ID exists, ensure we have the group
       if (!customerGroupId) {
         try {
           const customer = await this.customerService.findOne(customerId);
           customerGroupId = customer.customerGroupId;
-          this.logger.log(`Loaded customer group ${customerGroupId} for customer ${customerId}`);
+          this.logger.log(
+            `Loaded customer group ${customerGroupId} for customer ${customerId}`,
+          );
         } catch (error) {
-          this.logger.warn(`Failed to fetch customer ${customerId}, will use default group:`, error);
+          this.logger.warn(
+            `Failed to fetch customer ${customerId}, will use default group:`,
+            error,
+          );
         }
       }
     }
@@ -464,7 +572,9 @@ export class CheckoutService {
         this.logger.log(`Using default customer group: ${customerGroupId}`);
       } catch (error) {
         this.logger.warn('Failed to get default customer group:', error);
-        throw new BadRequestException('Unable to determine customer group for checkout');
+        throw new BadRequestException(
+          'Unable to determine customer group for checkout',
+        );
       }
     }
 
@@ -490,10 +600,16 @@ export class CheckoutService {
     await this.checkoutValidator.validateForConfirmation(updated);
 
     // Snapshot customer group for order (load full group details)
-    let customerGroupSnapshot: { id: string; name: string; discountPercent: number | null; taxClassId: string | null } | null = null;
+    let customerGroupSnapshot: {
+      id: string;
+      name: string;
+      discountPercent: number | null;
+      taxClassId: string | null;
+    } | null = null;
     if (customerGroupId) {
       try {
-        const customerGroup = await this.customerGroupService.findOne(customerGroupId);
+        const customerGroup =
+          await this.customerGroupService.findOne(customerGroupId);
         customerGroupSnapshot = {
           id: customerGroup.id,
           name: customerGroup.name,
@@ -574,7 +690,12 @@ export class CheckoutService {
     // Emit checkout completed event
     this.eventEmitter.emit(
       'checkout.completed',
-      new CheckoutCompletedEvent(checkoutId, order.id, order.orderNumber, paymentIntent.paymentId),
+      new CheckoutCompletedEvent(
+        checkoutId,
+        order.id,
+        order.orderNumber,
+        paymentIntent.paymentId,
+      ),
     );
 
     this.logger.log(
@@ -602,11 +723,18 @@ export class CheckoutService {
     // If customer exists but group is missing, load it
     if (checkout.customerId && !checkout.customerGroupId) {
       try {
-        const customer = await this.customerService.findOne(checkout.customerId);
+        const customer = await this.customerService.findOne(
+          checkout.customerId,
+        );
         checkout.customerGroupId = customer.customerGroupId;
-        this.logger.log(`Loaded customer group ${customer.customerGroupId} for customer ${checkout.customerId}`);
+        this.logger.log(
+          `Loaded customer group ${customer.customerGroupId} for customer ${checkout.customerId}`,
+        );
       } catch (error) {
-        this.logger.warn(`Failed to load customer group for ${checkout.customerId}:`, error);
+        this.logger.warn(
+          `Failed to load customer group for ${checkout.customerId}:`,
+          error,
+        );
       }
     }
 
@@ -641,7 +769,8 @@ export class CheckoutService {
       await this.checkoutRedis.deleteCheckout(checkoutId);
     }, 5000);
 
-    this.logger.log(`Checkout ${checkoutId} cancelled: ${reason || 'No reason provided'}`);
+    this.logger.log(
+      `Checkout ${checkoutId} cancelled: ${reason || 'No reason provided'}`,
+    );
   }
 }
-

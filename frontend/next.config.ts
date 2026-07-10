@@ -25,6 +25,12 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   // Pin tracing root to this monorepo (avoids picking up C:\Users\pc\package-lock.json).
   outputFileTracingRoot: monorepoRoot,
+  images: {
+    formats: ['image/avif', 'image/webp'],
+    minimumCacheTTL: 60 * 60 * 24 * 30,
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+  },
   async rewrites() {
     return [
       {
@@ -42,6 +48,15 @@ const nextConfig: NextConfig = {
       {
         source: '/(.*)',
         headers: securityHeaders,
+      },
+      {
+        source: '/uploads/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=2592000, stale-while-revalidate=86400',
+          },
+        ],
       },
     ];
   },

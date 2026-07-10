@@ -69,4 +69,3 @@ export class CustomerController {
     return this.customerService.updateMe(user.customerId, updateDto);
   }
 }
-

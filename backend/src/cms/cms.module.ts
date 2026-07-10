@@ -9,7 +9,12 @@ import { AdminPagesController } from './controllers/admin-pages.controller';
 
 @Module({
   imports: [CatalogModule, AdminModule],
-  controllers: [CmsController, PagesController, AdminCmsController, AdminPagesController],
+  controllers: [
+    CmsController,
+    PagesController,
+    AdminCmsController,
+    AdminPagesController,
+  ],
   providers: [CmsService],
   exports: [CmsService],
 })

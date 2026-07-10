@@ -36,20 +36,26 @@ describe('AdminPermissionsGuard', () => {
 
   it('allows when no permissions metadata', async () => {
     reflector.getAllAndOverride.mockReturnValue(undefined);
-    const ok = await guard.canActivate(createContext({ typ: 'admin', adminUserId: 'u1' }));
+    const ok = await guard.canActivate(
+      createContext({ typ: 'admin', adminUserId: 'u1' }),
+    );
     expect(ok).toBe(true);
     expect(rbac.userHasAllPermissions).not.toHaveBeenCalled();
   });
 
   it('allows when metadata is empty array', async () => {
     reflector.getAllAndOverride.mockReturnValue([]);
-    const ok = await guard.canActivate(createContext({ typ: 'admin', adminUserId: 'u1' }));
+    const ok = await guard.canActivate(
+      createContext({ typ: 'admin', adminUserId: 'u1' }),
+    );
     expect(ok).toBe(true);
   });
 
   it('throws when user is missing', async () => {
     reflector.getAllAndOverride.mockReturnValue(['products.read']);
-    await expect(guard.canActivate(createContext(null))).rejects.toBeInstanceOf(ForbiddenException);
+    await expect(guard.canActivate(createContext(null))).rejects.toBeInstanceOf(
+      ForbiddenException,
+    );
   });
 
   it('throws when user is not admin type', async () => {
@@ -60,7 +66,10 @@ describe('AdminPermissionsGuard', () => {
   });
 
   it('delegates to rbac.userHasAllPermissions for admin', async () => {
-    reflector.getAllAndOverride.mockReturnValue(['products.read', 'products.update']);
+    reflector.getAllAndOverride.mockReturnValue([
+      'products.read',
+      'products.update',
+    ]);
     rbac.userHasAllPermissions.mockResolvedValue(true);
     const ok = await guard.canActivate(
       createContext({ typ: 'admin', adminUserId: 'user-uuid' }),
@@ -84,9 +93,9 @@ describe('AdminPermissionsGuard', () => {
     reflector.getAllAndOverride.mockReturnValue(['a']);
     rbac.userHasAllPermissions.mockResolvedValue(true);
     await guard.canActivate(createContext({ typ: 'admin', adminUserId: 'u1' }));
-    expect(reflector.getAllAndOverride).toHaveBeenCalledWith(ADMIN_PERMISSIONS_KEY, [
-      expect.any(Function),
-      expect.any(Function),
-    ]);
+    expect(reflector.getAllAndOverride).toHaveBeenCalledWith(
+      ADMIN_PERMISSIONS_KEY,
+      [expect.any(Function), expect.any(Function)],
+    );
   });
 });

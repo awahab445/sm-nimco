@@ -15,4 +15,3 @@ export interface OrderTax {
   createdAt: Date;
   updatedAt: Date;
 }
-

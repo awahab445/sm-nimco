@@ -1,15 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { BankHostedBaseProvider } from './bank-hosted.base';
 import { PaymentProviderCode, PaymentStatus } from '../../types/payment.types';
-import { CreateIntentParams, PaymentMethodConfig } from '../../types/payment.types';
+import {
+  CreateIntentParams,
+  PaymentMethodConfig,
+} from '../../types/payment.types';
 import { APP_CURRENCY } from '../../../common/currency';
 import * as crypto from 'crypto';
 
 /**
  * HBL (Habib Bank Limited) Payment Gateway Provider
- * 
+ *
  * Implements HOSTED_PAGE flow for HBL payments in Pakistan.
- * 
+ *
  * Configuration format (stored in payment_methods.config):
  * {
  *   "merchantId": "HBL12345",
@@ -18,7 +21,7 @@ import * as crypto from 'crypto';
  *   "paymentUrl": "https://hbl.com/payment",
  *   "callbackUrl": "/payments/callback/hbl"
  * }
- * 
+ *
  * Payment Status Mapping:
  * - SUCCESS / 00 / APPROVED → captured
  * - PENDING / PROCESSING → processing
@@ -79,7 +82,8 @@ export class HblProvider extends BankHostedBaseProvider {
 
     const signatureString = signatureFields
       .map((field) => {
-        const value = callbackData[field] || callbackData[field.toLowerCase()] || '';
+        const value =
+          callbackData[field] || callbackData[field.toLowerCase()] || '';
         return `${field}=${value}`;
       })
       .join('&');
@@ -193,4 +197,3 @@ export class HblProvider extends BankHostedBaseProvider {
     return PaymentStatus.FAILED;
   }
 }
-

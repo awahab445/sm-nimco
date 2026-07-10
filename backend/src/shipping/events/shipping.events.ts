@@ -27,4 +27,3 @@ export class OrderDeliveredEvent {
     public readonly trackingNumber?: string,
   ) {}
 }
-

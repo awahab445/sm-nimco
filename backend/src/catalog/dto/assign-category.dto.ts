@@ -1,4 +1,10 @@
-import { IsString, IsNotEmpty, IsNumber, IsOptional, Min } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  Min,
+} from 'class-validator';
 
 export class AssignCategoryDto {
   @IsString()
@@ -10,4 +16,3 @@ export class AssignCategoryDto {
   @Min(0)
   position?: number;
 }
-

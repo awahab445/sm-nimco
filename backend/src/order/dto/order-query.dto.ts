@@ -1,4 +1,12 @@
-import { IsOptional, IsString, IsIn, IsInt, Min, Max, IsUUID } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  IsIn,
+  IsInt,
+  Min,
+  Max,
+  IsUUID,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class OrderQueryDto {
@@ -40,4 +48,3 @@ export class OrderQueryDto {
   @IsIn(['asc', 'desc'])
   sortOrder?: 'asc' | 'desc' = 'desc';
 }
-

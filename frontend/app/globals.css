@@ -121,7 +121,7 @@ html {
   --radius-md: calc(var(--radius-card) * 0.85);
   --radius-sm: calc(var(--radius-card) * 0.65);
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 body {

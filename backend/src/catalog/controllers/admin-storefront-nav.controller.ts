@@ -23,7 +23,10 @@ import { extname } from 'path';
 import { randomUUID } from 'crypto';
 import type { Request } from 'express';
 import { StorefrontNavService } from '../services/storefront-nav.service';
-import { CreateStorefrontNavLinkDto, ReorderStorefrontNavDto } from '../dto/create-storefront-nav-link.dto';
+import {
+  CreateStorefrontNavLinkDto,
+  ReorderStorefrontNavDto,
+} from '../dto/create-storefront-nav-link.dto';
 import { UpdateStorefrontNavLinkDto } from '../dto/update-storefront-nav-link.dto';
 import { AdminJwtAuthGuard } from '../../admin/guards/admin-jwt-auth.guard';
 import { AdminPermissionsGuard } from '../../admin/guards/admin-permissions.guard';
@@ -63,8 +66,12 @@ export class AdminStorefrontNavController {
   @UseInterceptors(
     FileInterceptor('file', {
       fileFilter: (_req, file, cb) => {
-        const allowedMime = /^image\/(jpeg|png|webp|gif|avif)$/i.test(file.mimetype || '');
-        const allowedExt = /\.(jpe?g|png|webp|gif|avif)$/i.test(file.originalname || '');
+        const allowedMime = /^image\/(jpeg|png|webp|gif|avif)$/i.test(
+          file.mimetype || '',
+        );
+        const allowedExt = /\.(jpe?g|png|webp|gif|avif)$/i.test(
+          file.originalname || '',
+        );
         if (allowedMime && allowedExt) {
           cb(null, true);
           return;
@@ -96,7 +103,8 @@ export class AdminStorefrontNavController {
     @Req() req: Request,
   ) {
     const publicBaseUrl = process.env.PUBLIC_BASE_URL?.trim();
-    const protoRaw = (req.headers['x-forwarded-proto'] as string | undefined) || req.protocol;
+    const protoRaw =
+      (req.headers['x-forwarded-proto'] as string | undefined) || req.protocol;
     const proto = protoRaw === 'https' ? 'https' : 'http';
     const host = req.get('host')?.trim() || 'localhost:3000';
     const normalizedPath = file.path.replace(/\\/g, '/');
@@ -114,7 +122,10 @@ export class AdminStorefrontNavController {
   @RequirePermissions('products.manage')
   @HttpCode(HttpStatus.OK)
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
-  async update(@Param('id') id: string, @Body() dto: UpdateStorefrontNavLinkDto) {
+  async update(
+    @Param('id') id: string,
+    @Body() dto: UpdateStorefrontNavLinkDto,
+  ) {
     return this.storefrontNavService.update(id, dto);
   }
 

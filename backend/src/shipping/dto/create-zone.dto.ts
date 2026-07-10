@@ -81,4 +81,3 @@ export class UpdateZoneDto {
   @IsObject()
   metadata?: Record<string, any>;
 }
-

@@ -6,7 +6,10 @@ import {
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from './prisma.service';
-import { CreateStorefrontNavLinkDto, ReorderStorefrontNavDto } from '../dto/create-storefront-nav-link.dto';
+import {
+  CreateStorefrontNavLinkDto,
+  ReorderStorefrontNavDto,
+} from '../dto/create-storefront-nav-link.dto';
 import { UpdateStorefrontNavLinkDto } from '../dto/update-storefront-nav-link.dto';
 
 export type StorefrontNavMegaNode = {
@@ -85,7 +88,10 @@ export class StorefrontNavService {
     try {
       return await fn();
     } catch (e) {
-      if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2021') {
+      if (
+        e instanceof Prisma.PrismaClientKnownRequestError &&
+        e.code === 'P2021'
+      ) {
         throw new ServiceUnavailableException(
           'Store navigation is not available: apply storefront nav migrations.',
         );
@@ -106,19 +112,24 @@ export class StorefrontNavService {
     return `/${encodeURIComponent(s)}`;
   }
 
-  private async appendPublishedCmsPages(header: StorefrontNavHeaderPublic[]): Promise<StorefrontNavHeaderPublic[]> {
+  private async appendPublishedCmsPages(
+    header: StorefrontNavHeaderPublic[],
+  ): Promise<StorefrontNavHeaderPublic[]> {
     const cmsPages = await this.prisma.cmsPage.findMany({
       where: { status: 'published' },
       orderBy: [{ title: 'asc' }],
       select: { id: true, title: true, slug: true },
     });
 
-    const existingHrefs = new Set(header.map((item) => this.normalizeHref(item.href)));
+    const existingHrefs = new Set(
+      header.map((item) => this.normalizeHref(item.href)),
+    );
     const cmsNavItems: StorefrontNavHeaderPublic[] = [];
 
     for (const page of cmsPages) {
       const slug = page.slug?.trim();
-      if (!slug || STOREFRONT_RESERVED_CMS_SLUGS.has(slug.toLowerCase())) continue;
+      if (!slug || STOREFRONT_RESERVED_CMS_SLUGS.has(slug.toLowerCase()))
+        continue;
 
       const href = this.cmsPageHref(slug);
       if (existingHrefs.has(this.normalizeHref(href))) continue;
@@ -139,13 +150,17 @@ export class StorefrontNavService {
 
     if (cmsNavItems.length === 0) return header;
 
-    const cartIndex = header.findIndex((item) => this.normalizeHref(item.href) === '/cart');
+    const cartIndex = header.findIndex(
+      (item) => this.normalizeHref(item.href) === '/cart',
+    );
     const insertAt = cartIndex >= 0 ? cartIndex : header.length;
     const before = header.slice(0, insertAt);
     const after = header.slice(insertAt);
 
     const baseSortOrder =
-      before.length > 0 ? Math.max(...before.map((item) => item.sortOrder)) + 1 : 25;
+      before.length > 0
+        ? Math.max(...before.map((item) => item.sortOrder)) + 1
+        : 25;
 
     const positionedCmsItems = cmsNavItems.map((item, index) => ({
       ...item,
@@ -155,7 +170,10 @@ export class StorefrontNavService {
     return [...before, ...positionedCmsItems, ...after];
   }
 
-  private resolveHref(row: { href: string; category?: { slug: string } | null }): string {
+  private resolveHref(row: {
+    href: string;
+    category?: { slug: string } | null;
+  }): string {
     if (row.category?.slug) return `/categories/${row.category.slug}`;
     const h = row.href?.trim();
     return h || '/';
@@ -169,7 +187,9 @@ export class StorefrontNavService {
       byParent.get(key)!.push(row);
     }
     for (const list of byParent.values()) {
-      list.sort((a, b) => a.sortOrder - b.sortOrder || a.label.localeCompare(b.label));
+      list.sort(
+        (a, b) => a.sortOrder - b.sortOrder || a.label.localeCompare(b.label),
+      );
     }
 
     const walk = (parentId: string | null): StorefrontNavMegaNode[] =>
@@ -184,7 +204,11 @@ export class StorefrontNavService {
     return walk(null);
   }
 
-  private async validateParent(parentId: string | null, zone: string, excludeId?: string): Promise<void> {
+  private async validateParent(
+    parentId: string | null,
+    zone: string,
+    excludeId?: string,
+  ): Promise<void> {
     if (!parentId) return;
     if (parentId === excludeId) {
       throw new BadRequestException('A menu item cannot be its own parent.');
@@ -194,7 +218,9 @@ export class StorefrontNavService {
     );
     if (!parent) throw new BadRequestException('Parent menu item not found.');
     if (parent.zone !== zone) {
-      throw new BadRequestException('Parent must be in the same navigation zone.');
+      throw new BadRequestException(
+        'Parent must be in the same navigation zone.',
+      );
     }
     if (zone === 'header' && parent.parentId) {
       throw new BadRequestException('Header links cannot be nested.');
@@ -203,7 +229,10 @@ export class StorefrontNavService {
 
   private async validateCategory(categoryId: string | null): Promise<void> {
     if (!categoryId) return;
-    const cat = await this.prisma.category.findUnique({ where: { id: categoryId }, select: { id: true } });
+    const cat = await this.prisma.category.findUnique({
+      where: { id: categoryId },
+      select: { id: true },
+    });
     if (!cat) throw new BadRequestException('Linked category not found.');
   }
 
@@ -287,7 +316,8 @@ export class StorefrontNavService {
       throw new BadRequestException('Header bar links cannot have a parent.');
     }
     await this.validateParent(parentId, zone, id);
-    if (dto.categoryId !== undefined) await this.validateCategory(dto.categoryId);
+    if (dto.categoryId !== undefined)
+      await this.validateCategory(dto.categoryId);
 
     return this.runNavQuery(() =>
       this.prisma.storefrontNavLink.update({
@@ -295,7 +325,12 @@ export class StorefrontNavService {
         data: {
           ...(dto.label !== undefined ? { label: dto.label.trim() } : {}),
           ...(dto.secondaryLabel !== undefined
-            ? { secondaryLabel: dto.secondaryLabel === null ? null : dto.secondaryLabel.trim() || null }
+            ? {
+                secondaryLabel:
+                  dto.secondaryLabel === null
+                    ? null
+                    : dto.secondaryLabel.trim() || null,
+              }
             : {}),
           ...(dto.href !== undefined ? { href: dto.href.trim() } : {}),
           ...(dto.sortOrder !== undefined ? { sortOrder: dto.sortOrder } : {}),
@@ -303,16 +338,33 @@ export class StorefrontNavService {
           ...(dto.kind !== undefined ? { kind: dto.kind } : {}),
           ...(dto.zone !== undefined ? { zone: dto.zone } : {}),
           ...(dto.parentId !== undefined ? { parentId: dto.parentId } : {}),
-          ...(dto.categoryId !== undefined ? { categoryId: dto.categoryId } : {}),
-          ...(dto.openMegaMenu !== undefined ? { openMegaMenu: dto.openMegaMenu } : {}),
+          ...(dto.categoryId !== undefined
+            ? { categoryId: dto.categoryId }
+            : {}),
+          ...(dto.openMegaMenu !== undefined
+            ? { openMegaMenu: dto.openMegaMenu }
+            : {}),
           ...(dto.bannerImageUrl !== undefined
-            ? { bannerImageUrl: dto.bannerImageUrl === null ? null : dto.bannerImageUrl.trim() || null }
+            ? {
+                bannerImageUrl:
+                  dto.bannerImageUrl === null
+                    ? null
+                    : dto.bannerImageUrl.trim() || null,
+              }
             : {}),
           ...(dto.bannerHref !== undefined
-            ? { bannerHref: dto.bannerHref === null ? null : dto.bannerHref.trim() || null }
+            ? {
+                bannerHref:
+                  dto.bannerHref === null
+                    ? null
+                    : dto.bannerHref.trim() || null,
+              }
             : {}),
           ...(dto.bannerAlt !== undefined
-            ? { bannerAlt: dto.bannerAlt === null ? null : dto.bannerAlt.trim() || null }
+            ? {
+                bannerAlt:
+                  dto.bannerAlt === null ? null : dto.bannerAlt.trim() || null,
+              }
             : {}),
         },
         include: { category: { select: { id: true, name: true, slug: true } } },
@@ -343,7 +395,9 @@ export class StorefrontNavService {
       this.prisma.storefrontNavLink.findUnique({ where: { id } }),
     );
     if (!row) throw new NotFoundException('Nav link not found');
-    await this.runNavQuery(() => this.prisma.storefrontNavLink.delete({ where: { id } }));
+    await this.runNavQuery(() =>
+      this.prisma.storefrontNavLink.delete({ where: { id } }),
+    );
     return { id };
   }
 }

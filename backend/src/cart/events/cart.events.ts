@@ -26,4 +26,3 @@ export class CartItemRemovedEvent {
 export class CartExpiredEvent {
   constructor(public readonly cartId: string) {}
 }
-

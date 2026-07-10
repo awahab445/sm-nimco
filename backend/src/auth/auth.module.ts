@@ -18,7 +18,8 @@ import { MailModule } from '../mail/mail.module';
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'change-me-in-production',
       signOptions: {
-        expiresIn: (process.env.JWT_EXPIRES_IN ?? '7d') as import('ms').StringValue,
+        expiresIn: (process.env.JWT_EXPIRES_IN ??
+          '7d') as import('ms').StringValue,
       },
     }),
     CatalogModule,
@@ -27,7 +28,19 @@ import { MailModule } from '../mail/mail.module';
     MailModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, JwtAuthGuard, CustomerJwtAuthGuard, OptionalJwtAuthGuard],
-  exports: [AuthService, JwtModule, JwtAuthGuard, CustomerJwtAuthGuard, OptionalJwtAuthGuard],
+  providers: [
+    AuthService,
+    JwtStrategy,
+    JwtAuthGuard,
+    CustomerJwtAuthGuard,
+    OptionalJwtAuthGuard,
+  ],
+  exports: [
+    AuthService,
+    JwtModule,
+    JwtAuthGuard,
+    CustomerJwtAuthGuard,
+    OptionalJwtAuthGuard,
+  ],
 })
 export class AuthModule {}

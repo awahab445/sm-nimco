@@ -1,4 +1,10 @@
-import { IsString, IsNotEmpty, IsOptional, IsUrl, IsEmail } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsUrl,
+  IsEmail,
+} from 'class-validator';
 
 export class CreatePaymentIntentDto {
   @IsString()
@@ -21,4 +27,3 @@ export class CreatePaymentIntentDto {
   @IsOptional()
   cancelUrl?: string;
 }
-

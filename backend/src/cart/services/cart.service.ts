@@ -6,7 +6,12 @@ import {
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { randomUUID } from 'crypto';
-import { CartRedisService, Cart, CartItem, CartBundleGroup } from './cart.redis';
+import {
+  CartRedisService,
+  Cart,
+  CartItem,
+  CartBundleGroup,
+} from './cart.redis';
 import { VariantService } from '../../catalog/services/variant.service';
 import { ReservationService } from '../../inventory/services/reservation.service';
 import { InventoryService } from '../../inventory/services/inventory.service';
@@ -64,10 +69,21 @@ export class CartService {
   /**
    * Get cart by ID with enriched item details (product name, variant attributes, image)
    */
-  async getCart(cartId: string): Promise<Cart & {
-    items: Array<CartItem & { productName?: string; variantName?: string; variantAttributes?: Record<string, unknown>; productImage?: string }>;
-    bundles?: Array<CartBundleGroup & { bundleGroupId: string; imageUrl?: string }>;
-  }> {
+  async getCart(cartId: string): Promise<
+    Cart & {
+      items: Array<
+        CartItem & {
+          productName?: string;
+          variantName?: string;
+          variantAttributes?: Record<string, unknown>;
+          productImage?: string;
+        }
+      >;
+      bundles?: Array<
+        CartBundleGroup & { bundleGroupId: string; imageUrl?: string }
+      >;
+    }
+  > {
     const cart = await this.cartRedis.getCart(cartId);
 
     if (!cart) {
@@ -81,9 +97,14 @@ export class CartService {
             item.variantId,
             item.productId,
           );
-          const imgs = variant.images as { isPrimary?: boolean; url: string }[] | undefined;
+          const imgs = variant.images as
+            | { isPrimary?: boolean; url: string }[]
+            | undefined;
           const primaryImage = imgs?.find((img) => img.isPrimary) || imgs?.[0];
-          const variantObj = variant as { product?: { name?: unknown }; name?: unknown };
+          const variantObj = variant as {
+            product?: { name?: unknown };
+            name?: unknown;
+          };
           let productName: string | null = null;
           if (variantObj.product?.name != null) {
             productName = String(variantObj.product.name);
@@ -92,29 +113,42 @@ export class CartService {
           }
           if (!productName || productName.trim() === '') {
             try {
-              const product = await this.productService.findOneById(item.productId);
+              const product = await this.productService.findOneById(
+                item.productId,
+              );
               productName = product?.name != null ? String(product.name) : null;
             } catch {
               // keep null
             }
           }
           const variantAttributes =
-            variant.attributes && typeof variant.attributes === 'object' && !Array.isArray(variant.attributes)
+            variant.attributes &&
+            typeof variant.attributes === 'object' &&
+            !Array.isArray(variant.attributes)
               ? (variant.attributes as Record<string, unknown>)
-              : item.attributes ?? {};
+              : (item.attributes ?? {});
 
           return {
             ...item,
             productName: productName?.trim() || 'Product',
-            variantName: variant.name != null ? String(variant.name) : undefined,
-            variantAttributes: Object.keys(variantAttributes).length > 0 ? variantAttributes : undefined,
+            variantName:
+              variant.name != null ? String(variant.name) : undefined,
+            variantAttributes:
+              Object.keys(variantAttributes).length > 0
+                ? variantAttributes
+                : undefined,
             productImage: primaryImage?.url,
           };
         } catch (error) {
-          this.logger.warn(`Failed to enrich cart item ${item.variantId}:`, error);
+          this.logger.warn(
+            `Failed to enrich cart item ${item.variantId}:`,
+            error,
+          );
           let fallbackName: string = 'Product';
           try {
-            const product = await this.productService.findOneById(item.productId);
+            const product = await this.productService.findOneById(
+              item.productId,
+            );
             if (product?.name) fallbackName = String(product.name);
           } catch {
             // ignore
@@ -124,7 +158,9 @@ export class CartService {
       }),
     );
 
-    const visibleItems = enrichedItems.filter((item) => !item.isBundleComponent);
+    const visibleItems = enrichedItems.filter(
+      (item) => !item.isBundleComponent,
+    );
     const bundles = this.buildBundlesView(cart, enrichedItems);
 
     return { ...cart, items: visibleItems, bundles };
@@ -146,10 +182,15 @@ export class CartService {
   private static SIMPLE_PRODUCT_RESERVATION_PREFIX = 'simple-';
 
   private isSimpleProductReservation(reservationId: string): boolean {
-    return reservationId.startsWith(CartService.SIMPLE_PRODUCT_RESERVATION_PREFIX);
+    return reservationId.startsWith(
+      CartService.SIMPLE_PRODUCT_RESERVATION_PREFIX,
+    );
   }
 
-  private async assertSufficientStock(variantId: string, requestedQuantity: number): Promise<void> {
+  private async assertSufficientStock(
+    variantId: string,
+    requestedQuantity: number,
+  ): Promise<void> {
     const hasStock = await this.inventoryService.hasSufficientStock(
       variantId,
       requestedQuantity,
@@ -168,7 +209,10 @@ export class CartService {
    * Add item to cart
    * Supports both configurable products (variantId) and simple products (variantId === productId, no variants).
    */
-  async addItemToCart(cartId: string, addToCartDto: AddToCartDto): Promise<Cart> {
+  async addItemToCart(
+    cartId: string,
+    addToCartDto: AddToCartDto,
+  ): Promise<Cart> {
     const { productId, variantId, quantity } = addToCartDto;
 
     // Get or create cart
@@ -178,7 +222,10 @@ export class CartService {
     }
 
     // Fetch variant (or synthetic variant for simple product when variantId === productId)
-    const variant = await this.variantService.findOneOrForSimpleProduct(variantId, productId);
+    const variant = await this.variantService.findOneOrForSimpleProduct(
+      variantId,
+      productId,
+    );
     const isSimpleProduct = variant.id === variant.productId;
 
     // Check if variant is already in cart
@@ -191,7 +238,10 @@ export class CartService {
       const newQuantity = existingItem.quantity + quantity;
 
       await this.assertSufficientStock(variantId, newQuantity);
-      if (existingItem.reservationId && !this.isSimpleProductReservation(existingItem.reservationId)) {
+      if (
+        existingItem.reservationId &&
+        !this.isSimpleProductReservation(existingItem.reservationId)
+      ) {
         await this.reservationService.releaseStock({
           reservationId: existingItem.reservationId,
         });
@@ -231,7 +281,9 @@ export class CartService {
         quantity,
         price: Number(variant.price),
         currency: cart.currency,
-        attributes: (variant.attributes && typeof variant.attributes === 'object' && !Array.isArray(variant.attributes)
+        attributes: (variant.attributes &&
+        typeof variant.attributes === 'object' &&
+        !Array.isArray(variant.attributes)
           ? variant.attributes
           : {}) as Record<string, any>,
         reservationId,
@@ -247,7 +299,9 @@ export class CartService {
 
     await this.cartRedis.updateCart(cart);
     await this.cartRedis.extendCartTTL(cartId);
-    this.logger.log(`Item added to cart ${cartId}: variant ${variantId}, quantity ${quantity}`);
+    this.logger.log(
+      `Item added to cart ${cartId}: variant ${variantId}, quantity ${quantity}`,
+    );
     return cart;
   }
 
@@ -260,10 +314,14 @@ export class CartService {
     updateDto: UpdateCartItemDto,
   ): Promise<Cart> {
     const cart = await this.getCart(cartId);
-    const itemIndex = cart.items.findIndex((item) => item.variantId === variantId);
+    const itemIndex = cart.items.findIndex(
+      (item) => item.variantId === variantId,
+    );
 
     if (itemIndex === -1) {
-      throw new NotFoundException(`Item with variant ${variantId} not found in cart`);
+      throw new NotFoundException(
+        `Item with variant ${variantId} not found in cart`,
+      );
     }
 
     const existingItem = cart.items[itemIndex];
@@ -274,7 +332,9 @@ export class CartService {
       return cart;
     }
 
-    const isSimpleProduct = this.isSimpleProductReservation(existingItem.reservationId ?? '');
+    const isSimpleProduct = this.isSimpleProductReservation(
+      existingItem.reservationId ?? '',
+    );
 
     if (newQuantity > 0) {
       await this.assertSufficientStock(variantId, newQuantity);
@@ -319,22 +379,34 @@ export class CartService {
    */
   async removeCartItem(cartId: string, variantId: string): Promise<Cart> {
     const cart = await this.getCart(cartId);
-    const itemIndex = cart.items.findIndex((item) => item.variantId === variantId);
+    const itemIndex = cart.items.findIndex(
+      (item) => item.variantId === variantId,
+    );
 
     if (itemIndex === -1) {
-      throw new NotFoundException(`Item with variant ${variantId} not found in cart`);
+      throw new NotFoundException(
+        `Item with variant ${variantId} not found in cart`,
+      );
     }
 
     const item = cart.items[itemIndex];
 
-    if (item.reservationId && !this.isSimpleProductReservation(item.reservationId)) {
+    if (
+      item.reservationId &&
+      !this.isSimpleProductReservation(item.reservationId)
+    ) {
       await this.reservationService.releaseStock({
         reservationId: item.reservationId,
       });
     }
     this.eventEmitter.emit(
       'cart.item.removed',
-      new CartItemRemovedEvent(cartId, variantId, item.quantity, item.reservationId),
+      new CartItemRemovedEvent(
+        cartId,
+        variantId,
+        item.quantity,
+        item.reservationId,
+      ),
     );
 
     // Remove item from cart
@@ -360,13 +432,19 @@ export class CartService {
 
     // Release all reservations (skip legacy placeholder ids for simple products)
     for (const item of cart.items) {
-      if (item.reservationId && !this.isSimpleProductReservation(item.reservationId)) {
+      if (
+        item.reservationId &&
+        !this.isSimpleProductReservation(item.reservationId)
+      ) {
         try {
           await this.reservationService.releaseStock({
             reservationId: item.reservationId,
           });
         } catch (error) {
-          this.logger.warn(`Failed to release reservation ${item.reservationId}:`, error);
+          this.logger.warn(
+            `Failed to release reservation ${item.reservationId}:`,
+            error,
+          );
         }
       }
     }
@@ -423,7 +501,8 @@ export class CartService {
       cart.items.map(async (item) => {
         try {
           const product = await this.productService.findOneById(item.productId);
-          const categoryIds = product.categories?.map((cat) => cat.categoryId) || [];
+          const categoryIds =
+            product.categories?.map((cat) => cat.categoryId) || [];
           return {
             productId: item.productId,
             variantId: item.variantId,
@@ -432,7 +511,10 @@ export class CartService {
             categoryIds,
           };
         } catch (error) {
-          this.logger.warn(`Failed to fetch product ${item.productId} for promotion:`, error);
+          this.logger.warn(
+            `Failed to fetch product ${item.productId} for promotion:`,
+            error,
+          );
           return {
             productId: item.productId,
             variantId: item.variantId,
@@ -477,8 +559,13 @@ export class CartService {
     };
   }
 
-  async addBundleToCart(cartId: string, dto: AddBundleToCartDto): Promise<Cart> {
-    const deal = await this.bundleDealService.getActiveDealForCart(dto.bundleDealId);
+  async addBundleToCart(
+    cartId: string,
+    dto: AddBundleToCartDto,
+  ): Promise<Cart> {
+    const deal = await this.bundleDealService.getActiveDealForCart(
+      dto.bundleDealId,
+    );
     const itemDtos: BundleDealItemDto[] = deal.items.map((item: any) => ({
       productId: item.productId,
       variantId: item.variantId ?? undefined,
@@ -550,28 +637,44 @@ export class CartService {
 
     await this.cartRedis.updateCart(cart);
     await this.cartRedis.extendCartTTL(cartId);
-    this.logger.log(`Bundle ${deal.id} added to cart ${cartId} as group ${bundleGroupId}`);
+    this.logger.log(
+      `Bundle ${deal.id} added to cart ${cartId} as group ${bundleGroupId}`,
+    );
     return cart;
   }
 
-  async removeBundleFromCart(cartId: string, bundleGroupId: string): Promise<Cart> {
+  async removeBundleFromCart(
+    cartId: string,
+    bundleGroupId: string,
+  ): Promise<Cart> {
     const cart = await this.cartRedis.getCart(cartId);
     if (!cart) {
       throw new NotFoundException(`Cart with ID ${cartId} not found`);
     }
 
-    const bundleItems = cart.items.filter((item) => item.bundleGroupId === bundleGroupId);
+    const bundleItems = cart.items.filter(
+      (item) => item.bundleGroupId === bundleGroupId,
+    );
     if (bundleItems.length === 0) {
-      throw new NotFoundException(`Bundle group ${bundleGroupId} not found in cart`);
+      throw new NotFoundException(
+        `Bundle group ${bundleGroupId} not found in cart`,
+      );
     }
 
     for (const item of bundleItems) {
-      if (item.reservationId && !this.isSimpleProductReservation(item.reservationId)) {
-        await this.reservationService.releaseStock({ reservationId: item.reservationId });
+      if (
+        item.reservationId &&
+        !this.isSimpleProductReservation(item.reservationId)
+      ) {
+        await this.reservationService.releaseStock({
+          reservationId: item.reservationId,
+        });
       }
     }
 
-    cart.items = cart.items.filter((item) => item.bundleGroupId !== bundleGroupId);
+    cart.items = cart.items.filter(
+      (item) => item.bundleGroupId !== bundleGroupId,
+    );
     if (cart.bundleGroups) {
       delete cart.bundleGroups[bundleGroupId];
     }
@@ -593,10 +696,14 @@ export class CartService {
 
     const group = cart.bundleGroups?.[bundleGroupId];
     if (!group) {
-      throw new NotFoundException(`Bundle group ${bundleGroupId} not found in cart`);
+      throw new NotFoundException(
+        `Bundle group ${bundleGroupId} not found in cart`,
+      );
     }
 
-    const bundleItems = cart.items.filter((item) => item.bundleGroupId === bundleGroupId);
+    const bundleItems = cart.items.filter(
+      (item) => item.bundleGroupId === bundleGroupId,
+    );
     const oldBundleQty = group.quantity;
     const newBundleQty = dto.quantity;
 
@@ -613,7 +720,9 @@ export class CartService {
         await this.assertSufficientStock(item.variantId, newQty);
       }
       if (item.reservationId) {
-        await this.reservationService.releaseStock({ reservationId: item.reservationId });
+        await this.reservationService.releaseStock({
+          reservationId: item.reservationId,
+        });
       }
 
       if (newQty > 0) {
@@ -642,4 +751,3 @@ export class CartService {
     return cart;
   }
 }
-

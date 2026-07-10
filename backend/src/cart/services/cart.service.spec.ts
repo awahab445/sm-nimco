@@ -68,7 +68,10 @@ describe('CartService', () => {
         { provide: InventoryService, useValue: mockInventoryService },
         { provide: PromotionsService, useValue: mockPromotionsService },
         { provide: BundleDealService, useValue: mockBundleDealService },
-        { provide: BundleDealPricingService, useValue: mockBundleDealPricingService },
+        {
+          provide: BundleDealPricingService,
+          useValue: mockBundleDealPricingService,
+        },
         { provide: EventEmitter2, useValue: mockEventEmitter },
       ],
     }).compile();

@@ -28,7 +28,9 @@ import { RequirePermissions } from '../../admin/decorators/require-permissions.d
 @Controller('admin/store-filters')
 @UseGuards(AdminJwtAuthGuard, AdminPermissionsGuard)
 export class AdminStorefrontFiltersController {
-  constructor(private readonly storefrontFilterService: StorefrontFilterService) {}
+  constructor(
+    private readonly storefrontFilterService: StorefrontFilterService,
+  ) {}
 
   @Get()
   @RequirePermissions('products.read')
@@ -50,7 +52,10 @@ export class AdminStorefrontFiltersController {
   @RequirePermissions('products.manage')
   @HttpCode(HttpStatus.OK)
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
-  async updateBrowseTreeNode(@Param('nodeId') nodeId: string, @Body() dto: UpdateFilterBrowseTreeNodeDto) {
+  async updateBrowseTreeNode(
+    @Param('nodeId') nodeId: string,
+    @Body() dto: UpdateFilterBrowseTreeNodeDto,
+  ) {
     return this.storefrontFilterService.updateBrowseTreeNode(nodeId, dto);
   }
 
@@ -58,7 +63,8 @@ export class AdminStorefrontFiltersController {
   @RequirePermissions('products.read')
   @HttpCode(HttpStatus.OK)
   async listBrowseTree(@Param('filterId') filterId: string) {
-    const data = await this.storefrontFilterService.listBrowseTreeForAdmin(filterId);
+    const data =
+      await this.storefrontFilterService.listBrowseTreeForAdmin(filterId);
     return { data };
   }
 
@@ -66,7 +72,8 @@ export class AdminStorefrontFiltersController {
   @RequirePermissions('products.manage')
   @HttpCode(HttpStatus.OK)
   async syncBrowseTree(@Param('filterId') filterId: string) {
-    const data = await this.storefrontFilterService.syncBrowseTreeFromNavigation(filterId);
+    const data =
+      await this.storefrontFilterService.syncBrowseTreeFromNavigation(filterId);
     return { data };
   }
 
@@ -82,7 +89,10 @@ export class AdminStorefrontFiltersController {
   @RequirePermissions('products.manage')
   @HttpCode(HttpStatus.OK)
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
-  async updateOption(@Param('optionId') optionId: string, @Body() dto: UpdateStorefrontFilterOptionDto) {
+  async updateOption(
+    @Param('optionId') optionId: string,
+    @Body() dto: UpdateStorefrontFilterOptionDto,
+  ) {
     return this.storefrontFilterService.updateOption(optionId, dto);
   }
 
@@ -97,7 +107,10 @@ export class AdminStorefrontFiltersController {
   @RequirePermissions('products.manage')
   @HttpCode(HttpStatus.CREATED)
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
-  async createOption(@Param('filterId') filterId: string, @Body() dto: CreateStorefrontFilterOptionDto) {
+  async createOption(
+    @Param('filterId') filterId: string,
+    @Body() dto: CreateStorefrontFilterOptionDto,
+  ) {
     return this.storefrontFilterService.createOption(filterId, dto);
   }
 
@@ -105,7 +118,10 @@ export class AdminStorefrontFiltersController {
   @RequirePermissions('products.manage')
   @HttpCode(HttpStatus.OK)
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
-  async updateFilter(@Param('id') id: string, @Body() dto: UpdateStorefrontFilterDto) {
+  async updateFilter(
+    @Param('id') id: string,
+    @Body() dto: UpdateStorefrontFilterDto,
+  ) {
     return this.storefrontFilterService.updateFilter(id, dto);
   }
 

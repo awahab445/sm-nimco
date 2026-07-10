@@ -39,7 +39,9 @@ export class PackageInsertService {
   }
 
   async generateBulkInserts(orderIds: string[]): Promise<Buffer> {
-    const uniqueIds = [...new Set(orderIds.map((id) => id.trim()).filter(Boolean))];
+    const uniqueIds = [
+      ...new Set(orderIds.map((id) => id.trim()).filter(Boolean)),
+    ];
     if (uniqueIds.length === 0) {
       throw new BadRequestException('At least one order ID is required.');
     }

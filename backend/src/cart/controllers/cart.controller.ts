@@ -115,4 +115,3 @@ export class CartController {
     await this.cartService.clearCart(cartId);
   }
 }
-

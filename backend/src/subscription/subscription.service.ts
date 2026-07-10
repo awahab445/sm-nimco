@@ -8,7 +8,9 @@ const SUCCESS_MESSAGE = 'Thank you for subscribing!';
 function isMissingSubscribersTable(e: unknown): boolean {
   return (
     e instanceof Prisma.PrismaClientKnownRequestError &&
-    (e.code === 'P2021' || (e.message?.includes('subscribers') && e.message?.includes('does not exist')))
+    (e.code === 'P2021' ||
+      (e.message?.includes('subscribers') &&
+        e.message?.includes('does not exist')))
   );
 }
 
@@ -34,7 +36,10 @@ export class SubscriptionService {
           'Subscribers table is missing. From the backend folder run: `npm run prisma:push` (or `npm run prisma:push:accept-loss` if Prisma warns about schema changes).',
         );
       }
-      if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
+      if (
+        e instanceof Prisma.PrismaClientKnownRequestError &&
+        e.code === 'P2002'
+      ) {
         return { message: SUCCESS_MESSAGE };
       }
       throw e;

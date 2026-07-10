@@ -30,7 +30,9 @@ export class CustomerService {
     });
 
     if (existing) {
-      throw new BadRequestException(`Customer with email ${dto.email} already exists`);
+      throw new BadRequestException(
+        `Customer with email ${dto.email} already exists`,
+      );
     }
 
     // Get customer group (use provided or default)
@@ -148,7 +150,7 @@ export class CustomerService {
   async updateMe(customerId: string, dto: UpdateCustomerDto) {
     // Build update data with only allowed fields
     const updateData: Partial<UpdateCustomerDto> = {};
-    
+
     if (dto.email !== undefined) {
       updateData.email = dto.email;
     }
@@ -161,7 +163,7 @@ export class CustomerService {
     if (dto.phone !== undefined) {
       updateData.phone = dto.phone;
     }
-    
+
     return this.update(customerId, updateData);
   }
 
@@ -211,7 +213,9 @@ export class CustomerService {
         where: { email: dto.email },
       });
       if (emailExists) {
-        throw new BadRequestException(`Customer with email ${dto.email} already exists`);
+        throw new BadRequestException(
+          `Customer with email ${dto.email} already exists`,
+        );
       }
     }
 
@@ -227,7 +231,8 @@ export class CustomerService {
     if (dto.lastName !== undefined) updateData.lastName = dto.lastName;
     if (dto.phone !== undefined) updateData.phone = dto.phone;
     if (dto.isGuest !== undefined) updateData.isGuest = dto.isGuest;
-    if (dto.customerGroupId !== undefined) updateData.customerGroupId = dto.customerGroupId;
+    if (dto.customerGroupId !== undefined)
+      updateData.customerGroupId = dto.customerGroupId;
     if (dto.metadata !== undefined) updateData.metadata = dto.metadata;
 
     const updated = await this.prisma.customer.update({
@@ -310,4 +315,3 @@ export class CustomerService {
     };
   }
 }
-

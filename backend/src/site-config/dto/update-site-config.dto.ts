@@ -52,14 +52,18 @@ export class UpdateSiteConfigDto {
   showAnnouncement?: boolean;
 
   @IsOptional()
-  @Transform(({ value }) => (value === '' || value === null ? undefined : Number(value)))
+  @Transform(({ value }) =>
+    value === '' || value === null ? undefined : Number(value),
+  )
   @IsInt()
   @Min(LOGO_DIMENSION_MIN)
   @Max(LOGO_DIMENSION_MAX)
   logoWidth?: number;
 
   @IsOptional()
-  @Transform(({ value }) => (value === '' || value === null ? undefined : Number(value)))
+  @Transform(({ value }) =>
+    value === '' || value === null ? undefined : Number(value),
+  )
   @IsInt()
   @Min(LOGO_DIMENSION_MIN)
   @Max(LOGO_DIMENSION_MAX)

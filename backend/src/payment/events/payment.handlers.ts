@@ -9,7 +9,7 @@ import { PaymentProviderCode } from '../types/payment.types';
 
 /**
  * Payment Event Handlers
- * 
+ *
  * Handles order lifecycle events for COD payments:
  * - ORDER_CREATED: Create COD payment if payment method is COD
  * - ORDER_DELIVERED: Capture COD payment (handled via order fulfillment status update)
@@ -24,7 +24,7 @@ export class PaymentEventHandlers {
   /**
    * Handle order created event
    * Create COD payment if the order uses COD payment method
-   * 
+   *
    * Note: This assumes the payment intent was already created during checkout.
    * If COD payment doesn't exist, we'll create it here as a fallback.
    */
@@ -139,4 +139,3 @@ export class PaymentEventHandlers {
     }
   }
 }
-

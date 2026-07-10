@@ -16,7 +16,10 @@ import {
   PaymentProviderCode,
   PaymentFlowType,
 } from '../types/payment.types';
-import { PaymentCapturedEvent, PaymentFailedEvent } from '../../order/events/order.events';
+import {
+  PaymentCapturedEvent,
+  PaymentFailedEvent,
+} from '../../order/events/order.events';
 import { randomUUID } from 'crypto';
 import { CreateAdminPaymentMethodDto } from '../dto/create-admin-payment-method.dto';
 import { UpdateAdminPaymentMethodDto } from '../dto/update-admin-payment-method.dto';
@@ -39,7 +42,11 @@ export class PaymentService {
     paymentMethodCode: string,
     returnUrl?: string,
     cancelUrl?: string,
-    actor?: { typ: 'admin' | 'customer'; customerId?: string; adminUserId?: string } | null,
+    actor?: {
+      typ: 'admin' | 'customer';
+      customerId?: string;
+      adminUserId?: string;
+    } | null,
     guestEmail?: string,
   ): Promise<PaymentIntentResult> {
     const order = await this.prisma.order.findUnique({
@@ -93,11 +100,15 @@ export class PaymentService {
     });
 
     if (!paymentMethod) {
-      throw new NotFoundException(`Payment method '${paymentMethodCode}' not found`);
+      throw new NotFoundException(
+        `Payment method '${paymentMethodCode}' not found`,
+      );
     }
 
     if (!paymentMethod.isActive) {
-      throw new BadRequestException(`Payment method '${paymentMethodCode}' is not active`);
+      throw new BadRequestException(
+        `Payment method '${paymentMethodCode}' is not active`,
+      );
     }
 
     // COD-specific validation
@@ -190,13 +201,17 @@ export class PaymentService {
     const provider = this.paymentFactory.getProvider(paymentMethod.provider);
 
     // Verify callback
-    const verificationResult = await provider.verifyCallback(callbackData, {
-      id: paymentMethod.id,
-      code: paymentMethod.code,
-      provider: paymentMethod.provider,
-      flowType: paymentMethod.flowType as any,
-      config: paymentMethod.config as Record<string, any>,
-    }, verificationContext);
+    const verificationResult = await provider.verifyCallback(
+      callbackData,
+      {
+        id: paymentMethod.id,
+        code: paymentMethod.code,
+        provider: paymentMethod.provider,
+        flowType: paymentMethod.flowType as any,
+        config: paymentMethod.config as Record<string, any>,
+      },
+      verificationContext,
+    );
 
     if (!verificationResult.isValid) {
       this.logger.warn(
@@ -273,7 +288,9 @@ export class PaymentService {
             verificationResult.amount,
           ),
         );
-        this.logger.log(`Payment ${payment.id} captured for order ${payment.orderId}`);
+        this.logger.log(
+          `Payment ${payment.id} captured for order ${payment.orderId}`,
+        );
       } else if (verificationResult.status === PaymentStatus.FAILED) {
         this.eventEmitter.emit(
           'payment.failed',
@@ -551,10 +568,7 @@ export class PaymentService {
    * Mark COD payment as failed (RTO - Return to Origin)
    * Called by admin/logistics when delivery fails
    */
-  async markCODAsFailed(
-    paymentId: string,
-    reason?: string,
-  ): Promise<void> {
+  async markCODAsFailed(paymentId: string, reason?: string): Promise<void> {
     const payment = await this.prisma.payment.findUnique({
       where: { id: paymentId },
       include: {
@@ -742,10 +756,7 @@ export class PaymentService {
   /**
    * Admin: update payment method
    */
-  async updatePaymentMethodAdmin(
-    id: string,
-    dto: UpdateAdminPaymentMethodDto,
-  ) {
+  async updatePaymentMethodAdmin(id: string, dto: UpdateAdminPaymentMethodDto) {
     const existing = await this.prisma.paymentMethod.findUnique({
       where: { id },
     });
@@ -842,4 +853,3 @@ export class PaymentService {
     }
   }
 }
-

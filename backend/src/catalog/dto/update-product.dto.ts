@@ -11,4 +11,3 @@ export class UpdateProductDto extends PartialType(CreateProductDto) {
   @IsOptional()
   slug?: string;
 }
-

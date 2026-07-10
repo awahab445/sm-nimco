@@ -44,4 +44,3 @@ const useRedis = process.env.REDIS_ENABLED !== 'false';
   exports: [CheckoutService, CheckoutRedisService],
 })
 export class CheckoutModule {}
-

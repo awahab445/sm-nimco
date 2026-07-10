@@ -57,7 +57,11 @@ export class CreatePromotionDto {
 
   @IsNumber()
   @IsOptional()
-  @ValidateIf((o) => o.type === PromotionType.PERCENTAGE || o.type === PromotionType.FIXED_AMOUNT)
+  @ValidateIf(
+    (o) =>
+      o.type === PromotionType.PERCENTAGE ||
+      o.type === PromotionType.FIXED_AMOUNT,
+  )
   @Min(0)
   @Type(() => Number)
   discountValue?: number;
@@ -131,4 +135,3 @@ export class CreatePromotionDto {
   @IsOptional()
   metadata?: Record<string, any>;
 }
-

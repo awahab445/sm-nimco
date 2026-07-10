@@ -1,5 +1,8 @@
 import { Module } from '@nestjs/common';
-import { ShippingController, AdminShippingController } from './controllers/shipping.controller';
+import {
+  ShippingController,
+  AdminShippingController,
+} from './controllers/shipping.controller';
 import { ShippingService } from './services/shipping.service';
 import { CourierService } from './services/courier.service';
 import { ShippingEligibilityEvaluator } from './services/shipping-eligibility-evaluator.service';
@@ -25,4 +28,3 @@ import { AdminRbacService } from '../admin/services/admin-rbac.service';
   exports: [ShippingService, CourierService, ShippingEligibilityEvaluator],
 })
 export class ShippingModule {}
-

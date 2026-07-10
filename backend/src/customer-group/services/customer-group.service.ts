@@ -36,7 +36,9 @@ export class CustomerGroupService {
       },
     });
 
-    this.logger.log(`Created customer group: ${customerGroup.id} (${customerGroup.name})`);
+    this.logger.log(
+      `Created customer group: ${customerGroup.id} (${customerGroup.name})`,
+    );
     return this.mapToResponse(customerGroup);
   }
 
@@ -126,7 +128,9 @@ export class CustomerGroupService {
         where: { id: { not: id } },
       });
       if (otherGroups.length === 0) {
-        throw new BadRequestException('Cannot unset default group when it is the only group');
+        throw new BadRequestException(
+          'Cannot unset default group when it is the only group',
+        );
       }
       // Set the first other group as default
       await this.prisma.customerGroup.update({
@@ -225,4 +229,3 @@ export class CustomerGroupService {
     };
   }
 }
-
