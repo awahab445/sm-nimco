@@ -44,12 +44,12 @@ export type StorefrontBundleDeal = {
   items?: StorefrontBundleDealItem[];
 };
 
-const DEALS_FETCH_CACHE = {
+const DEALS_FETCH_CACHE: RequestInit = {
   next: {
     revalidate: 60,
     tags: [CACHE_TAGS.deals, CACHE_TAGS.storefront],
   },
-} as const;
+};
 
 export async function fetchBundleDeals(): Promise<StorefrontBundleDeal[]> {
   try {

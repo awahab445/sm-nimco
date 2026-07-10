@@ -4,12 +4,12 @@ import { CACHE_TAGS } from '@/lib/cache-tags';
 import type { HomePageLayoutResponse, HomeSection } from './home-page-types';
 import { HOME_PAGE_DEFAULT_SECTIONS, HOME_SUBSCRIPTION_SECTION } from './home-page-defaults';
 
-const HOME_FETCH_CACHE = {
+const HOME_FETCH_CACHE: RequestInit = {
   next: {
     revalidate: 60,
     tags: [CACHE_TAGS.home, CACHE_TAGS.cms, CACHE_TAGS.storefront],
   },
-} as const;
+};
 
 function normalizeSections(raw: unknown): HomeSection[] | null {
   if (!raw || typeof raw !== 'object') return null;
