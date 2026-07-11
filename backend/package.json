@@ -22,6 +22,7 @@
     "prisma:fix-migrations": "node scripts/fix-migration-history.cjs",
     "prisma:seed": "prisma db seed",
     "admin:reset-password": "node scripts/reset-admin-password.cjs",
+    "export:meta-commerce": "ts-node --compiler-options {\"module\":\"CommonJS\"} scripts/export-meta-commerce-catalog.ts",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
     "test:watch": "jest --watch",
