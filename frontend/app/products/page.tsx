@@ -28,7 +28,7 @@ import { PlpProductGridSkeleton } from '@/components/products/plp-product-grid-s
 import { plpBrowseApi, type PlpBrowseTreeNode } from '@/lib/api-client';
 import { findBrowseNodeLabel } from '@/lib/plp-browse-tree';
 import { storefrontUi } from '@/lib/storefront-ui';
-import { trackViewItemList } from '@/lib/analytics/events';
+import { trackSearch, trackViewItemList } from '@/lib/analytics/events';
 
 function flattenCategories(res: { data?: Category[] } | CategoryTreeLike[]): Category[] {
   if (Array.isArray(res)) {
@@ -313,6 +313,11 @@ function ProductsContent() {
     viewListDebounce.current = setTimeout(() => {
       const listId = selectedCategoryId ?? applied.search ?? 'all-products';
       trackViewItemList(String(listId), pageTitle, data.data);
+      if (applied.search?.trim()) {
+        trackSearch(applied.search, {
+          contentIds: data.data.map((p) => p.sku || p.id).filter(Boolean),
+        });
+      }
     }, 300);
     return () => {
       if (viewListDebounce.current) clearTimeout(viewListDebounce.current);

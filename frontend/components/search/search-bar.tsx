@@ -7,6 +7,7 @@ import { productApi } from '@/lib/api-client';
 import { formatPrice } from '@/lib/currency';
 import { useHydrated } from '@/lib/use-hydrated';
 import { storefrontUi } from '@/lib/storefront-ui';
+import { trackSearch } from '@/lib/analytics/events';
 
 const DEBOUNCE_MS = 300;
 const MIN_QUERY_LENGTH = 2;
@@ -90,6 +91,9 @@ export function SearchBar({
     const q = query.trim();
     setOpen(false);
     if (q.length > 0) {
+      trackSearch(q, {
+        contentIds: suggestions.map((s) => s.id).filter(Boolean),
+      });
       router.push(`/products?search=${encodeURIComponent(q)}`);
     } else {
       router.push('/products');

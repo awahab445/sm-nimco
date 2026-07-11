@@ -10,7 +10,7 @@ import { formatPrice } from '@/lib/currency';
 import { storefrontUi } from '@/lib/storefront-ui';
 import { ProductImageGallery } from '@/components/product/product-image-gallery';
 import { ProductStockAlert } from '@/components/product/product-stock-alert';
-import { trackViewItem } from '@/lib/analytics/events';
+import { trackCustomizeProduct, trackViewItem } from '@/lib/analytics/events';
 
 type OptionDefinition = { code: string; label: string; values: string[] };
 
@@ -178,6 +178,7 @@ export function ProductDetailClient() {
     trackViewItem(product, {
       variantName: currentVariant.name,
       price: Number.isFinite(price) ? price : undefined,
+      variantId: currentVariant.id,
     });
   }, [product, currentVariant?.id, currentVariant?.name, currentVariant?.price]);
 
@@ -227,15 +228,29 @@ export function ProductDetailClient() {
     const nextOptions = { ...selectedOptions, [key]: value };
     setSelectedOptions(nextOptions);
     const exact = variants.find((v) => matchesSelectedOptions(v, nextOptions));
-    if (exact) {
-      setSelectedVariant(exact);
-      return;
+    const nextVariant =
+      exact ??
+      variants.find((v) => {
+        const vo = extractVariantOptions(v);
+        return vo[key] === value;
+      }) ??
+      null;
+    if (nextVariant) {
+      setSelectedVariant(nextVariant);
     }
-    const fallback = variants.find((v) => {
-      const vo = extractVariantOptions(v);
-      return vo[key] === value;
-    });
-    if (fallback) setSelectedVariant(fallback);
+    if (product && nextVariant) {
+      const price =
+        typeof nextVariant.price === 'string'
+          ? parseFloat(nextVariant.price)
+          : Number(nextVariant.price);
+      trackCustomizeProduct(product, {
+        variantId: nextVariant.id,
+        variantName: nextVariant.name,
+        price: Number.isFinite(price) ? price : undefined,
+        optionKey: key,
+        optionValue: value,
+      });
+    }
   };
   const currentVariantId = currentVariant?.id;
   const availableQty = currentVariantId !== undefined ? availability[currentVariantId] : undefined;

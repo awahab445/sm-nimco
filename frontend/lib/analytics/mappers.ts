@@ -20,7 +20,7 @@ export function productToGa4Item(
     options?.price ??
     toNumber(product.basePrice);
   return {
-    item_id: product.sku || product.id,
+    item_id: options?.variantId || product.sku || product.id,
     item_name: product.name,
     item_category: product.categories?.[0]?.name,
     item_variant: options?.variantName,

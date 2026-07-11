@@ -7,6 +7,7 @@ import { useAuthStore } from '@/lib/auth.store';
 import Link from 'next/link';
 import { storefrontUi } from '@/lib/storefront-ui';
 import { useHydrated } from '@/lib/use-hydrated';
+import { trackCompleteRegistration } from '@/lib/analytics/events';
 
 function RegisterFormSkeleton() {
   const field = (labelWidth = 'w-24') => (
@@ -115,6 +116,7 @@ function RegisterContent() {
         lastName: formData.lastName,
         phone: formData.phone || undefined,
       });
+      trackCompleteRegistration({ method: 'email', status: true });
       router.push(redirectTo.startsWith('/') ? redirectTo : '/account');
     } catch {
       // Error is handled by the store

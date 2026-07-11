@@ -22,17 +22,26 @@ function currency(): string {
   return getAnalyticsConfig()?.currency ?? 'PKR';
 }
 
+/** Meta Pixel ecommerce payload shared across catalog events. */
 function fbContentFromItems(items: Ga4Item[]): {
   content_ids: string[];
-  contents: Array<{ id: string; quantity: number }>;
+  contents: Array<{ id: string; quantity: number; item_price?: number }>;
   content_type: string;
+  content_name?: string;
+  num_items: number;
   value: number;
   currency: string;
 } {
   return {
     content_ids: items.map((i) => i.item_id),
-    contents: items.map((i) => ({ id: i.item_id, quantity: i.quantity })),
+    contents: items.map((i) => ({
+      id: i.item_id,
+      quantity: i.quantity,
+      item_price: i.price,
+    })),
     content_type: 'product',
+    content_name: items.length === 1 ? items[0]?.item_name : undefined,
+    num_items: items.reduce((sum, i) => sum + i.quantity, 0),
     value: sumItemValue(items),
     currency: currency(),
   };
@@ -54,13 +63,16 @@ export function trackViewItemList(
   });
 }
 
+/** Product page view → Meta `ViewContent` (+ GA4 view_item). */
 export function trackViewItem(
   product: Product,
-  options?: { variantName?: string; price?: number },
+  options?: { variantName?: string; price?: number; variantId?: string },
 ): void {
   if (!canTrack('trackCartEvents') && !canTrackMeta('trackCartEvents')) return;
+  if (!markOnce(`view_item_${product.id}`)) return;
   const items = [
     productToGa4Item(product, {
+      variantId: options?.variantId,
       variantName: options?.variantName,
       price: options?.price,
       quantity: 1,
@@ -74,9 +86,46 @@ export function trackViewItem(
     });
   }
   if (canTrackMeta('trackCartEvents')) {
-    sendFBEvent('ViewContent', {
+    sendFBEvent('ViewContent', fbContentFromItems(items));
+  }
+}
+
+/**
+ * Variant / option change on PDP → Meta `CustomizeProduct`
+ * (see Meta Pixel standard events).
+ */
+export function trackCustomizeProduct(
+  product: Product,
+  options?: {
+    variantName?: string;
+    price?: number;
+    variantId?: string;
+    optionKey?: string;
+    optionValue?: string;
+  },
+): void {
+  if (!canTrackMeta('trackCartEvents') && !canTrack('trackCustomEvents')) return;
+  const items = [
+    productToGa4Item(product, {
+      variantId: options?.variantId,
+      variantName: options?.variantName,
+      price: options?.price,
+      quantity: 1,
+    }),
+  ];
+  if (canTrack('trackCustomEvents')) {
+    sendGAEvent('customize_product', {
+      currency: currency(),
+      value: sumItemValue(items),
+      items,
+      option_key: options?.optionKey,
+      option_value: options?.optionValue,
+    });
+  }
+  if (canTrackMeta('trackCartEvents')) {
+    sendFBEvent('CustomizeProduct', {
       ...fbContentFromItems(items),
-      content_name: items[0]?.item_name,
+      content_name: product.name,
     });
   }
 }
@@ -97,11 +146,12 @@ function trackAddToCart(items: Ga4Item[]): void {
 export function trackAddToCartFromProduct(
   product: Product,
   quantity: number,
-  options?: { variantName?: string; price?: number },
+  options?: { variantName?: string; price?: number; variantId?: string },
 ): void {
   if (!canTrack('trackCartEvents') && !canTrackMeta('trackCartEvents')) return;
   const items = [
     productToGa4Item(product, {
+      variantId: options?.variantId,
       variantName: options?.variantName,
       price: options?.price,
       quantity,
@@ -121,16 +171,34 @@ export function trackAddBundleToCart(
   deal: { id: string; title: string; dealPrice: number; slug?: string },
   quantity: number,
 ): void {
-  if (!canTrack('trackCustomEvents')) return;
-  runWhenIdle(() => {
-    sendGAEvent('add_bundle_to_cart', {
-      currency: currency(),
-      value: deal.dealPrice * quantity,
-      bundle_deal_id: deal.id,
-      bundle_title: deal.title,
+  if (!canTrack('trackCustomEvents') && !canTrackMeta('trackCartEvents')) return;
+  const value = deal.dealPrice * quantity;
+  const items: Ga4Item[] = [
+    {
+      item_id: deal.id,
+      item_name: deal.title,
+      price: deal.dealPrice,
       quantity,
+    },
+  ];
+  if (canTrack('trackCustomEvents')) {
+    runWhenIdle(() => {
+      sendGAEvent('add_bundle_to_cart', {
+        currency: currency(),
+        value,
+        bundle_deal_id: deal.id,
+        bundle_title: deal.title,
+        quantity,
+      });
     });
-  });
+  }
+  if (canTrackMeta('trackCartEvents')) {
+    sendFBEvent('AddToCart', {
+      ...fbContentFromItems(items),
+      content_type: 'product_group',
+      content_name: deal.title,
+    });
+  }
 }
 
 export function trackRemoveFromCart(
@@ -208,7 +276,10 @@ export function trackAddPaymentInfo(
     });
   }
   if (canTrackMeta('trackCheckoutSteps')) {
-    sendFBEvent('AddPaymentInfo', fbContentFromItems(items));
+    sendFBEvent('AddPaymentInfo', {
+      ...fbContentFromItems(items),
+      payment_type: paymentType,
+    });
   }
 }
 
@@ -263,6 +334,53 @@ export function trackRefund(
   });
 }
 
+/** Site search → Meta `Search`. */
+export function trackSearch(
+  searchString: string,
+  options?: { contentIds?: string[] },
+): void {
+  const q = searchString.trim();
+  if (!q) return;
+  if (!canTrack('trackCustomEvents') && !canTrackMeta('trackCustomEvents')) return;
+  const key = `search_${q.toLowerCase()}`;
+  if (!markOnce(key)) return;
+  if (canTrack('trackCustomEvents')) {
+    sendGAEvent('search', {
+      search_term: q,
+    });
+  }
+  if (canTrackMeta('trackCustomEvents')) {
+    sendFBEvent('Search', {
+      search_string: q,
+      content_ids: options?.contentIds?.slice(0, 30),
+      content_type: 'product',
+    });
+  }
+}
+
+/**
+ * Account signup → Meta `CompleteRegistration`
+ * (email verification may still be pending).
+ */
+export function trackCompleteRegistration(options?: {
+  method?: string;
+  status?: boolean;
+}): void {
+  if (!canTrack('trackCustomEvents') && !canTrackMeta('trackCustomEvents')) return;
+  if (canTrack('trackCustomEvents')) {
+    sendGAEvent('sign_up', {
+      method: options?.method ?? 'email',
+    });
+  }
+  if (canTrackMeta('trackCustomEvents')) {
+    sendFBEvent('CompleteRegistration', {
+      content_name: 'account',
+      status: options?.status ?? true,
+      currency: currency(),
+    });
+  }
+}
+
 export function trackCustomEvent(
   eventName: string,
   params?: Record<string, string | number | boolean>,
@@ -277,6 +395,7 @@ export function trackPageView(path: string): void {
       page_path: path,
     });
   }
+  // SPA route changes — base pixel no longer auto-fires PageView (avoids double count).
   if (canTrackMeta('trackPageViews')) {
     sendFBEvent('PageView');
   }
