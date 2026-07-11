@@ -19,6 +19,7 @@ import { PrismaService } from './services/prisma.service';
 import { ProductOptionsService } from './services/product-options.service';
 import { StorefrontFilterService } from './services/storefront-filter.service';
 import { StorefrontNavService } from './services/storefront-nav.service';
+import { MetaCommerceExportService } from './services/meta-commerce-export.service';
 import { AdminJwtAuthGuard } from '../admin/guards/admin-jwt-auth.guard';
 import { AdminPermissionsGuard } from '../admin/guards/admin-permissions.guard';
 import { AdminRbacService } from '../admin/services/admin-rbac.service';
@@ -45,6 +46,7 @@ import { AdminRbacService } from '../admin/services/admin-rbac.service';
     ProductOptionsService,
     StorefrontFilterService,
     StorefrontNavService,
+    MetaCommerceExportService,
     AdminRbacService,
     AdminJwtAuthGuard,
     AdminPermissionsGuard,
@@ -55,6 +57,7 @@ import { AdminRbacService } from '../admin/services/admin-rbac.service';
     ImageService,
     CategoryService,
     ProductOptionsService,
+    MetaCommerceExportService,
     PrismaService,
   ],
 })

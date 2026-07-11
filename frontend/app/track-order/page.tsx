@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { orderApi } from '@/lib/api-client';
+import { useAuthStore } from '@/lib/auth.store';
 import { storefrontUi } from '@/lib/storefront-ui';
 import { useHydrated } from '@/lib/use-hydrated';
 import { trackCustomEvent } from '@/lib/analytics/events';
@@ -11,11 +12,20 @@ import { trackCustomEvent } from '@/lib/analytics/events';
 export default function TrackOrderPage() {
   const router = useRouter();
   const hydrated = useHydrated();
+  const { isAuthenticated, user } = useAuthStore();
   const [email, setEmail] = useState('');
   const [orderNumber, setOrderNumber] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
+
+  const isEmailLocked = isAuthenticated && !!user?.email;
+
+  useEffect(() => {
+    if (isAuthenticated && user?.email) {
+      setEmail(user.email);
+    }
+  }, [isAuthenticated, user?.email]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,7 +68,9 @@ export default function TrackOrderPage() {
       <div className="rounded-lg border border-border bg-card p-6 shadow-sm">
         <h1 className="text-xl font-semibold text-foreground">Track your order</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Enter the email address and order number from your confirmation to view order status.
+          {isEmailLocked
+            ? 'Enter your order number to view order status. Your account email is used automatically.'
+            : 'Enter the email address and order number from your confirmation to view order status.'}
         </p>
 
         {hydrated ? (
@@ -88,8 +100,14 @@ export default function TrackOrderPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className={storefrontUi.inputMt}
+                className={
+                  isEmailLocked
+                    ? `${storefrontUi.inputMt} bg-muted cursor-not-allowed`
+                    : storefrontUi.inputMt
+                }
+                readOnly={isEmailLocked}
                 disabled={loading}
+                aria-readonly={isEmailLocked || undefined}
               />
             </div>
 

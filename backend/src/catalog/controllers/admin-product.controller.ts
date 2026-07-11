@@ -14,15 +14,18 @@ import {
   UseInterceptors,
   ParseFilePipeBuilder,
   BadRequestException,
+  StreamableFile,
+  Res,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { randomUUID } from 'crypto';
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 import { ProductService } from '../services/product.service';
 import { VariantService } from '../services/variant.service';
 import { ImageService } from '../services/image.service';
+import { MetaCommerceExportService } from '../services/meta-commerce-export.service';
 import { CreateProductDto } from '../dto/create-product.dto';
 import { UpdateProductDto } from '../dto/update-product.dto';
 import { CreateVariantDto } from '../dto/create-variant.dto';
@@ -46,6 +49,7 @@ export class AdminProductController {
     private readonly variantService: VariantService,
     private readonly imageService: ImageService,
     private readonly productOptionsService: ProductOptionsService,
+    private readonly metaCommerceExportService: MetaCommerceExportService,
   ) {}
 
   @Get()
@@ -53,6 +57,37 @@ export class AdminProductController {
   @HttpCode(HttpStatus.OK)
   async list(@Query() query: ProductQueryDto) {
     return this.productService.findAllAdmin(query);
+  }
+
+  /**
+   * Export active products as a Meta Commerce Manager catalog file.
+   * GET /admin/products/export/meta-commerce?format=csv|xlsx
+   */
+  @Get('export/meta-commerce')
+  @CheckPermission('products', 'read')
+  @HttpCode(HttpStatus.OK)
+  async exportMetaCommerce(
+    @Query('format') format: string | undefined,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<StreamableFile> {
+    const useXlsx = (format || 'csv').toLowerCase() === 'xlsx';
+    const stamp = new Date().toISOString().slice(0, 10);
+    const { buffer } = await this.metaCommerceExportService.exportFile(
+      useXlsx ? 'xlsx' : 'csv',
+    );
+    if (useXlsx) {
+      res.set({
+        'Content-Type':
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'Content-Disposition': `attachment; filename="meta-commerce-catalog-${stamp}.xlsx"`,
+      });
+    } else {
+      res.set({
+        'Content-Type': 'text/csv; charset=utf-8',
+        'Content-Disposition': `attachment; filename="meta-commerce-catalog-${stamp}.csv"`,
+      });
+    }
+    return new StreamableFile(buffer);
   }
 
   @Post()
