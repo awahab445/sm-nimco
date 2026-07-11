@@ -213,9 +213,11 @@ export function OnePageCheckout() {
 
   // Sync from checkout when it loads/updates (only if we don't have saved-address selection)
   useEffect(() => {
-    if (checkout?.customerEmail) setCustomerEmail(checkout.customerEmail);
-    else if (isAuthenticated && user?.email) {
-      setCustomerEmail((prev) => prev || user.email);
+    // Logged-in users always use their account email (field is locked below)
+    if (isAuthenticated && user?.email) {
+      setCustomerEmail(user.email);
+    } else if (checkout?.customerEmail) {
+      setCustomerEmail(checkout.customerEmail);
     }
     if (checkout?.shippingMethod?.methodId) setSelectedShippingId(checkout.shippingMethod.methodId);
     if (showAddressForm && checkout?.billingAddress) {
@@ -512,6 +514,8 @@ export function OnePageCheckout() {
   const inputClass = storefrontUi.input;
   const labelClass = storefrontUi.labelMb;
 
+  const isEmailLocked = isAuthenticated && !!user?.email;
+
   const emailField = (
     <div className="sm:col-span-2">
       <label htmlFor="customer-email" className={labelClass}>Email *</label>
@@ -522,9 +526,16 @@ export function OnePageCheckout() {
         autoComplete="email"
         value={customerEmail}
         onChange={(e) => setCustomerEmail(e.target.value)}
-        className={inputClass}
+        readOnly={isEmailLocked}
+        className={isEmailLocked ? `${inputClass} bg-muted cursor-not-allowed` : inputClass}
         placeholder="you@example.com"
+        aria-readonly={isEmailLocked || undefined}
       />
+      {isEmailLocked && (
+        <p className="mt-1 text-xs text-muted-foreground">
+          Using the email on your account.
+        </p>
+      )}
     </div>
   );
 
