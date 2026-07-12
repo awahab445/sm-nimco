@@ -17,6 +17,7 @@ import {
 } from '@/lib/coupon-sync';
 import { formatVariantAttributes } from '@/lib/format-variant-attributes';
 import { trackAddPaymentInfo, trackAddShippingInfo } from '@/lib/analytics/events';
+import { checkoutItemToGa4Item } from '@/lib/analytics/mappers';
 
 const EMPTY_CART_ITEMS: CartItem[] = [];
 const MIN_ORDER_VALUE = 800;
@@ -462,13 +463,7 @@ export function OnePageCheckout() {
       });
 
       if (checkout?.items?.length) {
-        const gaItems = checkout.items.map((item) => ({
-          item_id: item.variantId || item.productId,
-          item_name: item.productName || item.variantName || 'Product',
-          item_variant: item.variantName,
-          price: typeof item.price === 'number' ? item.price : parseFloat(String(item.price)),
-          quantity: item.quantity,
-        }));
+        const gaItems = checkout.items.map(checkoutItemToGa4Item);
         trackAddShippingInfo(selectedShipping.methodName, gaItems);
       }
 
@@ -481,13 +476,7 @@ export function OnePageCheckout() {
       setPaymentInfo(paymentPayload);
 
       if (checkout?.items?.length) {
-        const gaItems = checkout.items.map((item) => ({
-          item_id: item.variantId || item.productId,
-          item_name: item.productName || item.variantName || 'Product',
-          item_variant: item.variantName,
-          price: typeof item.price === 'number' ? item.price : parseFloat(String(item.price)),
-          quantity: item.quantity,
-        }));
+        const gaItems = checkout.items.map(checkoutItemToGa4Item);
         trackAddPaymentInfo(selectedPaymentCode, gaItems);
       }
 

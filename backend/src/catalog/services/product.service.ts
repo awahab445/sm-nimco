@@ -179,6 +179,7 @@ export class ProductService {
       orderBy: { createdAt: 'desc' },
       select: {
         id: true,
+        sku: true,
         name: true,
         slug: true,
         basePrice: true,

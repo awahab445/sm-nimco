@@ -412,7 +412,14 @@ export const productApi = {
     q: string,
     limit?: number,
     options?: { signal?: AbortSignal },
-  ): Promise<{ data: Array<Pick<Product, 'id' | 'name' | 'slug' | 'basePrice'> & { images: Array<{ url: string }> }>; total: number }> => {
+  ): Promise<{
+    data: Array<
+      Pick<Product, 'id' | 'sku' | 'name' | 'slug' | 'basePrice'> & {
+        images: Array<{ url: string }>;
+      }
+    >;
+    total: number;
+  }> => {
     const params = new URLSearchParams({ q: q.trim() });
     if (limit != null) params.set('limit', String(limit));
     return fetchApi(`/products/search?${params.toString()}`, options ?? {});
@@ -428,7 +435,7 @@ export const inventoryApi = {
   },
 };
 
-// Cart API (enriched items include productName, variantName, variantAttributes, productImage from backend)
+// Cart API (enriched items include productName, variantName, variantAttributes, productImage, sku from backend)
 export interface CartItem {
   variantId: string;
   productId: string;
@@ -442,6 +449,9 @@ export interface CartItem {
   variantName?: string;
   variantAttributes?: Record<string, unknown>;
   productImage?: string;
+  /** Meta catalog retailer id — variant.sku (or product.sku for simple). */
+  sku?: string;
+  productSku?: string;
   bundleGroupId?: string;
   bundleDealId?: string;
   listPrice?: number;
@@ -994,6 +1004,9 @@ export interface CheckoutItem {
   variantName?: string;
   /** Variant attributes for display (e.g. size, color) */
   variantAttributes?: Record<string, unknown>;
+  /** Meta catalog retailer id — variant.sku (or product.sku for simple). */
+  sku?: string;
+  productSku?: string;
 }
 
 export interface CheckoutSession {

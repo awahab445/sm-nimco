@@ -209,6 +209,9 @@ export class CheckoutService {
           productImage?: string;
           variantName?: string;
           variantAttributes?: Record<string, unknown>;
+          /** Catalog retailer id for Meta (variant.sku or product.sku). */
+          sku?: string;
+          productSku?: string;
         }
       >;
     }
@@ -261,6 +264,15 @@ export class CheckoutService {
               ? (variant.attributes as Record<string, unknown>)
               : (item.attributes ?? {});
 
+          const variantSku =
+            variant.sku != null ? String(variant.sku).trim() : '';
+          const productSkuRaw =
+            (variant as { product?: { sku?: unknown } }).product?.sku != null
+              ? String(
+                  (variant as { product?: { sku?: unknown } }).product?.sku,
+                ).trim()
+              : '';
+
           return {
             ...item,
             productName: productName?.trim() || 'Product',
@@ -268,6 +280,8 @@ export class CheckoutService {
               variant.name != null ? String(variant.name) : undefined,
             productImage: primaryImage?.url,
             variantAttributes,
+            sku: variantSku || productSkuRaw || undefined,
+            productSku: productSkuRaw || variantSku || undefined,
           };
         } catch (error) {
           this.logger.warn(
@@ -275,11 +289,13 @@ export class CheckoutService {
             error,
           );
           let fallbackName = 'Product';
+          let fallbackSku: string | undefined;
           try {
             const product = await this.productService.findOneById(
               item.productId,
             );
             if (product?.name) fallbackName = String(product.name);
+            if (product?.sku) fallbackSku = String(product.sku);
           } catch {
             // ignore
           }
@@ -287,6 +303,8 @@ export class CheckoutService {
             ...item,
             productName: fallbackName,
             variantAttributes: item.attributes ?? {},
+            sku: fallbackSku,
+            productSku: fallbackSku,
           };
         }
       }),

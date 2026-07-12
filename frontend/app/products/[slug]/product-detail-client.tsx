@@ -178,9 +178,9 @@ export function ProductDetailClient() {
     trackViewItem(product, {
       variantName: currentVariant.name,
       price: Number.isFinite(price) ? price : undefined,
-      variantId: currentVariant.id,
+      variantSku: currentVariant.sku,
     });
-  }, [product, currentVariant?.id, currentVariant?.name, currentVariant?.price]);
+  }, [product, currentVariant?.id, currentVariant?.name, currentVariant?.price, currentVariant?.sku]);
 
   const activeVariants = variants.filter((v) => v);
   const optionDefinitions: OptionDefinition[] = (() => {
@@ -244,7 +244,7 @@ export function ProductDetailClient() {
           ? parseFloat(nextVariant.price)
           : Number(nextVariant.price);
       trackCustomizeProduct(product, {
-        variantId: nextVariant.id,
+        variantSku: nextVariant.sku,
         variantName: nextVariant.name,
         price: Number.isFinite(price) ? price : undefined,
         optionKey: key,
