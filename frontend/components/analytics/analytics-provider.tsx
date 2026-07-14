@@ -6,6 +6,7 @@ import { setAnalyticsConfig } from '@/lib/analytics/gtag';
 import { setMetaPixelConfig } from '@/lib/analytics/fbq';
 import { GoogleAnalyticsLoader } from './google-analytics';
 import { MetaPixel } from './meta-pixel';
+import { MetaFbcCapture } from './meta-fbc-capture';
 import { AnalyticsPageView } from './analytics-page-view';
 
 type Props = {
@@ -27,6 +28,8 @@ export function AnalyticsProvider({ config, children }: Props) {
 
   return (
     <>
+      {/* Always on: capture ad click IDs even before Pixel loads */}
+      <MetaFbcCapture />
       {gaActive ? <GoogleAnalyticsLoader config={config} /> : null}
       {metaActive ? <MetaPixel pixelId={config.metaPixelId} /> : null}
       {trackPageViews ? <AnalyticsPageView /> : null}

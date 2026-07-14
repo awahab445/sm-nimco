@@ -25,6 +25,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
 import { SiteConfigModule } from './site-config/site-config.module';
 import { StoreSettingsModule } from './store-settings/store-settings.module';
 import { BundleDealsModule } from './bundle-deals/bundle-deals.module';
+import { FeedsModule } from './feeds/feeds.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { BundleDealsModule } from './bundle-deals/bundle-deals.module';
       },
     ]),
     CatalogModule,
+    FeedsModule,
     AuthModule,
     AdminModule,
     InventoryModule,

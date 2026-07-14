@@ -1,0 +1,9 @@
+import { Module } from '@nestjs/common';
+import { CatalogModule } from '../catalog/catalog.module';
+import { FeedsController } from './feeds.controller';
+
+@Module({
+  imports: [CatalogModule],
+  controllers: [FeedsController],
+})
+export class FeedsModule {}
