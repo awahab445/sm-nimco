@@ -33,7 +33,7 @@ function fbContentFromItems(items: Ga4Item[]): {
   currency: string;
 } {
   return {
-    content_ids: items.map((i) => i.item_id),
+    content_ids: items.map((i) => i.item_id).filter(Boolean),
     contents: items.map((i) => ({
       id: i.item_id,
       quantity: i.quantity,
@@ -66,13 +66,13 @@ export function trackViewItemList(
 /** Product page view → Meta `ViewContent` (+ GA4 view_item). */
 export function trackViewItem(
   product: Product,
-  options?: { variantName?: string; price?: number; variantId?: string },
+  options?: { variantName?: string; price?: number; variantSku?: string },
 ): void {
   if (!canTrack('trackCartEvents') && !canTrackMeta('trackCartEvents')) return;
   if (!markOnce(`view_item_${product.id}`)) return;
   const items = [
     productToGa4Item(product, {
-      variantId: options?.variantId,
+      variantSku: options?.variantSku,
       variantName: options?.variantName,
       price: options?.price,
       quantity: 1,
@@ -99,7 +99,7 @@ export function trackCustomizeProduct(
   options?: {
     variantName?: string;
     price?: number;
-    variantId?: string;
+    variantSku?: string;
     optionKey?: string;
     optionValue?: string;
   },
@@ -107,7 +107,7 @@ export function trackCustomizeProduct(
   if (!canTrackMeta('trackCartEvents') && !canTrack('trackCustomEvents')) return;
   const items = [
     productToGa4Item(product, {
-      variantId: options?.variantId,
+      variantSku: options?.variantSku,
       variantName: options?.variantName,
       price: options?.price,
       quantity: 1,
@@ -146,12 +146,12 @@ function trackAddToCart(items: Ga4Item[]): void {
 export function trackAddToCartFromProduct(
   product: Product,
   quantity: number,
-  options?: { variantName?: string; price?: number; variantId?: string },
+  options?: { variantName?: string; price?: number; variantSku?: string },
 ): void {
   if (!canTrack('trackCartEvents') && !canTrackMeta('trackCartEvents')) return;
   const items = [
     productToGa4Item(product, {
-      variantId: options?.variantId,
+      variantSku: options?.variantSku,
       variantName: options?.variantName,
       price: options?.price,
       quantity,
@@ -168,19 +168,35 @@ export function trackAddToCartFromCartItem(
 }
 
 export function trackAddBundleToCart(
-  deal: { id: string; title: string; dealPrice: number; slug?: string },
+  deal: {
+    id: string;
+    title: string;
+    dealPrice: number;
+    slug?: string;
+    items?: Array<{
+      quantity?: number;
+      product?: { sku?: string; name?: string } | null;
+      variant?: { sku?: string; name?: string } | null;
+    }>;
+  },
   quantity: number,
 ): void {
   if (!canTrack('trackCustomEvents') && !canTrackMeta('trackCartEvents')) return;
   const value = deal.dealPrice * quantity;
-  const items: Ga4Item[] = [
-    {
-      item_id: deal.id,
-      item_name: deal.title,
-      price: deal.dealPrice,
-      quantity,
-    },
-  ];
+  // Prefer component SKUs so Meta can match catalog rows (never send deal UUID).
+  const componentItems: Ga4Item[] = (deal.items ?? [])
+    .map((it) => {
+      const sku = it.variant?.sku?.trim() || it.product?.sku?.trim();
+      if (!sku) return null;
+      return {
+        item_id: sku,
+        item_name: it.variant?.name || it.product?.name || deal.title,
+        price: 0,
+        quantity: (it.quantity ?? 1) * quantity,
+      } satisfies Ga4Item;
+    })
+    .filter((x): x is Ga4Item => x != null);
+
   if (canTrack('trackCustomEvents')) {
     runWhenIdle(() => {
       sendGAEvent('add_bundle_to_cart', {
@@ -189,13 +205,14 @@ export function trackAddBundleToCart(
         bundle_deal_id: deal.id,
         bundle_title: deal.title,
         quantity,
+        items: componentItems,
       });
     });
   }
-  if (canTrackMeta('trackCartEvents')) {
+  if (canTrackMeta('trackCartEvents') && componentItems.length > 0) {
     sendFBEvent('AddToCart', {
-      ...fbContentFromItems(items),
-      content_type: 'product_group',
+      ...fbContentFromItems(componentItems),
+      value,
       content_name: deal.title,
     });
   }
@@ -352,7 +369,7 @@ export function trackSearch(
   if (canTrackMeta('trackCustomEvents')) {
     sendFBEvent('Search', {
       search_string: q,
-      content_ids: options?.contentIds?.slice(0, 30),
+      content_ids: options?.contentIds?.filter(Boolean).slice(0, 30),
       content_type: 'product',
     });
   }

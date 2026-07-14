@@ -13,6 +13,7 @@ import { useCartStore } from './cart.store';
 import {
   trackBeginCheckout,
 } from './analytics/events';
+import { checkoutItemToGa4Item } from './analytics/mappers';
 import {
   getPendingCouponCode,
   clearPendingCouponCode,
@@ -157,13 +158,7 @@ export function CheckoutProvider({ children }: { children: React.ReactNode }) {
           error: null,
         }));
 
-        const gaItems = checkout.items.map((item) => ({
-          item_id: item.variantId || item.productId,
-          item_name: item.productName || item.variantName || 'Product',
-          item_variant: item.variantName,
-          price: typeof item.price === 'number' ? item.price : parseFloat(String(item.price)),
-          quantity: item.quantity,
-        }));
+        const gaItems = checkout.items.map(checkoutItemToGa4Item);
         trackBeginCheckout(checkoutId, gaItems, checkout.couponCode);
     } catch (error) {
       if (isCartNotFoundError(error)) {
