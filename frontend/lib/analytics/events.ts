@@ -13,6 +13,7 @@ import {
 } from './fbq';
 import {
   cartItemToGa4Item,
+  isCatalogUuid,
   orderLineToGa4Item,
   productToGa4Item,
   sumItemValue,
@@ -20,6 +21,13 @@ import {
 
 function currency(): string {
   return getAnalyticsConfig()?.currency ?? 'PKR';
+}
+
+/** Keep only Meta-catalog retailer ids (SKUs); drop empty / UUID leftovers. */
+function catalogContentIds(ids: Array<string | undefined | null>): string[] {
+  return ids
+    .map((id) => id?.trim())
+    .filter((id): id is string => Boolean(id) && !isCatalogUuid(id));
 }
 
 /** Meta Pixel ecommerce payload shared across catalog events. */
@@ -32,17 +40,20 @@ function fbContentFromItems(items: Ga4Item[]): {
   value: number;
   currency: string;
 } {
+  const withSku = items.filter(
+    (i) => i.item_id?.trim() && !isCatalogUuid(i.item_id),
+  );
   return {
-    content_ids: items.map((i) => i.item_id).filter(Boolean),
-    contents: items.map((i) => ({
+    content_ids: catalogContentIds(withSku.map((i) => i.item_id)),
+    contents: withSku.map((i) => ({
       id: i.item_id,
       quantity: i.quantity,
       item_price: i.price,
     })),
     content_type: 'product',
-    content_name: items.length === 1 ? items[0]?.item_name : undefined,
-    num_items: items.reduce((sum, i) => sum + i.quantity, 0),
-    value: sumItemValue(items),
+    content_name: withSku.length === 1 ? withSku[0]?.item_name : undefined,
+    num_items: withSku.reduce((sum, i) => sum + i.quantity, 0),
+    value: sumItemValue(withSku.length ? withSku : items),
     currency: currency(),
   };
 }
@@ -369,7 +380,7 @@ export function trackSearch(
   if (canTrackMeta('trackCustomEvents')) {
     sendFBEvent('Search', {
       search_string: q,
-      content_ids: options?.contentIds?.filter(Boolean).slice(0, 30),
+      content_ids: catalogContentIds(options?.contentIds ?? []).slice(0, 30),
       content_type: 'product',
     });
   }

@@ -7,20 +7,32 @@ function toNumber(value: string | number | undefined | null): number {
   return Number.isFinite(n) ? n : 0;
 }
 
+/** Detect DB UUIDs so we never send them as Meta catalog content_ids. */
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+export function isCatalogUuid(value: string | null | undefined): boolean {
+  return Boolean(value && UUID_RE.test(value.trim()));
+}
+
 /**
  * Meta catalog `id` is always a SKU (product.sku for simple, variant.sku for variants).
  * Never send internal UUIDs as content_ids — that tanks catalog match rate.
+ * Returns '' when no SKU is available (callers should filter empties).
  */
 export function catalogRetailerId(options: {
   variantSku?: string | null;
   productSku?: string | null;
+  /** Only used if it is NOT a UUID (legacy non-UUID retailer ids). */
   fallbackId?: string | null;
 }): string {
   const variantSku = options.variantSku?.trim();
-  if (variantSku) return variantSku;
+  if (variantSku && !isCatalogUuid(variantSku)) return variantSku;
   const productSku = options.productSku?.trim();
-  if (productSku) return productSku;
-  return options.fallbackId?.trim() || '';
+  if (productSku && !isCatalogUuid(productSku)) return productSku;
+  const fallback = options.fallbackId?.trim();
+  if (fallback && !isCatalogUuid(fallback)) return fallback;
+  return '';
 }
 
 export function productToGa4Item(
@@ -38,7 +50,6 @@ export function productToGa4Item(
     item_id: catalogRetailerId({
       variantSku: options?.variantSku,
       productSku: product.sku,
-      fallbackId: product.id,
     }),
     item_name: product.name,
     item_category: product.categories?.[0]?.name,
@@ -53,7 +64,6 @@ export function cartItemToGa4Item(item: CartItem): Ga4Item {
     item_id: catalogRetailerId({
       variantSku: item.sku,
       productSku: item.productSku,
-      fallbackId: item.productId,
     }),
     item_name: item.productName || item.variantName || 'Product',
     item_variant: item.variantName,
@@ -67,7 +77,6 @@ export function checkoutItemToGa4Item(item: CheckoutItem): Ga4Item {
     item_id: catalogRetailerId({
       variantSku: item.sku,
       productSku: item.productSku,
-      fallbackId: item.productId,
     }),
     item_name: item.productName || item.variantName || 'Product',
     item_variant: item.variantName,
@@ -82,8 +91,9 @@ export function orderLineToGa4Item(line: {
   unitPrice?: number | string;
   quantity?: number;
 }): Ga4Item {
+  const sku = line.sku?.trim();
   return {
-    item_id: line.sku?.trim() || line.name,
+    item_id: sku && !isCatalogUuid(sku) ? sku : '',
     item_name: line.name,
     price: toNumber(line.unitPrice),
     quantity: line.quantity ?? 1,

@@ -6,4 +6,5 @@ export {
   checkoutItemToGa4Item,
   productToGa4Item,
   catalogRetailerId,
+  isCatalogUuid,
 } from './mappers';

@@ -323,7 +323,9 @@ export class CartService {
     this.logger.log(
       `Item added to cart ${cartId}: variant ${variantId}, quantity ${quantity}`,
     );
-    return cart;
+    // Return enriched cart so storefront Meta Pixel / GA4 can use SKUs as content_ids
+    // (raw Redis cart has productId UUIDs only — those do not match the Meta catalog).
+    return this.getCart(cartId);
   }
 
   /**

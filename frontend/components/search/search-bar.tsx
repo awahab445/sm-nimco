@@ -93,9 +93,7 @@ export function SearchBar({
     setOpen(false);
     if (q.length > 0) {
       trackSearch(q, {
-        contentIds: suggestions
-          .map((s) => s.sku || s.id)
-          .filter(Boolean),
+        contentIds: suggestions.map((s) => s.sku).filter(Boolean) as string[],
       });
       router.push(`/products?search=${encodeURIComponent(q)}`);
     } else {

@@ -1,5 +1,6 @@
 import {
   catalogRetailerId,
+  isCatalogUuid,
   productToGa4Item,
   cartItemToGa4Item,
   checkoutItemToGa4Item,
@@ -39,6 +40,20 @@ describe('analytics mappers', () => {
     expect(item.item_id).toBe('VARIANT-SKU');
   });
 
+  it('never falls back to product UUID when SKU is missing', () => {
+    const item = productToGa4Item(
+      {
+        id: 'fdf241e4-b0d0-456e-8da6-eef5c1124666',
+        sku: '',
+        name: 'No SKU Product',
+        basePrice: 10,
+      },
+      { quantity: 1 },
+    );
+    expect(item.item_id).toBe('');
+    expect(isCatalogUuid('fdf241e4-b0d0-456e-8da6-eef5c1124666')).toBe(true);
+  });
+
   it('maps cart items to catalog SKU not UUID', () => {
     const item = cartItemToGa4Item({
       variantId: 'uuid-variant',
@@ -56,6 +71,21 @@ describe('analytics mappers', () => {
     expect(item.item_id).toBe('CART-SKU');
   });
 
+  it('maps cart items without sku to empty id (not productId UUID)', () => {
+    const item = cartItemToGa4Item({
+      variantId: 'fdf241e4-b0d0-456e-8da6-eef5c1124666',
+      productId: 'a1b2c3d4-e5f6-4789-8abc-def012345678',
+      quantity: 1,
+      price: 200,
+      currency: 'PKR',
+      attributes: {},
+      reservationId: 'r1',
+      addedAt: new Date().toISOString(),
+      productName: 'Cart Product',
+    });
+    expect(item.item_id).toBe('');
+  });
+
   it('maps checkout items to catalog SKU', () => {
     const item = checkoutItemToGa4Item({
       variantId: 'uuid-variant',
@@ -71,14 +101,20 @@ describe('analytics mappers', () => {
     expect(item.item_id).toBe('CHECKOUT-SKU');
   });
 
-  it('catalogRetailerId never prefers empty strings', () => {
+  it('catalogRetailerId never prefers empty strings or UUIDs', () => {
     expect(
       catalogRetailerId({
         variantSku: '  ',
         productSku: 'PROD',
-        fallbackId: 'uuid',
+        fallbackId: 'fdf241e4-b0d0-456e-8da6-eef5c1124666',
       }),
     ).toBe('PROD');
+    expect(
+      catalogRetailerId({
+        variantSku: 'fdf241e4-b0d0-456e-8da6-eef5c1124666',
+        productSku: 'SKU-014-1BOTTLE',
+      }),
+    ).toBe('SKU-014-1BOTTLE');
   });
 });
 

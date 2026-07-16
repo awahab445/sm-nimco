@@ -315,7 +315,7 @@ function ProductsContent() {
       trackViewItemList(String(listId), pageTitle, data.data);
       if (applied.search?.trim()) {
         trackSearch(applied.search, {
-          contentIds: data.data.map((p) => p.sku || p.id).filter(Boolean),
+          contentIds: data.data.map((p) => p.sku).filter(Boolean),
         });
       }
     }, 300);

@@ -20,10 +20,18 @@ export type CapiUserData = {
   event_source_url?: string | null;
 };
 
-/** Product custom_data for ViewContent. */
+/**
+ * Product custom_data for CAPI catalog events.
+ * `content_ids` / `contents[].id` MUST be Meta catalog retailer ids (SKUs),
+ * never internal product/variant UUIDs.
+ */
 export type CapiProductData = {
   content_ids?: string[];
+  /** Prefer SKU; UUID values are stripped before send. */
   content_id?: string;
+  /** Explicit SKU fields — preferred over content_id when present. */
+  sku?: string;
+  skus?: string[];
   content_name?: string;
   content_type?: string;
   content_category?: string;
@@ -39,6 +47,36 @@ export type CapiSendResult = {
   error?: string;
 };
 
+/** Meta catalog ids are SKUs (e.g. SKU-019-LONG-BAR), not DB UUIDs. */
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function isUuid(value: string): boolean {
+  return UUID_RE.test(value.trim());
+}
+
+/** Keep only non-empty, non-UUID catalog retailer ids (SKUs). */
+export function toCatalogContentIds(
+  ...groups: Array<string | string[] | null | undefined>
+): string[] {
+  const out: string[] = [];
+  const seen = new Set<string>();
+  for (const group of groups) {
+    const list = Array.isArray(group)
+      ? group
+      : group != null
+        ? [group]
+        : [];
+    for (const raw of list) {
+      const id = String(raw ?? '').trim();
+      if (!id || isUuid(id) || seen.has(id)) continue;
+      seen.add(id);
+      out.push(id);
+    }
+  }
+  return out;
+}
+
 @Injectable()
 export class CapiService {
   private readonly logger = new Logger(CapiService.name);
@@ -53,6 +91,7 @@ export class CapiService {
   /**
    * Send a Meta Conversion API ViewContent event (for Pixel deduplication via event_id).
    * Pixel ID comes from AnalyticsSettingsService (admin panel); access token stays in env.
+   * Pass product SKUs in `sku` / `skus` / `content_ids` — never database UUIDs.
    */
   async sendViewContent(
     eventId: string,
@@ -72,9 +111,28 @@ export class CapiService {
       return { success: false, skipped: true, error: 'CAPI not configured' };
     }
 
-    const contentIds =
-      productData.content_ids?.filter(Boolean) ||
-      (productData.content_id ? [productData.content_id] : []);
+    const contentIds = toCatalogContentIds(
+      productData.skus,
+      productData.sku,
+      productData.content_ids,
+      productData.content_id,
+    );
+
+    const contents = (productData.contents ?? [])
+      .map((c) => ({
+        ...c,
+        id: String(c.id ?? '').trim(),
+      }))
+      .filter((c) => c.id && !isUuid(c.id));
+
+    if (
+      contentIds.length === 0 &&
+      (productData.content_ids?.length || productData.content_id)
+    ) {
+      this.logger.warn(
+        `Meta CAPI ViewContent: content_ids were empty after stripping UUIDs (event_id=${eventId}). Pass product/variant SKUs to match the catalog feed.`,
+      );
+    }
 
     const event = {
       event_name: 'ViewContent',
@@ -95,9 +153,7 @@ export class CapiService {
         ...(productData.content_category && {
           content_category: productData.content_category,
         }),
-        ...(productData.contents?.length && {
-          contents: productData.contents,
-        }),
+        ...(contents.length > 0 && { contents }),
         ...(productData.value != null && Number.isFinite(productData.value)
           ? { value: productData.value }
           : {}),
@@ -119,10 +175,10 @@ export class CapiService {
           fbtrace_id?: string;
         }>(
           url,
-          { 
+          {
             data: [event],
             // 🌟 TEST_EVENT_CODE added for local testing in Meta Events Manager
-           //
+            //
           },
           {
             params: { access_token: accessToken },
