@@ -129,6 +129,11 @@ export function rootMetadata(): Metadata {
       index: true,
       follow: true,
     },
+    verification: {
+      other: {
+        'facebook-domain-verification': 'gpnrnyrl51qemyydtz9sknyehaqb30',
+      },
+    },
   };
 }
 
