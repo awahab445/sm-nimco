@@ -20,12 +20,17 @@ export function DealCard({ deal, featured }: Props) {
   return (
     <article
       className={`${storefrontUi.card} overflow-hidden transition-shadow hover:shadow-lg ${
-        featured ? 'md:col-span-2 md:flex' : ''
+        featured ? 'flex flex-col md:flex-row md:items-stretch' : ''
       }`}
     >
       <Link
         href={`/deals/${deal.slug}`}
-        className={`relative block ${featured ? 'md:w-1/2' : ''} ${featured ? 'h-64 md:h-auto md:min-h-[16rem]' : 'h-48'}`}
+        className={
+          featured
+            ? // Featured: fixed aspect + contain so promo text in the art isn't cropped
+              'relative block w-full shrink-0 overflow-hidden bg-secondary/40 aspect-[4/3] sm:aspect-[16/10] md:aspect-auto md:min-h-[20rem] md:w-1/2'
+            : 'relative block h-48 overflow-hidden bg-secondary/30'
+        }
       >
         {imageSrc ? (
           <StorefrontImage
@@ -33,18 +38,20 @@ export function DealCard({ deal, featured }: Props) {
             alt={deal.title}
             fill
             sizes={featured ? '(min-width: 768px) 50vw, 100vw' : '(min-width: 768px) 33vw, 100vw'}
-            className="object-cover"
+            className={featured ? 'object-contain object-center' : 'object-cover'}
             loading="lazy"
             quality={70}
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-secondary/40 text-muted-foreground">
+          <div className="flex h-full w-full items-center justify-center text-muted-foreground">
             Bundle
           </div>
         )}
       </Link>
       <div
-        className={`relative flex flex-col p-5 pr-20 ${featured ? 'md:w-1/2 md:justify-center' : ''}`}
+        className={`relative flex flex-col p-5 pr-20 ${
+          featured ? 'md:w-1/2 md:justify-center' : ''
+        }`}
       >
         {discountPercent != null ? <BundleDiscountBadge percent={discountPercent} /> : null}
         <p className="text-xs font-medium uppercase tracking-wide text-primary">{itemLabel}</p>
