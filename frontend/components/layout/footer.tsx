@@ -24,8 +24,8 @@ const ESSA_SERVICE_ITEMS: Array<{
   Icon: LucideIcon;
 }> = [
   {
-    title: 'Shipping Worldwide',
-    description: 'Free shipping on all US orders or orders above $100',
+    title: 'Shipping Countrywide',
+    description: 'Free Shipping on orders Rs. 1,500 and above!',
     Icon: Truck,
   },
   {
