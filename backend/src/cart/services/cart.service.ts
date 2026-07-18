@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { randomUUID } from 'crypto';
+import type { Request } from 'express';
 import {
   CartRedisService,
   Cart,
@@ -32,6 +33,9 @@ import { UpdateBundleCartDto } from '../dto/update-bundle-cart.dto';
 import { BundleDealService } from '../../bundle-deals/services/bundle-deal.service';
 import { BundleDealPricingService } from '../../bundle-deals/services/bundle-deal-pricing.service';
 import { BundleDealItemDto } from '../../bundle-deals/dto/bundle-deal-item.dto';
+import { CapiService } from '../../common/services/capi.service';
+import { buildCapiUserData } from '../../common/utils/capi-request.util';
+import { resolveMetaCapiClient } from '../../common/utils/meta-capi-client.util';
 
 @Injectable()
 export class CartService {
@@ -48,6 +52,7 @@ export class CartService {
     private readonly bundleDealService: BundleDealService,
     private readonly bundleDealPricingService: BundleDealPricingService,
     private readonly eventEmitter: EventEmitter2,
+    private readonly capiService: CapiService,
   ) {}
 
   /**
@@ -233,6 +238,7 @@ export class CartService {
   async addItemToCart(
     cartId: string,
     addToCartDto: AddToCartDto,
+    req?: Request,
   ): Promise<Cart> {
     const { productId, variantId, quantity } = addToCartDto;
 
@@ -325,7 +331,41 @@ export class CartService {
     );
     // Return enriched cart so storefront Meta Pixel / GA4 can use SKUs as content_ids
     // (raw Redis cart has productId UUIDs only — those do not match the Meta catalog).
-    return this.getCart(cartId);
+    const enriched = await this.getCart(cartId);
+
+    const meta = resolveMetaCapiClient(addToCartDto);
+    const added = enriched.items.find((i) => i.variantId === variantId);
+    const sku = String(variant.sku ?? '').trim();
+    const eventId =
+      meta.eventId?.trim() ||
+      `atc_${cartId}_${variantId}_${Date.now()}`;
+    if (sku) {
+      const unitPrice = Number(added?.price ?? variant.price);
+      this.capiService.enqueue(
+        'AddToCart',
+        eventId,
+        buildCapiUserData(meta, req),
+        {
+          sku,
+          content_ids: [sku],
+          contents: [
+            {
+              id: sku,
+              quantity: added?.quantity ?? quantity,
+              item_price: unitPrice,
+            },
+          ],
+          value: unitPrice * quantity,
+          currency: enriched.currency || APP_CURRENCY,
+          num_items: quantity,
+          content_name:
+            (added as { productName?: string } | undefined)?.productName,
+          content_type: 'product',
+        },
+      );
+    }
+
+    return enriched;
   }
 
   /**

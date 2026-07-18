@@ -8,6 +8,7 @@ import { CatalogModule } from '../catalog/catalog.module';
 import { InventoryModule } from '../inventory/inventory.module';
 import { PromotionsModule } from '../promotions/promotions.module';
 import { BundleDealsModule } from '../bundle-deals/bundle-deals.module';
+import { AnalyticsModule } from '../analytics/analytics.module';
 
 const useRedis = process.env.REDIS_ENABLED !== 'false';
 
@@ -17,6 +18,7 @@ const useRedis = process.env.REDIS_ENABLED !== 'false';
     InventoryModule,
     PromotionsModule,
     BundleDealsModule,
+    AnalyticsModule,
   ],
   controllers: [CartController],
   providers: [

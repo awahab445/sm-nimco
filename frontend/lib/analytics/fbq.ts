@@ -48,11 +48,19 @@ function whenFbqReady(fn: () => void, attempts = 50): void {
 export function sendFBEvent(
   eventName: string,
   params?: Record<string, unknown>,
+  options?: { eventID?: string },
 ): void {
   if (!isMetaPixelActive() || typeof window === 'undefined') return;
   whenFbqReady(() => {
+    const eventID = options?.eventID?.trim();
     if (params && Object.keys(params).length > 0) {
-      window.fbq?.('track', eventName, params);
+      if (eventID) {
+        window.fbq?.('track', eventName, params, { eventID });
+      } else {
+        window.fbq?.('track', eventName, params);
+      }
+    } else if (eventID) {
+      window.fbq?.('track', eventName, {}, { eventID });
     } else {
       window.fbq?.('track', eventName);
     }

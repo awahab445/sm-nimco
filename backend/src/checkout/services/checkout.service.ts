@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { randomUUID } from 'crypto';
+import type { Request } from 'express';
 import {
   CheckoutRedisService,
   CheckoutSession,
@@ -34,6 +35,10 @@ import {
   CheckoutCompletedEvent,
 } from '../events/checkout.events';
 import { PaymentIntentCreatedEvent } from '../events/checkout.events';
+import { CapiService } from '../../common/services/capi.service';
+import { buildCapiUserData } from '../../common/utils/capi-request.util';
+import { resolveMetaCapiClient } from '../../common/utils/meta-capi-client.util';
+import { APP_CURRENCY } from '../../common/currency';
 
 @Injectable()
 export class CheckoutService {
@@ -52,6 +57,7 @@ export class CheckoutService {
     private readonly customerService: CustomerService,
     private readonly customerGroupService: CustomerGroupService,
     private readonly eventEmitter: EventEmitter2,
+    private readonly capiService: CapiService,
   ) {}
 
   /**
@@ -60,6 +66,7 @@ export class CheckoutService {
    */
   async startCheckout(
     startCheckoutDto: StartCheckoutDto,
+    req?: Request,
   ): Promise<{ checkoutId: string }> {
     const { cartId, customerEmail, customerId } = startCheckoutDto;
 
@@ -195,6 +202,49 @@ export class CheckoutService {
     this.logger.log(
       `Checkout started: ${checkoutId} from cart ${cartId} for customer ${resolvedCustomerId || 'pending'}`,
     );
+
+    const meta = resolveMetaCapiClient(startCheckoutDto);
+    const eventId =
+      meta.eventId?.trim() || `begin_checkout_${checkoutId}`;
+    try {
+      const enriched = await this.getCheckout(checkoutId);
+      type EnrichedLine = (typeof enriched.items)[number] & {
+        sku?: string;
+      };
+      const lines = enriched.items as EnrichedLine[];
+      const contentIds = lines
+        .map((i) => i.sku?.trim())
+        .filter((s): s is string => Boolean(s));
+      const contents = lines
+        .filter((i) => i.sku?.trim())
+        .map((i) => ({
+          id: i.sku!.trim(),
+          quantity: i.quantity,
+          item_price: Number(i.price),
+        }));
+      const numItems = lines.reduce((sum, i) => sum + i.quantity, 0);
+      this.capiService.enqueue(
+        'InitiateCheckout',
+        eventId,
+        buildCapiUserData(meta, req, {
+          email: resolvedCustomerEmail || customerEmail,
+        }),
+        {
+          content_ids: contentIds,
+          contents,
+          value: Number(enriched.grandTotal) || Number(enriched.subtotal) || 0,
+          currency: enriched.currency || APP_CURRENCY,
+          num_items: numItems,
+          content_type: 'product',
+        },
+      );
+    } catch (error) {
+      this.logger.warn(
+        `Meta CAPI InitiateCheckout skipped for ${checkoutId}:`,
+        error,
+      );
+    }
+
     return { checkoutId };
   }
 
@@ -531,6 +581,7 @@ export class CheckoutService {
   async confirmCheckout(
     checkoutId: string,
     confirmCheckoutDto: ConfirmCheckoutDto,
+    req?: Request,
   ): Promise<{ orderId: string; orderNumber: string; paymentIntent?: any }> {
     const checkout = await this.getCheckout(checkoutId);
 
@@ -718,6 +769,43 @@ export class CheckoutService {
 
     this.logger.log(
       `Checkout ${checkoutId} completed. Order: ${order.orderNumber} (${order.id}), Payment: ${paymentIntent.paymentId}`,
+    );
+
+    const meta = resolveMetaCapiClient(confirmCheckoutDto);
+    const purchaseEventId =
+      meta.eventId?.trim() || `purchase_${order.orderNumber}`;
+    const phone =
+      updated.shippingAddress?.phone || updated.billingAddress?.phone || null;
+    const contentIds = (order.items ?? [])
+      .map((i) => i.sku?.trim())
+      .filter((s): s is string => Boolean(s));
+    const contents = (order.items ?? [])
+      .filter((i) => i.sku?.trim())
+      .map((i) => ({
+        id: i.sku!.trim(),
+        quantity: i.quantity,
+        item_price: Number(i.unitPrice),
+      }));
+    const numItems = (order.items ?? []).reduce(
+      (sum, i) => sum + i.quantity,
+      0,
+    );
+    this.capiService.enqueue(
+      'Purchase',
+      purchaseEventId,
+      buildCapiUserData(meta, req, {
+        email: customerEmail,
+        phone,
+      }),
+      {
+        content_ids: contentIds,
+        contents,
+        value: Number(updated.grandTotal),
+        currency: updated.currency || APP_CURRENCY,
+        num_items: numItems,
+        order_id: order.orderNumber,
+        content_type: 'product',
+      },
     );
 
     return {

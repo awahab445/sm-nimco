@@ -8,3 +8,9 @@ export {
   catalogRetailerId,
   isCatalogUuid,
 } from './mappers';
+export {
+  metaCapiClientFields,
+  addToCartEventId,
+  beginCheckoutEventId,
+  purchaseEventId,
+} from './meta-capi-client';

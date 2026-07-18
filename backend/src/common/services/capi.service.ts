@@ -38,7 +38,19 @@ export type CapiProductData = {
   contents?: Array<{ id: string; quantity?: number; item_price?: number }>;
   value?: number;
   currency?: string;
+  num_items?: number;
+  order_id?: string;
 };
+
+export type CapiEventName =
+  | 'ViewContent'
+  | 'AddToCart'
+  | 'InitiateCheckout'
+  | 'AddPaymentInfo'
+  | 'Purchase'
+  | 'Search'
+  | 'CompleteRegistration'
+  | 'PageView';
 
 export type CapiSendResult = {
   success: boolean;
@@ -89,14 +101,14 @@ export class CapiService {
   ) {}
 
   /**
-   * Send a Meta Conversion API ViewContent event (for Pixel deduplication via event_id).
-   * Pixel ID comes from AnalyticsSettingsService (admin panel); access token stays in env.
-   * Pass product SKUs in `sku` / `skus` / `content_ids` — never database UUIDs.
+   * Send a Meta Conversions API event (dedupe with Pixel via matching event_id).
+   * Pixel ID from admin analytics settings; access token from META_CAPI_ACCESS_TOKEN.
    */
-  async sendViewContent(
+  async sendEvent(
+    eventName: CapiEventName,
     eventId: string,
     userData: CapiUserData,
-    productData: CapiProductData,
+    productData: CapiProductData = {},
   ): Promise<CapiSendResult> {
     const settings = await this.analyticsSettings.getAdminSettings();
     const pixelId = settings.metaPixelEnabled
@@ -109,6 +121,10 @@ export class CapiService {
         'Meta CAPI skipped: Meta Pixel is disabled/missing in admin settings, or META_CAPI_ACCESS_TOKEN is not set',
       );
       return { success: false, skipped: true, error: 'CAPI not configured' };
+    }
+
+    if (!eventId?.trim()) {
+      return { success: false, skipped: true, error: 'Missing event_id' };
     }
 
     const contentIds = toCatalogContentIds(
@@ -130,40 +146,57 @@ export class CapiService {
       (productData.content_ids?.length || productData.content_id)
     ) {
       this.logger.warn(
-        `Meta CAPI ViewContent: content_ids were empty after stripping UUIDs (event_id=${eventId}). Pass product/variant SKUs to match the catalog feed.`,
+        `Meta CAPI ${eventName}: content_ids were empty after stripping UUIDs (event_id=${eventId}). Pass product/variant SKUs to match the catalog feed.`,
       );
     }
 
+    const customData: Record<string, unknown> = {
+      currency: (
+        productData.currency ||
+        APP_CURRENCY ||
+        'PKR'
+      ).toUpperCase(),
+    };
+
+    if (productData.content_type || contentIds.length > 0 || contents.length > 0) {
+      customData.content_type = productData.content_type || 'product';
+    }
+    if (contentIds.length > 0) customData.content_ids = contentIds;
+    if (productData.content_name) {
+      customData.content_name = productData.content_name;
+    }
+    if (productData.content_category) {
+      customData.content_category = productData.content_category;
+    }
+    if (contents.length > 0) customData.contents = contents;
+    if (productData.value != null && Number.isFinite(productData.value)) {
+      customData.value = productData.value;
+    }
+    if (productData.num_items != null && Number.isFinite(productData.num_items)) {
+      customData.num_items = productData.num_items;
+    }
+    if (productData.order_id?.trim()) {
+      customData.order_id = productData.order_id.trim();
+    }
+
     const event = {
-      event_name: 'ViewContent',
+      event_name: eventName,
       event_time: Math.floor(Date.now() / 1000),
-      event_id: eventId,
+      event_id: eventId.trim(),
       event_source_url:
         userData.event_source_url?.trim() ||
         process.env.FRONTEND_URL?.replace(/\/$/, '') ||
         undefined,
       action_source: 'website' as const,
       user_data: this.buildUserData(userData),
-      custom_data: {
-        content_type: productData.content_type || 'product',
-        ...(contentIds.length > 0 && { content_ids: contentIds }),
-        ...(productData.content_name && {
-          content_name: productData.content_name,
-        }),
-        ...(productData.content_category && {
-          content_category: productData.content_category,
-        }),
-        ...(contents.length > 0 && { contents }),
-        ...(productData.value != null && Number.isFinite(productData.value)
-          ? { value: productData.value }
-          : {}),
-        currency: (
-          productData.currency ||
-          APP_CURRENCY ||
-          'PKR'
-        ).toUpperCase(),
-      },
+      custom_data: customData,
     };
+
+    const body: Record<string, unknown> = { data: [event] };
+    const testEventCode = process.env.META_CAPI_TEST_EVENT_CODE?.trim();
+    if (testEventCode) {
+      body.test_event_code = testEventCode;
+    }
 
     const url = `${this.graphBase}/${this.apiVersion}/${encodeURIComponent(pixelId)}/events`;
 
@@ -173,29 +206,47 @@ export class CapiService {
           events_received?: number;
           messages?: unknown[];
           fbtrace_id?: string;
-        }>(
-          url,
-          {
-            data: [event],
-            // 🌟 TEST_EVENT_CODE added for local testing in Meta Events Manager
-            //
-          },
-          {
-            params: { access_token: accessToken },
-            timeout: 10_000,
-            headers: { 'Content-Type': 'application/json' },
-          },
-        ),
+        }>(url, body, {
+          params: { access_token: accessToken },
+          timeout: 10_000,
+          headers: { 'Content-Type': 'application/json' },
+        }),
       );
 
       const eventsReceived = response.data?.events_received ?? 0;
       this.logger.debug(
-        `Meta CAPI ViewContent sent (event_id=${eventId}, events_received=${eventsReceived})`,
+        `Meta CAPI ${eventName} sent (event_id=${eventId}, events_received=${eventsReceived})`,
       );
       return { success: true, eventsReceived };
     } catch (error) {
       return this.handleAxiosError(error, eventId);
     }
+  }
+
+  /** @deprecated Prefer sendEvent('ViewContent', …). Kept for callers. */
+  async sendViewContent(
+    eventId: string,
+    userData: CapiUserData,
+    productData: CapiProductData,
+  ): Promise<CapiSendResult> {
+    return this.sendEvent('ViewContent', eventId, userData, productData);
+  }
+
+  /** Fire-and-forget; never throws into the request path. */
+  enqueue(
+    eventName: CapiEventName,
+    eventId: string,
+    userData: CapiUserData,
+    productData?: CapiProductData,
+  ): void {
+    void this.sendEvent(eventName, eventId, userData, productData).catch(
+      (err: unknown) => {
+        const message = err instanceof Error ? err.message : String(err);
+        this.logger.error(
+          `Meta CAPI enqueue failed (${eventName}, event_id=${eventId}): ${message}`,
+        );
+      },
+    );
   }
 
   private buildUserData(userData: CapiUserData): Record<string, unknown> {
@@ -234,7 +285,7 @@ export class CapiService {
     const normalized =
       kind === 'email'
         ? raw.trim().toLowerCase()
-        : raw.replace(/[^\d+]/g, '').replace(/^\+/, '');
+        : raw.replace(/[^\d]/g, '');
     if (!normalized) return [];
     return [this.hashSha256(normalized)];
   }

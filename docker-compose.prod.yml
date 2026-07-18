@@ -46,6 +46,9 @@ services:
       # Encrypts SMTP passwords saved in Admin → Mail (32+ chars; keep stable).
       MAIL_ENCRYPTION_KEY: ${MAIL_ENCRYPTION_KEY:-${JWT_SECRET}}
       MAIL_ENABLED: ${MAIL_ENABLED:-true}
+      # Meta Conversions API (optional; leave unset to skip server events)
+      META_CAPI_ACCESS_TOKEN: ${META_CAPI_ACCESS_TOKEN:-}
+      META_CAPI_TEST_EVENT_CODE: ${META_CAPI_TEST_EVENT_CODE:-}
       CORS_ORIGIN: ${SHOP_URL},${ADMIN_URL}
       FRONTEND_URL: ${SHOP_URL}
       APP_URL: ${API_URL}

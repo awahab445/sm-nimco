@@ -14,6 +14,7 @@ import {
   trackBeginCheckout,
 } from './analytics/events';
 import { checkoutItemToGa4Item } from './analytics/mappers';
+import { metaCapiClientFields } from './analytics/meta-capi-client';
 import {
   getPendingCouponCode,
   clearPendingCouponCode,
@@ -122,7 +123,10 @@ export function CheckoutProvider({ children }: { children: React.ReactNode }) {
     async (cartId: string, options?: { customerId?: string; customerEmail?: string }) => {
       try {
         setState((prev) => ({ ...prev, isLoading: true, error: null }));
-        const { checkoutId } = await checkoutApi.startCheckout(cartId, options);
+        const { checkoutId } = await checkoutApi.startCheckout(cartId, {
+          ...options,
+          ...metaCapiClientFields(),
+        });
         let checkoutRaw = await checkoutApi.getCheckout(checkoutId);
         const pending = getPendingCouponCode();
         if (
@@ -277,6 +281,7 @@ export function CheckoutProvider({ children }: { children: React.ReactNode }) {
           ...(cancelUrl && { cancelUrl }),
           ...(state.checkout?.customerId && { customerId: state.checkout.customerId }),
           ...(state.checkout?.customerGroupId && { customerGroupId: state.checkout.customerGroupId }),
+          ...metaCapiClientFields(),
         };
         const result = await checkoutApi.confirmCheckout(state.checkoutId, payload);
 

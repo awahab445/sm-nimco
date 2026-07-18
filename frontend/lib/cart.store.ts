@@ -7,6 +7,10 @@ import { create } from 'zustand';
 import { cartApi, Cart } from './api-client';
 import { clearPendingCouponCode } from './coupon-sync';
 import { trackAddToCartFromCartItem, trackRemoveFromCart } from './analytics/events';
+import {
+  addToCartEventId,
+  metaCapiClientFields,
+} from './analytics/meta-capi-client';
 
 const CART_ID_KEY = 'cart-id';
 
@@ -130,11 +134,17 @@ export const useCartStore = create<CartState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const cartId = await get().getOrCreateCartId();
-      const cart = await cartApi.addItem(cartId, { productId, variantId, quantity });
+      const eventId = addToCartEventId(cartId, variantId);
+      const cart = await cartApi.addItem(cartId, {
+        productId,
+        variantId,
+        quantity,
+        ...metaCapiClientFields(eventId),
+      });
       set({ cart, isLoading: false, error: null });
       const added = cart.items.find((i) => i.variantId === variantId);
       if (added) {
-        trackAddToCartFromCartItem(added);
+        trackAddToCartFromCartItem(added, { eventID: eventId });
       }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to add to cart';

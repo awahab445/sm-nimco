@@ -5,7 +5,11 @@ import {
   Min,
   IsOptional,
   IsUUID,
+  ValidateNested,
+  MaxLength,
 } from 'class-validator';
+import { Type } from 'class-transformer';
+import { MetaCapiClientDto } from '../../common/dto/meta-capi-client.dto';
 
 export class AddToCartDto {
   @IsString()
@@ -21,4 +25,30 @@ export class AddToCartDto {
   @IsInt()
   @Min(1)
   quantity: number;
+
+  /** Meta Pixel ↔ CAPI dedupe / matching (optional). */
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => MetaCapiClientDto)
+  meta?: MetaCapiClientDto;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(256)
+  eventId?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(512)
+  fbp?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(512)
+  fbc?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(2048)
+  eventSourceUrl?: string;
 }

@@ -5,10 +5,12 @@ import {
   Patch,
   Body,
   Param,
+  Req,
   HttpCode,
   HttpStatus,
   Logger,
 } from '@nestjs/common';
+import type { Request } from 'express';
 import { CheckoutService } from '../services/checkout.service';
 import { StartCheckoutDto } from '../dto/start-checkout.dto';
 import { UpdateAddressDto } from '../dto/address.dto';
@@ -30,9 +32,12 @@ export class CheckoutController {
    */
   @Post('start')
   @HttpCode(HttpStatus.CREATED)
-  async startCheckout(@Body() startCheckoutDto: StartCheckoutDto) {
+  async startCheckout(
+    @Body() startCheckoutDto: StartCheckoutDto,
+    @Req() req: Request,
+  ) {
     this.logger.log(`Starting checkout for cart ${startCheckoutDto.cartId}`);
-    return await this.checkoutService.startCheckout(startCheckoutDto);
+    return await this.checkoutService.startCheckout(startCheckoutDto, req);
   }
 
   /**
@@ -137,11 +142,13 @@ export class CheckoutController {
   async confirmCheckout(
     @Param('checkoutId') checkoutId: string,
     @Body() confirmCheckoutDto: ConfirmCheckoutDto,
+    @Req() req: Request,
   ) {
     this.logger.log(`Confirming checkout ${checkoutId}`);
     return await this.checkoutService.confirmCheckout(
       checkoutId,
       confirmCheckoutDto,
+      req,
     );
   }
 }

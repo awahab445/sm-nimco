@@ -487,7 +487,18 @@ export const cartApi = {
 
   getCart: (cartId: string) => fetchApi<Cart>(`/cart/${encodeURIComponent(cartId)}`),
 
-  addItem: (cartId: string, body: { productId: string; variantId: string; quantity: number }) =>
+  addItem: (
+    cartId: string,
+    body: {
+      productId: string;
+      variantId: string;
+      quantity: number;
+      eventId?: string;
+      fbp?: string;
+      fbc?: string;
+      eventSourceUrl?: string;
+    },
+  ) =>
     fetchApi<Cart>(`/cart/${encodeURIComponent(cartId)}/items`, {
       method: 'POST',
       body: JSON.stringify(body),
@@ -553,7 +564,14 @@ export const bundleDealsApi = {
 export const checkoutApi = {
   startCheckout: (
     cartId: string,
-    options?: { customerId?: string; customerEmail?: string },
+    options?: {
+      customerId?: string;
+      customerEmail?: string;
+      eventId?: string;
+      fbp?: string;
+      fbc?: string;
+      eventSourceUrl?: string;
+    },
   ) =>
     fetchApi<{ checkoutId: string }>('/checkout/start', {
       method: 'POST',
@@ -561,6 +579,12 @@ export const checkoutApi = {
         cartId,
         ...(options?.customerId && { customerId: options.customerId }),
         ...(options?.customerEmail && { customerEmail: options.customerEmail }),
+        ...(options?.eventId && { eventId: options.eventId }),
+        ...(options?.fbp && { fbp: options.fbp }),
+        ...(options?.fbc && { fbc: options.fbc }),
+        ...(options?.eventSourceUrl && {
+          eventSourceUrl: options.eventSourceUrl,
+        }),
       }),
     }),
 
@@ -613,6 +637,10 @@ export const checkoutApi = {
       notes?: string;
       returnUrl?: string;
       cancelUrl?: string;
+      eventId?: string;
+      fbp?: string;
+      fbc?: string;
+      eventSourceUrl?: string;
     },
   ) =>
     fetchApi<{

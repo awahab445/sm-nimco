@@ -45,6 +45,9 @@ BOOTSTRAP_TOKEN="${BOOTSTRAP_TOKEN}"
 # Required to save/test SMTP mailboxes in Admin → Mail (Hostinger, etc.)
 MAIL_ENCRYPTION_KEY="${MAIL_ENCRYPTION_KEY:-${JWT_SECRET}}"
 MAIL_ENABLED=${MAIL_ENABLED:-true}
+# Meta Conversions API (optional Direct integration — leave empty until token is ready)
+META_CAPI_ACCESS_TOKEN="${META_CAPI_ACCESS_TOKEN:-}"
+META_CAPI_TEST_EVENT_CODE="${META_CAPI_TEST_EVENT_CODE:-}"
 COOKIE_DOMAIN=.${ROOT_DOMAIN}
 
 CORS_ORIGIN=${SHOP_URL},${ADMIN_URL}

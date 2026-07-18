@@ -141,7 +141,10 @@ export function trackCustomizeProduct(
   }
 }
 
-function trackAddToCart(items: Ga4Item[]): void {
+function trackAddToCart(
+  items: Ga4Item[],
+  options?: { eventID?: string },
+): void {
   if (canTrack('trackCartEvents')) {
     sendGAEvent('add_to_cart', {
       currency: currency(),
@@ -150,14 +153,21 @@ function trackAddToCart(items: Ga4Item[]): void {
     });
   }
   if (canTrackMeta('trackCartEvents')) {
-    sendFBEvent('AddToCart', fbContentFromItems(items));
+    sendFBEvent('AddToCart', fbContentFromItems(items), {
+      eventID: options?.eventID,
+    });
   }
 }
 
 export function trackAddToCartFromProduct(
   product: Product,
   quantity: number,
-  options?: { variantName?: string; price?: number; variantSku?: string },
+  options?: {
+    variantName?: string;
+    price?: number;
+    variantSku?: string;
+    eventID?: string;
+  },
 ): void {
   if (!canTrack('trackCartEvents') && !canTrackMeta('trackCartEvents')) return;
   const items = [
@@ -168,14 +178,15 @@ export function trackAddToCartFromProduct(
       quantity,
     }),
   ];
-  trackAddToCart(items);
+  trackAddToCart(items, { eventID: options?.eventID });
 }
 
 export function trackAddToCartFromCartItem(
   item: Parameters<typeof cartItemToGa4Item>[0],
+  options?: { eventID?: string },
 ): void {
   if (!canTrack('trackCartEvents') && !canTrackMeta('trackCartEvents')) return;
-  trackAddToCart([cartItemToGa4Item(item)]);
+  trackAddToCart([cartItemToGa4Item(item)], { eventID: options?.eventID });
 }
 
 export function trackAddBundleToCart(
@@ -262,6 +273,7 @@ export function trackBeginCheckout(
     return;
   }
   if (!markOnce(`begin_checkout_${checkoutId}`)) return;
+  const eventID = `begin_checkout_${checkoutId}`;
   if (canTrack('trackCheckoutSteps')) {
     sendGAEvent('begin_checkout', {
       currency: currency(),
@@ -271,7 +283,7 @@ export function trackBeginCheckout(
     });
   }
   if (canTrackMeta('trackCheckoutSteps')) {
-    sendFBEvent('InitiateCheckout', fbContentFromItems(items));
+    sendFBEvent('InitiateCheckout', fbContentFromItems(items), { eventID });
   }
 }
 
@@ -341,11 +353,15 @@ export function trackPurchase(order: {
     });
   }
   if (canTrackMeta('trackPurchases')) {
-    sendFBEvent('Purchase', {
-      ...fbContentFromItems(items),
-      value: order.grandTotal,
-      currency: orderCurrency,
-    });
+    sendFBEvent(
+      'Purchase',
+      {
+        ...fbContentFromItems(items),
+        value: order.grandTotal,
+        currency: orderCurrency,
+      },
+      { eventID: `purchase_${order.orderNumber}` },
+    );
   }
 }
 

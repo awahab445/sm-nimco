@@ -7,9 +7,11 @@ import {
   Delete,
   Body,
   Param,
+  Req,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
+import type { Request } from 'express';
 import { CartService } from '../services/cart.service';
 import { AddToCartDto } from '../dto/add-to-cart.dto';
 import { UpdateCartItemDto } from '../dto/update-cart-item.dto';
@@ -48,8 +50,9 @@ export class CartController {
   async addItemToCart(
     @Param('cartId') cartId: string,
     @Body() addToCartDto: AddToCartDto,
+    @Req() req: Request,
   ) {
-    return await this.cartService.addItemToCart(cartId, addToCartDto);
+    return await this.cartService.addItemToCart(cartId, addToCartDto, req);
   }
 
   @Post(':cartId/bundles')
