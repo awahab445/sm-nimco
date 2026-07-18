@@ -15,6 +15,7 @@ import {
 } from './analytics/events';
 import { checkoutItemToGa4Item } from './analytics/mappers';
 import { metaCapiClientFields } from './analytics/meta-capi-client';
+import { setGuestOrderEmail } from './guest-order-session';
 import {
   getPendingCouponCode,
   clearPendingCouponCode,
@@ -283,6 +284,9 @@ export function CheckoutProvider({ children }: { children: React.ReactNode }) {
           ...(state.checkout?.customerGroupId && { customerGroupId: state.checkout.customerGroupId }),
           ...metaCapiClientFields(),
         };
+        if (info.customerEmail) {
+          setGuestOrderEmail(info.customerEmail);
+        }
         const result = await checkoutApi.confirmCheckout(state.checkoutId, payload);
 
         setState((prev) => ({

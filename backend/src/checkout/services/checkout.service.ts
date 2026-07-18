@@ -726,7 +726,8 @@ export class CheckoutService {
         const u = new URL(rawUrl);
         u.searchParams.set('orderId', order.id);
         u.searchParams.set('orderNumber', order.orderNumber);
-        u.searchParams.set('email', customerEmail);
+        // Do not put customer email in the return URL — Meta Pixel PageView
+        // captures the page URL and flags unhashed PII (Business Tools Terms).
         return u.toString();
       } catch {
         return rawUrl;

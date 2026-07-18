@@ -8,6 +8,7 @@ import { useAuthStore } from '@/lib/auth.store';
 import { storefrontUi } from '@/lib/storefront-ui';
 import { useHydrated } from '@/lib/use-hydrated';
 import { trackCustomEvent } from '@/lib/analytics/events';
+import { setGuestOrderEmail } from '@/lib/guest-order-session';
 
 export default function TrackOrderPage() {
   const router = useRouter();
@@ -53,8 +54,9 @@ export default function TrackOrderPage() {
         order_number: trimmedOrderNumber,
         method: 'email_lookup',
       });
+      setGuestOrderEmail(trimmedEmail);
       router.push(
-        `/orders/${match.id}?orderNumber=${encodeURIComponent(trimmedOrderNumber)}&email=${encodeURIComponent(trimmedEmail)}`,
+        `/orders/${match.id}?orderNumber=${encodeURIComponent(trimmedOrderNumber)}`,
       );
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to look up order. Please try again.');

@@ -2,6 +2,47 @@ import type { Request } from 'express';
 import type { CapiUserData } from '../services/capi.service';
 import type { MetaCapiClientDto } from '../dto/meta-capi-client.dto';
 
+const PII_QUERY_KEYS = new Set([
+  'email',
+  'em',
+  'e-mail',
+  'mail',
+  'phone',
+  'ph',
+  'tel',
+  'mobile',
+  'firstname',
+  'first_name',
+  'fn',
+  'lastname',
+  'last_name',
+  'ln',
+  'name',
+  'password',
+  'pass',
+  'ssn',
+  'dob',
+  'birthdate',
+  'address',
+  'zip',
+  'postal',
+]);
+
+function stripPiiFromUrl(raw: string | null | undefined): string | null {
+  if (!raw?.trim()) return null;
+  try {
+    const url = new URL(raw.trim());
+    for (const key of [...url.searchParams.keys()]) {
+      if (PII_QUERY_KEYS.has(key.toLowerCase())) {
+        url.searchParams.delete(key);
+      }
+    }
+    return url.toString();
+  } catch {
+    return raw.trim();
+  }
+}
+
 export function clientIpFromRequest(req?: Request): string | undefined {
   if (!req) return undefined;
   const xf = req.headers['x-forwarded-for'];
@@ -29,7 +70,7 @@ export function buildCapiUserData(
   return {
     fbp: meta?.fbp?.trim() || null,
     fbc: meta?.fbc?.trim() || null,
-    event_source_url: meta?.eventSourceUrl?.trim() || null,
+    event_source_url: stripPiiFromUrl(meta?.eventSourceUrl),
     client_ip_address: clientIpFromRequest(req) || null,
     client_user_agent: userAgentFromRequest(req) || null,
     email: extras?.email?.trim() || null,

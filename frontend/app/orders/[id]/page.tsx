@@ -16,6 +16,11 @@ import { OrderLineItem } from '@/components/order/order-line-item';
 import { OrderSummaryTotals } from '@/components/order/order-summary-totals';
 import { normalizeOrderTotals } from '@/lib/order-totals';
 import { trackRefund } from '@/lib/analytics/events';
+import {
+  getGuestOrderEmail,
+  setGuestOrderEmail,
+} from '@/lib/guest-order-session';
+import { stripPiiFromBrowserUrl } from '@/lib/analytics/sanitize-meta-url';
 
 interface OrderItem {
   id: string;
@@ -109,14 +114,24 @@ export default function OrderDetailPage() {
       setError(null);
 
       const guestOrderNumber = searchParams.get('orderNumber')?.trim() ?? '';
-      const guestEmail = searchParams.get('email')?.trim() ?? '';
+      const guestEmailFromQuery = searchParams.get('email')?.trim() ?? '';
 
       // Fallback when useSearchParams is briefly empty after client navigation
       const urlParams =
         typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
       const resolvedOrderNumber =
         guestOrderNumber || urlParams?.get('orderNumber')?.trim() || '';
-      const resolvedEmail = guestEmail || urlParams?.get('email')?.trim() || '';
+      const resolvedEmail =
+        guestEmailFromQuery ||
+        urlParams?.get('email')?.trim() ||
+        getGuestOrderEmail() ||
+        '';
+
+      if (guestEmailFromQuery || urlParams?.get('email')) {
+        const raw = guestEmailFromQuery || urlParams?.get('email') || '';
+        if (raw) setGuestOrderEmail(raw);
+        stripPiiFromBrowserUrl();
+      }
 
       let orderData: unknown;
       if (resolvedOrderNumber && resolvedEmail) {

@@ -1,3 +1,5 @@
+import { stripPiiFromUrlString } from './sanitize-meta-url';
+
 /** Read Meta Pixel cookies for Conversions API matching. */
 
 function readCookie(name: string): string | null {
@@ -35,8 +37,9 @@ export function metaCapiClientFields(
 ): MetaCapiClientFields {
   const fbp = getMetaFbp();
   const fbc = getMetaFbc();
-  const eventSourceUrl =
+  const rawUrl =
     typeof window !== 'undefined' ? window.location.href : undefined;
+  const eventSourceUrl = stripPiiFromUrlString(rawUrl);
   return {
     ...(eventId ? { eventId } : {}),
     ...(fbp ? { fbp } : {}),

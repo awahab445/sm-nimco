@@ -12,6 +12,8 @@ import { OrderSummaryTotals } from '@/components/order/order-summary-totals';
 import { normalizeOrderTotals } from '@/lib/order-totals';
 import { storefrontUi } from '@/lib/storefront-ui';
 import { trackPurchase } from '@/lib/analytics/events';
+import { getGuestOrderEmail, setGuestOrderEmail } from '@/lib/guest-order-session';
+import { stripPiiFromBrowserUrl } from '@/lib/analytics/sanitize-meta-url';
 
 interface OrderPayment {
   id: string;
@@ -49,7 +51,9 @@ function CheckoutSuccessContent() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get('orderId');
   const orderNumber = searchParams.get('orderNumber');
-  const email = searchParams.get('email');
+  // Prefer sessionStorage over URL — email in the query string triggers Meta PageView PII warnings.
+  const emailFromQuery = searchParams.get('email');
+  const email = emailFromQuery?.trim() || getGuestOrderEmail();
 
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
@@ -59,6 +63,13 @@ function CheckoutSuccessContent() {
   const [accountCreationError, setAccountCreationError] = useState<string | null>(null);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const clearCart = useCartStore((s) => s.clearCart);
+
+  useEffect(() => {
+    if (emailFromQuery?.trim()) {
+      setGuestOrderEmail(emailFromQuery);
+      stripPiiFromBrowserUrl();
+    }
+  }, [emailFromQuery]);
 
   // Clear cart as soon as we land on success (so cart is empty without reload)
   useEffect(() => {
@@ -79,17 +90,30 @@ function CheckoutSuccessContent() {
         setLoading(true);
         let orderData: any;
         let payments: Awaited<ReturnType<typeof paymentApi.getPaymentsByOrder>> = [];
-        if (email && orderNumber) {
+        if (orderId) {
+          try {
+            orderData = await orderApi.getOrder(orderId);
+            try {
+              payments = await paymentApi.getPaymentsByOrder(orderData.id);
+            } catch {
+              // Order may exist before payments are created; continue without payments
+            }
+          } catch (orderIdErr) {
+            if (email && orderNumber) {
+              orderData = await orderApi.trackOrder(orderNumber, email);
+              try {
+                payments = await paymentApi.trackPayments(orderNumber, email);
+              } catch {
+                // continue without payments
+              }
+            } else {
+              throw orderIdErr;
+            }
+          }
+        } else if (email && orderNumber) {
           orderData = await orderApi.trackOrder(orderNumber, email);
           try {
             payments = await paymentApi.trackPayments(orderNumber, email);
-          } catch {
-            // Order may exist before payments are created; continue without payments
-          }
-        } else if (orderId) {
-          orderData = await orderApi.getOrder(orderId);
-          try {
-            payments = await paymentApi.getPaymentsByOrder(orderData.id);
           } catch {
             // Order may exist before payments are created; continue without payments
           }
