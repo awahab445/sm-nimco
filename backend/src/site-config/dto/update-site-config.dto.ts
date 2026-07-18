@@ -15,6 +15,24 @@ const LOGO_DIMENSION_MIN = 16;
 const LOGO_DIMENSION_MAX = 512;
 const ANNOUNCEMENT_TEXT_MAX_LENGTH = 180;
 
+/**
+ * Parse multipart/form-data booleans. Must read the raw `obj[key]` value:
+ * with ValidationPipe `enableImplicitConversion`, `Boolean("false")` becomes
+ * `true` before a `@Transform(({ value }) => …)` handler sees it.
+ */
+function parseFormBoolean(
+  obj: Record<string, unknown>,
+  key: string,
+): boolean | undefined {
+  const value = obj[key];
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'string') {
+    if (value === '') return undefined;
+    return value.toLowerCase() === 'true';
+  }
+  return undefined;
+}
+
 export class UpdateSiteConfigDto {
   @IsOptional()
   @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
@@ -26,11 +44,7 @@ export class UpdateSiteConfigDto {
   logoUrl?: string | null;
 
   @IsOptional()
-  @Transform(({ value }) => {
-    if (typeof value === 'boolean') return value;
-    if (typeof value === 'string') return value.toLowerCase() === 'true';
-    return false;
-  })
+  @Transform(({ obj, key }) => parseFormBoolean(obj, key))
   @IsBoolean()
   removeLogo?: boolean;
 
@@ -43,11 +57,7 @@ export class UpdateSiteConfigDto {
   announcementText?: string;
 
   @IsOptional()
-  @Transform(({ value }) => {
-    if (typeof value === 'boolean') return value;
-    if (typeof value === 'string') return value.toLowerCase() === 'true';
-    return false;
-  })
+  @Transform(({ obj, key }) => parseFormBoolean(obj, key))
   @IsBoolean()
   showAnnouncement?: boolean;
 
