@@ -72,7 +72,7 @@ export function PaymentStep({ onNext, onBack }: PaymentStepProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
-        <h2 className="mb-4 text-2xl font-semibold text-foreground">Payment Method</h2>
+        <h2 className="font-display mb-4 text-2xl font-semibold tracking-tight text-foreground">Payment Method</h2>
 
         {loadingMethods ? (
           <div className="mb-6 py-8 text-center text-muted-foreground">Loading payment methods...</div>
@@ -83,9 +83,9 @@ export function PaymentStep({ onNext, onBack }: PaymentStepProps) {
             {paymentMethods.map((method) => (
               <label
                 key={method.code}
-                className={`block cursor-pointer rounded-lg border-2 p-4 transition-colors ${
+                className={`block cursor-pointer rounded-sm border p-4 transition-colors ${
                   selectedMethod === method.code
-                    ? storefrontUi.optionSelected
+                    ? `${storefrontUi.optionSelected} ring-1 ring-ring`
                     : storefrontUi.optionIdle
                 }`}
               >
@@ -96,7 +96,7 @@ export function PaymentStep({ onNext, onBack }: PaymentStepProps) {
                     value={method.code}
                     checked={selectedMethod === method.code}
                     onChange={(e) => setSelectedMethod(e.target.value)}
-                    className="h-4 w-4 text-brand-primary focus:ring-brand-primary/30"
+                    className="h-4 w-4 text-primary focus:ring-ring/30"
                   />
                   <span className="ml-3 font-medium text-foreground">{method.name}</span>
                 </div>

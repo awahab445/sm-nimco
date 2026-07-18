@@ -1,13 +1,13 @@
 /**
  * Storefront design tokens — one system, multiple skins.
  * Switch preset by setting data-store-theme on <html> (from admin theme via toStoreThemePresetId).
- * Store theme codes: default | ember | mehfil_shereen
+ * Store theme codes: default | essa_chemicals | ember | mehfil_shereen | ocean
  * Chrome tokens (--navbar-*, --footer-*) are defined per preset below — not in globals [data-theme].
  * Dark appearance follows prefers-color-scheme; tokens stay aligned per preset.
  */
 
 [data-store-theme] {
-  --radius-card: 0.5rem;
+  --radius-card: 0.375rem;
   --primary-light: color-mix(in srgb, var(--primary) 12%, var(--background));
   --mega-menu-shadow: 0 16px 48px -12px color-mix(in srgb, var(--foreground) 14%, transparent);
   --navbar-background: color-mix(in srgb, var(--background) 92%, transparent);
@@ -23,8 +23,10 @@
   }
 }
 
-/* ——— default: fresh blue-and-white household cleaning brand ——— */
+
+/* ——— default: fresh blue-and-white household cleaning brand (pre-Kalles) ——— */
 [data-store-theme="default"] {
+  --radius-card: 0.5rem;
   --background: #F5F5F5;
   --foreground: #1a2e40;
   --muted: #f0f7ff;
@@ -35,6 +37,10 @@
   --input: #c8ddf5;
   --primary: #4f90f1;
   --primary-foreground: #ffffff;
+  --primary-hover: #3577d9;
+  --primary-hover-foreground: #ffffff;
+  --btn-hover: #3577d9;
+  --btn-hover-foreground: #ffffff;
   --secondary: #eef4fe;
   --secondary-foreground: #1a2e40;
   --accent: #e8f4ff;
@@ -52,17 +58,23 @@
   --navbar-foreground: #1a2e40;
   --navbar-muted-foreground: #3577d9;
   --navbar-border: #e3eef9;
+  --navbar-link-hover: #3577d9;
   --navbar-shadow: 0 1px 3px 0 color-mix(in srgb, #1a2e40 6%, transparent);
   --footer-background: #f0f7ff;
   --footer-foreground: #1a2e40;
   --footer-muted-foreground: #3577d9;
   --footer-border: #e3eef9;
+  --footer-link-hover: #3577d9;
+  --footer-newsletter-btn: #4f90f1;
+  --footer-newsletter-btn-hover: #3577d9;
+  --footer-newsletter-btn-foreground: #ffffff;
   --mega-menu-shadow: 0 8px 32px -8px color-mix(in srgb, #4f90f1 14%, transparent);
 }
 
 /* Keep the default storefront light and airy even when OS prefers dark */
 @media (prefers-color-scheme: dark) {
   [data-store-theme="default"] {
+    --radius-card: 0.5rem;
     --background: #F5F5F5;
     --foreground: #1a2e40;
     --muted: #f0f7ff;
@@ -73,6 +85,10 @@
     --input: #c8ddf5;
     --primary: #4f90f1;
     --primary-foreground: #ffffff;
+    --primary-hover: #3577d9;
+    --primary-hover-foreground: #ffffff;
+    --btn-hover: #3577d9;
+    --btn-hover-foreground: #ffffff;
     --secondary: #eef4fe;
     --secondary-foreground: #1a2e40;
     --accent: #e8f4ff;
@@ -90,12 +106,144 @@
     --navbar-foreground: #1a2e40;
     --navbar-muted-foreground: #3577d9;
     --navbar-border: #e3eef9;
+    --navbar-link-hover: #3577d9;
     --navbar-shadow: 0 1px 3px 0 color-mix(in srgb, #1a2e40 6%, transparent);
     --footer-background: #f0f7ff;
     --footer-foreground: #1a2e40;
     --footer-muted-foreground: #3577d9;
     --footer-border: #e3eef9;
+    --footer-link-hover: #3577d9;
+    --footer-newsletter-btn: #4f90f1;
+    --footer-newsletter-btn-hover: #3577d9;
+    --footer-newsletter-btn-foreground: #ffffff;
     --mega-menu-shadow: 0 8px 32px -8px color-mix(in srgb, #4f90f1 14%, transparent);
+  }
+}
+
+/* ——— essa_chemicals: Kalles-like neutral retail (white canvas, charcoal CTAs, orange accents) ——— */
+/* Chrome hover / newsletter accent: #ff4800 (orange). Focus ring stays teal #56CFE1; solid CTA hover #343434. */
+[data-store-theme="essa_chemicals"] {
+  --radius-card: 0.25rem;
+  --radius-button: 3rem;
+  --background: #ffffff;
+  --foreground: #222222;
+  --muted: #fafafa;
+  --muted-foreground: #878787;
+  --card: #ffffff;
+  --card-foreground: #222222;
+  --border: #eeeeee;
+  --input: #dddddd;
+  --primary: #222222;
+  --primary-foreground: #ffffff;
+  /* Focus / general accent (demo --color-focus) — not header nav hover */
+  --primary-hover: #56cfe1;
+  --primary-hover-foreground: #222222;
+  /* Solid CTA hover (demo --hdt-btn-hover-bg / scheme-1) */
+  --btn-hover: #343434;
+  --btn-hover-foreground: #ffffff;
+  --secondary: #f5f5f5;
+  --secondary-foreground: #222222;
+  --accent: #e8f9fc;
+  --accent-foreground: #056575;
+  --destructive: #e35c3f;
+  --destructive-foreground: #ffffff;
+  --success: #15803d;
+  --success-foreground: #f0fdf4;
+  --warning: #b45309;
+  --warning-foreground: #fffbeb;
+  --ring: #56cfe1;
+  --popover: #ffffff;
+  --popover-foreground: #222222;
+  --navbar-background: #ffffff;
+  --navbar-foreground: #222222;
+  --navbar-muted-foreground: #878787;
+  /* scheme-1 --color-line-border */
+  --navbar-border: #dddddd;
+  /* Nav link + icon hover */
+  --navbar-link-hover: #ff4800;
+  --navbar-shadow: 0 1px 3px 0 color-mix(in srgb, #222222 6%, transparent);
+  /* Footer shell / promo chrome stay white; main band is sky (reference ~#daf0fd) */
+  --footer-background: #ffffff;
+  --footer-main-background: #daf0fd;
+  --footer-foreground: #32355d;
+  --footer-muted-foreground: #878787;
+  --footer-border: #e6e6e6;
+  /* Footer link hover */
+  --footer-link-hover: #ff4800;
+  /* Footer newsletter Subscribe — charcoal (Kalles demo) */
+  --footer-newsletter-btn: #222222;
+  --footer-newsletter-btn-hover: #343434;
+  --footer-newsletter-btn-foreground: #ffffff;
+  /* Button accent (PDP ATC / wishlist filled) */
+  --btn-accent: #ff4800;
+  --btn-accent-hover: #ff6a33;
+  --btn-accent-foreground: #ffffff;
+  /* Home newsletter band (demo Newsletter-BG avg ~#2d2f4e) */
+  --newsletter-band-background: #32355d;
+  --newsletter-band-foreground: #ffffff;
+  --newsletter-band-muted: rgba(255, 255, 255, 0.78);
+  --mega-menu-shadow: 0 8px 28px -10px color-mix(in srgb, #222222 12%, transparent);
+  /* PDP / PLP product price (Kalles --color-pr-price / --color-pr-sale-price) */
+  --product-price: #696969;
+  --product-sale-price: #eb001b;
+}
+
+/* Keep essa_chemicals storefront light even when OS prefers dark */
+@media (prefers-color-scheme: dark) {
+  [data-store-theme="essa_chemicals"] {
+    --radius-card: 0.25rem;
+    --radius-button: 3rem;
+    --background: #ffffff;
+    --foreground: #222222;
+    --muted: #fafafa;
+    --muted-foreground: #878787;
+    --card: #ffffff;
+    --card-foreground: #222222;
+    --border: #eeeeee;
+    --input: #dddddd;
+    --primary: #222222;
+    --primary-foreground: #ffffff;
+    --primary-hover: #56cfe1;
+    --primary-hover-foreground: #222222;
+    --btn-hover: #343434;
+    --btn-hover-foreground: #ffffff;
+    --secondary: #f5f5f5;
+    --secondary-foreground: #222222;
+    --accent: #e8f9fc;
+    --accent-foreground: #056575;
+    --destructive: #e35c3f;
+    --destructive-foreground: #ffffff;
+    --success: #15803d;
+    --success-foreground: #f0fdf4;
+    --warning: #b45309;
+    --warning-foreground: #fffbeb;
+    --ring: #56cfe1;
+    --popover: #ffffff;
+    --popover-foreground: #222222;
+    --navbar-background: #ffffff;
+    --navbar-foreground: #222222;
+    --navbar-muted-foreground: #878787;
+    --navbar-border: #dddddd;
+    --navbar-link-hover: #ff4800;
+    --navbar-shadow: 0 1px 3px 0 color-mix(in srgb, #222222 6%, transparent);
+    --footer-background: #ffffff;
+    --footer-main-background: #daf0fd;
+    --footer-foreground: #32355d;
+    --footer-muted-foreground: #878787;
+    --footer-border: #e6e6e6;
+    --footer-link-hover: #ff4800;
+    --footer-newsletter-btn: #222222;
+    --footer-newsletter-btn-hover: #343434;
+    --footer-newsletter-btn-foreground: #ffffff;
+    --btn-accent: #ff4800;
+    --btn-accent-hover: #ff6a33;
+    --btn-accent-foreground: #ffffff;
+    --newsletter-band-background: #32355d;
+    --newsletter-band-foreground: #ffffff;
+    --newsletter-band-muted: rgba(255, 255, 255, 0.78);
+    --mega-menu-shadow: 0 8px 28px -10px color-mix(in srgb, #222222 12%, transparent);
+    --product-price: #696969;
+    --product-sale-price: #eb001b;
   }
 }
 

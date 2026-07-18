@@ -61,7 +61,7 @@ function CheckoutContent() {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <h1 className="mb-4 text-2xl font-semibold text-foreground">Checkout not found</h1>
+          <h1 className="font-display mb-4 text-2xl font-semibold tracking-tight text-foreground">Checkout not found</h1>
           <p className="mb-4 text-muted-foreground">
             Unable to load checkout session. Your cart may be empty or expired.
           </p>
@@ -78,14 +78,14 @@ function CheckoutContent() {
   }
 
   return (
-    <div className="min-h-screen bg-muted/30 py-8">
+    <div className="min-h-screen bg-background py-8">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground">Checkout</h1>
+        <div className="mb-8 border-b border-border/60 pb-6">
+          <h1 className="font-display text-3xl font-semibold tracking-tight text-foreground">Checkout</h1>
           <p className="mt-1 text-muted-foreground">Complete your purchase in one step</p>
         </div>
 
-        <div className="rounded-lg bg-card p-6 shadow-sm md:p-8">
+        <div className={`${storefrontUi.card} p-6 md:p-8`}>
           <OnePageCheckout />
         </div>
       </div>
@@ -96,7 +96,7 @@ function CheckoutContent() {
 export default function CheckoutPage() {
   return (
     <CheckoutProvider>
-      <Suspense fallback={<div className="min-h-screen bg-muted/30 py-8" />}>
+      <Suspense fallback={<div className="min-h-screen bg-background py-8" />}>
         <CheckoutContent />
       </Suspense>
     </CheckoutProvider>

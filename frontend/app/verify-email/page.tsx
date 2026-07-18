@@ -49,15 +49,15 @@ function VerifyEmailContent() {
   }, [token, router]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4 py-12 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md rounded-lg bg-card p-8 text-center shadow-sm">
+    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12 sm:px-6 lg:px-8">
+      <div className={`w-full max-w-md ${storefrontUi.card} border border-border p-8 text-center shadow-product-card`}>
         {state === 'loading' && (
           <>
             <div
-              className="mx-auto mb-6 h-10 w-10 animate-spin rounded-full border-4 border-brand-primary/25 border-t-brand-primary"
+              className="mx-auto mb-6 h-10 w-10 animate-spin rounded-full border-4 border-muted border-t-primary"
               aria-hidden="true"
             />
-            <h1 className="text-xl font-semibold text-foreground">
+            <h1 className="font-display text-xl font-semibold tracking-tight text-foreground">
               Your email is being verified...
             </h1>
             <p className="mt-2 text-sm text-muted-foreground">
@@ -68,7 +68,7 @@ function VerifyEmailContent() {
 
         {state === 'success' && (
           <>
-            <h1 className="text-xl font-semibold text-foreground">
+            <h1 className="font-display text-xl font-semibold tracking-tight text-foreground">
               🎉 Your email has been verified successfully!
             </h1>
             <p className="mt-2 text-sm text-muted-foreground">
@@ -103,13 +103,13 @@ export default function VerifyEmailPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4 py-12 sm:px-6 lg:px-8">
-          <div className="w-full max-w-md rounded-lg bg-card p-8 text-center shadow-sm">
+        <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12 sm:px-6 lg:px-8">
+          <div className={`w-full max-w-md ${storefrontUi.card} border border-border p-8 text-center shadow-product-card`}>
             <div
-              className="mx-auto mb-6 h-10 w-10 animate-spin rounded-full border-4 border-brand-primary/25 border-t-brand-primary"
+              className="mx-auto mb-6 h-10 w-10 animate-spin rounded-full border-4 border-muted border-t-primary"
               aria-hidden="true"
             />
-            <h1 className="text-xl font-semibold text-foreground">
+            <h1 className="font-display text-xl font-semibold tracking-tight text-foreground">
               Your email is being verified...
             </h1>
           </div>

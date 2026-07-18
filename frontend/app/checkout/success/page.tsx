@@ -210,10 +210,10 @@ function CheckoutSuccessContent() {
 
   if (error || !order) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-muted/30">
-        <div className="w-full max-w-md rounded-lg bg-card p-8 text-center shadow-sm">
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className={`w-full max-w-md ${storefrontUi.card} p-8 text-center`}>
           <div className="mb-4 text-5xl text-destructive">✕</div>
-          <h1 className="mb-2 text-2xl font-semibold text-foreground">Order Not Found</h1>
+          <h1 className="font-display mb-2 text-2xl font-semibold tracking-tight text-foreground">Order Not Found</h1>
           <p className="mb-6 text-muted-foreground">{error || 'Unable to load order details.'}</p>
           <button
             type="button"
@@ -241,9 +241,9 @@ function CheckoutSuccessContent() {
   const isCODPending = isCOD && /^(PENDING|PROCESSING)$/i.test(paymentStatus);
 
   return (
-    <div className="min-h-screen bg-muted/30 py-8">
+    <div className="min-h-screen bg-background py-8">
       <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8">
-        <div className="rounded-lg bg-card p-8 shadow-sm">
+        <div className={`${storefrontUi.card} p-8`}>
           {/* Success Icon */}
           <div className="mb-6 text-center">
             {isPaymentCompleted || isCODPending ? (
@@ -256,7 +256,7 @@ function CheckoutSuccessContent() {
           </div>
 
           {/* Title */}
-          <h1 className="mb-2 text-center text-3xl font-bold text-foreground">
+          <h1 className="font-display mb-2 text-center text-3xl font-semibold tracking-tight text-foreground">
             {isPaymentCompleted || isCODPending
               ? 'Order Confirmed!'
               : isPaymentPending
@@ -275,8 +275,8 @@ function CheckoutSuccessContent() {
           </p>
 
           {/* Order Details */}
-          <div className="mb-6 border-t border-border pt-6">
-            <h2 className="mb-4 text-lg font-semibold text-foreground">Order Details</h2>
+          <div className="mb-6 border-t border-border/60 pt-6">
+            <h2 className="font-display mb-4 text-lg font-semibold tracking-tight text-foreground">Order Details</h2>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Order Number:</span>
@@ -289,8 +289,8 @@ function CheckoutSuccessContent() {
             </div>
           </div>
 
-          <div className="mb-6 border-t border-border pt-6">
-            <h2 className="mb-4 text-lg font-semibold text-foreground">Order Summary</h2>
+          <div className="mb-6 border-t border-border/60 pt-6">
+            <h2 className="font-display mb-4 text-lg font-semibold tracking-tight text-foreground">Order Summary</h2>
             <OrderSummaryTotals
               totals={normalizeOrderTotals(order as unknown as Record<string, unknown>)}
               currency={order.currency}
@@ -298,7 +298,7 @@ function CheckoutSuccessContent() {
           </div>
 
           {payment && (
-            <div className="mb-6 space-y-2 border-t border-border pt-6 text-sm">
+            <div className="mb-6 space-y-2 border-t border-border/60 pt-6 text-sm">
               {payment.paymentMethod?.name && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Payment Method:</span>
@@ -332,7 +332,7 @@ function CheckoutSuccessContent() {
 
           {/* Customer Email */}
           {order.customerEmail && (
-            <div className="mb-6 rounded-lg border border-brand-secondary/60 bg-brand-secondary/25 p-4">
+            <div className="mb-6 rounded-sm border border-border bg-muted/40 p-4">
               <p className="text-sm text-foreground">
                 A confirmation email has been sent to <strong>{order.customerEmail}</strong>
               </p>
@@ -341,8 +341,8 @@ function CheckoutSuccessContent() {
 
           {/* Create account with same email (guest checkout) */}
           {order.customerEmail && !isAuthenticated && (
-            <div className="mb-6 rounded-lg border border-border bg-muted/40 p-4">
-              <h3 className="mb-2 font-medium text-foreground">Create an account</h3>
+            <div className="mb-6 rounded-sm border border-border bg-muted/40 p-4">
+              <h3 className="font-display mb-2 text-base font-semibold tracking-tight text-foreground">Create an account</h3>
               <p className="mb-3 text-sm text-muted-foreground">
                 Use the same email <strong>{order.customerEmail}</strong> to create an account. We&apos;ll send you a link to set your password so you can log in next time.
               </p>
@@ -404,7 +404,7 @@ function CheckoutSuccessContent() {
 
 export default function CheckoutSuccessPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-muted/30 py-8" />}>
+      <Suspense fallback={<div className="min-h-screen bg-background py-8" />}>
       <CheckoutSuccessContent />
     </Suspense>
   );

@@ -92,7 +92,7 @@ export function AddressStep({ onNext }: AddressStepProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
-        <h2 className="mb-4 text-2xl font-semibold text-foreground">Billing Address</h2>
+        <h2 className="font-display mb-4 text-2xl font-semibold tracking-tight text-foreground">Billing Address</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label htmlFor="billing-firstName" className={storefrontUi.labelMb}>
@@ -227,7 +227,7 @@ export function AddressStep({ onNext }: AddressStepProps) {
               type="text"
               readOnly
               value="PK"
-              className={`${storefrontUi.input} bg-gray-100 cursor-not-allowed`}
+              className={`${storefrontUi.input} bg-muted cursor-not-allowed`}
             />
           </div>
           <div className="md:col-span-2">
@@ -262,7 +262,7 @@ export function AddressStep({ onNext }: AddressStepProps) {
 
       {!useSameAddress && (
         <div>
-          <h2 className="mb-4 text-2xl font-semibold text-foreground">Shipping Address</h2>
+          <h2 className="font-display mb-4 text-2xl font-semibold tracking-tight text-foreground">Shipping Address</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label htmlFor="shipping-firstName" className={storefrontUi.labelMb}>
@@ -369,7 +369,7 @@ export function AddressStep({ onNext }: AddressStepProps) {
                 type="text"
                 readOnly
                 value="PK"
-                className={`${storefrontUi.input} bg-gray-100 cursor-not-allowed`}
+                className={`${storefrontUi.input} bg-muted cursor-not-allowed`}
               />
             </div>
           </div>

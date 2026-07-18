@@ -3,14 +3,30 @@
  * Backend can return `{ sections: HomeSection[] }` with the same discriminated `type` field.
  */
 
+/** Horizontal text overlay alignment on hero banner images. */
+export type HeroSlideTextAlign = 'left' | 'center' | 'right';
+
+/** Vertical text overlay position on hero banner images. */
+export type HeroSlideTextPosition = 'top' | 'middle' | 'bottom';
+
+/** Overlay contrast for light vs dark banner photography. */
+export type HeroSlideTextColor = 'light' | 'dark';
+
 export interface HeroSlide {
   id: string;
-  title: string;
+  /** Headline; omit or empty for image-only slides. */
+  title?: string;
   subtitle?: string;
   /** Optional image URL (CMS or CDN). Falls back to gradient if missing. */
   imageUrl?: string;
   ctaLabel?: string;
   ctaHref?: string;
+  /** Horizontal alignment of overlay copy (default: left). */
+  textAlign?: HeroSlideTextAlign;
+  /** Vertical position of overlay copy (default: middle). */
+  textPosition?: HeroSlideTextPosition;
+  /** Text contrast on the banner: light = white, dark = charcoal (default: light). */
+  textColor?: HeroSlideTextColor;
 }
 
 export interface TrustBadgeItem {
@@ -59,11 +75,25 @@ export type HomeSection =
   | {
       id: string;
       type: 'promo_banner';
+      /** Large heading (Kalles title). */
       title: string;
+      /** Small caps line above the title (Kalles eyebrow / subheading). */
+      eyebrow?: string;
+      /** Optional supporting line under the title. */
       subtitle?: string;
       ctaLabel?: string;
       ctaHref?: string;
+      /** Full-bleed background photograph. */
       imageUrl?: string;
+      /** Solid CSS background when not using (or under) a photo — e.g. `#c8e6d4`. */
+      backgroundColor?: string;
+      /** Optional product cutout / still-life image layered on the banner. */
+      productImageUrl?: string;
+      /** Text + CTA alignment (default: left). */
+      textAlign?: 'left' | 'center' | 'right';
+      /** Flat CTA color: primary = brand/dark, secondary = accent. */
+      buttonStyle?: 'primary' | 'secondary';
+      /** Legacy solid fill when `backgroundColor` / `imageUrl` omitted. */
       tone?: 'primary' | 'muted';
     }
   | {

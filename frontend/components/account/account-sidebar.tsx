@@ -17,6 +17,7 @@ const navItems: NavItem[] = [
   { href: '/profile', label: 'Profile' },
   { href: '/orders', label: 'Orders' },
   { href: '/addresses', label: 'Addresses' },
+  { href: '/wishlist', label: 'Wishlist' },
 ];
 
 export function AccountSidebar() {
@@ -31,16 +32,16 @@ export function AccountSidebar() {
 
   return (
     <aside className="w-full flex-shrink-0 md:w-64">
-      <div className="rounded-lg border border-border bg-card shadow-product-card">
+      <div className={`${storefrontUi.card} border border-border shadow-product-card`}>
         <div className="border-b border-border p-6">
           <div className="flex items-center space-x-3">
             <div className="flex-shrink-0">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-primary text-sm font-semibold text-white">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
                 {user?.firstName?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'U'}
               </div>
             </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-brand-text">
+              <p className="truncate text-sm font-medium text-foreground">
                 {user?.firstName && user?.lastName
                   ? `${user.firstName} ${user.lastName}`
                   : user?.email || 'User'}
@@ -60,10 +61,10 @@ export function AccountSidebar() {
                 <li key={item.href}>
                   <Link
                     href={item.href}
-                    className={`flex items-center rounded-md px-4 py-2.5 text-sm font-medium transition-colors ${
+                    className={`flex items-center rounded-sm px-4 py-2.5 text-sm font-medium transition-colors ${
                       isActive
-                        ? 'bg-brand-secondary/45 text-brand-accent'
-                        : 'text-brand-text/90 hover:bg-brand-secondary/25'
+                        ? 'bg-muted text-foreground'
+                        : 'text-foreground/90 hover:bg-muted/60'
                     }`}
                   >
                     {item.icon && <span className="mr-3">{item.icon}</span>}

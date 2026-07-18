@@ -1,4 +1,9 @@
-export const PROVISIONED_THEME_IDS = ['mehfil-e-shireen', 'ember', 'tailwind'] as const;
+export const PROVISIONED_THEME_IDS = [
+  'essa-chemicals',
+  'mehfil-e-shireen',
+  'ember',
+  'tailwind',
+] as const;
 
 export type ProvisionedThemeId = (typeof PROVISIONED_THEME_IDS)[number];
 
@@ -10,6 +15,8 @@ const LEGACY_THEME_MAP: Record<string, ProvisionedThemeId> = {
   'mehfil-e-shireen': 'mehfil-e-shireen',
   ember: 'ember',
   tailwind: 'tailwind',
+  'essa-chemicals': 'essa-chemicals',
+  essa_chemicals: 'essa-chemicals',
 };
 
 export function isProvisionedThemeId(value: string): value is ProvisionedThemeId {
@@ -25,7 +32,7 @@ export function normalizeProvisionedThemeId(value: string | null | undefined): P
   return 'tailwind';
 }
 
-export type StoreThemeCode = 'default' | 'ember' | 'mehfil_shereen';
+export type StoreThemeCode = 'default' | 'ember' | 'mehfil_shereen' | 'essa_chemicals';
 
 /** Maps admin-provisioned theme id to the internal store-themes.css preset key. */
 export function toStoreThemePresetId(theme: ProvisionedThemeId): StoreThemeCode {
@@ -34,6 +41,8 @@ export function toStoreThemePresetId(theme: ProvisionedThemeId): StoreThemeCode 
       return 'mehfil_shereen';
     case 'ember':
       return 'ember';
+    case 'essa-chemicals':
+      return 'essa_chemicals';
     case 'tailwind':
     default:
       return 'default';
@@ -51,12 +60,20 @@ export const THEME_PRESETS: Record<
     background: string;
   }
 > = {
+  'essa-chemicals': {
+    label: 'Essa Chemicals',
+    description: 'Kalles-inspired retail look with charcoal CTAs and orange accents',
+    primary: '#222222',
+    primaryHover: '#ff4800',
+    secondary: '#f5f5f5',
+    background: '#ffffff',
+  },
   tailwind: {
     label: 'Tailwind',
     description: 'Fresh blue-and-white household cleaning brand',
-    primary: '#4f90f1',
-    primaryHover: '#3577d9',
-    secondary: '#eef4fe',
+    primary: '#4F90F1',
+    primaryHover: '#3577D9',
+    secondary: '#EEF4FE',
     background: '#F5F5F5',
   },
   ember: {

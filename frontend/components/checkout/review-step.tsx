@@ -67,12 +67,12 @@ export function ReviewStep({ onBack }: ReviewStepProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="mb-4 text-2xl font-semibold text-foreground">Review Your Order</h2>
+        <h2 className="font-display mb-4 text-2xl font-semibold tracking-tight text-foreground">Review Your Order</h2>
 
         {/* Order Items */}
         <div className="mb-6">
-          <h3 className="mb-3 text-lg font-medium text-foreground">Items</h3>
-          <div className="divide-y divide-border rounded-lg border border-border">
+          <h3 className="font-display mb-3 text-lg font-semibold tracking-tight text-foreground">Items</h3>
+          <div className={`${storefrontUi.card} divide-y divide-border/60`}>
             {checkout.items.map((item, index) => (
               <div key={index} className="p-4 flex gap-4">
                 {item.productImage && (
@@ -128,7 +128,7 @@ export function ReviewStep({ onBack }: ReviewStepProps) {
         {/* Addresses */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <div>
-            <h3 className="mb-2 text-lg font-medium text-foreground">Billing Address</h3>
+            <h3 className="font-display mb-2 text-lg font-semibold tracking-tight text-foreground">Billing Address</h3>
             {checkout.billingAddress ? (
               <div className="text-sm text-muted-foreground">
                 <p>
@@ -150,7 +150,7 @@ export function ReviewStep({ onBack }: ReviewStepProps) {
             )}
           </div>
           <div>
-            <h3 className="mb-2 text-lg font-medium text-foreground">Shipping Address</h3>
+            <h3 className="font-display mb-2 text-lg font-semibold tracking-tight text-foreground">Shipping Address</h3>
             {checkout.shippingAddress ? (
               <div className="text-sm text-muted-foreground">
                 <p>
@@ -176,7 +176,7 @@ export function ReviewStep({ onBack }: ReviewStepProps) {
         {/* Shipping Method */}
         {checkout.shippingMethod && (
           <div className="mb-6">
-            <h3 className="mb-2 text-lg font-medium text-foreground">Shipping Method</h3>
+            <h3 className="font-display mb-2 text-lg font-semibold tracking-tight text-foreground">Shipping Method</h3>
             <div className="text-sm text-muted-foreground">
               <p>{checkout.shippingMethod.methodName}</p>
               <p>
@@ -189,7 +189,7 @@ export function ReviewStep({ onBack }: ReviewStepProps) {
 
         {/* Order Summary */}
         <div className="border-t border-border pt-4">
-          <h3 className="mb-3 text-lg font-medium text-foreground">Order Summary</h3>
+          <h3 className="font-display mb-3 text-lg font-semibold tracking-tight text-foreground">Order Summary</h3>
           <div className="space-y-2 text-foreground">
             <div className="flex justify-between text-sm">
               <span>Subtotal</span>
@@ -219,7 +219,7 @@ export function ReviewStep({ onBack }: ReviewStepProps) {
                 </span>
               </div>
             )}
-            <div className="flex justify-between border-t border-border pt-2 text-lg font-semibold">
+            <div className="flex justify-between border-t border-border/60 pt-2 text-lg font-semibold">
               <span>Total</span>
               <span>
                 {formatPrice(checkout.grandTotal, checkout.currency)}

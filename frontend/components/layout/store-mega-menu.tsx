@@ -7,11 +7,12 @@ import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties }
 import { type StorefrontNavMegaNode } from '@/lib/api-client';
 import {
   CATEGORY_NAV_BADGES,
+  getMegaMenuProductSpotlightFallback,
   type MegaMenuProductSpotlight,
 } from '@/lib/mega-menu-config';
 import { resolveImageUrl } from '@/lib/resolve-image-url';
 
-const MEGA_MENU_BANNER_COL_PX = 252;
+const MEGA_MENU_BANNER_COL_PX = 280;
 
 function sortByOrder<T extends { sortOrder?: number }>(items: T[]): T[] {
   return [...items].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
@@ -202,7 +203,7 @@ export function DesktopShopMegaMenu({
     return (
       <Link
         href="/products"
-        className={`chrome-nav-link header-nav-trigger text-sm font-medium ${isNavActive('/products', pathname) ? 'chrome-nav-link--active' : ''}`}
+        className={`chrome-nav-link header-nav-trigger font-sans text-[15px] font-medium tracking-normal ${isNavActive('/products', pathname) ? 'chrome-nav-link--active' : ''}`}
         aria-current={isNavActive('/products', pathname) ? 'page' : undefined}
       >
         Products
@@ -240,12 +241,12 @@ export function DesktopShopMegaMenu({
       className="relative hidden self-stretch items-center overflow-visible lg:flex"
       onMouseLeave={scheduleClose}
     >
-      <div className="flex h-full items-center gap-6">
+      <div className="flex h-full items-center gap-7 xl:gap-9">
         <Link
           href={primaryHref}
           onMouseEnter={closeMenu}
           onFocus={closeMenu}
-          className={`chrome-nav-link header-nav-trigger text-sm font-medium ${isNavActive(primaryHref, pathname) ? 'chrome-nav-link--active' : ''}`}
+          className={`chrome-nav-link header-nav-trigger font-sans text-[15px] font-medium tracking-normal ${isNavActive(primaryHref, pathname) ? 'chrome-nav-link--active' : ''}`}
           aria-current={isNavActive(primaryHref, pathname) ? 'page' : undefined}
         >
           {primaryLabel}
@@ -257,7 +258,7 @@ export function DesktopShopMegaMenu({
             onFocus={openMenu}
             aria-expanded={open}
             aria-haspopup="true"
-            className="chrome-nav-link header-nav-trigger cursor-pointer border-0 bg-transparent p-0 text-sm font-medium"
+            className="chrome-nav-link header-nav-trigger inline-flex cursor-pointer items-center gap-1 border-0 bg-transparent p-0 font-sans text-[15px] font-medium tracking-normal"
           >
             <span>{secondaryLabel}</span>
             <NavChevron />
@@ -297,24 +298,33 @@ function MegaMenuChildList({
 function useAdminMegaMenuBanner(
   adminBanner: MegaMenuAdminBanner,
   primaryHref: string,
-): MegaMenuProductSpotlight | null {
+): MegaMenuProductSpotlight {
   return useMemo(() => {
-    if (!adminBanner) return null;
-    const url = adminBanner.imageUrl?.trim();
-    if (!url) return null;
-    const imageSrc = resolveImageUrl(url);
-    if (!imageSrc) return null;
+    if (adminBanner) {
+      const url = adminBanner.imageUrl?.trim();
+      if (url) {
+        const imageSrc = resolveImageUrl(url);
+        if (imageSrc) {
+          return {
+            imageSrc,
+            href: adminBanner.href?.trim() || primaryHref,
+            alt: adminBanner.alt?.trim() || 'Mega menu promotion',
+          };
+        }
+      }
+    }
+    // Fall back to existing promo image (env or theme banner) — no new CMS schema.
+    const fallback = getMegaMenuProductSpotlightFallback();
     return {
-      imageSrc,
-      href: adminBanner.href?.trim() || primaryHref,
-      alt: adminBanner.alt?.trim() || 'Mega menu promotion',
+      ...fallback,
+      href: fallback.href || primaryHref,
     };
   }, [adminBanner, primaryHref]);
 }
 
 function MegaMenuProductSpotlight({ spotlight }: { spotlight: MegaMenuProductSpotlight }) {
   return (
-    <aside className="mega-menu-product-spotlight hidden xl:block">
+    <aside className="mega-menu-product-spotlight hidden lg:block">
       <Link href={spotlight.href} className="mega-menu-product-spotlight__link">
         <img
           src={spotlight.imageSrc}
@@ -323,6 +333,7 @@ function MegaMenuProductSpotlight({ spotlight }: { spotlight: MegaMenuProductSpo
           loading="lazy"
           decoding="async"
         />
+        <span className="mega-menu-product-spotlight__scrim" aria-hidden />
       </Link>
     </aside>
   );
@@ -348,9 +359,7 @@ function MegaMenuNavGrid({
       className="mega-menu-nav-grid grid items-start gap-x-8 gap-y-5 overflow-visible"
       data-mega-col-count={colCount}
       style={{
-        gridTemplateColumns: spotlight
-          ? `repeat(${colCount}, minmax(0, 1fr)) ${MEGA_MENU_BANNER_COL_PX}px`
-          : `repeat(${colCount}, minmax(0, 1fr))`,
+        gridTemplateColumns: `repeat(${colCount}, minmax(0, 1fr)) ${MEGA_MENU_BANNER_COL_PX}px`,
       }}
     >
       {columns.map((root) => {
@@ -382,7 +391,7 @@ function MegaMenuNavGrid({
           </div>
         );
       })}
-      {spotlight ? <MegaMenuProductSpotlight spotlight={spotlight} /> : null}
+      <MegaMenuProductSpotlight spotlight={spotlight} />
     </div>
   );
 }
@@ -447,30 +456,33 @@ function MobileChildBlock({
 
 export function MobileCategoryAccordions({ roots, onNavigate }: MobileCategoryAccordionsProps) {
   const pathname = usePathname();
-  if (roots.length === 0) return null;
+  if (roots.length === 0) {
+    return (
+      <p className="px-5 py-8 text-center text-sm text-muted-foreground">
+        Categories will appear here once they are set up.
+      </p>
+    );
+  }
 
   const sorted = sortByOrder(roots);
 
   return (
-    <div className="border-t border-border pt-2 lg:hidden">
-      <p className="header-nav-categories-label px-3 pb-1 text-xs font-semibold uppercase tracking-wide">
-        Categories
-      </p>
-      <div className="space-y-1.5 px-1">
+    <div className="lg:hidden">
+      <div className="divide-y divide-border">
         {sorted.map((cat) => {
           const children = sortByOrder(cat.children ?? []);
           const rootActive = isNavActive(cat.href, pathname);
           return (
             <details
               key={cat.id}
-              className="mega-menu-mobile-root"
+              className="mega-menu-mobile-root group"
               open={rootActive || undefined}
             >
-              <summary className="header-nav-trigger flex cursor-pointer list-none items-center justify-between gap-2 px-3 py-2.5 text-sm font-medium marker:hidden [&::-webkit-details-marker]:hidden">
+              <summary className="header-nav-trigger flex min-h-[50px] cursor-pointer list-none items-center justify-between gap-2 px-5 py-3 text-[15px] font-medium marker:hidden [&::-webkit-details-marker]:hidden">
                 <span>{cat.label}</span>
-                <NavChevron className="header-nav-trigger__chevron h-3 w-3" />
+                <NavChevron className="header-nav-trigger__chevron h-3.5 w-3.5 shrink-0 opacity-60 transition-transform group-open:rotate-180" />
               </summary>
-              <div className="mega-menu-mobile-panel px-2 py-2">
+              <div className="mega-menu-mobile-panel border-t border-border/60 bg-muted/30 px-3 py-2">
                 <MegaMenuLink
                   href={cat.href}
                   label={`All in ${cat.label}`}

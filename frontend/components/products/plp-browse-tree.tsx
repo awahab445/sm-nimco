@@ -37,11 +37,6 @@ function NavButton({
   );
 }
 
-function slugFromHref(href: string): string | null {
-  const m = href.trim().match(/\/categories\/([^/?#]+)/i);
-  return m?.[1] ?? null;
-}
-
 function resolveNodeCategoryId(
   node: PlpBrowseTreeNode,
   categoryIdBySlug: Map<string, string>,
@@ -172,14 +167,14 @@ export function PlpBrowseTree({
   const allActive = selectedCategoryId == null;
 
   return (
-    <nav aria-label={label} className="plp-browse-tree rounded-xl border border-border bg-card p-3 shadow-sm">
-      <h2 className="header-nav-categories-label px-1 pb-2 text-xs font-semibold uppercase tracking-wide">
+    <nav aria-label={label} className="plp-browse-tree pb-1">
+      <h2 className="mb-3 text-xs font-semibold uppercase tracking-[0.14em] text-foreground">
         {label}
       </h2>
       <NavButton
         hydrated={hydrated}
         onClick={() => onSelectCategory(null)}
-        className={`mega-menu-nav-link mega-menu-nav-link--l2 mb-1 w-full text-left${
+        className={`mega-menu-nav-link mega-menu-nav-link--l2 mb-2 w-full text-left${
           allActive ? ' mega-menu-nav-link--active' : ''
         }`}
       >
@@ -228,12 +223,12 @@ export function PlpBrowseBreadcrumbs({
   if (path.length === 0) return null;
 
   return (
-    <nav aria-label="Breadcrumb" className="mb-3 text-sm text-muted-foreground">
+    <nav aria-label="Breadcrumb" className="mb-4 text-[13px] text-muted-foreground">
       <ol className="flex flex-wrap items-center gap-1.5">
         <li>
           <NavButton
             hydrated={hydrated}
-            className="font-medium text-primary hover:underline"
+            className="transition-colors hover:text-[var(--navbar-link-hover,var(--primary-hover))]"
             onClick={() => onSelectCategory(null)}
           >
             Products
@@ -247,14 +242,14 @@ export function PlpBrowseBreadcrumbs({
                 /
               </span>
               {isLast ? (
-                <span className="font-medium text-foreground" aria-current="page">
+                <span className="text-foreground" aria-current="page">
                   {node.label}
                 </span>
               ) : (
                 <NavButton
                   hydrated={hydrated}
                   disabled={!resolveNodeCategoryId(node, categoryIdBySlug)}
-                  className="font-medium text-primary hover:underline disabled:text-muted-foreground"
+                  className="transition-colors hover:text-[var(--navbar-link-hover,var(--primary-hover))] disabled:text-muted-foreground"
                   onClick={() => {
                     const id = resolveNodeCategoryId(node, categoryIdBySlug);
                     if (id) onSelectCategory(id);

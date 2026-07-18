@@ -30,6 +30,10 @@ export type CmsBlock = {
   updatedAt: string;
 };
 
+export type CmsSlideTextAlign = 'left' | 'center' | 'right';
+export type CmsSlideTextPosition = 'top' | 'middle' | 'bottom';
+export type CmsSlideTextColor = 'light' | 'dark';
+
 export type CmsSlide = {
   id: string;
   title: string;
@@ -37,6 +41,9 @@ export type CmsSlide = {
   imageUrl: string;
   ctaLabel?: string | null;
   ctaHref?: string | null;
+  textAlign?: CmsSlideTextAlign | null;
+  textPosition?: CmsSlideTextPosition | null;
+  textColor?: CmsSlideTextColor | null;
   sortOrder: number;
   isActive: boolean;
 };
@@ -62,6 +69,9 @@ export type CmsSlideInput = {
   imageUrl: string;
   ctaLabel?: string;
   ctaHref?: string;
+  textAlign?: CmsSlideTextAlign;
+  textPosition?: CmsSlideTextPosition;
+  textColor?: CmsSlideTextColor;
   sortOrder?: number;
   isActive?: boolean;
 };

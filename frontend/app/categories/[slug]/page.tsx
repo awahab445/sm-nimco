@@ -1,9 +1,11 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import { JsonLd } from '@/components/seo/json-ld';
 import { fetchCategoryBySlug } from '@/lib/catalog/catalog.server';
 import { absoluteUrl, buildPageMetadata, plainText } from '@/lib/seo';
 import { CategoryPageClient } from './category-page-client';
+import { PlpProductGridSkeleton } from '@/components/products/plp-product-grid-skeleton';
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -64,7 +66,15 @@ export default async function CategoryPage({ params }: Props) {
   return (
     <>
       <JsonLd data={[jsonLd, breadcrumbLd]} />
-      <CategoryPageClient />
+      <Suspense
+        fallback={
+          <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+            <PlpProductGridSkeleton count={6} />
+          </div>
+        }
+      >
+        <CategoryPageClient />
+      </Suspense>
     </>
   );
 }

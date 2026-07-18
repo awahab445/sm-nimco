@@ -82,7 +82,7 @@ export function PlpDualRangePrice({ boundsMin, boundsMax, valueMin, valueMax, on
                 (e.target as HTMLInputElement).blur();
               }
             }}
-            className="mt-1 w-full rounded-md border border-input bg-card px-2 py-1.5 text-sm text-foreground"
+            className="mt-1 w-full border border-border/70 bg-transparent px-2.5 py-2 text-sm text-foreground focus:border-foreground/40 focus:outline-none"
           />
         </label>
         <label className="text-xs text-muted-foreground">
@@ -102,7 +102,7 @@ export function PlpDualRangePrice({ boundsMin, boundsMax, valueMin, valueMax, on
                 (e.target as HTMLInputElement).blur();
               }
             }}
-            className="mt-1 w-full rounded-md border border-input bg-card px-2 py-1.5 text-sm text-foreground"
+            className="mt-1 w-full border border-border/70 bg-transparent px-2.5 py-2 text-sm text-foreground focus:border-foreground/40 focus:outline-none"
           />
         </label>
       </div>
@@ -122,7 +122,7 @@ export function PlpDualRangePrice({ boundsMin, boundsMax, valueMin, valueMax, on
               setMinInput(String(Math.round(nextLo)));
               commit(nextLo, hi);
             }}
-            className="mt-1 w-full accent-primary"
+            className="mt-1 w-full accent-foreground"
           />
         </label>
         <label className="block text-xs text-muted-foreground">
@@ -140,7 +140,7 @@ export function PlpDualRangePrice({ boundsMin, boundsMax, valueMin, valueMax, on
               setMaxInput(String(Math.round(nextHi)));
               commit(lo, nextHi);
             }}
-            className="mt-1 w-full accent-primary"
+            className="mt-1 w-full accent-foreground"
           />
         </label>
       </div>

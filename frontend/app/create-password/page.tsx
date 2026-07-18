@@ -58,9 +58,9 @@ function CreatePasswordContent() {
 
   if (!token) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4 py-12">
-        <div className="w-full max-w-md rounded-lg bg-card p-8 shadow-sm">
-          <h1 className="text-xl font-semibold text-foreground">Invalid link</h1>
+      <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
+        <div className={`w-full max-w-md ${storefrontUi.card} border border-border p-8 shadow-product-card`}>
+          <h1 className="font-display text-xl font-semibold tracking-tight text-foreground">Invalid link</h1>
           <p className="mt-2 text-muted-foreground">
             This page requires a valid link from your email. Please use the link we sent you after placing an order, or request a new one from the order confirmation page.
           </p>
@@ -73,18 +73,21 @@ function CreatePasswordContent() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4 py-12">
+    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
       <div className="w-full max-w-md space-y-8">
-        <div>
-          <h1 className="text-center text-2xl font-bold text-foreground">
+        <div className="text-center">
+          <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
             Create your password
           </h1>
-          <p className="mt-2 text-center text-muted-foreground">
+          <p className="mt-2 text-sm text-muted-foreground">
             Set a password to sign in to your account.
           </p>
         </div>
 
-        <form className="mt-8 space-y-6 rounded-lg bg-card p-8 shadow-sm" onSubmit={handleSubmit}>
+        <form
+          className={`${storefrontUi.card} space-y-6 border border-border p-6 shadow-product-card sm:p-8`}
+          onSubmit={handleSubmit}
+        >
           {error && (
             <div className={storefrontUi.alertErrorSm} role="alert">
               {error}
@@ -160,7 +163,7 @@ function CreatePasswordContent() {
 
 export default function CreatePasswordPage() {
   return (
-    <Suspense fallback={<div className="flex min-h-screen items-center justify-center bg-muted/30 px-4 py-12" />}>
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center bg-background px-4 py-12" />}>
       <CreatePasswordContent />
     </Suspense>
   );

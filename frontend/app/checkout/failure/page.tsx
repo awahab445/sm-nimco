@@ -11,15 +11,15 @@ function CheckoutFailureContent() {
   const error = searchParams.get('error') || 'Payment could not be processed';
 
   return (
-    <div className="min-h-screen bg-muted/30 py-8">
+    <div className="min-h-screen bg-background py-8">
       <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8">
-        <div className="rounded-lg bg-card p-8 text-center shadow-sm">
+        <div className={`${storefrontUi.card} p-8 text-center`}>
           <div className="mb-4 text-6xl text-destructive">✕</div>
 
-          <h1 className="mb-2 text-3xl font-bold text-foreground">Payment Failed</h1>
+          <h1 className="font-display mb-2 text-3xl font-semibold tracking-tight text-foreground">Payment Failed</h1>
           <p className="mb-8 text-muted-foreground">{error}</p>
 
-          <div className="mb-6 rounded-lg border border-destructive/25 bg-destructive/10 p-4 text-left">
+          <div className={`mb-6 ${storefrontUi.alertError} text-left`}>
             <p className="text-sm text-destructive">
               Your order may have been created, but payment could not be completed. Please try
               again or contact support if the problem persists.
@@ -45,7 +45,7 @@ function CheckoutFailureContent() {
             </button>
           </div>
 
-          <div className="mt-8 border-t border-border pt-6">
+          <div className="mt-8 border-t border-border/60 pt-6">
             <p className="text-sm text-muted-foreground">
               Need help? Contact our support team at{' '}
               <a href="mailto:support@example.com" className={`${storefrontUi.link} underline`}>
@@ -61,7 +61,7 @@ function CheckoutFailureContent() {
 
 export default function CheckoutFailurePage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-muted/30 py-8" />}>
+      <Suspense fallback={<div className="min-h-screen bg-background py-8" />}>
       <CheckoutFailureContent />
     </Suspense>
   );

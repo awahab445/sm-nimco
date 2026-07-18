@@ -1,42 +1,264 @@
-/* Chrome enhancements — default store theme only */
+/* Chrome enhancements — essa_chemicals store theme only (Kalles-like retail shell) */
 
-html[data-store-theme='default'] .chrome-nav-link {
+/*
+ * Header nav typography — demo .hdt-menu-link.hdt-text-base.hdt-font-medium
+ * html 62.5% → --text-base 1.4rem = 14px; theme adds +1px → 15px
+ * font: Poppins (--font-body); weight 500; lh 1.4; tracking 0; no transform
+ */
+html[data-store-theme='essa_chemicals'] .site-header nav .chrome-nav-link,
+html[data-store-theme='essa_chemicals'] .site-header nav .header-nav-trigger {
+  font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1.4;
+  text-transform: none;
+}
+
+html[data-store-theme='essa_chemicals'] .chrome-nav-link {
   position: relative;
 }
 
-html[data-store-theme='default'] .chrome-nav-link::after {
+/* Demo #hdt-nav-ul>li>.hdt-menu-link:after — underline grows on hover */
+html[data-store-theme='essa_chemicals'] .chrome-nav-link::after {
   content: '';
   position: absolute;
   left: 0;
-  bottom: -2px;
+  bottom: -4px;
   width: 100%;
-  height: 2px;
+  height: 1px;
   background: currentColor;
   transform: scaleX(0);
-  transform-origin: left;
+  transform-origin: right;
   transition: transform 0.3s ease;
 }
 
-html[data-store-theme='default'] .chrome-nav-link:hover::after,
-html[data-store-theme='default'] .chrome-nav-link:focus-visible::after,
-html[data-store-theme='default'] .chrome-nav-link--active::after {
+html[data-store-theme='essa_chemicals'] .chrome-nav-link:hover::after,
+html[data-store-theme='essa_chemicals'] .chrome-nav-link:focus-visible::after,
+html[data-store-theme='essa_chemicals'] .chrome-nav-link--active::after {
   transform: scaleX(1);
+  transform-origin: left;
 }
 
-html[data-store-theme='default'] .chrome-nav-link--active {
-  color: var(--primary) !important;
+html[data-store-theme='essa_chemicals'] .chrome-nav-link--active {
+  color: var(--navbar-link-hover, var(--primary-hover, var(--primary))) !important;
+  font-weight: 500;
+}
+
+/* Kalles-style cart/wishlist count box (15px charcoal circle) */
+.chrome-count-box {
+  pointer-events: none;
+  position: absolute;
+  z-index: 2;
+  top: -5px;
+  right: -9px;
+  display: block;
+  min-width: 15px;
+  height: 15px;
+  padding: 0 3px;
+  overflow: hidden;
+  border-radius: 9999px;
+  background-color: var(--foreground, #222222);
+  color: var(--background, #ffffff);
+  font-size: 10px;
   font-weight: 600;
+  line-height: 15px;
+  text-align: center;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
-html[data-store-theme='default'] .chrome-search-bar input {
+html[data-store-theme='essa_chemicals'] .search-drawer__panel {
+  animation: searchDrawerSlideIn 0.28s ease;
+}
+
+@keyframes searchDrawerSlideIn {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-store-theme='essa_chemicals'] .search-drawer__panel {
+    animation: none;
+  }
+}
+
+/*
+ * Footer typography — Kalles demo: uppercase section titles + muted links
+ * (17px / 500) + .hdt--menu_item.hdt-text-base (15px muted)
+ */
+html[data-store-theme='essa_chemicals'] .site-footer .site-footer__heading {
+  font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1.4;
+  text-transform: uppercase;
+  color: var(--footer-foreground, #32355d);
+}
+
+html[data-store-theme='essa_chemicals'] .site-footer .site-footer__link {
+  font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 1.7;
+  text-transform: none;
+  color: var(--footer-muted-foreground, #878787);
+}
+
+html[data-store-theme='essa_chemicals'] .site-footer .site-footer__link:hover {
+  color: var(--footer-link-hover, #ff4800);
+}
+
+html[data-store-theme='essa_chemicals'] .site-footer .site-footer__muted {
+  font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.7;
+}
+
+html[data-store-theme='essa_chemicals'] .site-footer--essa .site-footer__services {
+  border-bottom: 1px solid var(--footer-border, #e6e6e6);
+}
+
+html[data-store-theme='essa_chemicals'] .site-footer--essa .site-footer__service-title {
+  font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+}
+
+html[data-store-theme='essa_chemicals'] .site-footer--essa .site-footer__service-text {
+  font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+}
+
+html[data-store-theme='essa_chemicals'] .site-footer--essa .site-footer__bar {
+  border-top: 1px solid var(--footer-border, #e6e6e6);
+}
+
+/*
+ * Footer FOLLOW US socials — Kalles hdt-socials__style-simple + size-small:
+ * 18px filled glyphs, column gap 20px, per-network brand hover (0.3s ease).
+ */
+html[data-store-theme='essa_chemicals'] .site-footer--essa .site-footer__socials {
+  gap: 10px 20px;
+  margin-inline-start: -2px;
+  list-style: none;
+  padding: 0;
+  margin-block: 0;
+}
+
+html[data-store-theme='essa_chemicals'] .site-footer--essa .site-footer__social {
+  width: auto;
+  height: auto;
+  color: var(--footer-foreground, #32355d);
+  transition: color 0.3s ease;
+}
+
+html[data-store-theme='essa_chemicals'] .site-footer--essa .site-footer__social svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+  display: block;
+}
+
+/* Demo: brand-color hover only when fine pointer + desktop width */
+@media (hover: hover) and (min-width: 1150px) {
+  html[data-store-theme='essa_chemicals'] .site-footer--essa .site-footer__social--facebook:hover {
+    color: rgb(59, 89, 152);
+  }
+
+  html[data-store-theme='essa_chemicals'] .site-footer--essa .site-footer__social--x:hover {
+    color: rgb(85, 85, 85);
+  }
+
+  html[data-store-theme='essa_chemicals'] .site-footer--essa .site-footer__social--instagram:hover {
+    color: rgb(224, 53, 102);
+  }
+
+  html[data-store-theme='essa_chemicals'] .site-footer--essa .site-footer__social--youtube:hover {
+    color: rgb(205, 32, 31);
+  }
+
+  html[data-store-theme='essa_chemicals'] .site-footer--essa .site-footer__social--pinterest:hover {
+    color: rgb(203, 32, 39);
+  }
+}
+
+html[data-store-theme='essa_chemicals'] .site-footer__newsletter {
+  border-radius: var(--radius-button, 3rem);
+  border-color: color-mix(in srgb, var(--footer-foreground) 28%, transparent);
+  background: #ffffff;
+  padding: 2px;
+  align-items: stretch;
+}
+
+html[data-store-theme='essa_chemicals'] .site-footer__newsletter input {
+  font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 1.4;
+  padding-inline: 14px;
+  padding-block: 8px;
+  min-width: 0;
+}
+
+html[data-store-theme='essa_chemicals'] .site-footer__newsletter-submit {
+  border: 0;
+  border-radius: var(--radius-button, 3rem);
+  background-color: var(--footer-newsletter-btn, #222222);
+  color: var(--footer-newsletter-btn-foreground, #ffffff);
+  font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 1.3;
+  text-transform: uppercase;
+  padding-inline: 14px;
+  padding-block: 8px;
+  white-space: nowrap;
+  transition: background-color 0.2s ease;
+}
+
+@media (min-width: 640px) {
+  html[data-store-theme='essa_chemicals'] .site-footer__newsletter-submit {
+    padding-inline: 18px;
+  }
+}
+
+html[data-store-theme='essa_chemicals'] .site-footer__newsletter-submit:hover {
+  background-color: var(--footer-newsletter-btn-hover, #343434);
+}
+
+html[data-store-theme='essa_chemicals'] .site-footer__collapse-icon::before,
+html[data-store-theme='essa_chemicals'] .site-footer__collapse-icon::after {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  content: '';
+  background-color: var(--footer-foreground, var(--foreground));
   transition:
-    box-shadow 0.3s ease,
-    border-color 0.3s ease,
-    background-color 0.3s ease;
+    transform 0.25s ease-in-out,
+    opacity 0.25s ease-in-out;
 }
 
-html[data-store-theme='default'] .chrome-search-bar:focus-within input {
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 22%, transparent);
+html[data-store-theme='essa_chemicals'] .site-footer__collapse-icon::before {
+  width: 12px;
+  height: 1px;
+  transform: translate(-50%, -50%);
+}
+
+html[data-store-theme='essa_chemicals'] .site-footer__collapse-icon::after {
+  width: 1px;
+  height: 12px;
+  transform: translate(-50%, -50%);
+}
+
+html[data-store-theme='essa_chemicals'] .site-footer__collapse-icon.is-open::after {
+  opacity: 0;
 }
 
 @keyframes chromeCartBadgePulse {
@@ -51,16 +273,140 @@ html[data-store-theme='default'] .chrome-search-bar:focus-within input {
   }
 }
 
-html[data-store-theme='default'] .chrome-cart-badge--pulse {
+html[data-store-theme='essa_chemicals'] .chrome-cart-badge--pulse {
   animation: chromeCartBadgePulse 0.5s ease;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html[data-store-theme='default'] .chrome-cart-badge--pulse {
+  html[data-store-theme='essa_chemicals'] .chrome-cart-badge--pulse {
     animation: none;
   }
 
-  html[data-store-theme='default'] .chrome-nav-link::after {
+  html[data-store-theme='essa_chemicals'] .chrome-nav-link::after {
     transition: none;
+  }
+}
+
+/* ——— Mobile menu drawer (Kalles left drawer + charcoal close) ——— */
+html[data-store-theme='essa_chemicals'] .mobile-nav-drawer__panel {
+  animation: mobileNavSlideIn 0.28s ease;
+}
+
+@keyframes mobileNavSlideIn {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+html[data-store-theme='essa_chemicals'] .mobile-nav-drawer__tab {
+  color: var(--foreground);
+  border-bottom: 2px solid transparent;
+  min-height: 56px;
+}
+
+html[data-store-theme='essa_chemicals'] .mobile-nav-drawer__tab.is-active {
+  border-bottom-color: var(--navbar-link-hover, var(--primary-hover, #ff4800));
+  background-color: color-mix(in srgb, var(--foreground) 10%, transparent);
+}
+
+html[data-store-theme='essa_chemicals'] .mobile-nav-link {
+  display: flex;
+  align-items: center;
+  min-height: 50px;
+  padding-inline: 20px;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--foreground);
+  text-decoration: none;
+  transition: background-color 0.15s ease;
+}
+
+html[data-store-theme='essa_chemicals'] .mobile-nav-link:active {
+  background-color: color-mix(in srgb, var(--foreground) 6%, transparent);
+}
+
+/* ——— Mobile toolbar (Kalles toolbar-mobile) ——— */
+.mobile-toolbar {
+  background: color-mix(in srgb, var(--card, #fff) calc(var(--toolbar-bg-opacity, 1) * 100%), transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 0 0.9rem rgb(0 0 0 / 0.12);
+  color: var(--foreground);
+}
+
+.mobile-toolbar__item {
+  position: relative;
+  display: flex;
+  flex: 1 0 20%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  height: 100%;
+  padding: 0 0.25rem 1.125rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-decoration: none;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.mobile-toolbar__item.is-active {
+  color: var(--navbar-link-hover, var(--primary-hover, #ff4800));
+}
+
+.mobile-toolbar__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.mobile-toolbar__label {
+  position: absolute;
+  left: 0.25rem;
+  right: 0.25rem;
+  bottom: 0.35rem;
+  overflow: hidden;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.mobile-toolbar__count {
+  pointer-events: none;
+  position: absolute;
+  z-index: 2;
+  top: -0.35rem;
+  right: -0.55rem;
+  display: block;
+  min-width: 15px;
+  height: 15px;
+  padding: 0 3px;
+  overflow: hidden;
+  border-radius: 9999px;
+  background-color: var(--primary, #222);
+  color: var(--primary-foreground, #fff);
+  box-shadow: 0.1rem 0.1rem 0.3rem rgb(0 0 0 / 0.3);
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 15px;
+  text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-store-theme='essa_chemicals'] .mobile-nav-drawer__panel {
+    animation: none;
   }
 }

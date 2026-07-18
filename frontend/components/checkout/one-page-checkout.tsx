@@ -575,7 +575,7 @@ export function OnePageCheckout() {
               )}
               {/* Billing Address form */}
               <section>
-                <h2 className="mb-4 text-xl font-semibold text-foreground">
+                <h2 className="font-display mb-4 text-xl font-semibold tracking-tight text-foreground">
                   Billing address
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -675,7 +675,7 @@ export function OnePageCheckout() {
                       type="text"
                       readOnly
                       value="PK"
-                      className={`${inputClass} bg-gray-100 cursor-not-allowed`}
+                      className={`${inputClass} bg-muted cursor-not-allowed`}
                     />
                   </div>
                   <div className="sm:col-span-2">
@@ -739,7 +739,7 @@ export function OnePageCheckout() {
 
               {!useSameAddress && (
                 <section>
-                  <h2 className="mb-4 text-xl font-semibold text-foreground">
+                  <h2 className="font-display mb-4 text-xl font-semibold tracking-tight text-foreground">
                     Shipping address
                   </h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -834,7 +834,7 @@ export function OnePageCheckout() {
                         type="text"
                         readOnly
                         value="PK"
-                        className={`${inputClass} bg-gray-100 cursor-not-allowed`}
+                        className={`${inputClass} bg-muted cursor-not-allowed`}
                       />
                     </div>
                   </div>
@@ -845,7 +845,7 @@ export function OnePageCheckout() {
             <>
               {/* Saved addresses: dropdowns */}
               <section>
-                <h2 className="mb-4 text-xl font-semibold text-foreground">
+                <h2 className="font-display mb-4 text-xl font-semibold tracking-tight text-foreground">
                   Billing address
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
@@ -895,7 +895,7 @@ export function OnePageCheckout() {
 
               {!useSameAddress && (
                 <section>
-                  <h2 className="mb-4 text-xl font-semibold text-foreground">
+                  <h2 className="font-display mb-4 text-xl font-semibold tracking-tight text-foreground">
                     Shipping address
                   </h2>
                   <label htmlFor="saved-shipping" className="sr-only">Choose shipping address</label>
@@ -940,7 +940,7 @@ export function OnePageCheckout() {
 
           {/* Shipping Method */}
           <section>
-            <h2 className="mb-4 text-xl font-semibold text-foreground">
+            <h2 className="font-display mb-4 text-xl font-semibold tracking-tight text-foreground">
               Shipping method
             </h2>
             {!validateAddress(effectiveShippingAddress) ? (
@@ -963,9 +963,9 @@ export function OnePageCheckout() {
                 {shippingOptions.map((opt) => (
                   <label
                     key={opt.methodId}
-                    className={`flex cursor-pointer items-center gap-3 rounded-lg border-2 p-4 transition-colors ${
+                    className={`flex cursor-pointer items-center gap-3 rounded-sm border p-4 transition-colors ${
                       selectedShippingId === opt.methodId
-                        ? storefrontUi.optionSelected
+                        ? `${storefrontUi.optionSelected} ring-1 ring-ring`
                         : storefrontUi.optionIdle
                     }`}
                   >
@@ -975,7 +975,7 @@ export function OnePageCheckout() {
                       value={opt.methodId}
                       checked={selectedShippingId === opt.methodId}
                       onChange={() => setSelectedShippingId(opt.methodId)}
-                      className="h-4 w-4 text-brand-primary"
+                      className="h-4 w-4 text-primary focus:ring-ring/30"
                     />
                     <div className="flex-1">
                       <span className="font-medium text-foreground">
@@ -998,7 +998,7 @@ export function OnePageCheckout() {
 
           {/* Payment */}
           <section>
-            <h2 className="mb-4 text-xl font-semibold text-foreground">
+            <h2 className="font-display mb-4 text-xl font-semibold tracking-tight text-foreground">
               Payment
             </h2>
             {loadingPaymentMethods ? (
@@ -1008,9 +1008,9 @@ export function OnePageCheckout() {
                 {paymentMethods.map((m) => (
                   <label
                     key={m.code}
-                    className={`flex cursor-pointer items-center gap-3 rounded-lg border-2 p-4 transition-colors ${
+                    className={`flex cursor-pointer items-center gap-3 rounded-sm border p-4 transition-colors ${
                       selectedPaymentCode === m.code
-                        ? storefrontUi.optionSelected
+                        ? `${storefrontUi.optionSelected} ring-1 ring-ring`
                         : storefrontUi.optionIdle
                     }`}
                   >
@@ -1020,7 +1020,7 @@ export function OnePageCheckout() {
                       value={m.code}
                       checked={selectedPaymentCode === m.code}
                       onChange={() => setSelectedPaymentCode(m.code)}
-                      className="h-4 w-4 text-brand-primary"
+                      className="h-4 w-4 text-primary focus:ring-ring/30"
                     />
                     <span className="font-medium text-foreground">{m.name}</span>
                   </label>
@@ -1032,14 +1032,14 @@ export function OnePageCheckout() {
 
         {/* Order summary sidebar */}
         <div className="lg:col-span-1">
-          <div className="lg:sticky lg:top-8 rounded-lg border border-border bg-muted/40 p-6">
-            <h2 className="mb-4 text-lg font-semibold text-foreground">
+          <div className={`lg:sticky lg:top-8 ${storefrontUi.card} p-6`}>
+            <h2 className="font-display mb-4 text-lg font-semibold tracking-tight text-foreground">
               Order summary
             </h2>
             <p className="mb-3 text-xs text-muted-foreground">
               Update quantity or remove items before placing your order.
             </p>
-            <ul className="mb-4 divide-y divide-border">
+            <ul className="mb-4 divide-y divide-border/60">
               {checkout.items.map((item, idx) => {
                 const qty = localQty[item.variantId] ?? item.quantity;
                 const rowTotal = item.price * (localQty[item.variantId] ?? item.quantity);
@@ -1140,7 +1140,7 @@ export function OnePageCheckout() {
                           </p>
                         </div>
                         <div className="flex items-center gap-2 mt-2">
-                          <div className="inline-flex items-center rounded-md border border-border bg-card">
+                          <div className="inline-flex items-center rounded-sm border border-border bg-card">
                             <button
                               type="button"
                               aria-label="Decrease quantity"
@@ -1236,17 +1236,17 @@ export function OnePageCheckout() {
               </div>
             </div>
             {!qualifiesForFreeDelivery && displaySubtotal >= MIN_ORDER_VALUE ? (
-              <p className="mt-3 rounded-md bg-[#4f90f1]/10 px-3 py-2 text-xs font-medium text-[#2f6fcb]">
+              <p className="mt-3 rounded-sm bg-secondary/50 px-3 py-2 text-xs font-medium text-foreground">
                 Add {formatPrice(amountRemainingForFreeDelivery, displayCurrency)} more to get Free
                 Delivery.
               </p>
             ) : null}
             {qualifiesForFreeDelivery ? (
-              <p className="mt-3 rounded-md bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-700">
+              <p className="mt-3 rounded-sm bg-success/10 px-3 py-2 text-xs font-medium text-success">
                 Congratulations! Your order qualifies for Free Delivery.
               </p>
             ) : null}
-            <div className="mt-4 flex justify-between border-t border-border pt-4 text-lg font-semibold text-foreground">
+            <div className="mt-4 flex justify-between border-t border-border/60 pt-4 text-lg font-semibold text-foreground">
               <span>Total</span>
               <span>{formatPrice(displayGrandTotal, displayCurrency)}</span>
             </div>
@@ -1269,14 +1269,16 @@ export function OnePageCheckout() {
         </div>
       </div>
       {showMinimumOrderModal ? (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-[#0e2d5f]/55 px-4">
-          <div className="w-full max-w-md rounded-2xl border border-[#78aefb] bg-white p-6 shadow-2xl">
-            <h3 className="text-lg font-bold text-[#2f6fcb]">Minimum order required</h3>
-            <p className="mt-3 text-sm leading-6 text-slate-700">
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-foreground/55 px-4 backdrop-blur-[1px]">
+          <div className={`w-full max-w-md ${storefrontUi.card} border border-border p-6 shadow-product-card`}>
+            <h3 className="font-display text-lg font-semibold tracking-tight text-foreground">
+              Minimum order required
+            </h3>
+            <p className="mt-3 text-sm leading-6 text-muted-foreground">
               A minimum order value of Rs. 800 is required to place an order. Please add more items
               to your cart.
               <br />
-              <span className="mt-1 inline-block font-medium text-[#2f6fcb]">
+              <span className="mt-1 inline-block font-medium text-foreground">
                 Note: Shopping of Rs.1500 or more qualifies for Free Delivery!
               </span>
             </p>

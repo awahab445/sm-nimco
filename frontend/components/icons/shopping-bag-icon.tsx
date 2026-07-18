@@ -1,26 +1,37 @@
-import { ShoppingBag } from 'lucide-react';
-import type { LucideProps } from 'lucide-react';
+import type { SVGProps } from 'react';
 
 function mergeClassNames(...parts: Array<string | undefined>): string {
   return parts.filter(Boolean).join(' ');
 }
 
+type CartIconProps = SVGProps<SVGSVGElement> & {
+  strokeWidth?: number | string;
+};
+
 /**
- * Store cart bag icon. Stroke uses `currentColor`, defaulting to `--foreground`
- * so light/dark and store-theme token changes apply automatically.
- * Inside links/buttons, color inherits from the parent (header nav, footer, etc.).
+ * Kalles-style shopping cart (Feather cart) — thin outline with basket + wheels.
+ * Kept export name for existing imports; visual matches demo `#icon-h-cart`.
  */
 export function ShoppingBagIcon({
   className,
-  strokeWidth = 2,
+  strokeWidth = 1.2,
   ...rest
-}: LucideProps) {
+}: CartIconProps) {
   return (
-    <ShoppingBag
-      strokeWidth={strokeWidth}
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
       stroke="currentColor"
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin="round"
       className={mergeClassNames('cart-icon', className)}
+      aria-hidden
       {...rest}
-    />
+    >
+      <circle cx="9" cy="21" r="1" />
+      <circle cx="20" cy="21" r="1" />
+      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+    </svg>
   );
 }

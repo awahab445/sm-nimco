@@ -3,8 +3,7 @@
 @import "../styles/store-themes.css";
 
 /*
- * Default header chrome — placed immediately after theme tokens so nav colors resolve
- * on first paint (avoids white flash from late overrides + text-white utilities).
+ * Header chrome — first paint for light themes (essa + default blue SaaS).
  */
 html[data-store-theme='default'] .site-header {
   background-color: var(--navbar-background, #f0f7ff);
@@ -16,12 +15,34 @@ html[data-store-theme='default'] .site-header nav .chrome-nav-link,
 html[data-store-theme='default'] .site-header nav .header-nav-trigger,
 html[data-store-theme='default'] .site-header nav .header-nav-trigger span,
 html[data-store-theme='default'] .site-header .site-header__store-name,
-html[data-store-theme='default'] .site-header nav .header-cart-trigger,
-html[data-store-theme='default'] .site-header nav .header-cart-trigger svg,
-html[data-store-theme='default'] .site-header nav button[aria-haspopup='menu'],
-html[data-store-theme='default'] .site-header nav button[aria-haspopup='menu'] svg,
-html[data-store-theme='default'] .site-header > div > button[aria-controls='mobile-main-nav'] {
+html[data-store-theme='default'] .site-header .header-cart-trigger,
+html[data-store-theme='default'] .site-header .header-cart-trigger svg,
+html[data-store-theme='default'] .site-header .site-header__icon-btn,
+html[data-store-theme='default'] .site-header .site-header__icon-btn svg,
+html[data-store-theme='default'] .site-header button[aria-haspopup='menu'],
+html[data-store-theme='default'] .site-header button[aria-haspopup='menu'] svg,
+html[data-store-theme='default'] .site-header .site-header__menu-btn {
   color: var(--navbar-foreground, #1a2e40);
+}
+
+html[data-store-theme='essa_chemicals'] .site-header {
+  background-color: var(--navbar-background, #ffffff);
+  color: var(--navbar-foreground, #222222);
+}
+
+html[data-store-theme='essa_chemicals'] .site-header nav > a,
+html[data-store-theme='essa_chemicals'] .site-header nav .chrome-nav-link,
+html[data-store-theme='essa_chemicals'] .site-header nav .header-nav-trigger,
+html[data-store-theme='essa_chemicals'] .site-header nav .header-nav-trigger span,
+html[data-store-theme='essa_chemicals'] .site-header .site-header__store-name,
+html[data-store-theme='essa_chemicals'] .site-header .header-cart-trigger,
+html[data-store-theme='essa_chemicals'] .site-header .header-cart-trigger svg,
+html[data-store-theme='essa_chemicals'] .site-header .site-header__icon-btn,
+html[data-store-theme='essa_chemicals'] .site-header .site-header__icon-btn svg,
+html[data-store-theme='essa_chemicals'] .site-header button[aria-haspopup='menu'],
+html[data-store-theme='essa_chemicals'] .site-header button[aria-haspopup='menu'] svg,
+html[data-store-theme='essa_chemicals'] .site-header .site-header__menu-btn {
+  color: var(--navbar-foreground, #222222);
 }
 
 /* Chrome/navbar tokens live in store-themes.css ([data-store-theme]) — not in [data-theme]. */
@@ -29,6 +50,8 @@ html[data-store-theme='default'] .site-header > div > button[aria-controls='mobi
   --primary: #4f90f1;
   --primary-hover: #3577d9;
   --primary-foreground: #ffffff;
+  --btn-hover: #3577d9;
+  --btn-hover-foreground: #ffffff;
   --secondary: #eef4fe;
   --secondary-foreground: #1a2e40;
   --background: #f5f5f5;
@@ -43,10 +66,32 @@ html[data-store-theme='default'] .site-header > div > button[aria-controls='mobi
   --ring: #4f90f1;
 }
 
+[data-theme="essa-chemicals"] {
+  --primary: #222222;
+  --primary-hover: #56cfe1;
+  --primary-foreground: #ffffff;
+  --btn-hover: #343434;
+  --btn-hover-foreground: #ffffff;
+  --secondary: #f5f5f5;
+  --secondary-foreground: #222222;
+  --background: #ffffff;
+  --foreground: #222222;
+  --muted: #fafafa;
+  --muted-foreground: #878787;
+  --card: #ffffff;
+  --card-foreground: #222222;
+  --border: #eeeeee;
+  --accent: #e8f9fc;
+  --accent-foreground: #056575;
+  --ring: #56cfe1;
+}
+
 [data-theme="ember"] {
   --primary: #c2410c;
   --primary-hover: #9a3412;
   --primary-foreground: #fff7ed;
+  --btn-hover: #9a3412;
+  --btn-hover-foreground: #fff7ed;
   --secondary: #ffedd5;
   --secondary-foreground: #7c2d12;
   --background: #fafaf9;
@@ -65,6 +110,8 @@ html[data-store-theme='default'] .site-header > div > button[aria-controls='mobi
   --primary: #b8944a;
   --primary-hover: #9a7a3a;
   --primary-foreground: #161015;
+  --btn-hover: #9a7a3a;
+  --btn-hover-foreground: #161015;
   --secondary: #141c2c;
   --secondary-foreground: #f2ebe0;
   --background: #ffffff;
@@ -92,8 +139,8 @@ html {
   --color-brand-text: var(--foreground);
   --color-brand-bg: var(--background);
   --color-primary-hover: var(--primary-hover);
-  --shadow-product-card: 0 1px 3px 0 color-mix(in srgb, var(--foreground) 7%, transparent),
-    0 4px 14px -2px color-mix(in srgb, var(--primary) 10%, transparent);
+  --color-btn-hover: var(--btn-hover, var(--primary-hover));
+  --shadow-product-card: 0 2px 12px -4px color-mix(in srgb, var(--foreground) 8%, transparent);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);
@@ -117,6 +164,8 @@ html {
   --color-ring: var(--ring);
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
+  --color-product-price: var(--product-price, #696969);
+  --color-product-sale-price: var(--product-sale-price, #eb001b);
   --radius-lg: var(--radius-card);
   --radius-md: calc(var(--radius-card) * 0.85);
   --radius-sm: calc(var(--radius-card) * 0.65);
@@ -130,6 +179,28 @@ body {
   background-color: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
+}
+
+h1,
+h2,
+h3,
+h4,
+.font-display {
+  font-family: var(--font-display, var(--font-geist-sans)), var(--font-sans);
+}
+
+/* Essa Chemicals: Jost display + Poppins body (via next/font CSS variables) */
+html[data-store-theme='essa_chemicals'],
+html[data-store-theme='essa_chemicals'] body {
+  font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+}
+
+html[data-store-theme='essa_chemicals'] h1,
+html[data-store-theme='essa_chemicals'] h2,
+html[data-store-theme='essa_chemicals'] h3,
+html[data-store-theme='essa_chemicals'] h4,
+html[data-store-theme='essa_chemicals'] .font-display {
+  font-family: var(--font-display), var(--font-body), ui-sans-serif, system-ui, sans-serif;
 }
 
 @layer base {
@@ -150,24 +221,6 @@ body {
   }
 }
 
-@layer components {
-  .btn-brand-primary {
-    @apply rounded-md bg-primary font-semibold text-primary-foreground shadow-sm transition-all duration-200;
-  }
-
-  .btn-brand-primary:hover:not(:disabled) {
-    background-color: var(--primary-hover);
-  }
-
-  .btn-brand-primary:active:not(:disabled) {
-    transform: scale(0.98);
-  }
-
-  .btn-brand-primary:disabled {
-    @apply cursor-not-allowed opacity-50;
-  }
-}
-
 /* Cart icon: theme token by default; inherit inside interactive parents */
 .cart-icon {
   stroke: currentColor;
@@ -179,7 +232,7 @@ button .cart-icon {
   color: inherit;
 }
 
-/* Primary storefront CTA — theme-aware fill via CSS variables */
+/* Primary storefront CTA — shared base; essa-chemicals overrides below */
 @layer components {
   .btn-brand-primary {
     display: inline-flex;
@@ -191,6 +244,8 @@ button .cart-icon {
     font-size: 0.875rem;
     font-weight: 600;
     line-height: 1.25rem;
+    text-transform: none;
+    letter-spacing: normal;
     box-shadow: 0 1px 2px 0 color-mix(in srgb, var(--foreground) 6%, transparent);
     transition:
       background-color 0.2s ease,
@@ -200,8 +255,14 @@ button .cart-icon {
   }
 
   .btn-brand-primary:hover:not(:disabled) {
-    background-color: color-mix(in srgb, var(--primary) 88%, var(--foreground));
+    background-color: var(--btn-hover, var(--primary-hover, var(--primary)));
+    color: var(--btn-hover-foreground, var(--primary-foreground));
     box-shadow: 0 4px 12px -2px color-mix(in srgb, var(--primary) 35%, transparent);
+  }
+
+  .btn-brand-primary:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--ring) 55%, transparent);
+    outline-offset: 2px;
   }
 
   .btn-brand-primary:active:not(:disabled) {
@@ -211,6 +272,212 @@ button .cart-icon {
   .btn-brand-primary:disabled {
     cursor: not-allowed;
     opacity: 0.5;
+  }
+
+  /* Default/other themes: PDP ATC uses brand primary */
+  .btn-pdp-atc {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md, 0.375rem);
+    background-color: var(--primary);
+    color: var(--primary-foreground);
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.25rem;
+    text-transform: none;
+    letter-spacing: normal;
+    box-shadow: 0 1px 2px 0 color-mix(in srgb, var(--foreground) 6%, transparent);
+    transition:
+      background-color 0.2s ease,
+      box-shadow 0.2s ease,
+      transform 0.15s ease,
+      opacity 0.2s ease;
+  }
+
+  .btn-pdp-atc:hover:not(:disabled) {
+    background-color: var(--btn-hover, var(--primary-hover, var(--primary)));
+    color: var(--btn-hover-foreground, var(--primary-foreground));
+  }
+
+  .btn-pdp-atc:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+
+  .btn-pdp-atc:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  .btn-brand-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md, 0.375rem);
+    border: 1px solid var(--primary);
+    background-color: var(--card);
+    color: var(--primary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.25rem;
+    transition:
+      background-color 0.2s ease,
+      border-color 0.2s ease,
+      color 0.2s ease,
+      transform 0.15s ease,
+      opacity 0.2s ease;
+  }
+
+  .btn-brand-secondary:hover:not(:disabled) {
+    background-color: color-mix(in srgb, var(--secondary) 60%, transparent);
+  }
+
+  .btn-brand-secondary:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--ring) 55%, transparent);
+    outline-offset: 2px;
+  }
+
+  .btn-brand-secondary:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  .btn-brand-outline {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md, 0.375rem);
+    border: 1px solid var(--border);
+    background-color: var(--card);
+    color: var(--foreground);
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.25rem;
+    transition:
+      background-color 0.2s ease,
+      border-color 0.2s ease,
+      color 0.2s ease,
+      opacity 0.2s ease;
+  }
+
+  .btn-brand-outline:hover:not(:disabled) {
+    background-color: color-mix(in srgb, var(--muted) 60%, transparent);
+  }
+
+  .btn-brand-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md, 0.375rem);
+    border: 0;
+    background: transparent;
+    color: var(--foreground);
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.25rem;
+    transition: color 0.15s ease, background-color 0.15s ease, opacity 0.2s ease;
+  }
+
+  .btn-brand-ghost:hover:not(:disabled) {
+    color: var(--navbar-link-hover, var(--primary-hover, var(--primary)));
+    background-color: color-mix(in srgb, var(--muted) 50%, transparent);
+  }
+
+  .btn-brand-inverted {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md, 0.375rem);
+    background-color: var(--primary-foreground);
+    color: var(--primary);
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.25rem;
+    box-shadow: 0 1px 2px 0 color-mix(in srgb, var(--foreground) 6%, transparent);
+    transition: filter 0.2s ease, transform 0.15s ease, opacity 0.2s ease;
+  }
+
+  .btn-brand-inverted:hover:not(:disabled) {
+    filter: brightness(0.95);
+  }
+
+  /* ——— essa-chemicals: Kalles button system ——— */
+  html[data-store-theme='essa_chemicals'] {
+    --btn-accent: #ff4800;
+    --btn-accent-hover: #ff6a33;
+    --btn-accent-foreground: #ffffff;
+  }
+
+  html[data-store-theme='essa_chemicals'] .btn-brand-primary {
+    border-radius: var(--radius-button, 3rem);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    box-shadow: none;
+  }
+
+  html[data-store-theme='essa_chemicals'] .btn-brand-primary:hover:not(:disabled) {
+    box-shadow: none;
+  }
+
+  html[data-store-theme='essa_chemicals'] .btn-brand-secondary {
+    border-radius: var(--radius-button, 3rem);
+    border-color: var(--border);
+    background: transparent;
+    color: var(--foreground);
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  html[data-store-theme='essa_chemicals'] .btn-brand-secondary:hover:not(:disabled) {
+    border-color: var(--foreground);
+    background-color: color-mix(in srgb, var(--muted) 60%, transparent);
+  }
+
+  html[data-store-theme='essa_chemicals'] .btn-brand-outline {
+    border-radius: var(--radius-button, 3rem);
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  html[data-store-theme='essa_chemicals'] .btn-brand-ghost {
+    border-radius: var(--radius-button, 3rem);
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  html[data-store-theme='essa_chemicals'] .btn-brand-ghost:hover:not(:disabled) {
+    color: var(--btn-accent, #ff4800);
+  }
+
+  html[data-store-theme='essa_chemicals'] .btn-brand-inverted {
+    border-radius: var(--radius-button, 3rem);
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    box-shadow: none;
+  }
+
+  /* PDP ATC — orange accent for essa only */
+  html[data-store-theme='essa_chemicals'] .btn-pdp-atc {
+    border-radius: var(--radius-button, 3rem);
+    background-color: var(--btn-accent, var(--footer-newsletter-btn, #ff4800));
+    color: var(--btn-accent-foreground, #ffffff);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    box-shadow: none;
+  }
+
+  html[data-store-theme='essa_chemicals'] .btn-pdp-atc:hover:not(:disabled) {
+    background-color: var(--btn-accent-hover, var(--footer-newsletter-btn-hover, #ff6a33));
+    color: var(--btn-accent-foreground, #ffffff);
   }
 }
 
@@ -311,29 +578,102 @@ details.mega-menu-mobile-root[open] > summary .header-nav-trigger__chevron {
   color: inherit;
 }
 
-html[data-store-theme]:not([data-store-theme='default']) .site-header nav .header-cart-trigger,
-html[data-store-theme]:not([data-store-theme='default']) .site-header nav .header-cart-trigger:hover,
-html[data-store-theme]:not([data-store-theme='default']) .site-header nav .header-cart-trigger:focus-visible,
-html[data-store-theme]:not([data-store-theme='default']) .site-header nav .header-cart-trigger .cart-icon {
+html[data-store-theme='ember'] .site-header .header-cart-trigger,
+html[data-store-theme='ember'] .site-header .header-cart-trigger:hover,
+html[data-store-theme='ember'] .site-header .header-cart-trigger:focus-visible,
+html[data-store-theme='ember'] .site-header .header-cart-trigger .cart-icon,
+html[data-store-theme='ember'] .site-header .site-header__icon-btn,
+html[data-store-theme='mehfil_shereen'] .site-header .header-cart-trigger,
+html[data-store-theme='mehfil_shereen'] .site-header .header-cart-trigger:hover,
+html[data-store-theme='mehfil_shereen'] .site-header .header-cart-trigger:focus-visible,
+html[data-store-theme='mehfil_shereen'] .site-header .header-cart-trigger .cart-icon,
+html[data-store-theme='mehfil_shereen'] .site-header .site-header__icon-btn {
   color: #fff;
 }
 
-html[data-store-theme='default'] .site-header nav .header-cart-trigger,
-html[data-store-theme='default'] .site-header nav .header-cart-trigger:hover,
-html[data-store-theme='default'] .site-header nav .header-cart-trigger:focus-visible,
-html[data-store-theme='default'] .site-header nav .header-cart-trigger .cart-icon,
-html[data-store-theme='default'] .site-header nav .header-cart-trigger svg,
-html[data-store-theme='default'] .site-header nav button[aria-haspopup='menu'],
-html[data-store-theme='default'] .site-header nav button[aria-haspopup='menu'] svg {
+html[data-store-theme='default'] .site-header .header-cart-trigger,
+html[data-store-theme='default'] .site-header .header-cart-trigger:hover,
+html[data-store-theme='default'] .site-header .header-cart-trigger:focus-visible,
+html[data-store-theme='default'] .site-header .header-cart-trigger .cart-icon,
+html[data-store-theme='default'] .site-header .header-cart-trigger svg,
+html[data-store-theme='default'] .site-header .site-header__icon-btn,
+html[data-store-theme='default'] .site-header .site-header__icon-btn svg,
+html[data-store-theme='default'] .site-header button[aria-haspopup='menu'],
+html[data-store-theme='default'] .site-header button[aria-haspopup='menu'] svg {
   color: var(--navbar-foreground, var(--foreground)) !important;
 }
 
-html[data-store-theme='default'] .site-header nav .header-cart-trigger:hover,
-html[data-store-theme='default'] .site-header nav .header-cart-trigger:hover .cart-icon,
-html[data-store-theme='default'] .site-header nav .header-cart-trigger:hover svg,
-html[data-store-theme='default'] .site-header nav button[aria-haspopup='menu']:hover,
-html[data-store-theme='default'] .site-header nav button[aria-haspopup='menu']:hover svg {
-  color: var(--primary) !important;
+html[data-store-theme='default'] .site-header .header-cart-trigger:hover,
+html[data-store-theme='default'] .site-header .header-cart-trigger:hover .cart-icon,
+html[data-store-theme='default'] .site-header .header-cart-trigger:hover svg,
+html[data-store-theme='default'] .site-header .site-header__icon-btn:hover,
+html[data-store-theme='default'] .site-header .site-header__icon-btn:hover svg,
+html[data-store-theme='default'] .site-header button[aria-haspopup='menu']:hover,
+html[data-store-theme='default'] .site-header button[aria-haspopup='menu']:hover svg {
+  color: var(--navbar-link-hover, var(--primary-hover, var(--primary))) !important;
+}
+
+html[data-store-theme='essa_chemicals'] .site-header .header-cart-trigger,
+html[data-store-theme='essa_chemicals'] .site-header .header-cart-trigger:hover,
+html[data-store-theme='essa_chemicals'] .site-header .header-cart-trigger:focus-visible,
+html[data-store-theme='essa_chemicals'] .site-header .header-cart-trigger .cart-icon,
+html[data-store-theme='essa_chemicals'] .site-header .header-cart-trigger svg,
+html[data-store-theme='essa_chemicals'] .site-header .site-header__icon-btn,
+html[data-store-theme='essa_chemicals'] .site-header .site-header__icon-btn svg,
+html[data-store-theme='essa_chemicals'] .site-header button[aria-haspopup='menu'],
+html[data-store-theme='essa_chemicals'] .site-header button[aria-haspopup='menu'] svg {
+  color: var(--navbar-foreground, var(--foreground)) !important;
+}
+
+html[data-store-theme='essa_chemicals'] .site-header .header-cart-trigger:hover,
+html[data-store-theme='essa_chemicals'] .site-header .header-cart-trigger:hover .cart-icon,
+html[data-store-theme='essa_chemicals'] .site-header .header-cart-trigger:hover svg,
+html[data-store-theme='essa_chemicals'] .site-header .site-header__icon-btn:hover,
+html[data-store-theme='essa_chemicals'] .site-header .site-header__icon-btn:hover svg,
+html[data-store-theme='essa_chemicals'] .site-header button[aria-haspopup='menu']:hover,
+html[data-store-theme='essa_chemicals'] .site-header button[aria-haspopup='menu']:hover svg {
+  color: var(--navbar-link-hover, var(--primary-hover, var(--primary))) !important;
+}
+
+html[data-store-theme='essa_chemicals'] .site-footer {
+  background: #ffffff !important;
+  color: var(--footer-foreground, var(--foreground)) !important;
+  border-top: 1px solid var(--footer-border, var(--border)) !important;
+}
+
+html[data-store-theme='essa_chemicals'] .site-footer--essa .site-footer__main {
+  background-color: var(--footer-main-background, #daf0fd) !important;
+  background-image: url('/themes/essa_chemicals/footer-bg.jpg');
+  background-repeat: no-repeat;
+  background-position: center top;
+  background-size: cover;
+}
+
+html[data-store-theme='essa_chemicals'] .site-footer--essa .site-footer__services,
+html[data-store-theme='essa_chemicals'] .site-footer--essa .site-footer__bar {
+  background-color: #ffffff !important;
+}
+
+html[data-store-theme='essa_chemicals'] .site-footer .text-primary-foreground {
+  color: var(--footer-foreground, var(--foreground)) !important;
+}
+
+html[data-store-theme='essa_chemicals'] .site-footer .text-primary-foreground\/80 {
+  color: var(--footer-muted-foreground, var(--muted-foreground)) !important;
+}
+
+html[data-store-theme='essa_chemicals'] .site-footer a.text-primary-foreground {
+  color: var(--footer-muted-foreground, var(--muted-foreground)) !important;
+}
+
+html[data-store-theme='essa_chemicals'] .site-footer a.text-primary-foreground:hover {
+  color: var(--footer-link-hover, var(--primary-hover, var(--primary))) !important;
+}
+
+html[data-store-theme='ember'] .site-footer,
+html[data-store-theme='mehfil_shereen'] .site-footer {
+  background: var(--primary) !important;
+  color: var(--primary-foreground) !important;
 }
 
 html[data-store-theme='default'] .site-footer {
@@ -355,12 +695,7 @@ html[data-store-theme='default'] .site-footer a.text-primary-foreground {
 }
 
 html[data-store-theme='default'] .site-footer a.text-primary-foreground:hover {
-  color: var(--primary) !important;
-}
-
-html[data-store-theme]:not([data-store-theme='default']) .site-footer {
-  background: var(--primary) !important;
-  color: var(--primary-foreground) !important;
+  color: var(--footer-link-hover, var(--primary-hover, var(--primary))) !important;
 }
 
 /* Promo banner / CMS chrome — matches header & footer per store theme */
@@ -369,35 +704,35 @@ html[data-store-theme]:not([data-store-theme='default']) .site-footer {
   border-style: solid;
 }
 
-html[data-store-theme='default'] .promo-banner-chrome {
-  background: var(--footer-background, #f0f7ff) !important;
-  border-color: var(--footer-border, #e3eef9) !important;
-  color: var(--footer-foreground, #1a2e40) !important;
+html[data-store-theme='essa_chemicals'] .promo-banner-chrome {
+  background: var(--footer-background, #ffffff) !important;
+  border-color: var(--footer-border, #eeeeee) !important;
+  color: var(--footer-foreground, #222222) !important;
 }
 
-html[data-store-theme='default'] .promo-banner-chrome__title {
-  color: var(--footer-foreground, #1a2e40) !important;
+html[data-store-theme='essa_chemicals'] .promo-banner-chrome__title {
+  color: var(--footer-foreground, #222222) !important;
 }
 
-html[data-store-theme='default'] .promo-banner-chrome__subtitle {
-  color: var(--footer-muted-foreground, #3577d9) !important;
+html[data-store-theme='essa_chemicals'] .promo-banner-chrome__subtitle {
+  color: var(--footer-muted-foreground, #878787) !important;
 }
 
-html[data-store-theme='default'] .promo-banner-chrome--muted {
-  background: color-mix(in srgb, var(--footer-background, #f0f7ff) 88%, var(--background)) !important;
+html[data-store-theme='essa_chemicals'] .promo-banner-chrome--muted {
+  background: color-mix(in srgb, var(--footer-background, #ffffff) 88%, var(--background)) !important;
 }
 
-html[data-store-theme]:not([data-store-theme='default']) .promo-banner-chrome {
+html[data-store-theme]:not([data-store-theme='essa_chemicals']) .promo-banner-chrome {
   background: var(--navbar-background) !important;
   border-color: var(--navbar-border) !important;
   color: var(--navbar-foreground) !important;
 }
 
-html[data-store-theme]:not([data-store-theme='default']) .promo-banner-chrome__title {
+html[data-store-theme]:not([data-store-theme='essa_chemicals']) .promo-banner-chrome__title {
   color: var(--navbar-foreground) !important;
 }
 
-html[data-store-theme]:not([data-store-theme='default']) .promo-banner-chrome__subtitle {
+html[data-store-theme]:not([data-store-theme='essa_chemicals']) .promo-banner-chrome__subtitle {
   color: var(--navbar-muted-foreground) !important;
 }
 
@@ -406,35 +741,35 @@ html[data-store-theme='mehfil_shereen'] .promo-banner-chrome__subtitle {
   color: var(--navbar-muted-foreground) !important;
 }
 
-html[data-store-theme='default'] .cms-block-section.promo-banner-chrome a {
-  color: var(--footer-muted-foreground, #3577d9);
+html[data-store-theme='essa_chemicals'] .cms-block-section.promo-banner-chrome a {
+  color: var(--footer-muted-foreground, #878787);
 }
 
-html[data-store-theme='default'] .cms-block-section.promo-banner-chrome a:hover {
-  color: var(--primary);
+html[data-store-theme='essa_chemicals'] .cms-block-section.promo-banner-chrome a:hover {
+  color: var(--footer-link-hover, var(--primary-hover, var(--primary)));
 }
 
-html[data-store-theme]:not([data-store-theme='default']) .cms-block-section.promo-banner-chrome a {
+html[data-store-theme]:not([data-store-theme='essa_chemicals']) .cms-block-section.promo-banner-chrome a {
   color: var(--navbar-muted-foreground);
 }
 
-html[data-store-theme]:not([data-store-theme='default']) .cms-block-section.promo-banner-chrome a:hover {
+html[data-store-theme]:not([data-store-theme='essa_chemicals']) .cms-block-section.promo-banner-chrome a:hover {
   color: var(--navbar-foreground);
 }
 
-html[data-store-theme='default'] .cms-block-section.promo-banner-chrome :is(h1, h2, h3, h4, h5, h6, p, li, strong) {
-  color: var(--footer-foreground, #1a2e40);
+html[data-store-theme='essa_chemicals'] .cms-block-section.promo-banner-chrome :is(h1, h2, h3, h4, h5, h6, p, li, strong) {
+  color: var(--footer-foreground, #222222);
 }
 
-html[data-store-theme='default'] .cms-block-section.promo-banner-chrome :is(.text-muted, small, em) {
-  color: var(--footer-muted-foreground, #3577d9);
+html[data-store-theme='essa_chemicals'] .cms-block-section.promo-banner-chrome :is(.text-muted, small, em) {
+  color: var(--footer-muted-foreground, #878787);
 }
 
-html[data-store-theme]:not([data-store-theme='default']) .cms-block-section.promo-banner-chrome :is(h1, h2, h3, h4, h5, h6, p, li, strong) {
+html[data-store-theme]:not([data-store-theme='essa_chemicals']) .cms-block-section.promo-banner-chrome :is(h1, h2, h3, h4, h5, h6, p, li, strong) {
   color: var(--navbar-foreground);
 }
 
-html[data-store-theme]:not([data-store-theme='default']) .cms-block-section.promo-banner-chrome :is(.text-muted, small, em) {
+html[data-store-theme]:not([data-store-theme='essa_chemicals']) .cms-block-section.promo-banner-chrome :is(.text-muted, small, em) {
   color: var(--navbar-muted-foreground);
 }
 
@@ -466,9 +801,25 @@ html[data-store-theme]:not([data-store-theme='default']) .cms-block-section.prom
 
 .site-header {
   background: var(--navbar-background, var(--primary)) !important;
-  position: relative;
+  /* Sticky must win over earlier relative stacking helpers — Kalles on_scroll_up */
+  position: sticky;
+  top: 0;
+  z-index: 60;
   border-bottom-color: var(--navbar-border, color-mix(in srgb, var(--primary-hover) 70%, transparent));
   color: var(--navbar-foreground, var(--primary-foreground));
+  transition: transform 0.3s ease;
+  will-change: transform;
+}
+
+.site-header.is-header-hidden {
+  transform: translate3d(0, -100%, 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-header {
+    transition: none;
+    will-change: auto;
+  }
 }
 
 html[data-store-theme='mehfil_shereen'] .site-header {
@@ -479,20 +830,99 @@ html[data-store-theme='ember'] .site-header {
   background: var(--navbar-background) !important;
 }
 
-html[data-store-theme='default'] .site-header {
-  background-color: var(--navbar-background, #f0f7ff) !important;
+html[data-store-theme='essa_chemicals'] .site-header {
+  background-color: var(--navbar-background, #ffffff) !important;
   background-image: none !important;
   border-bottom: 1px solid var(--navbar-border, var(--border));
   color: var(--navbar-foreground, var(--foreground));
   transition:
+    transform 0.3s ease,
     box-shadow 0.3s ease,
     background-color 0.3s ease,
     backdrop-filter 0.3s ease;
 }
 
-html[data-store-theme='default'] .site-header.is-scrolled {
+html[data-store-theme='essa_chemicals'] .site-header.is-scrolled {
   box-shadow: var(--navbar-shadow, 0 1px 3px 0 color-mix(in srgb, var(--foreground) 6%, transparent));
   backdrop-filter: blur(10px);
+}
+
+/*
+ * Immersive home hero (Kalles-style):
+ * - Announcement bar stays solid above
+ * - Sticky header is transparent over the first viewport, solid when scrolled
+ * - Hero pulls up under the header and fills remaining viewport height
+ */
+:root {
+  --site-header-height: 3.25rem;
+  --site-announcement-height: 0px;
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --site-header-height: 4.25rem;
+  }
+}
+
+.hero-slider--immersive {
+  width: 100%;
+  min-height: calc(100svh - var(--site-announcement-height, 0px));
+  min-height: calc(100dvh - var(--site-announcement-height, 0px));
+  margin-top: calc(-1 * var(--site-header-height, 4.25rem));
+}
+
+.hero-slider--immersive .hero-slider__stage {
+  position: absolute;
+  inset: 0;
+}
+
+.hero-slider--immersive .hero-slider__media {
+  object-fit: cover;
+  object-position: center;
+}
+
+html[data-immersive-hero] .site-header:not(.is-scrolled) {
+  background: transparent !important;
+  background-image: none !important;
+  border-bottom-color: transparent !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+html[data-store-theme='essa_chemicals'][data-immersive-hero] .site-header:not(.is-scrolled) {
+  background-color: transparent !important;
+  background-image: none !important;
+  border-bottom-color: transparent !important;
+}
+
+html[data-store-theme='mehfil_shereen'][data-immersive-hero] .site-header:not(.is-scrolled),
+html[data-store-theme='ember'][data-immersive-hero] .site-header:not(.is-scrolled) {
+  background: transparent !important;
+  background-image: none !important;
+  border-bottom-color: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Solid chrome again once the user scrolls past the hero top */
+html[data-immersive-hero] .site-header.is-scrolled {
+  background: var(--navbar-background, #ffffff) !important;
+  background-image: none !important;
+  border-bottom-color: var(--navbar-border, var(--border));
+}
+
+html[data-store-theme='essa_chemicals'][data-immersive-hero] .site-header.is-scrolled {
+  background-color: var(--navbar-background, #ffffff) !important;
+  box-shadow: var(--navbar-shadow, 0 1px 3px 0 color-mix(in srgb, var(--foreground) 6%, transparent));
+  backdrop-filter: blur(10px);
+}
+
+html[data-store-theme='mehfil_shereen'][data-immersive-hero] .site-header.is-scrolled {
+  background: var(--navbar-background) !important;
+}
+
+html[data-store-theme='ember'][data-immersive-hero] .site-header.is-scrolled {
+  background: var(--navbar-background) !important;
 }
 
 /* Header bar links, icons, and triggers — high contrast on navbar background */
@@ -500,8 +930,10 @@ html[data-store-theme='default'] .site-header.is-scrolled {
 .site-header nav .header-nav-trigger,
 .site-header nav button[aria-haspopup='menu'],
 .site-header nav button[aria-haspopup='true'],
-.site-header > div > a[href='/'],
-.site-header > div > button[aria-controls='mobile-main-nav'] {
+.site-header .site-header__icon-btn,
+.site-header .header-cart-trigger,
+.site-header .site-header__menu-btn,
+.site-header .site-header__logo {
   color: var(--navbar-foreground);
   transition: color 0.15s ease;
 }
@@ -511,16 +943,27 @@ html[data-store-theme='default'] .site-header.is-scrolled {
 .site-header nav .header-nav-trigger[aria-expanded='true'],
 .site-header nav button[aria-haspopup='menu']:hover,
 .site-header nav button[aria-haspopup='true']:hover,
-.site-header > div > a[href='/']:hover,
-.site-header > div > button[aria-controls='mobile-main-nav']:hover {
-  color: var(--navbar-muted-foreground, #dbeafe);
+.site-header .site-header__icon-btn:hover,
+.site-header .header-cart-trigger:hover,
+.site-header .site-header__menu-btn:hover {
+  color: var(--navbar-muted-foreground);
 }
 
-html[data-store-theme]:not([data-store-theme='default']) .site-footer {
+html[data-store-theme='essa_chemicals'] .site-header nav a:hover,
+html[data-store-theme='essa_chemicals'] .site-header nav .header-nav-trigger:hover,
+html[data-store-theme='essa_chemicals'] .site-header nav .header-nav-trigger[aria-expanded='true'],
+html[data-store-theme='essa_chemicals'] .site-header .site-header__icon-btn:hover,
+html[data-store-theme='essa_chemicals'] .site-header .header-cart-trigger:hover,
+html[data-store-theme='essa_chemicals'] .site-header .site-header__menu-btn:hover {
+  color: var(--navbar-link-hover, var(--primary-hover, var(--primary)));
+}
+
+html[data-store-theme='ember'] .site-footer,
+html[data-store-theme='mehfil_shereen'] .site-footer {
   border-top: 1px solid color-mix(in srgb, var(--primary) 75%, transparent) !important;
 }
 
-html[data-store-theme='default'] .store-mega-menu-panel {
+html[data-store-theme='essa_chemicals'] .store-mega-menu-panel {
   background: var(--popover);
   color: var(--popover-foreground);
   border: 1px solid var(--border);
@@ -529,20 +972,20 @@ html[data-store-theme='default'] .store-mega-menu-panel {
   backdrop-filter: none;
 }
 
-html[data-store-theme='default'] .store-mega-menu-panel .mega-menu-nav-heading,
-html[data-store-theme='default'] .store-mega-menu-panel .mega-menu-nav-link,
-html[data-store-theme='default'] .store-mega-menu-panel .mega-menu-nav-link--l2,
-html[data-store-theme='default'] .store-mega-menu-panel .mega-menu-nav-link--l3,
-html[data-store-theme='default'] .store-mega-menu-panel .header-nav-categories-label {
+html[data-store-theme='essa_chemicals'] .store-mega-menu-panel .mega-menu-nav-heading,
+html[data-store-theme='essa_chemicals'] .store-mega-menu-panel .mega-menu-nav-link,
+html[data-store-theme='essa_chemicals'] .store-mega-menu-panel .mega-menu-nav-link--l2,
+html[data-store-theme='essa_chemicals'] .store-mega-menu-panel .mega-menu-nav-link--l3,
+html[data-store-theme='essa_chemicals'] .store-mega-menu-panel .header-nav-categories-label {
   color: var(--muted-foreground) !important;
 }
 
-html[data-store-theme='default'] .store-mega-menu-panel .mega-menu-nav-heading:hover,
-html[data-store-theme='default'] .store-mega-menu-panel .mega-menu-nav-heading:focus-visible,
-html[data-store-theme='default'] .store-mega-menu-panel .mega-menu-nav-heading--active,
-html[data-store-theme='default'] .store-mega-menu-panel .mega-menu-nav-link:hover,
-html[data-store-theme='default'] .store-mega-menu-panel .mega-menu-nav-link:focus-visible,
-html[data-store-theme='default'] .store-mega-menu-panel .mega-menu-nav-link--active {
+html[data-store-theme='essa_chemicals'] .store-mega-menu-panel .mega-menu-nav-heading:hover,
+html[data-store-theme='essa_chemicals'] .store-mega-menu-panel .mega-menu-nav-heading:focus-visible,
+html[data-store-theme='essa_chemicals'] .store-mega-menu-panel .mega-menu-nav-heading--active,
+html[data-store-theme='essa_chemicals'] .store-mega-menu-panel .mega-menu-nav-link:hover,
+html[data-store-theme='essa_chemicals'] .store-mega-menu-panel .mega-menu-nav-link:focus-visible,
+html[data-store-theme='essa_chemicals'] .store-mega-menu-panel .mega-menu-nav-link--active {
   color: var(--primary) !important;
 }
 
@@ -590,7 +1033,7 @@ html[data-store-theme='default'] .store-mega-menu-panel .mega-menu-nav-link--act
   color: var(--primary);
 }
 
-html[data-store-theme='default'] .store-mega-menu-panel .mega-menu-nav-heading {
+html[data-store-theme='essa_chemicals'] .store-mega-menu-panel .mega-menu-nav-heading {
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.05em;
@@ -729,77 +1172,97 @@ html[data-store-theme="mehfil_shereen"] .store-mega-menu-panel .mega-menu-nav-ne
 }
 
 .mega-menu-product-spotlight {
-  --mega-banner-width: 252px;
-  --mega-banner-height: min(16.5rem, 30vh);
+  --mega-banner-width: 280px;
+  --mega-banner-height: min(18rem, 34vh);
 
   box-sizing: border-box;
   width: var(--mega-banner-width);
   min-width: var(--mega-banner-width);
   max-width: var(--mega-banner-width);
-  align-self: start;
+  align-self: stretch;
   padding: 0;
   overflow: hidden;
 }
 
 .mega-menu-product-spotlight__link {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  position: relative;
+  display: block;
   box-sizing: border-box;
   width: 100%;
-  height: var(--mega-banner-height);
-  min-height: 12rem;
-  max-height: var(--mega-banner-height);
-  padding: 0.75rem;
+  height: 100%;
+  min-height: var(--mega-banner-height);
   overflow: hidden;
   text-decoration: none;
-  border-radius: 10px;
-  border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+  border-radius: 0;
+  border: 0;
   background: color-mix(in srgb, var(--foreground) 4%, transparent);
-  transition:
-    opacity 0.2s ease,
-    border-color 0.2s ease;
+  transition: opacity 0.25s ease;
 }
 
 .store-mega-menu-panel .mega-menu-product-spotlight__link {
-  border-color: color-mix(in srgb, var(--navbar-foreground) 14%, transparent);
-  background: color-mix(in srgb, var(--navbar-foreground) 6%, transparent);
+  border: 0;
+  background: color-mix(in srgb, var(--foreground) 3%, transparent);
 }
 
-html[data-store-theme='default'] .store-mega-menu-panel .mega-menu-product-spotlight__link {
-  border-color: color-mix(in srgb, var(--border) 72%, transparent);
-  background: color-mix(in srgb, var(--foreground) 4%, transparent);
+html[data-store-theme='essa_chemicals'] .store-mega-menu-panel .mega-menu-product-spotlight__link {
+  border: 0;
+  background: var(--muted);
 }
 
 .mega-menu-product-spotlight__link:hover,
 .mega-menu-product-spotlight__link:focus-visible {
-  opacity: 0.94;
+  opacity: 0.92;
   outline: none;
-  border-color: color-mix(in srgb, var(--primary) 35%, var(--border));
+  border-color: transparent;
 }
 
 .mega-menu-product-spotlight__image {
   display: block;
   width: 100%;
   height: 100%;
+  min-height: var(--mega-banner-height);
   max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
+  object-fit: cover;
   object-position: center;
-  border-radius: 6px;
+  border-radius: 0;
+  transition: transform 0.45s ease;
 }
 
-/* PLP filter accordions — Refine sidebar */
+.mega-menu-product-spotlight__link:hover .mega-menu-product-spotlight__image,
+.mega-menu-product-spotlight__link:focus-visible .mega-menu-product-spotlight__image {
+  transform: scale(1.04);
+}
+
+.mega-menu-product-spotlight__scrim {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--foreground) 28%, transparent) 0%,
+    transparent 45%
+  );
+}
+
+html[data-store-theme='essa_chemicals'] .store-mega-menu-panel {
+  border-radius: 0;
+  box-shadow: 0 12px 28px -10px color-mix(in srgb, var(--foreground) 18%, transparent);
+}
+
+html[data-store-theme='essa_chemicals'] .store-mega-menu-panel__inner {
+  padding: 1.75rem 1.5rem 1.75rem 2rem;
+}
+
+/* PLP filter accordions — Kalles hairline style (no boxy admin panels) */
 .plp-filter-accordions {
-  overflow: hidden;
-  border-radius: var(--radius-card, 0.5rem);
-  border: 1px solid color-mix(in srgb, var(--border) 92%, transparent);
-  background: var(--card);
-  box-shadow: 0 1px 2px color-mix(in srgb, var(--foreground) 4%, transparent);
+  overflow: visible;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .plp-filter-accordion {
-  border-bottom: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 90%, transparent);
 }
 
 .plp-filter-accordion:last-child {
@@ -838,23 +1301,24 @@ html[data-store-theme='default'] .store-mega-menu-panel .mega-menu-product-spotl
   justify-content: space-between;
   gap: 0.75rem;
   width: 100%;
-  padding: 0.9375rem 1rem;
-  font-size: 0.875rem;
-  font-weight: 600;
-  line-height: 1.35;
+  padding: 1rem 0;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  line-height: 1.5;
   color: var(--foreground);
   background: transparent;
-  transition: background-color 0.18s ease;
+  transition: color 0.2s ease;
 }
 
 .plp-filter-accordion__trigger:hover .plp-filter-accordion__trigger-inner,
 .plp-filter-accordion__trigger:focus-visible .plp-filter-accordion__trigger-inner {
-  background-color: var(--primary-light);
+  background-color: transparent;
+  color: var(--navbar-link-hover, var(--primary-hover));
   outline: none;
 }
 
 .plp-filter-accordion[open] > .plp-filter-accordion__trigger .plp-filter-accordion__trigger-inner {
-  background-color: color-mix(in srgb, var(--primary-light) 55%, transparent);
+  background-color: transparent;
 }
 
 .plp-filter-accordion__title {
@@ -888,10 +1352,10 @@ html[data-store-theme='default'] .store-mega-menu-panel .mega-menu-product-spotl
 }
 
 .plp-filter-accordion__body {
-  padding: 0.25rem 1rem 1rem;
+  padding: 0 0 1.25rem;
 }
 
-/* PLP browse tree — reuses mega menu layered link styles on card surface */
+/* PLP browse tree — quiet hairline nav, orange hover */
 .plp-browse-tree .mega-menu-nav-heading,
 .plp-browse-tree .mega-menu-nav-link {
   border: 0;
@@ -899,14 +1363,401 @@ html[data-store-theme='default'] .store-mega-menu-panel .mega-menu-product-spotl
   cursor: pointer;
 }
 
+.plp-browse-tree .mega-menu-nav-heading {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--foreground);
+  padding: 0.35rem 0;
+}
+
+.plp-browse-tree .mega-menu-nav-heading--active,
 .plp-browse-tree .mega-menu-nav-link--active {
-  background-color: color-mix(in srgb, var(--secondary) 45%, transparent);
-  color: var(--primary);
+  background-color: transparent;
+  color: var(--foreground);
+  font-weight: 600;
 }
 
 .plp-browse-tree .mega-menu-nav-link:hover,
-.plp-browse-tree .mega-menu-nav-link:focus-visible {
-  background-color: color-mix(in srgb, var(--secondary) 35%, transparent);
+.plp-browse-tree .mega-menu-nav-link:focus-visible,
+.plp-browse-tree .mega-menu-nav-heading:hover,
+.plp-browse-tree .mega-menu-nav-heading:focus-visible {
+  background-color: transparent;
+  color: var(--navbar-link-hover, var(--primary-hover));
+}
+
+/* PLP layout switch — Kalles column glyphs (charcoal active / muted inactive) */
+.plp-view-icon {
+  /* Inactive: muted gray like Kalles (~#c2c2c2 on #222 ink / light bg) */
+  --layout-control-cl: color-mix(in srgb, var(--foreground, #222222) 38%, transparent);
+  display: block;
+  position: relative;
+  height: 26px;
+  border: 1px solid currentcolor;
+  color: var(--layout-control-cl);
+  transition: color 0.25s ease, border-color 0.25s ease;
+}
+
+.plp-view-icon.is-active,
+button[aria-pressed='true'] .plp-view-icon {
+  /* Active: charcoal ink (theme foreground, typically #222) */
+  --layout-control-cl: var(--foreground, #222222);
+}
+
+.plp-view-icon::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 10px;
+  height: 20px;
+  background: var(--layout-control-cl);
+  transition: box-shadow 0.3s ease, background 0.3s ease;
+}
+
+.plp-view-icon--list {
+  width: 29px;
+}
+
+.plp-view-icon--list::before {
+  right: 2px;
+  left: auto;
+  height: 5px;
+  width: 23px;
+  box-shadow:
+    0 7.3px 0 var(--layout-control-cl),
+    0 15.1px 0 var(--layout-control-cl);
+}
+
+.plp-view-icon--2 {
+  width: 29px;
+}
+
+.plp-view-icon--2::before {
+  box-shadow: 13px 0 0 var(--layout-control-cl);
+}
+
+.plp-view-icon--3 {
+  width: 42px;
+}
+
+.plp-view-icon--3::before {
+  box-shadow:
+    13px 0 0 var(--layout-control-cl),
+    26px 0 0 var(--layout-control-cl);
+}
+
+.plp-view-icon--4 {
+  width: 55px;
+}
+
+.plp-view-icon--4::before {
+  box-shadow:
+    13px 0 0 var(--layout-control-cl),
+    26px 0 0 var(--layout-control-cl),
+    39px 0 0 var(--layout-control-cl);
+}
+
+.plp-layout-switch button:hover .plp-view-icon:not(.is-active) {
+  --layout-control-cl: color-mix(in srgb, var(--foreground, #222222) 72%, transparent);
+}
+
+.plp-layout-switch button:hover .plp-view-icon.is-active {
+  --layout-control-cl: var(--foreground, #222222);
+}
+
+/* Filter drawer apply — solid ink, not brand-blue SaaS CTA */
+.plp-filter-apply {
+  background-color: var(--foreground);
+  color: var(--background);
+  border: 0;
+}
+
+/* Filter option checkboxes — Kalles hairline squares */
+.plp-filter-checkbox {
+  display: inline-flex;
+  height: 1rem;
+  width: 1rem;
+  min-width: 1rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid color-mix(in srgb, var(--border) 100%, transparent);
+  background: transparent;
+  color: var(--background);
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.plp-filter-checkbox__tick {
+  width: 0.625rem;
+  height: 0.625rem;
+  transform: scale(0);
+  transition: transform 0.2s ease;
+}
+
+.plp-filter-checkbox.is-checked {
+  background-color: var(--foreground);
+  border-color: var(--foreground);
+}
+
+.plp-filter-checkbox.is-checked .plp-filter-checkbox__tick {
+  transform: scale(1);
+}
+
+.plp-filter-option:hover .plp-filter-option__label,
+.plp-filter-option:focus-within .plp-filter-option__label {
+  color: var(--navbar-link-hover, var(--primary-hover));
+}
+
+.plp-filter-option__count {
+  color: var(--muted-foreground);
+}
+
+/* Toolbar — Kalles shop-control control colors */
+.plp-toolbar {
+  --plp-control-cl: color-mix(in srgb, var(--foreground) 60%, transparent);
+}
+
+.plp-toolbar__filter-btn,
+.plp-sort__trigger {
+  color: var(--plp-control-cl);
+}
+
+.plp-toolbar__filter-btn:hover,
+.plp-sort__trigger:hover,
+.plp-sort__trigger[aria-expanded='true'] {
+  color: var(--foreground);
+}
+
+.plp-toolbar__filter-count {
+  color: var(--navbar-link-hover, var(--primary-hover));
+}
+
+.plp-sort__option {
+  color: color-mix(in srgb, var(--foreground) 60%, transparent);
+}
+
+.plp-sort__option:hover {
+  color: var(--foreground);
+}
+
+.plp-sort__option--active {
+  color: var(--navbar-link-hover, var(--primary-hover));
+  font-weight: 500;
+  background-color: color-mix(in srgb, var(--navbar-link-hover, var(--primary-hover)) 8%, transparent);
+}
+
+/* Active filter chips — Kalles text + hairline separators */
+.plp-active-chip {
+  background: transparent;
+  border-top: 0;
+  border-bottom: 0;
+  border-left: 0;
+  padding-left: 1.25rem;
+}
+
+.plp-active-chip__remove {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 0.625rem;
+  height: 0.125rem;
+  margin-top: -0.0625rem;
+  background: currentColor;
+  transform: rotate(45deg);
+  transition: transform 0.2s ease;
+}
+
+.plp-active-chip__remove::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: inherit;
+  transform: rotate(-90deg);
+}
+
+.plp-active-chip:hover {
+  color: var(--navbar-link-hover, var(--primary-hover));
+}
+
+.plp-active-chip:hover .plp-active-chip__remove {
+  transform: rotate(0deg);
+}
+
+.plp-active-chips__count-num {
+  color: var(--navbar-link-hover, var(--primary-hover));
+}
+
+.plp-active-chips__clear {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.9rem 0.2rem 1.5rem;
+  border-radius: 999px;
+  background-color: var(--navbar-link-hover, var(--primary-hover));
+  color: var(--background);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.4;
+  transition: opacity 0.2s ease;
+}
+
+.plp-active-chips__clear:hover {
+  opacity: 0.9;
+}
+
+/* Pagination — Kalles numbered pages */
+.plp-pagination {
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid color-mix(in srgb, var(--border) 90%, transparent);
+  margin-bottom: 2rem;
+  display: flex;
+  justify-content: center;
+}
+
+.plp-pagination__list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.plp-pagination__item {
+  display: inline-block;
+  min-width: 1.5rem;
+  padding: 0.3rem 0.35rem;
+  text-align: center;
+  font-size: 0.9375rem;
+  line-height: 1.4;
+  color: var(--muted-foreground);
+  transition: color 0.2s ease;
+}
+
+a.plp-pagination__item:hover {
+  color: var(--foreground);
+}
+
+.plp-pagination__item--current {
+  color: var(--foreground);
+  font-weight: 500;
+}
+
+.plp-pagination__item--arrow {
+  padding-inline: 0.5rem;
+}
+
+.plp-pagination__item--ellipsis {
+  pointer-events: none;
+}
+
+@media (min-width: 768px) {
+  .plp-pagination__list {
+    gap: 0.625rem;
+  }
+
+  .plp-pagination__item {
+    padding: 0.3rem 0.625rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .plp-pagination__list {
+    gap: 1.25rem;
+  }
+}
+
+/* Essa Chemicals — PLP polish (accent checkboxes, chips, pagination hover) */
+html[data-store-theme='essa_chemicals'] .plp-filter-checkbox.is-checked {
+  background-color: var(--navbar-link-hover, var(--primary-hover));
+  border-color: var(--navbar-link-hover, var(--primary-hover));
+  color: #fff;
+}
+
+html[data-store-theme='essa_chemicals'] .plp-filter-apply {
+  background-color: var(--navbar-link-hover, var(--primary-hover));
+  color: #fff;
+}
+
+html[data-store-theme='essa_chemicals'] .plp-sort__option--active {
+  color: var(--navbar-link-hover, var(--primary-hover));
+}
+
+html[data-store-theme='essa_chemicals'] .plp-pagination__item--current {
+  color: var(--navbar-link-hover, var(--primary-hover));
+}
+
+html[data-store-theme='essa_chemicals'] a.plp-pagination__item:hover {
+  color: var(--navbar-link-hover, var(--primary-hover));
+}
+
+html[data-store-theme='essa_chemicals'] .plp-toolbar {
+  border-color: color-mix(in srgb, var(--border) 75%, transparent);
+}
+
+html[data-store-theme='essa_chemicals'] .plp-filter-accordion {
+  border-bottom-color: color-mix(in srgb, var(--border) 80%, transparent);
+}
+
+/* Product card overlay actions (quick view + basket) — always visible on mobile + desktop */
+.product-card__action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 0;
+  background-color: var(--background);
+  color: var(--foreground);
+  box-shadow: 0 2px 10px color-mix(in srgb, var(--foreground) 12%, transparent);
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease,
+    transform 0.15s ease;
+}
+
+.product-card__action-btn:hover:not(:disabled) {
+  color: var(--navbar-link-hover, var(--primary-hover));
+}
+
+.product-card__action-btn:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.product-card__action-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.product-card__actions {
+  opacity: 1;
+}
+
+/* Quick view — pin ATC + icon actions; avoid image crowding them off mobile */
+.product-quick-view__actions {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+}
+
+.product-quick-view__icon-btn:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+/*
+ * PLP list mode — mobile: break product image out of page gutters (px-4 / sm:px-6)
+ * so it spans the full viewport edge-to-edge (Kalles-style stacked list card).
+ * From md up, list cards use a side thumbnail and these rules do not apply.
+ */
+@media (max-width: 767px) {
+  .product-card--list .product-card__media--list-bleed {
+    width: 100vw;
+    max-width: 100vw;
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+  }
 }
 
 /* Mobile layered navigation */
@@ -989,8 +1840,10 @@ html[data-store-theme="mehfil_shereen"] body {
   z-index: 1;
 }
 
-/* Keep chrome above page content; mobile menu (portaled) also relies on header stacking */
-.mehfil-store-shell > header {
+/* Keep sticky chrome above page content; do not force position:relative on header */
+.mehfil-store-shell > .site-header {
+  position: sticky;
+  top: 0;
   z-index: 60;
 }
 
@@ -1102,15 +1955,22 @@ html[data-store-theme="mehfil_shereen"] header .pointer-events-none.text-muted-f
   color: #8b4a58;
 }
 
-/* Default theme: light chrome header controls */
-html[data-store-theme='default'] .site-header__logo-badge {
-  background: var(--card);
-  box-shadow: 0 0 0 1px var(--border);
+
+/* Default (tailwind) theme: light blue SaaS chrome */
+html[data-store-theme='default'] .site-header {
+  background-color: var(--navbar-background, #f0f7ff) !important;
+  background-image: none !important;
+  border-bottom: 1px solid var(--navbar-border, var(--border));
+  color: var(--navbar-foreground, var(--foreground));
+  transition:
+    box-shadow 0.3s ease,
+    background-color 0.3s ease,
+    backdrop-filter 0.3s ease;
 }
 
-html[data-store-theme]:not([data-store-theme='default']) .site-header__logo-badge {
-  background: #ffffff;
-  box-shadow: 0 1px 2px 0 color-mix(in srgb, var(--foreground) 8%, transparent);
+html[data-store-theme='default'] .site-header.is-scrolled {
+  box-shadow: var(--navbar-shadow, 0 1px 3px 0 color-mix(in srgb, var(--foreground) 6%, transparent));
+  backdrop-filter: blur(10px);
 }
 
 html[data-store-theme='default'] .site-header nav > a,
@@ -1133,6 +1993,312 @@ html[data-store-theme='default'] .site-header .site-header__store-name {
   color: var(--navbar-foreground, var(--foreground)) !important;
 }
 
+html[data-store-theme='default'] .site-header__menu-btn {
+  border-color: var(--border);
+  background-color: var(--card);
+  color: var(--foreground);
+}
+
+html[data-store-theme='default'] .site-header__menu-btn:hover {
+  background-color: var(--muted);
+  color: var(--primary);
+}
+
+html[data-store-theme='default'] .store-mega-menu-panel {
+  background: var(--popover);
+  color: var(--popover-foreground);
+  border: 1px solid var(--border);
+}
+
+html[data-store-theme='default'] .store-mega-menu-panel .mega-menu-nav-heading:hover,
+html[data-store-theme='default'] .store-mega-menu-panel .mega-menu-nav-heading:focus-visible,
+html[data-store-theme='default'] .store-mega-menu-panel .mega-menu-nav-heading--active,
+html[data-store-theme='default'] .store-mega-menu-panel .mega-menu-nav-link:hover,
+html[data-store-theme='default'] .store-mega-menu-panel .mega-menu-nav-link:focus-visible,
+html[data-store-theme='default'] .store-mega-menu-panel .mega-menu-nav-link--active {
+  color: var(--primary) !important;
+}
+
+html[data-store-theme='default'] .promo-banner-chrome {
+  background: var(--footer-background, #f0f7ff) !important;
+  border-color: var(--footer-border, var(--border)) !important;
+  color: var(--footer-foreground, var(--foreground)) !important;
+}
+
+html[data-store-theme='default'] .promo-banner-chrome__title {
+  color: var(--footer-foreground, var(--foreground)) !important;
+}
+
+html[data-store-theme='default'] .promo-banner-chrome__subtitle {
+  color: var(--footer-muted-foreground, var(--muted-foreground)) !important;
+}
+
+/* Kalles-style home promo mosaic (works all themes; essa gets flat CTAs + hover zoom) */
+.promo-banner-kalles {
+  isolation: isolate;
+}
+
+.promo-banner-kalles__eyebrow {
+  letter-spacing: 0.18em;
+}
+
+/* Default photo scrim — readability without a heavy veil */
+.promo-banner-kalles__scrim--photo {
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.38) 0%,
+    rgba(0, 0, 0, 0.14) 42%,
+    transparent 72%
+  );
+}
+
+.promo-banner-kalles__scrim--solid {
+  background: transparent;
+}
+
+/* Kalles lining: soft side + bottom scrim (essa only) */
+html[data-store-theme='essa_chemicals'] .promo-banner-kalles__scrim--photo {
+  background:
+    linear-gradient(
+      105deg,
+      rgba(0, 0, 0, 0.24) 0%,
+      rgba(0, 0, 0, 0.1) 36%,
+      rgba(0, 0, 0, 0.02) 58%,
+      transparent 78%
+    ),
+    linear-gradient(0deg, rgba(0, 0, 0, 0.14) 0%, transparent 48%);
+}
+
+html[data-store-theme='essa_chemicals'] .promo-banner-kalles__scrim--solid {
+  background:
+    linear-gradient(
+      105deg,
+      rgba(0, 0, 0, 0.06) 0%,
+      transparent 55%
+    ),
+    linear-gradient(0deg, rgba(0, 0, 0, 0.08) 0%, transparent 42%);
+}
+
+/*
+ * Kalles-like banner hover (essa only): zoom + slide-in/out on inner layers.
+ * Separate from scroll reveal (`.store-reveal` on the outer wrapper).
+ * Matches theme “Image hover effect” options Zoom in + Move to right —
+ * CSS transitions reverse on mouseleave (slide-out).
+ */
+html[data-store-theme='essa_chemicals'] .promo-banner-kalles__media,
+html[data-store-theme='essa_chemicals'] .promo-banner-kalles__product {
+  transform: scale(1) translate3d(0, 0, 0);
+  transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+html[data-store-theme='essa_chemicals'] .promo-banner-kalles__content {
+  transform: translate3d(0, 0, 0);
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+html[data-store-theme='essa_chemicals'] .promo-banner-kalles__cta {
+  transition:
+    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  html[data-store-theme='essa_chemicals'] .promo-banner-kalles:hover .promo-banner-kalles__media {
+    /* Zoom in + move to right (Kalles image hover) */
+    transform: scale(1.08) translate3d(3.5%, 0, 0);
+  }
+
+  html[data-store-theme='essa_chemicals'] .promo-banner-kalles:hover .promo-banner-kalles__product {
+    /* Slides toward copy while zooming; reverses on leave */
+    transform: scale(1.06) translate3d(-5%, -3%, 0);
+  }
+
+  html[data-store-theme='essa_chemicals'] .promo-banner-kalles:hover .promo-banner-kalles__content {
+    transform: translate3d(0.55rem, -0.2rem, 0);
+  }
+
+  html[data-store-theme='essa_chemicals'] .promo-banner-kalles:hover .promo-banner-kalles__cta {
+    transform: translate3d(0.35rem, 0, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-store-theme='essa_chemicals'] .promo-banner-kalles__media,
+  html[data-store-theme='essa_chemicals'] .promo-banner-kalles__product,
+  html[data-store-theme='essa_chemicals'] .promo-banner-kalles__content,
+  html[data-store-theme='essa_chemicals'] .promo-banner-kalles__cta {
+    transition: none;
+    will-change: auto;
+    transform: none;
+  }
+
+  html[data-store-theme='essa_chemicals'] .promo-banner-kalles:hover .promo-banner-kalles__media,
+  html[data-store-theme='essa_chemicals'] .promo-banner-kalles:hover .promo-banner-kalles__product,
+  html[data-store-theme='essa_chemicals'] .promo-banner-kalles:hover .promo-banner-kalles__content,
+  html[data-store-theme='essa_chemicals'] .promo-banner-kalles:hover .promo-banner-kalles__cta {
+    transform: none;
+  }
+}
+
+/*
+ * Scroll reveal (Kalles hdt-reveal / slide-in equivalent) — essa_chemicals only.
+ * Enabled when JS adds `.store-reveal-enabled` on <html> (motion allowed).
+ * Hover zoom stays on inner promo layers; this animates the outer wrapper.
+ */
+@keyframes store-reveal-slide-in {
+  from {
+    transform: translateY(2rem);
+    opacity: 0.01;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes store-reveal-fade-in {
+  from {
+    opacity: 0.01;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+html[data-store-theme='essa_chemicals'].store-reveal-enabled {
+  --store-reveal-duration: 0.6s;
+  --store-reveal-ease: cubic-bezier(0, 0, 0.3, 1);
+  --store-reveal-stagger: 75ms;
+}
+
+html[data-store-theme='essa_chemicals'].store-reveal-enabled
+  .store-reveal[data-reveal='slide-in']:not([data-reveal-done]):not(.is-in-view),
+html[data-store-theme='essa_chemicals'].store-reveal-enabled
+  .store-reveal[data-reveal='fade-in']:not([data-reveal-done]):not(.is-in-view) {
+  opacity: 0.01;
+}
+
+html[data-store-theme='essa_chemicals'].store-reveal-enabled
+  .store-reveal[data-reveal='slide-in']:not([data-reveal-done]):not(.is-in-view) {
+  transform: translateY(2rem);
+}
+
+html[data-store-theme='essa_chemicals'].store-reveal-enabled
+  .store-reveal[data-reveal='slide-in'].is-in-view:not([data-reveal-done]) {
+  animation: store-reveal-slide-in var(--store-reveal-duration) var(--store-reveal-ease) forwards;
+  animation-delay: calc(var(--reveal-order, 0) * var(--store-reveal-stagger));
+}
+
+html[data-store-theme='essa_chemicals'].store-reveal-enabled
+  .store-reveal[data-reveal='fade-in'].is-in-view:not([data-reveal-done]) {
+  animation: store-reveal-fade-in var(--store-reveal-duration) var(--store-reveal-ease) forwards;
+  animation-delay: calc(var(--reveal-order, 0) * var(--store-reveal-stagger));
+}
+
+html[data-store-theme='essa_chemicals'].store-reveal-enabled .store-reveal[data-reveal-done] {
+  opacity: 1;
+  transform: none;
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-store-theme='essa_chemicals'].store-reveal-enabled .store-reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+  }
+}
+
+html[data-store-theme='essa_chemicals'] .promo-mosaic {
+  padding-block: 1.25rem;
+}
+
+html[data-store-theme='essa_chemicals'] .promo-banner-kalles__title {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+
+html[data-store-theme='essa_chemicals'] .promo-banner-kalles__eyebrow {
+  color: #696969;
+  font-weight: 600;
+}
+
+html[data-store-theme='essa_chemicals'] .promo-banner-kalles__cta {
+  border-radius: 0 !important;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  box-shadow: none !important;
+}
+
+html[data-store-theme='essa_chemicals'] .promo-banner-kalles__cta--primary {
+  background-color: var(--primary, #222222) !important;
+  color: var(--primary-foreground, #ffffff) !important;
+}
+
+html[data-store-theme='essa_chemicals'] .promo-banner-kalles__cta--primary:hover:not(:disabled) {
+  background-color: var(--btn-hover, #343434) !important;
+}
+
+html[data-store-theme='essa_chemicals'] .promo-banner-kalles__cta--secondary {
+  border-color: transparent !important;
+  background-color: var(--btn-accent, #ff4800) !important;
+  color: var(--btn-accent-foreground, #ffffff) !important;
+}
+
+html[data-store-theme='essa_chemicals'] .promo-banner-kalles__cta--secondary:hover:not(:disabled) {
+  background-color: var(--btn-accent-hover, #ff6a33) !important;
+  color: var(--btn-accent-foreground, #ffffff) !important;
+}
+
+/* Default theme: light chrome header controls */
+html[data-store-theme='default'] .site-header__logo-badge,
+html[data-store-theme='essa_chemicals'] .site-header__logo-badge {
+  background: var(--card);
+  box-shadow: 0 0 0 1px var(--border);
+}
+
+html[data-store-theme='ember'] .site-header__logo-badge,
+html[data-store-theme='mehfil_shereen'] .site-header__logo-badge {
+  background: #ffffff;
+  box-shadow: 0 1px 2px 0 color-mix(in srgb, var(--foreground) 8%, transparent);
+}
+
+html[data-store-theme='essa_chemicals'] .site-header nav > a,
+html[data-store-theme='essa_chemicals'] .site-header nav .chrome-nav-link,
+html[data-store-theme='essa_chemicals'] .site-header nav .header-nav-trigger,
+html[data-store-theme='essa_chemicals'] .site-header nav .header-nav-trigger span {
+  color: var(--navbar-foreground, var(--foreground)) !important;
+}
+
+html[data-store-theme='essa_chemicals'] .site-header nav > a:hover,
+html[data-store-theme='essa_chemicals'] .site-header nav .chrome-nav-link:hover,
+html[data-store-theme='essa_chemicals'] .site-header nav .header-nav-trigger:hover,
+html[data-store-theme='essa_chemicals'] .site-header nav .header-nav-trigger:hover span,
+html[data-store-theme='essa_chemicals'] .site-header nav .header-nav-trigger[aria-expanded='true'],
+html[data-store-theme='essa_chemicals'] .site-header nav .header-nav-trigger[aria-expanded='true'] span {
+  color: var(--navbar-link-hover, var(--primary-hover, var(--primary))) !important;
+}
+
+html[data-store-theme='essa_chemicals'] .site-header .site-header__store-name {
+  color: var(--navbar-foreground, var(--foreground)) !important;
+}
+
+/* Brand wordmark accent (e.g. CHEMICALS) — medium blue aligned with logo mark */
+.site-header__wordmark-accent {
+  color: #0078c0;
+}
+
+html[data-store-theme='essa_chemicals'] .site-header .site-header__wordmark-accent {
+  color: #0078c0 !important;
+}
+
 html[data-store-theme='mehfil_shereen'] .site-header nav > a,
 html[data-store-theme='mehfil_shereen'] .site-header nav .chrome-nav-link,
 html[data-store-theme='mehfil_shereen'] .site-header nav .header-nav-trigger,
@@ -1149,45 +2315,47 @@ html[data-store-theme='ember'] .site-header .site-header__store-name {
   color: var(--navbar-foreground) !important;
 }
 
-html[data-store-theme='default'] .site-header__menu-btn {
-  border-color: var(--border);
-  background-color: var(--card);
+html[data-store-theme='essa_chemicals'] .site-header__menu-btn {
+  border: none;
+  background-color: transparent;
   color: var(--foreground);
 }
 
-html[data-store-theme='default'] .site-header__menu-btn:hover {
-  background-color: var(--muted);
-  color: var(--primary);
+html[data-store-theme='essa_chemicals'] .site-header__menu-btn:hover {
+  background-color: transparent;
+  color: var(--navbar-link-hover, var(--primary-hover, var(--primary)));
 }
 
-html[data-store-theme='default'] .site-header nav button[aria-haspopup='menu'] {
+html[data-store-theme='essa_chemicals'] .site-header button[aria-haspopup='menu'] {
   color: var(--navbar-foreground, var(--foreground));
 }
 
-html[data-store-theme='default'] .site-header nav button[aria-haspopup='menu']:hover {
-  color: var(--primary);
+html[data-store-theme='essa_chemicals'] .site-header button[aria-haspopup='menu']:hover {
+  color: var(--navbar-link-hover, var(--primary-hover, var(--primary)));
 }
 
-html[data-store-theme='default'] .site-header nav .header-cart-trigger .rounded-full {
-  --tw-ring-color: var(--navbar-background, #f0f7ff);
+html[data-store-theme='essa_chemicals'] .site-header .header-cart-trigger .chrome-count-box {
+  --tw-ring-color: transparent;
 }
 
-html[data-store-theme='default'] header input[type='search'] {
-  border-color: var(--input);
-  background-color: var(--card);
+html[data-store-theme='essa_chemicals'] header input[type='search'] {
+  border-color: transparent;
+  background-color: transparent;
   color: var(--foreground);
 }
 
-html[data-store-theme='default'] header input[type='search']::placeholder {
+html[data-store-theme='essa_chemicals'] header input[type='search']::placeholder {
   color: var(--muted-foreground);
 }
 
-html[data-store-theme='default'] header input[type='search']:focus {
-  background-color: var(--card);
-  border-color: var(--primary);
+html[data-store-theme='essa_chemicals'] header input[type='search']:focus {
+  background-color: transparent;
+  border-color: transparent;
+  outline: none;
+  box-shadow: none;
 }
 
-html[data-store-theme='default'] .header-search-bar span[aria-hidden] {
+html[data-store-theme='essa_chemicals'] .header-search-bar span[aria-hidden] {
   color: var(--muted-foreground);
 }
 
@@ -1195,12 +2363,126 @@ html[data-store-theme='mehfil_shereen'] .header-search-bar span[aria-hidden] {
   color: #8b4a58;
 }
 
+html[data-store-theme='essa_chemicals'] .site-footer .site-footer__link {
+  color: var(--footer-muted-foreground);
+}
+
+html[data-store-theme='essa_chemicals'] .site-footer .site-footer__link:hover {
+  color: var(--footer-link-hover, var(--primary-hover, var(--primary)));
+}
+
+html[data-store-theme='essa_chemicals'] .site-footer .site-footer__heading,
+html[data-store-theme='essa_chemicals'] .site-footer .site-footer__brand {
+  color: var(--footer-foreground);
+}
+
+html[data-store-theme='essa_chemicals'] .site-footer .site-footer__muted {
+  color: var(--footer-muted-foreground);
+}
+
+html[data-store-theme='essa_chemicals'] .site-footer .site-footer__divider {
+  border-color: var(--footer-border);
+}
+
+html[data-store-theme='essa_chemicals'] .site-footer .site-footer__social {
+  color: var(--footer-foreground, #32355d);
+}
+
+/* Default footer (non-essa) orange hover; essa brand colors live in chrome-enhancements */
+html[data-store-theme='essa_chemicals'] .site-footer:not(.site-footer--essa) .site-footer__social:hover {
+  color: var(--footer-link-hover, var(--footer-foreground));
+}
+
+/* Home "Stay in the loop" / newsletter band — matches Kalles demo newsletter strip */
+html[data-store-theme='essa_chemicals'] .subscription-section {
+  margin-top: 0;
+}
+
+html[data-store-theme='essa_chemicals'] .subscription-section__bg {
+  background-color: var(--newsletter-band-background, #32355d);
+  background-image: url('/themes/default/newsletter-bg.png');
+  background-position: 69.75% 31.5%;
+  background-size: cover;
+}
+
+html[data-store-theme='essa_chemicals'] .subscription-section__form {
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: var(--radius-button, 3rem);
+  padding: 2px;
+  background: transparent;
+}
+
+html[data-store-theme='essa_chemicals'] .subscription-section__form form {
+  gap: 0;
+}
+
+html[data-store-theme='essa_chemicals'] .subscription-section__form input {
+  color: rgba(255, 255, 255, 0.92) !important;
+}
+
+html[data-store-theme='essa_chemicals'] .subscription-section__form input::placeholder {
+  color: rgba(255, 255, 255, 0.55) !important;
+}
+
+html[data-store-theme='essa_chemicals'] .subscription-section__form .btn-brand-primary {
+  border-radius: var(--radius-button, 3rem);
+  padding-inline: 15px;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0.02em;
+  font-size: 0.875rem;
+}
+
+/* Non-default skins: keep subscription readable without the navy band */
+html[data-store-theme]:not([data-store-theme='essa_chemicals']) .subscription-section__bg {
+  display: none;
+}
+
+html[data-store-theme]:not([data-store-theme='essa_chemicals']) .subscription-section {
+  background: var(--muted);
+}
+
+html[data-store-theme]:not([data-store-theme='essa_chemicals']) .subscription-section__title {
+  color: var(--foreground) !important;
+}
+
+html[data-store-theme]:not([data-store-theme='essa_chemicals']) .subscription-section__subtitle {
+  color: var(--muted-foreground) !important;
+}
+
+html[data-store-theme='ember'] .site-footer .site-footer__link,
+html[data-store-theme='mehfil_shereen'] .site-footer .site-footer__link {
+  color: var(--primary-foreground);
+}
+
+html[data-store-theme='ember'] .site-footer .site-footer__link:hover,
+html[data-store-theme='mehfil_shereen'] .site-footer .site-footer__link:hover {
+  color: color-mix(in srgb, var(--primary-foreground) 80%, transparent);
+}
+
+html[data-store-theme='ember'] .site-footer .site-footer__heading,
+html[data-store-theme='ember'] .site-footer .site-footer__brand,
+html[data-store-theme='mehfil_shereen'] .site-footer .site-footer__heading,
+html[data-store-theme='mehfil_shereen'] .site-footer .site-footer__brand {
+  color: var(--primary-foreground);
+}
+
+html[data-store-theme='ember'] .site-footer .site-footer__muted,
+html[data-store-theme='mehfil_shereen'] .site-footer .site-footer__muted {
+  color: color-mix(in srgb, var(--primary-foreground) 80%, transparent);
+}
+
+html[data-store-theme='ember'] .site-footer .site-footer__divider,
+html[data-store-theme='mehfil_shereen'] .site-footer .site-footer__divider {
+  border-color: color-mix(in srgb, var(--primary-foreground) 20%, transparent);
+}
+
 html[data-store-theme='default'] .site-footer .site-footer__link {
   color: var(--footer-muted-foreground);
 }
 
 html[data-store-theme='default'] .site-footer .site-footer__link:hover {
-  color: var(--primary);
+  color: var(--footer-link-hover, var(--primary-hover, var(--primary)));
 }
 
 html[data-store-theme='default'] .site-footer .site-footer__heading,
@@ -1214,27 +2496,6 @@ html[data-store-theme='default'] .site-footer .site-footer__muted {
 
 html[data-store-theme='default'] .site-footer .site-footer__divider {
   border-color: var(--footer-border);
-}
-
-html[data-store-theme]:not([data-store-theme='default']) .site-footer .site-footer__link {
-  color: var(--primary-foreground);
-}
-
-html[data-store-theme]:not([data-store-theme='default']) .site-footer .site-footer__link:hover {
-  color: color-mix(in srgb, var(--primary-foreground) 80%, transparent);
-}
-
-html[data-store-theme]:not([data-store-theme='default']) .site-footer .site-footer__heading,
-html[data-store-theme]:not([data-store-theme='default']) .site-footer .site-footer__brand {
-  color: var(--primary-foreground);
-}
-
-html[data-store-theme]:not([data-store-theme='default']) .site-footer .site-footer__muted {
-  color: color-mix(in srgb, var(--primary-foreground) 80%, transparent);
-}
-
-html[data-store-theme]:not([data-store-theme='default']) .site-footer .site-footer__divider {
-  border-color: color-mix(in srgb, var(--primary-foreground) 20%, transparent);
 }
 
 /* Hero slider (Mehfil): maroon shell + tinted overlays */

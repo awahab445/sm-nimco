@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { productApi, inventoryApi, type Product, type ProductVariant } from '@/lib/api-client';
@@ -10,6 +10,9 @@ import { formatPrice } from '@/lib/currency';
 import { storefrontUi } from '@/lib/storefront-ui';
 import { ProductImageGallery } from '@/components/product/product-image-gallery';
 import { ProductStockAlert } from '@/components/product/product-stock-alert';
+import { RelatedProductsShelf } from '@/components/product/related-products-shelf';
+import { WishlistToggleButton } from '@/components/product/wishlist-toggle-button';
+import { resolveImageUrl } from '@/lib/resolve-image-url';
 import { trackCustomizeProduct, trackViewItem } from '@/lib/analytics/events';
 
 type OptionDefinition = { code: string; label: string; values: string[] };
@@ -113,6 +116,85 @@ function extractVariantOptions(variant: ProductVariant): Record<string, string> 
   return map;
 }
 
+function isColorOption(code: string, label: string): boolean {
+  const s = `${code} ${label}`.toLowerCase();
+  return /\bcolou?r\b/.test(s);
+}
+
+/** Best-effort CSS color from option value labels (for swatch circles). */
+function swatchColor(value: string): string | null {
+  const v = value.trim().toLowerCase().replace(/\s+/g, '');
+  const named: Record<string, string> = {
+    black: '#222',
+    white: '#f5f5f5',
+    red: '#c62828',
+    blue: '#1565c0',
+    navy: '#1a237e',
+    green: '#2e7d32',
+    grey: '#9e9e9e',
+    gray: '#9e9e9e',
+    beige: '#d7ccc8',
+    brown: '#6d4c41',
+    pink: '#ec407a',
+    purple: '#7b1fa2',
+    yellow: '#f9a825',
+    orange: '#ef6c00',
+    cream: '#fff8e1',
+  };
+  if (named[v]) return named[v];
+  if (/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(value.trim())) return value.trim();
+  return null;
+}
+
+function QuantityStepper({
+  id,
+  quantity,
+  setQuantity,
+  className,
+}: {
+  id: string;
+  quantity: number;
+  setQuantity: (n: number | ((q: number) => number)) => void;
+  className?: string;
+}) {
+  /* Kalles qty: 120×40 pill, solid #222 border, no mid dividers */
+  return (
+    <div
+      className={`relative inline-flex h-10 w-[7.5rem] shrink-0 items-center justify-center border border-foreground ${className ?? ''}`}
+      style={{ borderRadius: 'var(--radius-button, 3rem)' }}
+    >
+      <button
+        type="button"
+        onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+        className="absolute inset-y-0 left-0 flex w-8 items-center justify-center pl-1.5 text-foreground transition-colors hover:text-[var(--primary-hover,#56cfe1)]"
+        aria-label="Decrease quantity"
+      >
+        <svg width="10" height="2" viewBox="0 0 10 2" aria-hidden className="fill-current">
+          <path d="M10 0v2H0V0z" />
+        </svg>
+      </button>
+      <input
+        id={id}
+        type="number"
+        min={1}
+        value={quantity}
+        onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value, 10) || 1))}
+        className="h-full w-9 appearance-none bg-transparent text-center text-base font-semibold text-foreground focus:outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+      />
+      <button
+        type="button"
+        onClick={() => setQuantity((q) => q + 1)}
+        className="absolute inset-y-0 right-0 flex w-8 items-center justify-center pr-1.5 text-foreground transition-colors hover:text-[var(--primary-hover,#56cfe1)]"
+        aria-label="Increase quantity"
+      >
+        <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden className="fill-current">
+          <path d="M6 4h4v2H6v4H4V6H0V4h4V0h2v4z" fillRule="evenodd" />
+        </svg>
+      </button>
+    </div>
+  );
+}
+
 export function ProductDetailClient() {
   const router = useRouter();
   const params = useParams();
@@ -128,6 +210,9 @@ export function ProductDetailClient() {
   const [added, setAdded] = useState(false);
   const [availability, setAvailability] = useState<Record<string, number>>({});
   const [stockAlert, setStockAlert] = useState<string | null>(null);
+  /** Hide mobile sticky ATC while the buy-box ATC is on screen (no stacked duplicate). */
+  const [buyBoxAtcInView, setBuyBoxAtcInView] = useState(true);
+  const buyBoxAtcRef = useRef<HTMLButtonElement>(null);
 
   const addToCart = useCartStore((s) => s.addToCart);
 
@@ -284,6 +369,19 @@ export function ProductDetailClient() {
     setStockAlert(null);
   }, [currentVariantId, quantity]);
 
+  useEffect(() => {
+    const el = buyBoxAtcRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setBuyBoxAtcInView(entry.isIntersecting);
+      },
+      { root: null, threshold: 0, rootMargin: '0px' },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [product?.id]);
+
   const handleAddToCart = async () => {
     const v = selectedVariant ?? variants[0];
     if (!product || !v || adding) return;
@@ -309,9 +407,18 @@ export function ProductDetailClient() {
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="flex justify-center py-24">
-          <div className="h-10 w-10 animate-spin rounded-full border-2 border-muted border-t-primary" />
+      <div className="mx-auto max-w-7xl pb-28 pt-0 sm:pb-20 lg:px-8 lg:pb-16 lg:pt-8">
+        <div className="mb-4 px-4 pt-6 sm:mb-6 sm:px-6 sm:pt-8 lg:px-0 lg:pt-0">
+          <div className="h-3 w-40 animate-pulse bg-muted/30" />
+        </div>
+        <div className="lg:grid lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:items-start lg:gap-14">
+          <div className="aspect-[4/5] w-full animate-pulse bg-muted/40 sm:aspect-square" />
+          <div className="mt-6 space-y-4 px-4 sm:px-6 lg:mt-0 lg:px-0 lg:pt-2">
+            <div className="h-6 w-2/3 animate-pulse bg-muted/40" />
+            <div className="h-4 w-24 animate-pulse bg-muted/30" />
+            <div className="h-3 w-full animate-pulse bg-muted/25" />
+            <div className="h-3 w-4/5 animate-pulse bg-muted/20" />
+          </div>
         </div>
       </div>
     );
@@ -320,7 +427,7 @@ export function ProductDetailClient() {
   if (error || !product) {
     return (
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="rounded-lg border border-destructive/25 bg-destructive/10 p-4 text-destructive">
+        <div className="border border-destructive/20 bg-destructive/5 p-4 text-sm text-destructive">
           {error ?? 'Product not found'}
         </div>
         <Link
@@ -341,127 +448,244 @@ export function ProductDetailClient() {
       ? parseFloat(product.basePrice)
       : product.basePrice;
 
+  const baseNum =
+    typeof product.basePrice === 'string' ? parseFloat(product.basePrice) : Number(product.basePrice);
+  const priceNum = typeof price === 'string' ? parseFloat(price) : Number(price);
+  const onSale = Number.isFinite(baseNum) && Number.isFinite(priceNum) && priceNum < baseNum;
+  const atcDisabled = adding || !hasVariant || !currentVariant || !inStock;
+  const atcLabel = added
+    ? 'Added to cart'
+    : adding
+      ? 'Adding…'
+      : hasVariant
+        ? inStock
+          ? 'Add to cart'
+          : 'Out of stock'
+        : 'Unavailable';
+
+  const primaryImage =
+    orderedGalleryImages.find((i) => i.id === selectedImageId) ?? orderedGalleryImages[0];
+  const stickyThumb = resolveImageUrl(primaryImage?.url);
+  const categoryId = product.categories?.[0]?.id ?? null;
+
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <Link
-        href="/products"
-        className="mb-6 inline-block text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+    <>
+      {/*
+        Mobile: no horizontal page padding so the gallery is edge-to-edge (Kalles).
+        Breadcrumb + buy box keep their own gutters; desktop restores lg:px-8.
+      */}
+      <div
+        className={`mx-auto max-w-7xl pt-0 lg:px-8 lg:pb-16 lg:pt-8 ${
+          buyBoxAtcInView ? 'pb-20 sm:pb-16' : 'pb-28 sm:pb-20'
+        }`}
       >
-        ← Back to products
-      </Link>
+        <nav
+          className="mb-4 px-4 pt-6 text-[13px] text-muted-foreground sm:mb-6 sm:px-6 sm:pt-8 lg:mb-6 lg:px-0 lg:pt-0"
+          aria-label="Breadcrumb"
+        >
+          <Link href="/products" className="transition-colors hover:text-[var(--navbar-link-hover,var(--primary-hover))]">
+            Products
+          </Link>
+          <span className="mx-2 text-border" aria-hidden>/</span>
+          <span className="text-foreground">{product.name}</span>
+        </nav>
 
-      <div className="lg:grid lg:grid-cols-2 lg:gap-12">
-        <div>
-          <ProductImageGallery
-            images={orderedGalleryImages}
-            productName={product.name}
-            selectedId={selectedImageId}
-            onSelect={setSelectedImageId}
-          />
-        </div>
+        <div className="lg:grid lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:items-start lg:gap-14 xl:gap-16">
+          <div className="min-w-0 w-full">
+            <ProductImageGallery
+              images={orderedGalleryImages}
+              productName={product.name}
+              selectedId={selectedImageId}
+              onSelect={setSelectedImageId}
+            />
+          </div>
 
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-            {product.name}
-          </h1>
-          <p className="mt-2 text-lg font-medium text-foreground/90">
-            {formatPrice(price)}
-          </p>
-          {product.shortDescription?.trim() ? (
-            <p className="mt-4 text-muted-foreground">
-              {product.shortDescription.trim()}
-            </p>
-          ) : null}
-          {product.description?.trim() ? (
-            <div className="mt-4 text-muted-foreground">
-              <h2 className="text-sm font-semibold text-foreground">
-                Description
-              </h2>
-              <p className="mt-1 whitespace-pre-wrap">{product.description.trim()}</p>
+          <div className="mt-6 px-4 sm:px-6 lg:sticky lg:top-24 lg:mt-0 lg:self-start lg:px-0">
+            {/* Kalles PDP title: 16px / semibold / body font / no uppercase */}
+            <h1 className="font-sans text-base font-semibold leading-snug tracking-normal text-foreground">
+              {product.name}
+            </h1>
+
+            <div className="mt-2.5 flex flex-wrap items-baseline gap-2.5">
+              <p
+                className={`text-[1.375rem] font-normal leading-none ${
+                  onSale ? 'text-product-sale-price' : 'text-product-price'
+                }`}
+              >
+                {formatPrice(price)}
+              </p>
+              {onSale ? (
+                <p className="text-[1.375rem] font-normal leading-none text-product-price/55 line-through">
+                  {formatPrice(baseNum)}
+                </p>
+              ) : null}
             </div>
-          ) : null}
 
-          {variants.length > 1 && (
-            <div className="mt-6">
-              <div className="space-y-4">
+            {product.shortDescription?.trim() ? (
+              <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+                {product.shortDescription.trim()}
+              </p>
+            ) : null}
+
+            {variants.length > 1 && (
+              <div className="mt-6 space-y-5 sm:mt-8 sm:space-y-6">
                 {optionDefinitions
                   .filter((def) => def.values.length > 0)
-                  .map((def) => (
-                  <div key={def.code}>
-                    <p className="block text-sm font-medium text-foreground/90">{def.label}</p>
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {def.values.map((value) => {
-                        const active = selectedOptions[def.code] === value;
-                        return (
-                          <button
-                            key={`${def.code}-${value}`}
-                            type="button"
-                            onClick={() => handleOptionSelect(def.code, value)}
-                            className={`rounded-md border px-3 py-1.5 text-sm transition-colors ${
-                              active
-                                ? 'border-brand-primary bg-brand-primary text-white'
-                                : 'border-input bg-card text-foreground hover:border-primary/60'
-                            }`}
-                          >
-                            {value}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))}
+                  .map((def) => {
+                    const colorMode = isColorOption(def.code, def.label);
+                    return (
+                      <div key={def.code}>
+                        <p className="text-sm font-semibold text-foreground">
+                          {def.label}
+                          {selectedOptions[def.code] ? (
+                            <span className="ml-2 font-normal text-muted-foreground">
+                              {selectedOptions[def.code]}
+                            </span>
+                          ) : null}
+                        </p>
+                        <div className={`mt-2.5 flex flex-wrap ${colorMode ? 'gap-2.5' : 'gap-2'}`}>
+                          {def.values.map((value) => {
+                            const active = selectedOptions[def.code] === value;
+                            const color = colorMode ? swatchColor(value) : null;
+                            if (color) {
+                              return (
+                                <button
+                                  key={`${def.code}-${value}`}
+                                  type="button"
+                                  onClick={() => handleOptionSelect(def.code, value)}
+                                  title={value}
+                                  aria-label={value}
+                                  aria-pressed={active}
+                                  className={`h-[2.4rem] w-[2.4rem] rounded-full border p-0.5 transition-all ${
+                                    active
+                                      ? 'border-2 border-foreground'
+                                      : 'border border-[color-mix(in_srgb,var(--foreground)_20%,transparent)] hover:border-foreground'
+                                  }`}
+                                >
+                                  <span
+                                    className="block h-full w-full rounded-full"
+                                    style={{ backgroundColor: color }}
+                                  />
+                                </button>
+                              );
+                            }
+                            return (
+                              <button
+                                key={`${def.code}-${value}`}
+                                type="button"
+                                onClick={() => handleOptionSelect(def.code, value)}
+                                className={`min-w-[3rem] rounded-[0.3rem] border px-4 py-1.5 text-center text-sm transition-all duration-300 ${
+                                  active
+                                    ? 'border-primary bg-primary text-primary-foreground'
+                                    : 'border-[color-mix(in_srgb,var(--foreground)_10%,transparent)] bg-transparent text-foreground hover:border-foreground'
+                                }`}
+                              >
+                                {value}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
               </div>
-            </div>
-          )}
+            )}
 
-          <div className="mt-6 space-y-3">
-            <div className="flex flex-wrap items-start gap-4">
-              <div className="flex items-center gap-2">
-                <label htmlFor="qty" className="text-sm font-medium text-foreground/90">
-                  Quantity
-                </label>
-                <input
-                  id="qty"
-                  type="number"
-                  min={1}
-                  value={quantity}
-                  onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value, 10) || 1))}
-                  className="w-20 rounded-md border border-input bg-card px-2 py-2 text-center text-foreground"
+            {/* Buy box: row1 qty + wishlist | row2 full-width orange ATC */}
+            <div className="mt-6 space-y-3 sm:mt-8 sm:space-y-3.5">
+              <div className="flex flex-nowrap items-center gap-2.5">
+                <QuantityStepper id="qty" quantity={quantity} setQuantity={setQuantity} />
+                <WishlistToggleButton
+                  productId={product.id}
+                  variant="pdp"
+                  iconClassName="h-[1.125rem] w-[1.125rem]"
                 />
               </div>
-              <div className="flex flex-col items-end gap-1">
-                <button
-                  type="button"
-                  onClick={handleAddToCart}
-                  disabled={adding || !hasVariant || !currentVariant || !inStock}
-                  className={storefrontUi.btnPrimaryInline}
-                >
-                  {added ? 'Added to cart' : adding ? 'Adding…' : hasVariant ? (inStock ? 'Add to cart' : 'Out of stock') : 'Unavailable'}
-                </button>
-                {stockAlert && <ProductStockAlert message={stockAlert} />}
-              </div>
-              {added && (
+
+              <button
+                ref={buyBoxAtcRef}
+                type="button"
+                onClick={handleAddToCart}
+                disabled={atcDisabled}
+                className="btn-pdp-atc h-10 w-full px-6 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {atcLabel}
+              </button>
+
+              {added ? (
                 <Link
                   href="/cart"
-                  className={`text-sm font-medium ${storefrontUi.link}`}
+                  className={`block w-full text-center ${storefrontUi.btnSecondary} rounded-[var(--radius-button,0.25rem)] py-3`}
                 >
-                  View cart →
+                  View cart
                 </Link>
-              )}
+              ) : null}
+
+              {stockAlert ? <ProductStockAlert message={stockAlert} /> : null}
+
+              {!hasVariant ? (
+                <p className="text-sm text-warning">
+                  No variants available. Add at least one variant in the admin to enable add to cart.
+                </p>
+              ) : null}
+              {hasVariant && currentVariant && availableQty !== undefined && availableQty === 0 ? (
+                <p className="text-sm font-medium text-warning">Stock unavailable for this product.</p>
+              ) : null}
             </div>
-            {!hasVariant && (
-              <p className="text-sm text-warning">
-                No variants available. Add at least one variant in the admin to enable add to cart.
-              </p>
-            )}
-            {hasVariant && currentVariant && availableQty !== undefined && availableQty === 0 && (
-              <p className="text-sm font-medium text-warning">
-                Stock unavailable for this product.
-              </p>
-            )}
+
+            {product.description?.trim() ? (
+              <details className="group mt-8 border-t border-border/60 sm:mt-10 [&>summary]:list-none [&>summary::-webkit-details-marker]:hidden" open>
+                <summary className="flex cursor-pointer items-center justify-between gap-3 py-4 text-[15px] font-medium text-foreground transition-colors hover:text-[var(--navbar-link-hover,var(--primary-hover))]">
+                  <span>Description</span>
+                  <span className="text-muted-foreground transition-transform duration-200 group-open:rotate-180" aria-hidden>
+                    <svg className="h-3.5 w-3.5" viewBox="0 0 12 12" fill="none">
+                      <path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </span>
+                </summary>
+                <div className="pb-5 text-sm leading-relaxed text-muted-foreground whitespace-pre-wrap">
+                  {product.description.trim()}
+                </div>
+              </details>
+            ) : null}
           </div>
         </div>
       </div>
-    </div>
+
+      <RelatedProductsShelf productId={product.id} categoryId={categoryId} />
+
+      {/* Mobile sticky ATC — only when buy-box ATC scrolled out of view */}
+      <div
+        className={`fixed inset-x-0 z-[95] border-t border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] bg-background/95 px-3 py-2.5 shadow-[0_0_0.9rem_rgba(0,0,0,0.12)] backdrop-blur-[8px] transition-transform duration-200 md:px-4 lg:hidden ${
+          buyBoxAtcInView ? 'pointer-events-none translate-y-full opacity-0' : 'translate-y-0 opacity-100'
+        }`}
+        style={{ bottom: 'calc(3.4375rem + env(safe-area-inset-bottom, 0px))' }}
+        aria-hidden={buyBoxAtcInView}
+      >
+        <div className="mx-auto flex max-w-7xl items-center gap-3 md:gap-4">
+          {stickyThumb ? (
+            <div className="relative hidden h-[3.25rem] w-[3.25rem] shrink-0 overflow-hidden rounded-full bg-muted md:block">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={stickyThumb} alt="" className="h-full w-full object-cover" />
+            </div>
+          ) : null}
+          <div className="hidden min-w-0 flex-1 md:block">
+            <p className="truncate text-sm font-medium text-foreground">{product.name}</p>
+            <p className={`text-base ${onSale ? 'text-product-sale-price' : 'text-product-price'}`}>
+              {formatPrice(price)}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleAddToCart}
+            disabled={atcDisabled || buyBoxAtcInView}
+            tabIndex={buyBoxAtcInView ? -1 : undefined}
+            className="btn-pdp-atc h-10 w-full min-w-0 flex-1 px-5 disabled:cursor-not-allowed disabled:opacity-50 md:w-auto md:min-w-[10rem] md:flex-none"
+          >
+            {added ? 'Added' : adding ? '…' : inStock ? 'Add to cart' : 'Sold out'}
+          </button>
+        </div>
+      </div>
+    </>
   );
 }

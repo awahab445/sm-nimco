@@ -6,6 +6,14 @@ import { fetchThemeSettings, updateThemeSettings } from '@/lib/api/theme';
 
 const THEME_OPTIONS = [
   {
+    id: 'essa-chemicals',
+    label: 'Essa Chemicals',
+    description: 'Kalles-inspired retail look with charcoal CTAs and orange accents',
+    primary: '#222222',
+    secondary: '#ff4800',
+    background: '#ffffff',
+  },
+  {
     id: 'mehfil-e-shireen',
     label: 'Mehfil-e-Shireen',
     description: 'Gold CTAs with navy anchors and patterned canvas',
@@ -108,7 +116,7 @@ export function ThemeSelector() {
       {loading ? (
         <p className="text-sm text-zinc-500">Loading theme settings…</p>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {THEME_OPTIONS.map((theme) => {
             const selected = activeTheme === theme.id;
             return (

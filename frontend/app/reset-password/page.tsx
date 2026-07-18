@@ -65,9 +65,9 @@ function ResetPasswordContent() {
 
   if (!token) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4 py-12">
-        <div className="w-full max-w-md rounded-lg bg-card p-8 shadow-sm">
-          <h1 className="text-xl font-semibold text-foreground">Invalid link</h1>
+      <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
+        <div className={`w-full max-w-md ${storefrontUi.card} border border-border p-8 shadow-product-card`}>
+          <h1 className="font-display text-xl font-semibold tracking-tight text-foreground">Invalid link</h1>
           <p className="mt-2 text-muted-foreground">
             This page requires a valid password reset link from your email. Please request a new
             one if your link has expired.
@@ -84,16 +84,21 @@ function ResetPasswordContent() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4 py-12 sm:px-6 lg:px-8">
+    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-8">
-        <div>
-          <h1 className="text-center text-2xl font-bold text-foreground">Reset your password</h1>
-          <p className="mt-2 text-center text-muted-foreground">
+        <div className="text-center">
+          <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
+            Reset your password
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground">
             Enter a new password for your account.
           </p>
         </div>
 
-        <form className="mt-8 space-y-6 rounded-lg bg-card p-8 shadow-sm" onSubmit={handleSubmit}>
+        <form
+          className={`${storefrontUi.card} space-y-6 border border-border p-6 shadow-product-card sm:p-8`}
+          onSubmit={handleSubmit}
+        >
           {apiError && (
             <div className={storefrontUi.alertErrorSm} role="alert">
               <p className="text-sm">{apiError}</p>
@@ -177,7 +182,7 @@ export default function ResetPasswordPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4 py-12" />
+        <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12" />
       }
     >
       <ResetPasswordContent />

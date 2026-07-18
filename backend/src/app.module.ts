@@ -26,6 +26,7 @@ import { SiteConfigModule } from './site-config/site-config.module';
 import { StoreSettingsModule } from './store-settings/store-settings.module';
 import { BundleDealsModule } from './bundle-deals/bundle-deals.module';
 import { FeedsModule } from './feeds/feeds.module';
+import { WishlistModule } from './wishlist/wishlist.module';
 
 @Module({
   imports: [
@@ -51,6 +52,7 @@ import { FeedsModule } from './feeds/feeds.module';
     CustomerModule,
     CustomerGroupModule,
     AddressModule,
+    WishlistModule,
     CmsModule,
     SubscriptionModule,
     MailModule,

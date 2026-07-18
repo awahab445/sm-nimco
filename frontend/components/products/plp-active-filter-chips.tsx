@@ -8,9 +8,10 @@ type Props = {
   filters: PlpFilterState;
   categoryNameById: Map<string, string>;
   onChange: (next: PlpFilterState) => void;
+  onClearAll?: () => void;
 };
 
-export function PlpActiveFilterChips({ filters, categoryNameById, onChange }: Props) {
+export function PlpActiveFilterChips({ filters, categoryNameById, onChange, onClearAll }: Props) {
   const chips: Chip[] = [];
 
   if (filters.search?.trim()) {
@@ -29,7 +30,7 @@ export function PlpActiveFilterChips({ filters, categoryNameById, onChange }: Pr
   for (const id of filters.categoryIds) {
     chips.push({
       key: `cat-${id}`,
-      label: `Category: ${categoryNameById.get(id) ?? id.slice(0, 8)}…`,
+      label: categoryNameById.get(id) ?? id.slice(0, 8),
       onRemove: () =>
         onChange({
           ...filters,
@@ -73,22 +74,40 @@ export function PlpActiveFilterChips({ filters, categoryNameById, onChange }: Pr
 
   if (chips.length === 0) return null;
 
+  const clearAll =
+    onClearAll ??
+    (() =>
+      onChange({
+        page: 1,
+        search: filters.search,
+        categoryIds: [],
+        facetAttr: {},
+        minPrice: undefined,
+        maxPrice: undefined,
+      }));
+
   return (
-    <div className="mb-4 flex flex-wrap gap-2">
-      {chips.map((c) => (
+    <div className="plp-active-chips mb-6 flex flex-wrap items-center gap-x-0 gap-y-2">
+      <span className="plp-active-chips__count mr-4 border-r border-border/60 pr-4 text-sm text-muted-foreground">
+        Filters <span className="plp-active-chips__count-num">({chips.length})</span>
+      </span>
+      {chips.map((c, idx) => (
         <button
           key={c.key}
           type="button"
           onClick={c.onRemove}
-          className="inline-flex items-center gap-1.5 rounded-full border border-brand-secondary/60 bg-brand-secondary/40 px-3 py-1 text-xs font-medium text-brand-text transition-colors hover:bg-brand-secondary/60"
+          className={`plp-active-chip group relative mr-4 inline-flex items-center gap-2 pr-4 text-sm text-foreground ${
+            idx < chips.length - 1 ? 'border-r border-border/60' : ''
+          }`}
         >
+          <span className="plp-active-chip__remove" aria-hidden />
           <span>{c.label}</span>
-          <span className="text-muted-foreground" aria-hidden>
-            ×
-          </span>
           <span className="sr-only">Remove filter</span>
         </button>
       ))}
+      <button type="button" onClick={clearAll} className="plp-active-chips__clear ml-1 text-sm">
+        Clear all
+      </button>
     </div>
   );
 }

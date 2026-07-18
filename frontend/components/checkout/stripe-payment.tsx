@@ -79,7 +79,7 @@ export function StripePayment({ clientSecret, onSuccess, onError }: StripePaymen
         </p>
       </div>
       
-      <div className="rounded-lg border border-border bg-muted/50 p-4">
+      <div className="rounded-sm border border-border bg-muted/50 p-4">
         <p className="mb-2 text-sm text-muted-foreground">
           Stripe payment form would be rendered here with:
         </p>

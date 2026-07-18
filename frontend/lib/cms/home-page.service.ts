@@ -1,7 +1,13 @@
 import { fetchApi } from '@/lib/api-client';
 import { resolveImageUrl } from '@/lib/resolve-image-url';
 import { CACHE_TAGS } from '@/lib/cache-tags';
-import type { HomePageLayoutResponse, HomeSection } from './home-page-types';
+import type {
+  HeroSlideTextAlign,
+  HeroSlideTextColor,
+  HeroSlideTextPosition,
+  HomePageLayoutResponse,
+  HomeSection,
+} from './home-page-types';
 import { HOME_PAGE_DEFAULT_SECTIONS, HOME_SUBSCRIPTION_SECTION } from './home-page-defaults';
 
 const HOME_FETCH_CACHE: RequestInit = {
@@ -96,23 +102,36 @@ export async function getHomePageSections(): Promise<HomeSection[]> {
         slideHeightPx?: number | null;
         slides?: Array<{
           id: string;
-          title: string;
+          title?: string | null;
           subtitle?: string | null;
           imageUrl?: string | null;
           ctaLabel?: string | null;
           ctaHref?: string | null;
+          textAlign?: string | null;
+          textPosition?: string | null;
+          textColor?: string | null;
         }>;
       }>(sliderPath, HOME_FETCH_CACHE);
 
       const slides = (slider.slides ?? [])
-        .map((s) => ({
-          id: s.id,
-          title: s.title?.trim() || 'Promotion',
-          subtitle: s.subtitle ?? undefined,
-          imageUrl: resolveImageUrl(s.imageUrl ?? undefined),
-          ctaLabel: s.ctaLabel ?? undefined,
-          ctaHref: s.ctaHref ?? undefined,
-        }))
+        .map((s) => {
+          const textAlign: HeroSlideTextAlign =
+            s.textAlign === 'center' || s.textAlign === 'right' ? s.textAlign : 'left';
+          const textPosition: HeroSlideTextPosition =
+            s.textPosition === 'top' || s.textPosition === 'bottom' ? s.textPosition : 'middle';
+          const textColor: HeroSlideTextColor = s.textColor === 'dark' ? 'dark' : 'light';
+          return {
+            id: s.id,
+            title: s.title?.trim() || undefined,
+            subtitle: s.subtitle?.trim() || undefined,
+            imageUrl: resolveImageUrl(s.imageUrl ?? undefined),
+            ctaLabel: s.ctaLabel?.trim() || undefined,
+            ctaHref: s.ctaHref?.trim() || undefined,
+            textAlign,
+            textPosition,
+            textColor,
+          };
+        })
         .filter((s) => !!s.id && !!s.imageUrl);
 
       if (slides.length === 0) return sections;

@@ -62,7 +62,7 @@ export class StoreSettingsService {
   ): Promise<AdminThemeSettings> {
     if (!isStoreThemeId(theme)) {
       throw new BadRequestException(
-        `Invalid theme "${theme}". Allowed values: mehfil-e-shireen, ember, tailwind.`,
+        `Invalid theme "${theme}". Allowed values: essa-chemicals, mehfil-e-shireen, ember, tailwind.`,
       );
     }
 

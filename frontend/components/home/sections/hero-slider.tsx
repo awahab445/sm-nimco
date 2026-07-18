@@ -1,8 +1,13 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import Link from 'next/link';
-import type { HeroSlide } from '@/lib/cms/home-page-types';
+import type {
+  HeroSlide,
+  HeroSlideTextAlign,
+  HeroSlideTextColor,
+  HeroSlideTextPosition,
+} from '@/lib/cms/home-page-types';
 import { resolveImageUrl } from '@/lib/resolve-image-url';
 import { storefrontUi } from '@/lib/storefront-ui';
 import { useHydrated } from '@/lib/use-hydrated';
@@ -21,8 +26,28 @@ interface HeroSliderProps {
   slideWidthPx?: number;
   /** CMS slider: same height in px; with width fixes aspect ratio for all slides */
   slideHeightPx?: number;
-  /** `immersive` = edge-to-edge, tall viewport banner (homepage lead). `card` = inset rounded block. */
+  /** `immersive` = edge-to-edge banner (default). `card` = inset rounded block (legacy). */
   layout?: HeroSliderLayout;
+}
+
+function hasOverlayCopy(slide: HeroSlide): boolean {
+  return Boolean(
+    slide.title?.trim() ||
+      slide.subtitle?.trim() ||
+      (slide.ctaLabel?.trim() && slide.ctaHref?.trim()),
+  );
+}
+
+function normalizeAlign(value?: HeroSlideTextAlign): HeroSlideTextAlign {
+  return value === 'center' || value === 'right' ? value : 'left';
+}
+
+function normalizePosition(value?: HeroSlideTextPosition): HeroSlideTextPosition {
+  return value === 'top' || value === 'bottom' ? value : 'middle';
+}
+
+function normalizeColor(value?: HeroSlideTextColor): HeroSlideTextColor {
+  return value === 'dark' ? 'dark' : 'light';
 }
 
 export function HeroSlider({
@@ -30,12 +55,13 @@ export function HeroSlider({
   autoplayMs = 0,
   slideWidthPx,
   slideHeightPx,
-  layout = 'card',
+  layout = 'immersive',
 }: HeroSliderProps) {
   const hydrated = useHydrated();
   const [index, setIndex] = useState(0);
   const n = slides.length;
   const safeIndex = n === 0 ? 0 : index % n;
+  const immersive = layout === 'immersive';
 
   const go = useCallback(
     (dir: -1 | 1) => {
@@ -51,82 +77,167 @@ export function HeroSlider({
     return () => clearInterval(t);
   }, [autoplayMs, n, go]);
 
+  /** Signal chrome: transparent header over full-viewport home hero (Kalles-style). */
+  useLayoutEffect(() => {
+    if (!immersive || n === 0) return;
+    const root = document.documentElement;
+    root.setAttribute('data-immersive-hero', 'true');
+    return () => {
+      root.removeAttribute('data-immersive-hero');
+    };
+  }, [immersive, n]);
+
   if (n === 0) return null;
 
   const slide = slides[safeIndex];
-  const immersive = layout === 'immersive';
   const mehfil = IS_MEHFIL_THEME;
   const resolvedImageUrl = resolveImageUrl(slide.imageUrl);
   const hasImage = Boolean(resolvedImageUrl);
+  const showOverlay = hasOverlayCopy(slide);
+  const imageOnly = hasImage && !showOverlay;
   const isLcpSlide = safeIndex === 0;
+  const textAlign = normalizeAlign(slide.textAlign);
+  const textPosition = normalizePosition(slide.textPosition);
+  const textColor = normalizeColor(slide.textColor);
+  const title = slide.title?.trim() || '';
+  const subtitle = slide.subtitle?.trim() || '';
+  const ctaLabel = slide.ctaLabel?.trim() || '';
+  const ctaHref = slide.ctaHref?.trim() || '';
+  const hasCtaButton = Boolean(ctaLabel && ctaHref);
+  /** Full-bleed image link only when there is a href but no overlay CTA button (avoids nested links). */
+  const wrapImageAsLink = Boolean(ctaHref && !hasCtaButton);
 
   const shellClass = [
     immersive
-      ? 'relative w-full overflow-hidden bg-background'
+      ? 'hero-slider--immersive relative w-full overflow-hidden bg-background'
       : hasImage
-        ? 'relative overflow-hidden rounded-2xl border border-border bg-background shadow-sm'
-        : 'relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm',
+        ? 'relative overflow-hidden rounded-sm border border-border bg-background'
+        : 'relative overflow-hidden rounded-sm border border-border bg-card',
     mehfil && !hasImage ? 'hero-slider-mehfil-shell' : '',
-    hasImage ? 'hero-slider--image-only' : '',
+    imageOnly ? 'hero-slider--image-only' : '',
   ]
     .filter(Boolean)
     .join(' ');
 
-  const stageClass = hasImage
-    ? immersive
-      ? 'relative w-full'
-      : 'relative w-full overflow-hidden rounded-2xl'
-    : immersive
-      ? 'relative min-h-[clamp(20rem,82dvh,56rem)] w-full'
+  const stageClass = immersive
+    ? 'hero-slider__stage absolute inset-0'
+    : hasImage
+      ? 'relative w-full overflow-hidden rounded-sm'
       : 'relative aspect-[21/9] min-h-[280px] w-full md:min-h-[320px]';
 
-  const overlayClass = [
+  const justifyY =
+    textPosition === 'top'
+      ? 'justify-start'
+      : textPosition === 'bottom'
+        ? 'justify-end'
+        : 'justify-center';
+
+  const alignX =
+    textAlign === 'center'
+      ? 'items-center text-center'
+      : textAlign === 'right'
+        ? 'items-end text-right'
+        : 'items-start text-left';
+
+  const contentWrapperClass = immersive
+    ? `absolute inset-0 z-[1] flex flex-col ${justifyY} ${alignX} px-4 pb-14 pt-16 sm:px-8 sm:pb-20 sm:pt-24 lg:px-12 xl:px-16`
+    : `absolute inset-0 z-[1] flex flex-col ${justifyY} ${alignX} p-5 sm:p-6 md:p-10 lg:p-12`;
+
+  const isLightText = textColor === 'light';
+  const headlineTone = isLightText ? 'text-white' : 'text-foreground';
+  const subtitleTone = isLightText ? 'text-white/85' : 'text-muted-foreground';
+
+  const headlineClass = immersive
+    ? `font-display max-w-2xl text-[1.75rem] font-semibold tracking-tight sm:text-4xl md:text-5xl lg:text-6xl ${headlineTone}`
+    : `font-display max-w-xl text-xl font-semibold tracking-tight sm:text-2xl md:text-4xl lg:text-5xl ${headlineTone}`;
+
+  const subtitleClass = immersive
+    ? `mt-4 max-w-xl text-base sm:text-lg md:text-xl ${subtitleTone}`
+    : `mt-3 max-w-lg text-base md:text-lg ${subtitleTone}`;
+
+  const ctaClass = hasImage
+    ? isLightText
+      ? `mt-6 inline-flex sm:mt-8 ${storefrontUi.btnPrimaryInverted} ${
+          immersive ? 'px-6 py-3 text-sm sm:text-base' : 'px-5 py-2.5'
+        }`
+      : `mt-6 inline-flex sm:mt-8 ${storefrontUi.btnPrimary} ${
+          immersive ? 'px-6 py-3 text-sm sm:text-base' : 'px-5 py-2.5'
+        }`
+    : `mt-6 inline-flex sm:mt-8 ${storefrontUi.btnPrimary} ${
+        immersive ? 'px-6 py-3 text-sm sm:text-base' : 'px-5 py-2.5'
+      }`;
+
+  const softScrimClass = isLightText
+    ? [
+        'pointer-events-none absolute inset-0 z-[1]',
+        textAlign === 'center'
+          ? 'bg-gradient-to-t from-black/45 via-black/20 to-black/25'
+          : textAlign === 'right'
+            ? 'bg-gradient-to-l from-black/55 via-black/20 to-transparent'
+            : 'bg-gradient-to-r from-black/55 via-black/20 to-transparent',
+      ].join(' ')
+    : [
+        'pointer-events-none absolute inset-0 z-[1]',
+        textAlign === 'center'
+          ? 'bg-gradient-to-t from-white/50 via-white/25 to-white/20'
+          : textAlign === 'right'
+            ? 'bg-gradient-to-l from-white/55 via-white/20 to-transparent'
+            : 'bg-gradient-to-r from-white/55 via-white/20 to-transparent',
+      ].join(' ');
+
+  const gradientFallbackOverlay = [
     'absolute inset-0',
     immersive
       ? mehfil
         ? 'hero-slider-mehfil-overlay'
-        : 'bg-gradient-to-r from-background/95 via-background/55 to-background/20 sm:via-background/40'
+        : 'bg-gradient-to-r from-background/95 via-background/50 to-transparent sm:via-background/35'
       : mehfil
         ? 'hero-slider-mehfil-overlay-card'
-        : 'bg-gradient-to-t from-background/90 via-background/40 to-transparent md:via-background/25',
+        : 'bg-gradient-to-t from-background/90 via-background/35 to-transparent md:via-background/20',
   ].join(' ');
 
-  const contentWrapperClass = immersive
-    ? 'absolute inset-0 flex flex-col justify-center px-4 pb-16 pt-20 sm:px-8 sm:pb-20 sm:pt-24 lg:px-12 xl:px-16'
-    : 'absolute inset-0 flex flex-col justify-end p-6 md:p-10 lg:p-12';
-
-  const headlineClass = immersive
-    ? 'max-w-2xl text-3xl font-bold tracking-tight text-foreground sm:text-4xl md:text-5xl lg:text-6xl'
-    : 'text-2xl font-bold tracking-tight text-foreground md:text-4xl lg:text-5xl';
-
   const navBtnClass = hasImage
-    ? 'absolute top-1/2 hidden -translate-y-1/2 rounded-full border border-foreground/15 bg-background/90 p-3 text-2xl leading-none text-foreground shadow-lg backdrop-blur-md transition-colors hover:bg-background md:block md:p-3.5'
+    ? 'absolute top-1/2 hidden -translate-y-1/2 border-0 bg-transparent p-2 text-3xl leading-none text-foreground/70 transition-colors hover:text-foreground md:block'
     : immersive
-      ? 'absolute top-1/2 hidden -translate-y-1/2 rounded-full border border-border/60 bg-background/90 p-3 text-2xl leading-none text-foreground shadow-lg backdrop-blur-md transition-colors hover:bg-background md:block md:p-3.5'
-      : 'absolute top-1/2 hidden -translate-y-1/2 rounded-full border border-border bg-background/80 p-2 text-foreground shadow-sm backdrop-blur transition-colors hover:bg-background md:block';
+      ? 'absolute top-1/2 hidden -translate-y-1/2 border-0 bg-transparent p-2 text-3xl leading-none text-foreground/70 transition-colors hover:text-foreground md:block'
+      : 'absolute top-1/2 hidden -translate-y-1/2 border-0 bg-transparent p-2 text-2xl text-foreground/70 transition-colors hover:text-foreground md:block';
 
-  const dimW = slideWidthPx && slideWidthPx > 0 ? slideWidthPx : 0;
-  const dimH = slideHeightPx && slideHeightPx > 0 ? slideHeightPx : 0;
+  const dimW = !immersive && slideWidthPx && slideWidthPx > 0 ? slideWidthPx : 0;
+  const dimH = !immersive && slideHeightPx && slideHeightPx > 0 ? slideHeightPx : 0;
   const imgWidth = dimW > 0 ? dimW : dimH > 0 ? Math.round(dimH * (2400 / 1000)) : 2400;
   const imgHeight = dimH > 0 ? dimH : dimW > 0 ? Math.round(dimW * (1000 / 2400)) : 1000;
   const sizesAttr = dimW > 0 ? `(max-width: ${dimW}px) 100vw, ${dimW}px` : '100vw';
 
   const imgFillBox = dimW > 0 && dimH > 0;
+  const altText = title || 'Promotional banner';
 
-  const bannerImg = resolvedImageUrl ? (
+  const immersiveBannerImg = resolvedImageUrl ? (
     <StorefrontImage
       src={resolvedImageUrl}
-      alt={slide.title || 'Promotional banner'}
+      alt={altText}
+      fill
+      className="hero-slider__media object-cover object-center"
+      sizes="100vw"
+      priority={isLcpSlide}
+      fetchPriority={isLcpSlide ? 'high' : 'auto'}
+      quality={75}
+    />
+  ) : null;
+
+  const cardBannerImg = resolvedImageUrl ? (
+    <StorefrontImage
+      src={resolvedImageUrl}
+      alt={altText}
       width={imgWidth}
       height={imgHeight}
       className={
         imgFillBox
-          ? 'block h-full w-full object-contain object-center'
+          ? 'block h-full w-full object-cover object-center'
           : dimW > 0
-            ? 'block h-auto w-full max-w-full object-contain object-center'
+            ? 'block h-auto w-full max-w-full object-cover object-center'
             : dimH > 0
-              ? 'mx-auto block h-auto max-h-full w-full max-w-full object-contain object-center'
-              : 'block h-auto w-full object-contain object-center'
+              ? 'mx-auto block h-auto max-h-full w-full max-w-full object-cover object-center'
+              : 'block h-auto w-full object-cover object-center'
       }
       sizes={sizesAttr}
       priority={isLcpSlide}
@@ -135,65 +246,118 @@ export function HeroSlider({
     />
   ) : null;
 
-  const imageStage =
+  const cardImageStage =
     dimW > 0 && dimH > 0 ? (
       <div
         className="mx-auto w-full overflow-hidden"
         style={{ maxWidth: `${dimW}px`, aspectRatio: `${dimW} / ${dimH}` }}
       >
-        {bannerImg}
+        {cardBannerImg}
       </div>
     ) : dimW > 0 ? (
       <div className="mx-auto w-full" style={{ maxWidth: `${dimW}px` }}>
-        {bannerImg}
+        {cardBannerImg}
       </div>
     ) : dimH > 0 ? (
       <div className="mx-auto w-full overflow-hidden" style={{ maxHeight: `${dimH}px` }}>
-        {bannerImg}
+        {cardBannerImg}
       </div>
     ) : (
-      bannerImg
+      cardBannerImg
     );
 
-  const linkedBanner =
-    resolvedImageUrl && slide.ctaHref ? (
+  const linkedImmersiveBanner =
+    resolvedImageUrl && wrapImageAsLink ? (
       <Link
-        href={slide.ctaHref}
-        className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-        aria-label={slide.ctaLabel || slide.title || 'View offer'}
+        href={ctaHref}
+        className="absolute inset-0 block focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        aria-label={ctaLabel || title || 'View offer'}
       >
-        {imageStage}
+        {immersiveBannerImg}
       </Link>
     ) : (
-      imageStage
+      immersiveBannerImg
     );
+
+  const linkedCardBanner =
+    resolvedImageUrl && wrapImageAsLink ? (
+      <Link
+        href={ctaHref}
+        className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        aria-label={ctaLabel || title || 'View offer'}
+      >
+        {cardImageStage}
+      </Link>
+    ) : (
+      cardImageStage
+    );
+
+  const overlayCopy = showOverlay ? (
+    <div className={contentWrapperClass}>
+      <div
+        className={
+          immersive
+            ? `w-full max-w-[100rem] ${textAlign === 'center' ? 'flex flex-col items-center' : textAlign === 'right' ? 'flex flex-col items-end' : ''}`
+            : `max-w-xl ${textAlign === 'center' ? 'flex flex-col items-center' : textAlign === 'right' ? 'flex flex-col items-end' : ''}`
+        }
+      >
+        {title ? <h1 className={headlineClass}>{title}</h1> : null}
+        {subtitle ? <p className={subtitleClass}>{subtitle}</p> : null}
+        {hasCtaButton ? (
+          <Link href={ctaHref} className={ctaClass}>
+            {ctaLabel}
+          </Link>
+        ) : null}
+      </div>
+    </div>
+  ) : null;
 
   return (
     <section
       className={shellClass}
       data-hero-layout={immersive ? 'immersive' : 'card'}
-      data-hero-visual={hasImage ? 'image' : 'gradient'}
+      data-hero-visual={imageOnly ? 'image' : hasImage ? 'image-text' : 'gradient'}
       aria-roledescription="carousel"
       aria-label="Featured promotions"
     >
       <div className={stageClass}>
         {hasImage ? (
-          linkedBanner
+          <>
+            {immersive ? linkedImmersiveBanner : linkedCardBanner}
+            {showOverlay ? <div className={softScrimClass} aria-hidden /> : null}
+            {overlayCopy}
+          </>
         ) : (
           <>
             <div
               className={
                 mehfil
                   ? 'hero-slider-mehfil-fallback absolute inset-0'
-                  : 'absolute inset-0 bg-gradient-to-br from-primary/35 via-primary/10 to-muted'
+                  : 'absolute inset-0 bg-gradient-to-br from-secondary via-background to-muted/40'
               }
               aria-hidden
             />
-            <div className={overlayClass} />
-            <div className={contentWrapperClass}>
+            <div className={gradientFallbackOverlay} />
+            <div
+              className={
+                immersive
+                  ? 'absolute inset-0 z-[1] flex flex-col justify-center px-4 pb-14 pt-16 sm:px-8 sm:pb-20 sm:pt-24 lg:px-12 xl:px-16'
+                  : 'absolute inset-0 z-[1] flex flex-col justify-end p-5 sm:p-6 md:p-10 lg:p-12'
+              }
+            >
               <div className={immersive ? 'mx-auto w-full max-w-[100rem]' : 'max-w-xl'}>
-                <h1 className={headlineClass}>{slide.title}</h1>
-                {slide.subtitle && (
+                {title ? (
+                  <h1
+                    className={
+                      immersive
+                        ? 'font-display max-w-2xl text-[1.75rem] font-semibold tracking-tight text-foreground sm:text-4xl md:text-5xl lg:text-6xl'
+                        : 'font-display text-xl font-semibold tracking-tight text-foreground sm:text-2xl md:text-4xl lg:text-5xl'
+                    }
+                  >
+                    {title}
+                  </h1>
+                ) : null}
+                {subtitle ? (
                   <p
                     className={
                       immersive
@@ -201,21 +365,19 @@ export function HeroSlider({
                         : 'mt-3 text-base text-muted-foreground md:text-lg'
                     }
                   >
-                    {slide.subtitle}
+                    {subtitle}
                   </p>
-                )}
-                {slide.ctaLabel && slide.ctaHref && (
+                ) : null}
+                {hasCtaButton ? (
                   <Link
-                    href={slide.ctaHref}
-                    className={
-                      immersive
-                        ? `mt-8 inline-flex px-6 py-3 text-sm font-semibold shadow-md sm:text-base ${storefrontUi.btnPrimary}`
-                        : `mt-6 inline-flex px-5 py-2.5 ${storefrontUi.btnPrimary}`
-                    }
+                    href={ctaHref}
+                    className={`mt-6 inline-flex sm:mt-8 ${storefrontUi.btnPrimary} ${
+                      immersive ? 'px-6 py-3 text-sm sm:text-base' : 'px-5 py-2.5'
+                    }`}
                   >
-                    {slide.ctaLabel}
+                    {ctaLabel}
                   </Link>
-                )}
+                ) : null}
               </div>
             </div>
           </>
@@ -227,8 +389,8 @@ export function HeroSlider({
           <div
             className={
               immersive
-                ? 'absolute bottom-6 left-1/2 flex -translate-x-1/2 gap-2 sm:bottom-8'
-                : 'absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-2 md:bottom-6'
+                ? 'absolute bottom-6 left-1/2 z-[2] flex -translate-x-1/2 gap-2 sm:bottom-8'
+                : 'absolute bottom-4 left-1/2 z-[2] flex -translate-x-1/2 gap-2 md:bottom-6'
             }
           >
             {slides.map((s, i) => (
@@ -238,15 +400,15 @@ export function HeroSlider({
                 aria-label={`Go to slide ${i + 1}`}
                 aria-current={i === safeIndex}
                 onClick={() => setIndex(i)}
-                className={`h-2 rounded-full transition-all ${
+                className={`rounded-full transition-all ${
                   i === safeIndex
-                    ? 'w-8 bg-primary'
+                    ? 'h-2 w-2 bg-foreground'
                     : hasImage
-                      ? 'w-2 bg-foreground/35 hover:bg-foreground/55 ring-1 ring-background/60'
+                      ? 'h-1.5 w-1.5 bg-foreground/35 hover:bg-foreground/55'
                       : immersive
-                        ? 'w-2 bg-background/70 hover:bg-background'
-                        : 'w-2 bg-muted-foreground/40 hover:bg-muted-foreground/70'
-                } ${immersive && !hasImage ? 'ring-1 ring-foreground/10' : ''}`}
+                        ? 'h-1.5 w-1.5 bg-foreground/30 hover:bg-foreground/50'
+                        : 'h-1.5 w-1.5 bg-muted-foreground/40 hover:bg-muted-foreground/65'
+                }`}
               />
             ))}
           </div>
@@ -254,17 +416,21 @@ export function HeroSlider({
             type="button"
             aria-label="Previous slide"
             onClick={() => go(-1)}
-            className={`${navBtnClass} left-3 sm:left-6 lg:left-8`}
+            className={`${navBtnClass} left-3 z-[2] sm:left-6 lg:left-8`}
           >
-            <span aria-hidden className="block leading-none">‹</span>
+            <span aria-hidden className="block leading-none">
+              ‹
+            </span>
           </button>
           <button
             type="button"
             aria-label="Next slide"
             onClick={() => go(1)}
-            className={`${navBtnClass} right-3 sm:right-6 lg:right-8`}
+            className={`${navBtnClass} right-3 z-[2] sm:right-6 lg:right-8`}
           >
-            <span aria-hidden className="block leading-none">›</span>
+            <span aria-hidden className="block leading-none">
+              ›
+            </span>
           </button>
         </>
       ) : null}

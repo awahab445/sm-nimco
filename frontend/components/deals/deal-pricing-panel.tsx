@@ -39,8 +39,8 @@ export function DealPricingPanel({ deal }: Props) {
   };
 
   return (
-    <div className={`${storefrontUi.card} sticky top-24 p-6`}>
-      <h2 className="text-lg font-semibold text-foreground">Bundle pricing</h2>
+    <div className={`${storefrontUi.card} sticky top-24 border border-border p-6 shadow-product-card`}>
+      <h2 className="font-display text-lg font-semibold tracking-tight text-foreground">Bundle pricing</h2>
       <div className="mt-4 space-y-2 text-sm">
         <div className="flex justify-between">
           <span className="text-muted-foreground">Compare at</span>

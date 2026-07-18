@@ -82,13 +82,17 @@ export function CategorySidebar({ filterCategoryId = null }: CategorySidebarProp
   }, [categories, filterCategoryId, pathname, slug]);
 
   const linkClassDesktop = (active: boolean) =>
-    `block rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-      active ? 'bg-brand-secondary/50 text-brand-accent' : 'text-brand-text/90 hover:bg-brand-secondary/30'
+    `block py-2 text-sm transition-colors ${
+      active
+        ? 'font-medium text-foreground'
+        : 'text-muted-foreground hover:text-[var(--navbar-link-hover,var(--primary-hover))]'
     }`;
 
   const linkClassSheet = (active: boolean) =>
-    `flex w-full items-center justify-between rounded-lg px-4 py-3.5 text-base font-medium transition-colors sm:text-[15px] ${
-      active ? 'bg-brand-secondary/50 text-brand-accent' : 'text-brand-text hover:bg-brand-secondary/30'
+    `flex w-full items-center justify-between px-1 py-3.5 text-base transition-colors sm:text-[15px] ${
+      active
+        ? 'font-medium text-foreground'
+        : 'text-muted-foreground hover:text-[var(--navbar-link-hover,var(--primary-hover))]'
     }`;
 
   const closeSheet = () => setSheetOpen(false);
@@ -105,12 +109,12 @@ export function CategorySidebar({ filterCategoryId = null }: CategorySidebarProp
         {/* absolute layers: avoids flex + fixed stacking bugs on mobile (sheet hidden behind backdrop) */}
         <button
           type="button"
-          className="absolute inset-0 z-0 cursor-pointer bg-brand-text/40"
+          className="absolute inset-0 z-0 cursor-pointer bg-foreground/30"
           aria-label="Close category menu"
           onClick={closeSheet}
         />
         <div
-          className="absolute inset-x-0 bottom-0 z-10 flex max-h-[min(88dvh,560px)] min-h-[12rem] flex-col rounded-t-2xl border-t border-border bg-brand-bg text-brand-text shadow-[0_-8px_32px_color-mix(in_srgb,#1A2E40_12%,transparent)]"
+          className="absolute inset-x-0 bottom-0 z-10 flex max-h-[min(88dvh,560px)] min-h-[12rem] flex-col rounded-t-2xl border-t border-border/60 bg-background text-foreground shadow-[0_-4px_24px_color-mix(in_srgb,var(--foreground)_8%,transparent)]"
           style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom, 0px))' }}
         >
           <div className="flex shrink-0 flex-col items-center border-b border-border/80 pt-2 pb-1">
@@ -160,7 +164,7 @@ export function CategorySidebar({ filterCategoryId = null }: CategorySidebarProp
                         )}
                       </span>
                       {isActive ? (
-                        <svg className="h-5 w-5 shrink-0 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                        <svg className="h-5 w-5 shrink-0 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                         </svg>
                       ) : null}
@@ -198,14 +202,14 @@ export function CategorySidebar({ filterCategoryId = null }: CategorySidebarProp
       <div className="w-full shrink-0 lg:hidden">
         <button
           type="button"
-          className="flex w-full items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3 text-left shadow-sm transition-colors hover:bg-muted/40 active:bg-muted/60"
+          className="flex w-full items-center justify-between gap-3 border-b border-border/60 bg-transparent py-3 text-left transition-colors"
           aria-expanded={sheetOpen}
           aria-controls={sheetId}
           onClick={() => setSheetOpen(true)}
         >
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Category</p>
-            <p className="mt-0.5 truncate text-sm font-semibold text-foreground">{currentCategoryLabel}</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Category</p>
+            <p className="mt-0.5 truncate text-sm font-medium text-foreground">{currentCategoryLabel}</p>
           </div>
           <svg
             className="h-5 w-5 shrink-0 text-muted-foreground"
@@ -222,8 +226,8 @@ export function CategorySidebar({ filterCategoryId = null }: CategorySidebarProp
 
       {/* Desktop: sidebar */}
       <aside className="hidden w-56 shrink-0 lg:block" aria-label="Product categories">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Categories</h2>
-        <ul className="mt-3 space-y-0.5" role="list">
+        <h2 className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Categories</h2>
+        <ul className="mt-4 space-y-0.5" role="list">
           <li>
             <Link
               href="/products"

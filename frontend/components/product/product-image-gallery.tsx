@@ -32,9 +32,127 @@ function useFinePointerHover() {
   return ok;
 }
 
+function ThumbButton({
+  img,
+  productName,
+  isActive,
+  index,
+  total,
+  onSelect,
+  className,
+}: {
+  img: ProductImage;
+  productName: string;
+  isActive: boolean;
+  index: number;
+  total: number;
+  onSelect: (id: string) => void;
+  className?: string;
+}) {
+  const thumbUrl = resolveImageUrl(img.url);
+  return (
+    <button
+      type="button"
+      onClick={() => onSelect(img.id)}
+      className={`relative overflow-hidden transition-opacity duration-200 ${
+        isActive ? 'opacity-100' : 'opacity-50 hover:opacity-100'
+      } ${className ?? ''}`}
+      aria-label={`Show image ${index + 1} of ${total}`}
+      aria-current={isActive}
+    >
+      {thumbUrl ? (
+        <StorefrontImage
+          src={thumbUrl}
+          alt={imageAlt(img, productName)}
+          fill
+          sizes="96px"
+          className="object-cover object-center"
+          loading="lazy"
+          quality={60}
+        />
+      ) : (
+        <div className="flex h-full w-full items-center justify-center text-[9px] text-muted-foreground">—</div>
+      )}
+    </button>
+  );
+}
+
+function MainImage({
+  imageUrl,
+  alt,
+  allowHoverZoom,
+  onOpenLightbox,
+}: {
+  imageUrl: string | null;
+  alt: string;
+  allowHoverZoom: boolean;
+  onOpenLightbox: () => void;
+}) {
+  const mainRef = useRef<HTMLDivElement>(null);
+  const [zoomOrigin, setZoomOrigin] = useState('50% 50%');
+  const [zoomHover, setZoomHover] = useState(false);
+
+  const onMainMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const el = mainRef.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const x = ((e.clientX - r.left) / r.width) * 100;
+    const y = ((e.clientY - r.top) / r.height) * 100;
+    setZoomOrigin(`${Math.min(100, Math.max(0, x))}% ${Math.min(100, Math.max(0, y))}%`);
+  }, []);
+
+  const zoomed = allowHoverZoom && zoomHover && imageUrl;
+
+  return (
+    <div
+      ref={mainRef}
+      role="img"
+      aria-label={alt}
+      className="relative aspect-[4/5] w-full overflow-hidden bg-muted/30 sm:aspect-square"
+      onMouseMove={onMainMouseMove}
+      onMouseEnter={() => setZoomHover(true)}
+      onMouseLeave={() => {
+        setZoomHover(false);
+        setZoomOrigin('50% 50%');
+      }}
+    >
+      {imageUrl ? (
+        <StorefrontImage
+          src={imageUrl}
+          alt={alt}
+          fill
+          sizes="(min-width: 1024px) 45vw, 100vw"
+          className="object-cover object-center transition-transform duration-200 ease-out will-change-transform"
+          style={{
+            transformOrigin: zoomOrigin,
+            transform: zoomed ? 'scale(2.25)' : 'scale(1)',
+          }}
+          priority
+          fetchPriority="high"
+          quality={75}
+        />
+      ) : (
+        <div className="flex h-full w-full items-center justify-center text-muted-foreground">No image</div>
+      )}
+
+      {imageUrl ? (
+        <button
+          type="button"
+          onClick={onOpenLightbox}
+          className="absolute right-3 top-3 bg-background/90 p-2 text-foreground transition-opacity hover:opacity-95 focus:outline-none focus-visible:ring-1 focus-visible:ring-ring/40"
+          aria-label="Open full-size product image"
+        >
+          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden>
+            <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
 export function ProductImageGallery({ images, productName, selectedId, onSelect }: Props) {
   const swiperRef = useRef<SwiperClass | null>(null);
-  const mainRef = useRef<HTMLDivElement>(null);
   const allowHoverZoom = useFinePointerHover();
 
   const activeIndex = Math.max(
@@ -42,10 +160,8 @@ export function ProductImageGallery({ images, productName, selectedId, onSelect 
     images.findIndex((i) => i.id === selectedId),
   );
   const active = images[activeIndex] ?? images[0];
-  const imageUrl = resolveImageUrl(active?.url);
+  const imageUrl = resolveImageUrl(active?.url) ?? null;
 
-  const [zoomOrigin, setZoomOrigin] = useState('50% 50%');
-  const [zoomHover, setZoomHover] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
 
   useEffect(() => {
@@ -70,133 +186,85 @@ export function ProductImageGallery({ images, productName, selectedId, onSelect 
     };
   }, [lightboxOpen]);
 
-  const onMainMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    const el = mainRef.current;
-    if (!el) return;
-    const r = el.getBoundingClientRect();
-    const x = ((e.clientX - r.left) / r.width) * 100;
-    const y = ((e.clientY - r.top) / r.height) * 100;
-    setZoomOrigin(`${Math.min(100, Math.max(0, x))}% ${Math.min(100, Math.max(0, y))}%`);
-  }, []);
-
   if (images.length === 0) {
     return (
-      <div className="aspect-[4/5] overflow-hidden rounded-lg border border-border bg-muted sm:aspect-square">
-        <div className="flex h-full w-full items-center justify-center text-muted-foreground">No image</div>
+      <div className="aspect-[4/5] w-full overflow-hidden bg-muted/40 sm:aspect-square">
+        <div className="flex h-full w-full items-center justify-center text-sm text-muted-foreground">No image</div>
       </div>
     );
   }
 
-  const zoomed = allowHoverZoom && zoomHover && imageUrl;
   const mainAlt = imageAlt(active, productName);
 
   return (
-    <div className="product-image-gallery">
-      <div className="relative">
-        <div
-          ref={mainRef}
-          role="img"
-          aria-label={mainAlt}
-          className="relative aspect-[4/5] overflow-hidden rounded-lg border border-border bg-muted sm:aspect-square"
-          onMouseMove={onMainMouseMove}
-          onMouseEnter={() => setZoomHover(true)}
-          onMouseLeave={() => {
-            setZoomHover(false);
-            setZoomOrigin('50% 50%');
-          }}
-        >
-          {imageUrl ? (
-            <StorefrontImage
-              src={imageUrl}
-              alt={mainAlt}
-              fill
-              sizes="(min-width: 1024px) 50vw, 100vw"
-              className="object-cover object-center transition-transform duration-200 ease-out will-change-transform"
-              style={{
-                transformOrigin: zoomOrigin,
-                transform: zoomed ? 'scale(2.25)' : 'scale(1)',
-              }}
-              priority
-              fetchPriority="high"
-              quality={75}
-            />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center text-muted-foreground">No image</div>
-          )}
-
-          {imageUrl ? (
-            <button
-              type="button"
-              onClick={() => setLightboxOpen(true)}
-              className="absolute right-3 top-3 rounded-full border border-border/80 bg-background/90 p-2 text-foreground shadow-sm backdrop-blur-sm transition-opacity hover:opacity-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              aria-label="Open full-size product image"
-            >
-              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-                <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
-          ) : null}
-
-          {allowHoverZoom && imageUrl ? (
-            <span className="pointer-events-none absolute bottom-3 left-3 rounded-md bg-background/85 px-2 py-1 text-[10px] font-medium text-muted-foreground backdrop-blur-sm sm:text-xs">
-              Hover to zoom · icon for full view
-            </span>
-          ) : null}
+    <div className="product-image-gallery w-full">
+      {/* Desktop: thumbs left (Kalles thumbnail_left) */}
+      <div className="hidden gap-4 lg:flex lg:flex-row-reverse">
+        <div className="min-w-0 flex-[1_1_85%]">
+          <MainImage
+            imageUrl={imageUrl}
+            alt={mainAlt}
+            allowHoverZoom={allowHoverZoom}
+            onOpenLightbox={() => setLightboxOpen(true)}
+          />
         </div>
+        {images.length > 1 ? (
+          <div className="flex w-[14%] max-w-[5.5rem] shrink-0 flex-col gap-3">
+            {images.map((img, idx) => (
+              <ThumbButton
+                key={img.id}
+                img={img}
+                productName={productName}
+                isActive={img.id === active?.id}
+                index={idx}
+                total={images.length}
+                onSelect={onSelect}
+                className="aspect-square w-full"
+              />
+            ))}
+          </div>
+        ) : null}
       </div>
 
-      {images.length > 1 ? (
-        <div className="relative mt-4 px-9 sm:px-11">
-          <Swiper
-            modules={[FreeMode, Navigation]}
-            spaceBetween={10}
-            slidesPerView="auto"
-            freeMode={{ enabled: true, momentum: true, momentumRatio: 0.85 }}
-            navigation
-            watchSlidesProgress
-            className="product-thumbs-swiper !px-0 !pb-1 pt-1 [&_.swiper-button-next]:right-0 [&_.swiper-button-next]:mt-0 [&_.swiper-button-next]:h-8 [&_.swiper-button-next]:w-8 [&_.swiper-button-next]:rounded-full [&_.swiper-button-next]:border [&_.swiper-button-next]:border-border [&_.swiper-button-next]:bg-background/95 [&_.swiper-button-next]:text-foreground [&_.swiper-button-next]:shadow-sm [&_.swiper-button-next]:after:text-sm [&_.swiper-button-prev]:left-0 [&_.swiper-button-prev]:mt-0 [&_.swiper-button-prev]:h-8 [&_.swiper-button-prev]:w-8 [&_.swiper-button-prev]:rounded-full [&_.swiper-button-prev]:border [&_.swiper-button-prev]:border-border [&_.swiper-button-prev]:bg-background/95 [&_.swiper-button-prev]:text-foreground [&_.swiper-button-prev]:shadow-sm [&_.swiper-button-prev]:after:text-sm"
-            onSwiper={(s) => {
-              swiperRef.current = s;
-            }}
-          >
-            {images.map((img, idx) => {
-              const thumbUrl = resolveImageUrl(img.url);
-              const isActive = img.id === active?.id;
-              return (
+      {/* Mobile / tablet: edge-to-edge main + horizontal thumbs (Kalles) */}
+      <div className="w-full lg:hidden">
+        <MainImage
+          imageUrl={imageUrl}
+          alt={mainAlt}
+          allowHoverZoom={false}
+          onOpenLightbox={() => setLightboxOpen(true)}
+        />
+        {images.length > 1 ? (
+          <div className="relative mt-3 px-4 sm:mt-4 sm:px-6">
+            <Swiper
+              modules={[FreeMode, Navigation]}
+              spaceBetween={8}
+              slidesPerView="auto"
+              freeMode={{ enabled: true, momentum: true, momentumRatio: 0.85 }}
+              navigation
+              watchSlidesProgress
+              className="product-thumbs-swiper !overflow-visible !px-0 [&_.swiper-button-next]:-right-1 [&_.swiper-button-next]:mt-0 [&_.swiper-button-next]:h-7 [&_.swiper-button-next]:w-7 [&_.swiper-button-next]:text-foreground [&_.swiper-button-next]:after:text-xs [&_.swiper-button-prev]:-left-1 [&_.swiper-button-prev]:mt-0 [&_.swiper-button-prev]:h-7 [&_.swiper-button-prev]:w-7 [&_.swiper-button-prev]:text-foreground [&_.swiper-button-prev]:after:text-xs"
+              onSwiper={(s) => {
+                swiperRef.current = s;
+              }}
+            >
+              {images.map((img, idx) => (
                 <SwiperSlide key={img.id} className="!w-auto">
-                  <button
-                    type="button"
-                    onClick={() => onSelect(img.id)}
-                    className={`relative h-[4.5rem] w-[4.5rem] overflow-hidden rounded-lg border-2 transition-all sm:h-20 sm:w-20 ${
-                      isActive
-                        ? 'border-primary ring-2 ring-primary/25 shadow-sm'
-                        : 'border-border opacity-90 hover:border-primary/50 hover:opacity-100'
-                    }`}
-                    aria-label={`Show image ${idx + 1} of ${images.length}`}
-                    aria-current={isActive}
-                  >
-                    {thumbUrl ? (
-                      <StorefrontImage
-                        src={thumbUrl}
-                        alt={imageAlt(img, productName)}
-                        fill
-                        sizes="80px"
-                        className="object-cover object-center"
-                        loading="lazy"
-                        quality={60}
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center text-[9px] text-muted-foreground">
-                        —
-                      </div>
-                    )}
-                  </button>
+                  <ThumbButton
+                    img={img}
+                    productName={productName}
+                    isActive={img.id === active?.id}
+                    index={idx}
+                    total={images.length}
+                    onSelect={onSelect}
+                    className="h-[4rem] w-[4rem] sm:h-[4.25rem] sm:w-[4.25rem]"
+                  />
                 </SwiperSlide>
-              );
-            })}
-          </Swiper>
-        </div>
-      ) : null}
+              ))}
+            </Swiper>
+          </div>
+        ) : null}
+      </div>
 
       {lightboxOpen && imageUrl ? (
         <div
@@ -208,7 +276,7 @@ export function ProductImageGallery({ images, productName, selectedId, onSelect 
         >
           <button
             type="button"
-            className="absolute right-4 top-4 rounded-full border border-white/30 bg-white/10 p-2 text-white transition-colors hover:bg-white/20"
+            className="absolute right-4 top-4 p-2 text-white transition-colors hover:text-white/80"
             aria-label="Close preview"
             onClick={(e) => {
               e.stopPropagation();
@@ -223,7 +291,7 @@ export function ProductImageGallery({ images, productName, selectedId, onSelect 
           <img
             src={imageUrl}
             alt={mainAlt}
-            className="max-h-[min(92vh,1200px)] max-w-full object-contain object-center shadow-2xl"
+            className="max-h-[min(92vh,1200px)] max-w-full object-contain object-center"
             onClick={(e) => e.stopPropagation()}
           />
         </div>

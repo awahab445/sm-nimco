@@ -136,13 +136,13 @@ function RegisterContent() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4 py-12 sm:px-6 lg:px-8">
+    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-foreground">
+        <div className="text-center">
+          <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
             Create your account
-          </h2>
-          <p className="mt-2 text-center text-sm text-muted-foreground">
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground">
             Already have an account?{' '}
             <Link href="/login" className={storefrontUi.link}>
               Sign in
@@ -151,9 +151,14 @@ function RegisterContent() {
         </div>
 
         {!hydrated ? (
-          <RegisterFormSkeleton />
+          <div className={`${storefrontUi.card} border border-border p-6 shadow-product-card sm:p-8`}>
+            <RegisterFormSkeleton />
+          </div>
         ) : (
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+        <form
+          className={`${storefrontUi.card} space-y-6 border border-border p-6 shadow-product-card sm:p-8`}
+          onSubmit={handleSubmit}
+        >
           {error && (
             <div className={storefrontUi.alertErrorSm} role="alert">
               <p className="text-sm">{error}</p>
@@ -301,7 +306,7 @@ function RegisterContent() {
 
 export default function RegisterPage() {
   return (
-    <Suspense fallback={<div className="flex min-h-screen items-center justify-center bg-muted/30 px-4 py-12 sm:px-6 lg:px-8" />}>
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center bg-background px-4 py-12 sm:px-6 lg:px-8" />}>
       <RegisterContent />
     </Suspense>
   );

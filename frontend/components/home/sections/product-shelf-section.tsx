@@ -37,23 +37,34 @@ export async function ProductShelfSection({
     variantIds.length > 0 ? await fetchInventoryAvailability(variantIds) : {};
 
   return (
-    <section className="space-y-6">
-      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight text-foreground">{title}</h2>
-          {subtitle && <p className="mt-1 text-muted-foreground">{subtitle}</p>}
-        </div>
-        <Link href={viewAllHref} className={`shrink-0 text-sm ${storefrontUi.link}`}>
-          View all →
+    <section className="space-y-6 sm:space-y-10">
+      <div className="text-center">
+        {subtitle ? (
+          <p className="font-display text-[11px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
+            {subtitle}
+          </p>
+        ) : null}
+        <h2
+          className={`font-display text-xl font-semibold tracking-tight text-foreground sm:text-2xl md:text-[1.75rem] ${
+            subtitle ? 'mt-2.5' : ''
+          }`}
+        >
+          {title}
+        </h2>
+        <Link
+          href={viewAllHref}
+          className={`mt-3.5 inline-block text-xs font-medium uppercase tracking-[0.14em] ${storefrontUi.link}`}
+        >
+          View all
         </Link>
       </div>
 
       {products.length === 0 ? (
-        <div className="rounded-lg border border-border bg-muted/50 py-12 text-center text-muted-foreground">
+        <div className="py-14 text-center text-sm text-muted-foreground">
           No products in this shelf yet.
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-x-2.5 gap-y-6 sm:gap-x-5 sm:gap-y-8 lg:grid-cols-4 lg:gap-x-6 lg:gap-y-10">
           {products.map((product) => {
             const variant = getVariantForCart(product);
             return (

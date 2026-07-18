@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, type CSSProperties } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { siteConfigApi } from '@/lib/api-client';
 
 const DEFAULT_ANNOUNCEMENT_TEXT = 'Free Delivery on orders of Rs. 2000 or more!';
@@ -8,6 +8,7 @@ const DEFAULT_ANNOUNCEMENT_TEXT = 'Free Delivery on orders of Rs. 2000 or more!'
 export function AnnouncementBar() {
   const [showAnnouncement, setShowAnnouncement] = useState(false);
   const [announcementText, setAnnouncementText] = useState(DEFAULT_ANNOUNCEMENT_TEXT);
+  const barRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -29,36 +30,44 @@ export function AnnouncementBar() {
     };
   }, []);
 
+  /** Announce height for immersive hero viewport math (0 when hidden). */
+  useEffect(() => {
+    const root = document.documentElement;
+    if (!showAnnouncement) {
+      root.style.setProperty('--site-announcement-height', '0px');
+      return;
+    }
+    const el = barRef.current;
+    if (!el) {
+      root.style.setProperty('--site-announcement-height', '0px');
+      return;
+    }
+    const syncHeight = () => {
+      root.style.setProperty('--site-announcement-height', `${el.offsetHeight}px`);
+    };
+    syncHeight();
+    const ro = new ResizeObserver(syncHeight);
+    ro.observe(el);
+    return () => {
+      ro.disconnect();
+      root.style.setProperty('--site-announcement-height', '0px');
+    };
+  }, [showAnnouncement]);
+
   if (!showAnnouncement || !announcementText.trim()) return null;
-
-  const durationSeconds = Math.max(
-    12,
-    Math.min(28, 28 - Math.floor(announcementText.length / 12)),
-  );
-
-  const trackStyle = { '--marquee-duration': `${durationSeconds}s` } as CSSProperties;
 
   return (
     <div
-      className="group relative left-1/2 right-1/2 z-[70] -ml-[50vw] -mr-[50vw] flex w-screen max-w-[100vw] items-center overflow-hidden border-b border-blue-700/80 py-1 text-white"
-      style={{ backgroundColor: 'var(--primary)', color: '#ffffff' }}
+      ref={barRef}
+      className="site-top-bar relative z-[70] w-full border-b border-foreground/10"
+      style={{ backgroundColor: 'var(--foreground)', color: 'var(--primary-foreground)' }}
+      role="region"
+      aria-label="Announcement"
     >
-      <div className="flex min-w-full items-center whitespace-nowrap text-white" style={{ color: '#ffffff' }}>
-        <div
-          className="flex min-w-full shrink-0 animate-marquee items-center justify-around gap-4 pr-4 text-white group-hover:[animation-play-state:paused]"
-          style={trackStyle}
-        >
-          <span className="ticker-chunk shrink-0 text-xs font-semibold leading-4 text-white" style={{ color: '#ffffff' }}>{announcementText}</span>
-          <span className="ticker-chunk shrink-0 text-xs font-semibold leading-4 text-white" style={{ color: '#ffffff' }}>{announcementText}</span>
-        </div>
-        <div
-          className="flex min-w-full shrink-0 animate-marquee items-center justify-around gap-4 pr-4 text-white group-hover:[animation-play-state:paused]"
-          style={trackStyle}
-          aria-hidden
-        >
-          <span className="ticker-chunk shrink-0 text-xs font-semibold leading-4 text-white" style={{ color: '#ffffff' }}>{announcementText}</span>
-          <span className="ticker-chunk shrink-0 text-xs font-semibold leading-4 text-white" style={{ color: '#ffffff' }}>{announcementText}</span>
-        </div>
+      <div className="mx-auto flex min-h-[2.55rem] w-full max-w-[100rem] items-center justify-center px-4 py-2.5 text-center sm:px-8 lg:px-12">
+        <p className="text-[11px] font-medium uppercase leading-4 tracking-[0.14em] text-inherit sm:text-[12px]">
+          {announcementText}
+        </p>
       </div>
     </div>
   );

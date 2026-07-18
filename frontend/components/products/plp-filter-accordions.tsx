@@ -1,25 +1,9 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import type { ProductFacets, FacetPanelAttribute, FacetPanelCategory, FacetPanelPrice } from '@/lib/api-client';
 import type { PlpFilterState } from '@/lib/plp-url-state';
 import { PlpDualRangePrice } from '@/components/products/plp-dual-range-price';
-
-function AccordionToggle() {
-  return (
-    <svg
-      className="plp-filter-accordion__toggle"
-      width="12"
-      height="12"
-      viewBox="0 0 12 12"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden
-    >
-      <path className="plp-filter-accordion__toggle-bar" d="M2 6h8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      <path className="plp-filter-accordion__toggle-bar plp-filter-accordion__toggle-bar--vertical" d="M6 2v8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  );
-}
 
 function AccordionSection({
   title,
@@ -27,16 +11,19 @@ function AccordionSection({
   defaultOpen = false,
 }: {
   title: string;
-  children: React.ReactNode;
+  children: ReactNode;
   defaultOpen?: boolean;
 }) {
   return (
-    <details className="plp-filter-accordion" open={defaultOpen}>
+    <details className="plp-filter-accordion group" open={defaultOpen}>
       <summary className="plp-filter-accordion__trigger">
         <span className="plp-filter-accordion__trigger-inner">
           <span className="plp-filter-accordion__title">{title}</span>
-          <span className="plp-filter-accordion__icon">
-            <AccordionToggle />
+          <span className="plp-filter-accordion__icon" aria-hidden>
+            <span className="plp-filter-accordion__toggle relative h-3 w-3">
+              <span className="absolute left-0 top-1/2 h-px w-full -translate-y-1/2 bg-current" />
+              <span className="plp-filter-accordion__toggle-bar--vertical absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-current" />
+            </span>
           </span>
         </span>
       </summary>
@@ -128,13 +115,21 @@ function CategoryPanel({
 
   return (
     <AccordionSection title={panel.name} defaultOpen={defaultOpen}>
-      <ul className="max-h-52 space-y-1.5 overflow-y-auto overscroll-contain pr-1">
+      <ul className="max-h-56 space-y-2.5 overflow-y-auto overscroll-contain pr-1">
         {categories.map((c) => {
           const checked = filters.categoryIds.includes(c.id);
           const label = c.name || categoryNameById.get(c.id) || 'Category';
           return (
             <li key={c.id}>
-              <label className="flex cursor-pointer items-center gap-2 text-sm">
+              <label className="plp-filter-option group/opt flex cursor-pointer items-center gap-3 text-sm text-foreground">
+                <span
+                  className={`plp-filter-checkbox ${checked ? 'is-checked' : ''}`}
+                  aria-hidden
+                >
+                  <svg className="plp-filter-checkbox__tick" viewBox="0 0 12 12" fill="none">
+                    <path d="M2 6.5L4.5 9L10 3" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </span>
                 <input
                   type="checkbox"
                   checked={checked}
@@ -145,11 +140,11 @@ function CategoryPanel({
                       categoryIds: toggle(filters.categoryIds, c.id),
                     })
                   }
-                  className="rounded border-input"
+                  className="sr-only"
                 />
-                <span className="min-w-0 flex-1 truncate">
+                <span className="plp-filter-option__label min-w-0 flex-1 truncate">
                   {label}
-                  {c.count > 0 ? <span className="text-muted-foreground"> ({c.count})</span> : null}
+                  {c.count > 0 ? <span className="plp-filter-option__count"> ({c.count})</span> : null}
                 </span>
               </label>
             </li>
@@ -207,39 +202,47 @@ function AttributePanel({
 
   return (
     <AccordionSection title={panel.name}>
-      <ul className="max-h-44 space-y-1.5 overflow-y-auto overscroll-contain pr-1">
+      <ul className="max-h-48 space-y-2.5 overflow-y-auto overscroll-contain pr-1">
         {panel.options.length === 0 ? (
-          <p className="text-xs text-muted-foreground">
-            Add options under <strong>Store filters</strong> in the admin, or set{' '}
-            <code className="rounded bg-muted px-1">{code}</code> on product attributes.
-          </p>
+          <p className="text-xs text-muted-foreground">No options available.</p>
         ) : (
-          panel.options.map((opt) => (
-            <li key={opt.value}>
-              <label className="flex cursor-pointer items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={selected.includes(opt.value)}
-                  onChange={() => {
-                    const nextList = toggle(selected, opt.value);
-                    const nextAttr = { ...filters.facetAttr };
-                    if (nextList.length) nextAttr[code] = nextList;
-                    else delete nextAttr[code];
-                    onFiltersChange({
-                      ...filters,
-                      page: 1,
-                      facetAttr: nextAttr,
-                    });
-                  }}
-                  className="rounded border-input"
-                />
-                <span className="min-w-0 flex-1 truncate">
-                  {opt.label}
-                  <span className="text-muted-foreground"> ({opt.count})</span>
-                </span>
-              </label>
-            </li>
-          ))
+          panel.options.map((opt) => {
+            const checked = selected.includes(opt.value);
+            return (
+              <li key={opt.value}>
+                <label className="plp-filter-option group/opt flex cursor-pointer items-center gap-3 text-sm text-foreground">
+                  <span
+                    className={`plp-filter-checkbox ${checked ? 'is-checked' : ''}`}
+                    aria-hidden
+                  >
+                    <svg className="plp-filter-checkbox__tick" viewBox="0 0 12 12" fill="none">
+                      <path d="M2 6.5L4.5 9L10 3" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </span>
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={() => {
+                      const nextList = toggle(selected, opt.value);
+                      const nextAttr = { ...filters.facetAttr };
+                      if (nextList.length) nextAttr[code] = nextList;
+                      else delete nextAttr[code];
+                      onFiltersChange({
+                        ...filters,
+                        page: 1,
+                        facetAttr: nextAttr,
+                      });
+                    }}
+                    className="sr-only"
+                  />
+                  <span className="plp-filter-option__label min-w-0 flex-1 truncate">
+                    {opt.label}
+                    <span className="plp-filter-option__count"> ({opt.count})</span>
+                  </span>
+                </label>
+              </li>
+            );
+          })
         )}
       </ul>
     </AccordionSection>

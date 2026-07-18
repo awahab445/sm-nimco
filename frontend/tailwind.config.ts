@@ -6,6 +6,7 @@ const config = {
     extend: {
         colors: {
         'primary-hover': 'var(--primary-hover)',
+        'btn-hover': 'var(--btn-hover, var(--primary-hover))',
         primary: {
           DEFAULT: 'var(--primary)',
           hover: 'var(--primary-hover)',
@@ -23,15 +24,34 @@ const config = {
           text: 'var(--foreground)',
           bg: 'var(--background)',
         },
+        'product-price': 'var(--product-price, #696969)',
+        'product-sale-price': 'var(--product-sale-price, #eb001b)',
       },
       boxShadow: {
         'product-card':
-          '0 1px 3px 0 color-mix(in srgb, var(--foreground) 7%, transparent), 0 4px 14px -2px color-mix(in srgb, var(--primary) 10%, transparent)',
+          '0 2px 12px -4px color-mix(in srgb, var(--foreground) 8%, transparent)',
+      },
+      fontFamily: {
+        display: [
+          'var(--font-display)',
+          'var(--font-geist-sans)',
+          'ui-sans-serif',
+          'system-ui',
+          'sans-serif',
+        ],
+        sans: [
+          'var(--font-body)',
+          'var(--font-geist-sans)',
+          'ui-sans-serif',
+          'system-ui',
+          'sans-serif',
+        ],
       },
       animation: {
         marquee: 'marquee var(--marquee-duration, 25s) linear infinite',
         'whatsapp-bounce': 'whatsapp-bounce 2.5s ease-in-out infinite',
         'plp-sheet-enter': 'plp-sheet-enter 0.32s ease-out',
+        'plp-drawer-enter': 'plp-drawer-enter 0.3s cubic-bezier(0.19, 1, 0.22, 1)',
         'plp-backdrop-enter': 'plp-backdrop-enter 0.24s ease-out',
       },
       keyframes: {
@@ -46,6 +66,10 @@ const config = {
         'plp-sheet-enter': {
           from: { transform: 'translateY(100%)' },
           to: { transform: 'translateY(0)' },
+        },
+        'plp-drawer-enter': {
+          from: { transform: 'translateX(-100%)' },
+          to: { transform: 'translateX(0)' },
         },
         'plp-backdrop-enter': {
           from: { opacity: '0' },

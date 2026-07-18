@@ -478,6 +478,39 @@ export interface Cart {
   bundles?: CartBundleRow[];
 }
 
+/** Wishlist row from GET/POST /wishlist (authenticated). */
+export interface WishlistItem {
+  id: string;
+  productId: string;
+  createdAt: string;
+  product: Product;
+}
+
+export const wishlistApi = {
+  list: () => fetchApi<WishlistItem[]>('/wishlist'),
+
+  count: () => fetchApi<{ count: number }>('/wishlist/count'),
+
+  add: (productId: string) =>
+    fetchApi<WishlistItem>('/wishlist', {
+      method: 'POST',
+      body: JSON.stringify({ productId }),
+    }),
+
+  remove: (productId: string) =>
+    fetchApi<{ ok: boolean; productId: string }>(
+      `/wishlist/${encodeURIComponent(productId)}`,
+      { method: 'DELETE' },
+    ),
+
+  /** Merge guest localStorage product IDs after login. */
+  merge: (productIds: string[]) =>
+    fetchApi<WishlistItem[]>('/wishlist/merge', {
+      method: 'POST',
+      body: JSON.stringify({ productIds }),
+    }),
+};
+
 export const cartApi = {
   createCart: (currency: string = APP_CURRENCY) =>
     fetchApi<{ cartId: string }>('/cart', {

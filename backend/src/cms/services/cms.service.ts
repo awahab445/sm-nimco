@@ -248,8 +248,14 @@ export class CmsService {
         slideHeightPx: dto.slideHeightPx,
         slides: {
           create: dto.slides.map((slide, index) => ({
-            ...slide,
+            title: slide.title,
+            subtitle: slide.subtitle,
             imageUrl: normalizeCmsUploadImageUrl(slide.imageUrl),
+            ctaLabel: slide.ctaLabel,
+            ctaHref: slide.ctaHref,
+            textAlign: slide.textAlign ?? 'left',
+            textPosition: slide.textPosition ?? 'middle',
+            textColor: slide.textColor ?? 'light',
             sortOrder: slide.sortOrder ?? index,
             isActive: slide.isActive ?? true,
           })),
@@ -277,8 +283,14 @@ export class CmsService {
           slides: dto.slides
             ? {
                 create: dto.slides.map((slide, index) => ({
-                  ...slide,
+                  title: slide.title,
+                  subtitle: slide.subtitle,
                   imageUrl: normalizeCmsUploadImageUrl(slide.imageUrl),
+                  ctaLabel: slide.ctaLabel,
+                  ctaHref: slide.ctaHref,
+                  textAlign: slide.textAlign ?? 'left',
+                  textPosition: slide.textPosition ?? 'middle',
+                  textColor: slide.textColor ?? 'light',
                   sortOrder: slide.sortOrder ?? index,
                   isActive: slide.isActive ?? true,
                 })),

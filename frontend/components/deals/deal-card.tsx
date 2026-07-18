@@ -19,7 +19,7 @@ export function DealCard({ deal, featured }: Props) {
 
   return (
     <article
-      className={`${storefrontUi.card} overflow-hidden transition-shadow hover:shadow-lg ${
+      className={`${storefrontUi.card} overflow-hidden border border-border shadow-product-card transition-shadow hover:shadow-lg ${
         featured ? 'flex flex-col md:flex-row md:items-stretch' : ''
       }`}
     >
@@ -55,7 +55,7 @@ export function DealCard({ deal, featured }: Props) {
       >
         {discountPercent != null ? <BundleDiscountBadge percent={discountPercent} /> : null}
         <p className="text-xs font-medium uppercase tracking-wide text-primary">{itemLabel}</p>
-        <h2 className="mt-1 text-lg font-semibold text-foreground">
+        <h2 className="font-display mt-1 text-lg font-semibold tracking-tight text-foreground">
           <Link href={`/deals/${deal.slug}`} className="hover:text-primary">
             {deal.title}
           </Link>

@@ -1,9 +1,10 @@
 /**
  * Shared semantic Tailwind classes for storefront forms and alerts.
- * Colors resolve from <html data-theme> CSS variables (see app/globals.css).
+ * Colors resolve from <html data-theme> / data-store-theme CSS variables.
+ * Visual variants (pill, uppercase, orange ATC) are theme-scoped in globals.css.
  */
 const btnPrimary =
-  'rounded-md bg-primary text-sm font-semibold text-primary-foreground transition-all duration-200 hover:bg-primary-hover active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100';
+  'rounded-md bg-primary text-sm font-semibold text-primary-foreground transition-all duration-200 hover:bg-btn-hover active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100';
 
 export const storefrontUi = {
   input:
@@ -24,24 +25,24 @@ export const storefrontUi = {
   btnPrimaryLg:
     'btn-brand-primary mt-6 w-full py-3 text-base font-medium disabled:cursor-not-allowed disabled:opacity-50',
   btnPrimaryCheckout:
-    'mt-6 w-full rounded-md bg-primary px-8 py-3 text-base font-semibold tracking-wide text-primary-foreground shadow-md transition-all duration-200 hover:bg-primary-hover hover:shadow-lg active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70',
+    'mt-6 w-full rounded-md bg-primary px-8 py-3 text-base font-semibold tracking-wide text-primary-foreground shadow-md transition-all duration-200 hover:bg-btn-hover hover:shadow-lg active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70',
   btnPrimarySubmit:
-    'rounded-md bg-primary px-8 py-3 text-base font-semibold tracking-wide text-primary-foreground shadow-md transition-all duration-200 hover:bg-primary-hover hover:shadow-lg active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70',
+    'rounded-md bg-primary px-8 py-3 text-base font-semibold tracking-wide text-primary-foreground shadow-md transition-all duration-200 hover:bg-btn-hover hover:shadow-lg active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70',
   btnPrimaryBlock: `${btnPrimary} w-full py-2.5`,
   btnPrimaryInline: `${btnPrimary} px-6 py-2`,
   link: 'font-medium text-primary transition-colors hover:text-primary-hover',
   btnSecondary:
-    'rounded-md border border-primary bg-card px-4 py-2 text-sm font-medium text-primary transition-colors hover:bg-secondary/60 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2 focus:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50',
+    'btn-brand-secondary px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2 focus:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50',
   btnNeutral:
-    'rounded-md border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted/60 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2 focus:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50',
+    'btn-brand-outline px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2 focus:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50',
   btnNeutralLg:
-    'w-full rounded-md border border-border bg-card px-6 py-3 text-base font-medium text-foreground transition-colors hover:bg-muted/60 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2 focus:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50',
+    'btn-brand-outline w-full px-6 py-3 text-base focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2 focus:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50',
   btnDestructive:
     'rounded-md border border-destructive/30 bg-card px-3 py-1.5 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10 focus:outline-none focus:ring-2 focus:ring-destructive/30 disabled:cursor-not-allowed disabled:opacity-50',
   btnDestructiveText:
     'font-medium text-destructive transition-colors hover:text-destructive/80 focus:outline-none focus:underline disabled:cursor-not-allowed disabled:opacity-50',
   btnPrimaryInverted:
-    'inline-flex items-center justify-center rounded-md bg-primary-foreground px-6 py-3 text-sm font-semibold text-primary shadow-md transition-all duration-200 hover:brightness-95 active:scale-[0.98]',
+    'btn-brand-inverted inline-flex items-center justify-center px-6 py-3 text-sm',
   badgeBrand:
     'rounded bg-secondary/60 px-2 py-1 text-xs font-medium text-primary ring-1 ring-inset ring-secondary/80',
   card:

@@ -67,8 +67,10 @@ export default function TrackOrderPage() {
 
   return (
     <div className="mx-auto max-w-md px-4 py-12 sm:px-6 lg:px-8">
-      <div className="rounded-lg border border-border bg-card p-6 shadow-sm">
-        <h1 className="text-xl font-semibold text-foreground">Track your order</h1>
+      <div className={`${storefrontUi.card} border border-border p-6 shadow-product-card sm:p-8`}>
+        <h1 className="font-display text-xl font-semibold tracking-tight text-foreground md:text-2xl">
+          Track your order
+        </h1>
         <p className="mt-1 text-sm text-muted-foreground">
           {isEmailLocked
             ? 'Enter your order number to view order status. Your account email is used automatically.'

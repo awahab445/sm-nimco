@@ -98,7 +98,7 @@ export function ShippingStep({ onNext, onBack }: ShippingStepProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
-        <h2 className="mb-4 text-2xl font-semibold text-foreground">Shipping Method</h2>
+        <h2 className="font-display mb-4 text-2xl font-semibold tracking-tight text-foreground">Shipping Method</h2>
 
         {loadingOptions ? (
           <div className="py-8 text-center">
@@ -118,9 +118,9 @@ export function ShippingStep({ onNext, onBack }: ShippingStepProps) {
             {shippingOptions.map((option) => (
               <label
                 key={option.methodId}
-                className={`block cursor-pointer rounded-lg border-2 p-4 transition-colors ${
+                className={`block cursor-pointer rounded-sm border p-4 transition-colors ${
                   selectedMethodId === option.methodId
-                    ? storefrontUi.optionSelected
+                    ? `${storefrontUi.optionSelected} ring-1 ring-ring`
                     : storefrontUi.optionIdle
                 }`}
               >
@@ -131,7 +131,7 @@ export function ShippingStep({ onNext, onBack }: ShippingStepProps) {
                     value={option.methodId}
                     checked={selectedMethodId === option.methodId}
                     onChange={(e) => setSelectedMethodId(e.target.value)}
-                    className="mt-1 h-4 w-4 text-brand-primary focus:ring-brand-primary/30"
+                    className="mt-1 h-4 w-4 text-primary focus:ring-ring/30"
                   />
                   <div className="ml-3 flex-1">
                     <div className="flex items-start justify-between">

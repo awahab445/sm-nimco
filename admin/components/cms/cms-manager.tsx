@@ -7,10 +7,10 @@ import {
   type CmsBlock,
   type CmsPage,
   type CmsSlider,
-  type CmsSlide,
 } from '@/lib/api/cms';
 import { formatApiError } from '@/lib/api/error-message';
 import { RichTextEditor } from './rich-text-editor';
+import { HomeLayoutPromoHelper } from './home-layout-promo-helper';
 
 type TabKey = 'pages' | 'blocks' | 'sliders';
 
@@ -39,6 +39,9 @@ type SliderDraft = {
     imageUrl: string;
     ctaLabel: string;
     ctaHref: string;
+    textAlign: 'left' | 'center' | 'right';
+    textPosition: 'top' | 'middle' | 'bottom';
+    textColor: 'light' | 'dark';
     sortOrder: number;
     isActive: boolean;
   }>;
@@ -77,6 +80,9 @@ const emptySlider: SliderDraft = {
       imageUrl: '',
       ctaLabel: '',
       ctaHref: '',
+      textAlign: 'left',
+      textPosition: 'middle',
+      textColor: 'light',
       sortOrder: 0,
       isActive: true,
     },
@@ -97,6 +103,9 @@ const homeHeroSliderPreset: SliderDraft = {
       imageUrl: '/themes/mehfil-shereen/banner1.jpeg',
       ctaLabel: 'Shop now',
       ctaHref: '/products',
+      textAlign: 'left',
+      textPosition: 'middle',
+      textColor: 'light',
       sortOrder: 0,
       isActive: true,
     },
@@ -235,11 +244,14 @@ export function CmsManager() {
         slideWidthPx,
         slideHeightPx,
         slides: sliderForm.slides.map((s) => ({
-          title: s.title,
-          subtitle: s.subtitle || undefined,
+          title: s.title.trim().slice(0, 255),
+          subtitle: s.subtitle.trim().slice(0, 500) || undefined,
           imageUrl: s.imageUrl.trim(),
-          ctaLabel: s.ctaLabel || undefined,
-          ctaHref: s.ctaHref || undefined,
+          ctaLabel: s.ctaLabel.trim().slice(0, 120) || undefined,
+          ctaHref: s.ctaHref.trim().slice(0, 500) || undefined,
+          textAlign: s.textAlign,
+          textPosition: s.textPosition,
+          textColor: s.textColor,
           sortOrder: Number(s.sortOrder) || 0,
           isActive: s.isActive,
         })),
@@ -408,11 +420,19 @@ export function CmsManager() {
               value={blockForm.contentHtml}
               onChange={(v) => setBlockForm((s) => ({ ...s, contentHtml: v }))}
             />
+            {(blockForm.identifier === 'home-page-layout' ||
+              blockForm.identifier.startsWith('home-page-layout') ||
+              blockForm.contentJsonText.includes('"promo_banner"')) && (
+              <HomeLayoutPromoHelper
+                contentJsonText={blockForm.contentJsonText}
+                onChange={(contentJsonText) => setBlockForm((s) => ({ ...s, contentJsonText }))}
+              />
+            )}
             <TextArea
               label="Block JSON content (for structured layouts)"
               value={blockForm.contentJsonText}
               onChange={(v) => setBlockForm((s) => ({ ...s, contentJsonText: v }))}
-              rows={6}
+              rows={14}
             />
             <ActionRow onReset={() => { setBlockForm(emptyBlock); setEditingBlockId(null); }} />
           </form>
@@ -539,6 +559,9 @@ export function CmsManager() {
                           imageUrl: '',
                           ctaLabel: '',
                           ctaHref: '',
+                          textAlign: 'left',
+                          textPosition: 'middle',
+                          textColor: 'light',
                           sortOrder: s.slides.length,
                           isActive: true,
                         },
@@ -602,6 +625,12 @@ export function CmsManager() {
                         imageUrl: slide.imageUrl,
                         ctaLabel: slide.ctaLabel ?? '',
                         ctaHref: slide.ctaHref ?? '',
+                        textAlign: slide.textAlign === 'center' || slide.textAlign === 'right' ? slide.textAlign : 'left',
+                        textPosition:
+                          slide.textPosition === 'top' || slide.textPosition === 'bottom'
+                            ? slide.textPosition
+                            : 'middle',
+                        textColor: slide.textColor === 'dark' ? 'dark' : 'light',
                         sortOrder: slide.sortOrder,
                         isActive: slide.isActive,
                       })),
@@ -781,7 +810,8 @@ function SlideFields({
 
   return (
     <div className="space-y-2 rounded-lg border border-zinc-200 p-3 dark:border-zinc-800">
-      <Input label="Title" value={slide.title} onChange={(v) => onChange({ ...slide, title: v })} required />
+      <Input label="Title (headline on banner)" value={slide.title} onChange={(v) => onChange({ ...slide, title: v.slice(0, 255) })} />
+      <p className="text-[11px] text-zinc-500">Leave title, subtitle, and CTA empty for an image-only slide.</p>
       <input
         ref={fileRef}
         type="file"
@@ -811,7 +841,7 @@ function SlideFields({
       />
       {slide.imageUrl?.trim() ? (
         <div
-          className="overflow-hidden rounded-md border border-zinc-200 dark:border-zinc-700"
+          className="relative overflow-hidden rounded-md border border-zinc-200 dark:border-zinc-700"
           style={
             previewAspectLocked
               ? {
@@ -835,13 +865,90 @@ function SlideFields({
                 : 'h-28 w-full object-contain object-center bg-zinc-100 dark:bg-zinc-900'
             }
           />
+          {(slide.title.trim() || slide.subtitle.trim() || slide.ctaLabel.trim()) && (
+            <div
+              className={[
+                'pointer-events-none absolute inset-0 flex p-3',
+                slide.textPosition === 'top'
+                  ? 'items-start'
+                  : slide.textPosition === 'bottom'
+                    ? 'items-end'
+                    : 'items-center',
+                slide.textAlign === 'center'
+                  ? 'justify-center text-center'
+                  : slide.textAlign === 'right'
+                    ? 'justify-end text-right'
+                    : 'justify-start text-left',
+              ].join(' ')}
+            >
+              <div
+                className={[
+                  'max-w-[70%] rounded bg-black/35 px-2 py-1.5 backdrop-blur-[1px]',
+                  slide.textColor === 'dark' ? 'text-zinc-900' : 'text-white',
+                ].join(' ')}
+              >
+                {slide.title.trim() ? (
+                  <p className="text-[11px] font-semibold leading-tight">{slide.title.trim()}</p>
+                ) : null}
+                {slide.subtitle.trim() ? (
+                  <p className="mt-0.5 text-[10px] leading-snug opacity-90">{slide.subtitle.trim()}</p>
+                ) : null}
+                {slide.ctaLabel.trim() ? (
+                  <p className="mt-1 inline-block rounded bg-white/90 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-zinc-900">
+                    {slide.ctaLabel.trim()}
+                  </p>
+                ) : null}
+              </div>
+            </div>
+          )}
         </div>
       ) : null}
-      <Input label="Subtitle" value={slide.subtitle} onChange={(v) => onChange({ ...slide, subtitle: v })} />
+      <Input
+        label="Subtitle"
+        value={slide.subtitle}
+        onChange={(v) => onChange({ ...slide, subtitle: v.slice(0, 500) })}
+      />
       <div className="grid gap-2 sm:grid-cols-2">
-        <Input label="CTA label" value={slide.ctaLabel} onChange={(v) => onChange({ ...slide, ctaLabel: v })} />
-        <Input label="CTA href" value={slide.ctaHref} onChange={(v) => onChange({ ...slide, ctaHref: v })} />
+        <Input
+          label="CTA label"
+          value={slide.ctaLabel}
+          onChange={(v) => onChange({ ...slide, ctaLabel: v.slice(0, 120) })}
+        />
+        <Input
+          label="CTA href"
+          value={slide.ctaHref}
+          onChange={(v) => onChange({ ...slide, ctaHref: v.slice(0, 500) })}
+        />
       </div>
+      <SegmentedField
+        label="Text align (horizontal)"
+        value={slide.textAlign}
+        options={[
+          { value: 'left', label: 'Left' },
+          { value: 'center', label: 'Center' },
+          { value: 'right', label: 'Right' },
+        ]}
+        onChange={(v) => onChange({ ...slide, textAlign: v })}
+      />
+      <SegmentedField
+        label="Text position (vertical)"
+        value={slide.textPosition}
+        options={[
+          { value: 'top', label: 'Top' },
+          { value: 'middle', label: 'Middle' },
+          { value: 'bottom', label: 'Bottom' },
+        ]}
+        onChange={(v) => onChange({ ...slide, textPosition: v })}
+      />
+      <SegmentedField
+        label="Text color"
+        value={slide.textColor}
+        options={[
+          { value: 'light', label: 'Light' },
+          { value: 'dark', label: 'Dark' },
+        ]}
+        onChange={(v) => onChange({ ...slide, textColor: v })}
+      />
       <div className="grid gap-2 sm:grid-cols-2">
         <Input
           label="Sort order"
@@ -865,6 +972,44 @@ function SlideFields({
       >
         Remove slide
       </button>
+    </div>
+  );
+}
+
+function SegmentedField<T extends string>({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string;
+  value: T;
+  options: Array<{ value: T; label: string }>;
+  onChange: (v: T) => void;
+}) {
+  return (
+    <div>
+      <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">{label}</span>
+      <div className="mt-1 inline-flex overflow-hidden rounded-lg border border-zinc-300 dark:border-zinc-700">
+        {options.map((opt) => {
+          const active = opt.value === value;
+          return (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => onChange(opt.value)}
+              className={[
+                'px-3 py-1.5 text-xs font-medium transition-colors',
+                active
+                  ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900'
+                  : 'bg-white text-zinc-700 hover:bg-zinc-50 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800',
+              ].join(' ')}
+            >
+              {opt.label}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

@@ -136,7 +136,7 @@ export default function CartPage() {
   if (isLoading && !cart) {
     return (
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="flex flex-col items-center justify-center rounded-xl border border-border bg-card py-24 shadow-sm">
+        <div className="flex flex-col items-center justify-center py-24">
           <div className="h-10 w-10 animate-spin rounded-full border-2 border-muted border-t-primary" aria-hidden />
           <p className="mt-4 text-muted-foreground">Loading cart…</p>
         </div>
@@ -146,9 +146,9 @@ export default function CartPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <div className="border-b border-border pb-6">
-        <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight text-foreground">
-          <ShoppingBagIcon className="h-7 w-7 shrink-0 text-primary" strokeWidth={2} aria-hidden />
+      <div className="border-b border-border/60 pb-6">
+        <h1 className="font-display flex items-center gap-2 text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
+          <ShoppingBagIcon className="h-7 w-7 shrink-0 text-foreground" strokeWidth={1.2} aria-hidden />
           Your cart
         </h1>
         {totalUnits > 0 ? (
@@ -159,13 +159,13 @@ export default function CartPage() {
       </div>
 
       {error && (
-        <div className="mt-4 rounded-lg border border-destructive/25 bg-destructive/10 p-4 text-destructive">
+        <div className={`mt-4 ${storefrontUi.alertError}`}>
           {error}
         </div>
       )}
 
       {items.length === 0 && bundles.length === 0 && !isLoading ? (
-        <div className="mt-8 rounded-xl border border-border bg-card py-16 text-center shadow-sm">
+        <div className="mt-8 py-16 text-center">
           <p className="text-muted-foreground">Your cart is empty.</p>
           <Link
             href="/products"
@@ -177,13 +177,13 @@ export default function CartPage() {
       ) : (
         <div className="mt-8 lg:grid lg:grid-cols-3 lg:gap-8">
           <div className="lg:col-span-2">
-            <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
-              <div className="border-b border-border bg-muted/30 px-4 py-3 sm:px-6">
-                <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            <div className={`${storefrontUi.card} overflow-hidden`}>
+              <div className="border-b border-border/60 px-4 py-3 sm:px-6">
+                <h2 className="font-display text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                   Cart items
                 </h2>
               </div>
-              <ul className="divide-y divide-border">
+              <ul className="divide-y divide-border/60">
               {bundles.map((bundle) => {
                 const rowTotal = bundle.dealUnitPrice * bundle.quantity;
                 const allBundleVariantChips = items
@@ -196,7 +196,7 @@ export default function CartPage() {
                 const extraChipCount = Math.max(0, allBundleVariantChips.length - bundleVariantChips.length);
                 return (
                   <li key={bundle.bundleGroupId} className="flex flex-wrap items-center gap-4 px-4 py-5 sm:px-6">
-                    <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-secondary/50 text-xs font-medium text-primary">
+                    <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-sm bg-muted text-xs font-medium uppercase tracking-wide text-foreground">
                       Bundle
                     </div>
                     <div className="flex-1 min-w-0">
@@ -218,7 +218,7 @@ export default function CartPage() {
                           ) : null}
                         </div>
                       ) : null}
-                      <Link href={`/deals/${bundle.slug}`} className="text-sm text-primary hover:underline">
+                      <Link href={`/deals/${bundle.slug}`} className={`text-sm ${storefrontUi.link}`}>
                         View deal
                       </Link>
                       <p className="mt-1 text-sm text-muted-foreground">
@@ -233,7 +233,7 @@ export default function CartPage() {
                         <input
                           type="number"
                           min={1}
-                          className="w-16 rounded-md border border-input bg-card px-2 py-1 text-sm"
+                          className="w-16 rounded-sm border border-input bg-card px-2 py-1.5 text-center text-sm focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring/40"
                           defaultValue={bundle.quantity}
                           onBlur={(e) => {
                             const q = Math.max(1, Number(e.target.value) || 1);
@@ -304,7 +304,7 @@ export default function CartPage() {
                           setLocalQty((prev) => ({ ...prev, [item.variantId]: q }));
                         }}
                         onBlur={() => handleQtyBlur(item.variantId)}
-                        className="w-16 rounded-md border border-input bg-background px-2 py-1.5 text-center text-sm text-foreground shadow-sm"
+                        className="w-16 rounded-sm border border-input bg-card px-2 py-1.5 text-center text-sm text-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring/40"
                       />
                       <button
                         type="button"
@@ -333,8 +333,8 @@ export default function CartPage() {
           </div>
 
           <div className="mt-8 lg:mt-0">
-            <div className="sticky top-24 rounded-xl border border-border bg-card p-6 shadow-sm">
-              <h2 className="border-b border-border pb-3 text-lg font-semibold text-foreground">
+            <div className={`sticky top-24 ${storefrontUi.card} p-6`}>
+              <h2 className="font-display border-b border-border/60 pb-3 text-lg font-semibold tracking-tight text-foreground">
                 Order summary
               </h2>
               <div className="mt-4 space-y-2 text-sm">
@@ -356,7 +356,7 @@ export default function CartPage() {
                 </p>
               )}
               {(couponMeta.discountAmount > 0 || (couponMeta.isFreeShipping && couponMeta.code)) && (
-                <div className="flex items-center justify-between border-t border-border pt-2 font-semibold text-foreground">
+                <div className="flex items-center justify-between border-t border-border/60 pt-2 font-semibold text-foreground">
                   <span>Estimated total</span>
                   <span>
                     {formatPrice(Math.max(0, subtotal - couponMeta.discountAmount), displayCurrency)}

@@ -51,19 +51,19 @@ function ForgotPasswordContent() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4 py-12 sm:px-6 lg:px-8">
+    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-foreground">
+        <div className="text-center">
+          <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
             Forgot your password?
-          </h2>
-          <p className="mt-2 text-center text-sm text-muted-foreground">
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground">
             Enter your email address and we&apos;ll send you a link to reset your password.
           </p>
         </div>
 
         {isSubmitted ? (
-          <div className="rounded-lg border border-brand-primary/25 bg-brand-secondary/20 p-6 text-center shadow-sm">
+          <div className={`${storefrontUi.card} border border-border p-6 text-center shadow-product-card sm:p-8`}>
             <p className="text-sm text-foreground">
               If an account exists with that email, you will receive a password reset link shortly.
               Please check your inbox and spam folder.
@@ -76,7 +76,10 @@ function ForgotPasswordContent() {
             </Link>
           </div>
         ) : (
-          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          <form
+            className={`${storefrontUi.card} space-y-6 border border-border p-6 shadow-product-card sm:p-8`}
+            onSubmit={handleSubmit}
+          >
             {apiError && (
               <div className={storefrontUi.alertErrorSm} role="alert">
                 <p className="text-sm">{apiError}</p>
@@ -135,7 +138,7 @@ export default function ForgotPasswordPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4 py-12 sm:px-6 lg:px-8" />
+        <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12" />
       }
     >
       <ForgotPasswordContent />

@@ -44,25 +44,25 @@ export function UserMenuDropdown() {
 
   return (
     <div
-      className="relative hidden self-stretch items-center overflow-visible lg:flex"
+      className="relative hidden items-center overflow-visible lg:flex"
       onMouseEnter={openMenu}
       onMouseLeave={scheduleClose}
     >
       {hydrated ? (
         <button
           type="button"
-          className="inline-flex h-full items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2"
+          className="site-header__icon-btn inline-flex items-center justify-center text-foreground transition-colors hover:text-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
           aria-label={isAuthenticated ? 'Account menu' : 'Sign in menu'}
           aria-expanded={open}
           aria-haspopup="menu"
           onMouseEnter={openMenu}
           onFocus={openMenu}
         >
-          <UserIcon className="h-6 w-6" strokeWidth={2} aria-hidden />
+          <UserIcon className="h-[22px] w-[22px]" aria-hidden />
         </button>
       ) : (
-        <span className="inline-flex h-full items-center justify-center" aria-hidden>
-          <UserIcon className="h-6 w-6" strokeWidth={2} />
+        <span className="site-header__icon-btn inline-flex items-center justify-center" aria-hidden>
+          <UserIcon className="h-[22px] w-[22px]" />
         </span>
       )}
 
@@ -83,6 +83,14 @@ export function UserMenuDropdown() {
                 onClick={() => setOpen(false)}
               >
                 My Profile
+              </Link>
+              <Link
+                href="/wishlist"
+                role="menuitem"
+                className="header-user-menu__item"
+                onClick={() => setOpen(false)}
+              >
+                Wishlist
               </Link>
               <button
                 type="button"

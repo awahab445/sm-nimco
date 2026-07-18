@@ -201,6 +201,90 @@ async function main() {
   });
 
   // 5. CMS: starter home layout block consumed by frontend/lib/cms/home-page.service.ts
+  const homePageLayoutSections = [
+    {
+      id: 'hero-main',
+      type: 'hero_slider',
+      autoplayMs: 5000,
+      slides: [
+        {
+          id: 'hero-1',
+          title: 'Welcome to our store',
+          subtitle: 'Discover great products and fast delivery',
+          imageUrl: '/themes/mehfil-shereen/banner1.jpeg',
+          ctaLabel: 'Shop now',
+          ctaHref: '/products',
+          textAlign: 'left',
+          textPosition: 'middle',
+          textColor: 'light',
+        },
+        {
+          id: 'hero-2',
+          title: 'New arrivals every week',
+          subtitle: 'Fresh picks and curated collections',
+          imageUrl: '/themes/mehfil-shereen/banner2.jpeg',
+          ctaLabel: 'Browse products',
+          ctaHref: '/products',
+          textAlign: 'center',
+          textPosition: 'middle',
+          textColor: 'light',
+        },
+      ],
+    },
+    {
+      id: 'promo-mosaic-a',
+      type: 'promo_banner',
+      eyebrow: 'Nutrition',
+      title: 'For life',
+      backgroundColor: '#d4efe3',
+      productImageUrl: '/themes/mehfil-shereen/banner1.jpeg',
+      ctaLabel: 'Shop now',
+      ctaHref: '/products',
+      textAlign: 'left',
+      buttonStyle: 'primary',
+    },
+    {
+      id: 'promo-mosaic-b',
+      type: 'promo_banner',
+      eyebrow: 'Lookbook 2021',
+      title: 'Make love this look',
+      imageUrl: '/themes/mehfil-shereen/texture.png',
+      textAlign: 'center',
+    },
+    {
+      id: 'promo-mosaic-c',
+      type: 'promo_banner',
+      eyebrow: 'Vitamin',
+      title: 'For children',
+      subtitle: 'Up to 50% off',
+      backgroundColor: '#f5e9b8',
+      productImageUrl: '/themes/mehfil-shereen/banner1.jpeg',
+      ctaLabel: 'Shop now',
+      ctaHref: '/products',
+      textAlign: 'left',
+      buttonStyle: 'secondary',
+    },
+    {
+      id: 'inline-teaser',
+      type: 'cms_block_ref',
+      blockIdentifier: 'home-inline-teaser',
+    },
+    {
+      id: 'shelf-featured',
+      type: 'product_shelf',
+      title: 'Featured picks',
+      subtitle: 'Popular right now',
+      viewAllHref: '/products',
+      source: { kind: 'latest', limit: 8 },
+    },
+    {
+      id: 'subscription',
+      type: 'subscription_cta',
+      title: 'Stay in the loop',
+      subtitle: 'Get product drops and offers by email.',
+    },
+  ];
+
   await prisma.cmsBlock.upsert({
     where: { identifier: 'home-page-layout' },
     update: {},
@@ -210,63 +294,36 @@ async function main() {
       description: 'Structured sections consumed by storefront homepage',
       isActive: true,
       contentHtml: '<p>Home page layout JSON block.</p>',
-      contentJson: {
-        sections: [
-          {
-            id: 'hero-main',
-            type: 'hero_slider',
-            autoplayMs: 5000,
-            slides: [
-              {
-                id: 'hero-1',
-                title: 'Welcome to our store',
-                subtitle: 'Discover great products and fast delivery',
-                imageUrl: '/themes/mehfil-shereen/banner1.jpeg',
-                ctaLabel: 'Shop now',
-                ctaHref: '/products',
-              },
-              {
-                id: 'hero-2',
-                title: 'New arrivals every week',
-                subtitle: 'Fresh picks and curated collections',
-                imageUrl: '/themes/mehfil-shereen/banner2.jpeg',
-                ctaLabel: 'Browse products',
-                ctaHref: '/products',
-              },
-            ],
-          },
-          {
-            id: 'promo-mid',
-            type: 'promo_banner',
-            tone: 'primary',
-            title: 'Members save more',
-            subtitle: 'Create your account for exclusive offers.',
-            ctaLabel: 'Create account',
-            ctaHref: '/register',
-          },
-          {
-            id: 'inline-teaser',
-            type: 'cms_block_ref',
-            blockIdentifier: 'home-inline-teaser',
-          },
-          {
-            id: 'shelf-featured',
-            type: 'product_shelf',
-            title: 'Featured picks',
-            subtitle: 'Popular right now',
-            viewAllHref: '/products',
-            source: { kind: 'latest', limit: 8 },
-          },
-          {
-            id: 'subscription',
-            type: 'subscription_cta',
-            title: 'Stay in the loop',
-            subtitle: 'Get product drops and offers by email.',
-          },
-        ],
-      },
+      contentJson: { sections: homePageLayoutSections },
     },
   });
+
+  // Ensure existing layouts get the Kalles 3-up promo strip after hero (non-destructive insert).
+  const homeLayout = await prisma.cmsBlock.findUnique({
+    where: { identifier: 'home-page-layout' },
+    select: { id: true, contentJson: true },
+  });
+  if (homeLayout?.contentJson && typeof homeLayout.contentJson === 'object') {
+    const json = homeLayout.contentJson as { sections?: Array<{ id?: string; type?: string }> };
+    const sections = Array.isArray(json.sections) ? [...json.sections] : [];
+    const hasMosaic = sections.some((s) => s.id === 'promo-mosaic-a');
+    if (!hasMosaic) {
+      const mosaic = homePageLayoutSections.filter((s) =>
+        String(s.id).startsWith('promo-mosaic-'),
+      );
+      const heroIdx = sections.findIndex((s) => s.type === 'hero_slider');
+      const insertAt = heroIdx >= 0 ? heroIdx + 1 : 0;
+      const nextSections = [
+        ...sections.slice(0, insertAt),
+        ...mosaic,
+        ...sections.slice(insertAt),
+      ];
+      await prisma.cmsBlock.update({
+        where: { id: homeLayout.id },
+        data: { contentJson: { ...json, sections: nextSections } },
+      });
+    }
+  }
 
   // 6. CMS: starter hero slider (create only — preserve uploaded slides on re-seed)
   await prisma.cmsBannerSlider.upsert({
@@ -301,6 +358,9 @@ async function main() {
           imageUrl: '/themes/mehfil-shereen/banner1.jpeg',
           ctaLabel: 'Shop now',
           ctaHref: '/products',
+          textAlign: 'left',
+          textPosition: 'middle',
+          textColor: 'light',
           sortOrder: 0,
           isActive: true,
         },
@@ -311,6 +371,9 @@ async function main() {
           imageUrl: '/themes/mehfil-shereen/banner2.jpeg',
           ctaLabel: 'Track order',
           ctaHref: '/track-order',
+          textAlign: 'right',
+          textPosition: 'middle',
+          textColor: 'light',
           sortOrder: 1,
           isActive: true,
         },

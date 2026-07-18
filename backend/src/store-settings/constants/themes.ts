@@ -1,4 +1,5 @@
 export const STORE_THEME_IDS = [
+  'essa-chemicals',
   'mehfil-e-shireen',
   'ember',
   'tailwind',
@@ -14,6 +15,8 @@ const LEGACY_THEME_MAP: Record<string, StoreThemeId> = {
   'mehfil-e-shireen': 'mehfil-e-shireen',
   ember: 'ember',
   tailwind: 'tailwind',
+  'essa-chemicals': 'essa-chemicals',
+  essa_chemicals: 'essa-chemicals',
 };
 
 export function isStoreThemeId(value: string): value is StoreThemeId {

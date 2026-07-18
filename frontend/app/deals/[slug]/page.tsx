@@ -35,7 +35,7 @@ export default async function DealDetailPage({ params }: Props) {
   const heroImageSrc = resolveImageUrl(deal.imageUrl);
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <nav className="mb-6 text-sm">
         <Link href="/deals" className={storefrontUi.link}>
           ← All bundle deals
@@ -53,7 +53,9 @@ export default async function DealDetailPage({ params }: Props) {
             />
           </div>
         ) : null}
-        <h1 className="text-3xl font-bold text-foreground">{deal.title}</h1>
+        <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
+          {deal.title}
+        </h1>
         {deal.description ? (
           <p className="mt-3 max-w-3xl text-muted-foreground">{deal.description}</p>
         ) : null}
@@ -61,7 +63,9 @@ export default async function DealDetailPage({ params }: Props) {
 
       <div className="grid gap-10 lg:grid-cols-3">
         <section className="lg:col-span-2">
-          <h2 className="text-xl font-semibold text-foreground">What&apos;s included</h2>
+          <h2 className="font-display text-xl font-semibold tracking-tight text-foreground">
+            What&apos;s included
+          </h2>
           <ul className="mt-4 space-y-4">
             {(deal.items ?? []).map((item) => {
               const image = resolveImageUrl(item.product?.images?.[0]?.url);
@@ -72,7 +76,7 @@ export default async function DealDetailPage({ params }: Props) {
               return (
                 <li
                   key={item.id}
-                  className={`${storefrontUi.card} flex items-start gap-3 p-4 sm:items-center sm:gap-4`}
+                  className={`${storefrontUi.card} flex items-start gap-3 border border-border p-4 shadow-product-card sm:items-center sm:gap-4`}
                 >
                   {image ? (
                     // eslint-disable-next-line @next/next/no-img-element

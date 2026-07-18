@@ -13,6 +13,7 @@ export type SubscriptionSignupFormProps = {
   defaultEmail?: string;
   className?: string;
   inputId?: string;
+  placeholder?: string;
 };
 
 export function SubscriptionSignupForm({
@@ -20,6 +21,7 @@ export function SubscriptionSignupForm({
   defaultEmail = '',
   className = '',
   inputId = 'subscription-email',
+  placeholder = 'you@example.com',
 }: SubscriptionSignupFormProps) {
   const hydrated = useHydrated();
   const [email, setEmail] = useState(defaultEmail);
@@ -95,7 +97,7 @@ export function SubscriptionSignupForm({
             name="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@example.com"
+            placeholder={placeholder}
             autoComplete="email"
             disabled={loading}
             className="min-w-0 flex-1 rounded-md border border-input bg-muted px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/25 disabled:opacity-60"

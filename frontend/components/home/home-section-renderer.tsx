@@ -9,7 +9,7 @@ import { CmsBlockSection } from './sections/cms-block-section';
 
 export async function HomeSectionRenderer({
   section,
-  heroLayout = 'card',
+  heroLayout = 'immersive',
 }: {
   section: HomeSection;
   /** Only applies when `section.type === 'hero_slider'`. */
@@ -49,10 +49,15 @@ export async function HomeSectionRenderer({
       return (
         <PromoBannerSection
           title={section.title}
+          eyebrow={section.eyebrow}
           subtitle={section.subtitle}
           ctaLabel={section.ctaLabel}
           ctaHref={section.ctaHref}
           imageUrl={section.imageUrl}
+          backgroundColor={section.backgroundColor}
+          productImageUrl={section.productImageUrl}
+          textAlign={section.textAlign}
+          buttonStyle={section.buttonStyle}
           tone={section.tone}
         />
       );
