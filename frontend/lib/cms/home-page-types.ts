@@ -17,8 +17,12 @@ export interface HeroSlide {
   /** Headline; omit or empty for image-only slides. */
   title?: string;
   subtitle?: string;
-  /** Optional image URL (CMS or CDN). Falls back to gradient if missing. */
+  /** Primary / desktop image URL (CMS or CDN). Falls back to gradient if missing. */
   imageUrl?: string;
+  /** Optional mobile art-direction (or auto mobile WebP). Shown below md breakpoint. */
+  mobileImageUrl?: string;
+  /** Optional tablet WebP variant (hint for optimizer / future picture sources). */
+  imageUrlTablet?: string;
   ctaLabel?: string;
   ctaHref?: string;
   /** Horizontal alignment of overlay copy (default: left). */

@@ -866,18 +866,22 @@ html[data-store-theme='essa_chemicals'] .site-header.is-scrolled {
 
 .hero-slider--immersive {
   width: 100%;
-  min-height: calc(100svh - var(--site-announcement-height, 0px));
-  min-height: calc(100dvh - var(--site-announcement-height, 0px));
+  /* Height comes from the banner image (intrinsic aspect). No fixed crop ratios. */
   margin-top: calc(-1 * var(--site-header-height, 4.25rem));
 }
 
 .hero-slider--immersive .hero-slider__stage {
-  position: absolute;
-  inset: 0;
+  position: relative;
+  width: 100%;
 }
 
-.hero-slider--immersive .hero-slider__media {
-  object-fit: cover;
+.hero-slider--immersive .hero-slider__media,
+.hero-slider__media {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+  object-fit: contain;
   object-position: center;
 }
 

@@ -10,6 +10,7 @@ import {
   ParseFilePipeBuilder,
   Patch,
   Post,
+  Query,
   Req,
   UploadedFile,
   UseGuards,
@@ -24,6 +25,7 @@ import { AdminJwtAuthGuard } from '../../admin/guards/admin-jwt-auth.guard';
 import { AdminPermissionsGuard } from '../../admin/guards/admin-permissions.guard';
 import { RequirePermissions } from '../../admin/decorators/require-permissions.decorator';
 import { CmsService } from '../services/cms.service';
+import { CmsSlideImageService } from '../services/cms-slide-image.service';
 import { UpsertCmsPageDto } from '../dto/upsert-cms-page.dto';
 import { UpsertCmsBlockDto } from '../dto/upsert-cms-block.dto';
 import { UpsertCmsSliderDto } from '../dto/upsert-cms-slider.dto';
@@ -31,7 +33,10 @@ import { UpsertCmsSliderDto } from '../dto/upsert-cms-slider.dto';
 @Controller('admin/cms')
 @UseGuards(AdminJwtAuthGuard, AdminPermissionsGuard)
 export class AdminCmsController {
-  constructor(private readonly cmsService: CmsService) {}
+  constructor(
+    private readonly cmsService: CmsService,
+    private readonly cmsSlideImageService: CmsSlideImageService,
+  ) {}
 
   @Get('pages')
   @RequirePermissions('cms.manage')
@@ -132,30 +137,29 @@ export class AdminCmsController {
     }),
   )
   @HttpCode(HttpStatus.CREATED)
-  uploadSlideImage(
+  async uploadSlideImage(
     @UploadedFile(
       new ParseFilePipeBuilder()
         .addMaxSizeValidator({ maxSize: 8 * 1024 * 1024 })
         .build({ fileIsRequired: true }),
     )
-    file: any,
+    file: { path: string; filename: string },
     @Req() req: Request,
+    /** `mobile` = art-direction upload (single optimized asset). Default = full variant set. */
+    @Query('purpose') purpose?: string,
   ) {
     const publicBaseUrl = process.env.PUBLIC_BASE_URL?.trim();
     const protoRaw =
       (req.headers['x-forwarded-proto'] as string | undefined) || req.protocol;
     const proto = protoRaw === 'https' ? 'https' : 'http';
     const host = req.get('host')?.trim() || 'localhost:3000';
-    const normalizedPath = file.path.replace(/\\/g, '/');
-    const publicPath = normalizedPath.startsWith('uploads/')
-      ? `/${normalizedPath}`
-      : `/uploads/cms-slides/${file.filename}`;
     const baseUrl = publicBaseUrl || `${proto}://${host}`;
-    return {
-      url: publicPath,
-      absoluteUrl: `${baseUrl}${publicPath}`,
-      filename: file.filename,
-    };
+
+    if (purpose === 'mobile') {
+      return this.cmsSlideImageService.processMobileOnly(file, baseUrl);
+    }
+
+    return this.cmsSlideImageService.processUploadedSlide(file, baseUrl);
   }
 
   @Get('sliders')

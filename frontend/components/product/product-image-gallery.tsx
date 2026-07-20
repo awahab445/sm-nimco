@@ -54,8 +54,8 @@ function ThumbButton({
     <button
       type="button"
       onClick={() => onSelect(img.id)}
-      className={`relative overflow-hidden transition-opacity duration-200 ${
-        isActive ? 'opacity-100' : 'opacity-50 hover:opacity-100'
+      className={`relative overflow-hidden bg-muted/20 transition-opacity duration-200 ${
+        isActive ? 'opacity-100 ring-1 ring-foreground/30' : 'opacity-50 hover:opacity-100'
       } ${className ?? ''}`}
       aria-label={`Show image ${index + 1} of ${total}`}
       aria-current={isActive}
@@ -66,7 +66,7 @@ function ThumbButton({
           alt={imageAlt(img, productName)}
           fill
           sizes="96px"
-          className="object-cover object-center"
+          className="object-contain object-center"
           loading="lazy"
           quality={60}
         />
@@ -108,7 +108,7 @@ function MainImage({
       ref={mainRef}
       role="img"
       aria-label={alt}
-      className="relative aspect-[4/5] w-full overflow-hidden bg-muted/30 sm:aspect-square"
+      className="relative aspect-square w-full max-w-full overflow-hidden bg-muted/20"
       onMouseMove={onMainMouseMove}
       onMouseEnter={() => setZoomHover(true)}
       onMouseLeave={() => {
@@ -122,7 +122,7 @@ function MainImage({
           alt={alt}
           fill
           sizes="(min-width: 1024px) 45vw, 100vw"
-          className="object-cover object-center transition-transform duration-200 ease-out will-change-transform"
+          className="object-contain object-center transition-transform duration-200 ease-out will-change-transform"
           style={{
             transformOrigin: zoomOrigin,
             transform: zoomed ? 'scale(2.25)' : 'scale(1)',
@@ -188,7 +188,7 @@ export function ProductImageGallery({ images, productName, selectedId, onSelect 
 
   if (images.length === 0) {
     return (
-      <div className="aspect-[4/5] w-full overflow-hidden bg-muted/40 sm:aspect-square">
+      <div className="aspect-square w-full overflow-hidden bg-muted/20">
         <div className="flex h-full w-full items-center justify-center text-sm text-muted-foreground">No image</div>
       </div>
     );
@@ -257,7 +257,7 @@ export function ProductImageGallery({ images, productName, selectedId, onSelect 
                     index={idx}
                     total={images.length}
                     onSelect={onSelect}
-                    className="h-[4rem] w-[4rem] sm:h-[4.25rem] sm:w-[4.25rem]"
+                    className="aspect-square h-[4rem] w-[4rem] sm:h-[4.25rem] sm:w-[4.25rem]"
                   />
                 </SwiperSlide>
               ))}

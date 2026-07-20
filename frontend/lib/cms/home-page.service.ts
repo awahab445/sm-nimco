@@ -105,6 +105,8 @@ export async function getHomePageSections(): Promise<HomeSection[]> {
           title?: string | null;
           subtitle?: string | null;
           imageUrl?: string | null;
+          mobileImageUrl?: string | null;
+          imageUrlTablet?: string | null;
           ctaLabel?: string | null;
           ctaHref?: string | null;
           textAlign?: string | null;
@@ -125,6 +127,8 @@ export async function getHomePageSections(): Promise<HomeSection[]> {
             title: s.title?.trim() || undefined,
             subtitle: s.subtitle?.trim() || undefined,
             imageUrl: resolveImageUrl(s.imageUrl ?? undefined),
+            mobileImageUrl: resolveImageUrl(s.mobileImageUrl ?? undefined) || undefined,
+            imageUrlTablet: resolveImageUrl(s.imageUrlTablet ?? undefined) || undefined,
             ctaLabel: s.ctaLabel?.trim() || undefined,
             ctaHref: s.ctaHref?.trim() || undefined,
             textAlign,

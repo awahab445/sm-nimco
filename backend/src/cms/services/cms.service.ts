@@ -233,6 +233,12 @@ export class CmsService {
       slides: slider.slides.map((slide) => ({
         ...slide,
         imageUrl: normalizeCmsUploadImageUrl(slide.imageUrl),
+        mobileImageUrl: slide.mobileImageUrl
+          ? normalizeCmsUploadImageUrl(slide.mobileImageUrl)
+          : null,
+        imageUrlTablet: slide.imageUrlTablet
+          ? normalizeCmsUploadImageUrl(slide.imageUrlTablet)
+          : null,
       })),
     };
   }
@@ -251,6 +257,12 @@ export class CmsService {
             title: slide.title,
             subtitle: slide.subtitle,
             imageUrl: normalizeCmsUploadImageUrl(slide.imageUrl),
+            mobileImageUrl: slide.mobileImageUrl
+              ? normalizeCmsUploadImageUrl(slide.mobileImageUrl)
+              : null,
+            imageUrlTablet: slide.imageUrlTablet
+              ? normalizeCmsUploadImageUrl(slide.imageUrlTablet)
+              : null,
             ctaLabel: slide.ctaLabel,
             ctaHref: slide.ctaHref,
             textAlign: slide.textAlign ?? 'left',
@@ -286,6 +298,12 @@ export class CmsService {
                   title: slide.title,
                   subtitle: slide.subtitle,
                   imageUrl: normalizeCmsUploadImageUrl(slide.imageUrl),
+                  mobileImageUrl: slide.mobileImageUrl
+                    ? normalizeCmsUploadImageUrl(slide.mobileImageUrl)
+                    : null,
+                  imageUrlTablet: slide.imageUrlTablet
+                    ? normalizeCmsUploadImageUrl(slide.imageUrlTablet)
+                    : null,
                   ctaLabel: slide.ctaLabel,
                   ctaHref: slide.ctaHref,
                   textAlign: slide.textAlign ?? 'left',

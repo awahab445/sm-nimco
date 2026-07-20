@@ -412,7 +412,7 @@ export function ProductDetailClient() {
           <div className="h-3 w-40 animate-pulse bg-muted/30" />
         </div>
         <div className="lg:grid lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:items-start lg:gap-14">
-          <div className="aspect-[4/5] w-full animate-pulse bg-muted/40 sm:aspect-square" />
+          <div className="aspect-square w-full animate-pulse bg-muted/20" />
           <div className="mt-6 space-y-4 px-4 sm:px-6 lg:mt-0 lg:px-0 lg:pt-2">
             <div className="h-6 w-2/3 animate-pulse bg-muted/40" />
             <div className="h-4 w-24 animate-pulse bg-muted/30" />
@@ -666,7 +666,7 @@ export function ProductDetailClient() {
           {stickyThumb ? (
             <div className="relative hidden h-[3.25rem] w-[3.25rem] shrink-0 overflow-hidden rounded-full bg-muted md:block">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={stickyThumb} alt="" className="h-full w-full object-cover" />
+              <img src={stickyThumb} alt="" className="h-full w-full object-contain" />
             </div>
           ) : null}
           <div className="hidden min-w-0 flex-1 md:block">

@@ -39,6 +39,10 @@ export type CmsSlide = {
   title: string;
   subtitle?: string | null;
   imageUrl: string;
+  /** Optional mobile art-direction / auto mobile WebP. */
+  mobileImageUrl?: string | null;
+  /** Auto tablet WebP variant. */
+  imageUrlTablet?: string | null;
   ctaLabel?: string | null;
   ctaHref?: string | null;
   textAlign?: CmsSlideTextAlign | null;
@@ -67,6 +71,8 @@ export type CmsSlideInput = {
   title: string;
   subtitle?: string;
   imageUrl: string;
+  mobileImageUrl?: string | null;
+  imageUrlTablet?: string | null;
   ctaLabel?: string;
   ctaHref?: string;
   textAlign?: CmsSlideTextAlign;
@@ -132,18 +138,27 @@ export const cmsApi = {
   deleteSlider: (id: string) =>
     fetchApi<void>(`/admin/cms/sliders/${id}`, { method: 'DELETE' }),
 
-  /** Upload a banner image; returns absolute `url` suitable for slide `imageUrl`. */
-  uploadSliderSlideImage: (file: File) => uploadCmsSlideFile(file),
+  /** Upload a banner image; returns `url` + optional `variants` (mobile/tablet/desktop). */
+  uploadSliderSlideImage: (file: File, purpose?: 'desktop' | 'mobile') =>
+    uploadCmsSlideFile(file, purpose),
 };
 
-async function uploadCmsSlideFile(file: File): Promise<{ url: string; filename: string }> {
+async function uploadCmsSlideFile(
+  file: File,
+  purpose: 'desktop' | 'mobile' = 'desktop',
+): Promise<{
+  url: string;
+  filename: string;
+  variants?: { mobile: string; tablet: string; desktop: string };
+}> {
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
   const formData = new FormData();
   formData.append('file', file);
   const headers = new Headers();
   const token = getToken();
   if (token) headers.set('Authorization', `Bearer ${token}`);
-  const response = await fetch(`${baseUrl}/admin/cms/slides/upload`, {
+  const query = purpose === 'mobile' ? '?purpose=mobile' : '';
+  const response = await fetch(`${baseUrl}/admin/cms/slides/upload${query}`, {
     method: 'POST',
     body: formData,
     credentials: 'include',
@@ -159,5 +174,9 @@ async function uploadCmsSlideFile(file: File): Promise<{ url: string; filename: 
     }
     throw new Error(message);
   }
-  return response.json() as Promise<{ url: string; filename: string }>;
+  return response.json() as Promise<{
+    url: string;
+    filename: string;
+    variants?: { mobile: string; tablet: string; desktop: string };
+  }>;
 }

@@ -37,6 +37,8 @@ type SliderDraft = {
     title: string;
     subtitle: string;
     imageUrl: string;
+    mobileImageUrl: string;
+    imageUrlTablet: string;
     ctaLabel: string;
     ctaHref: string;
     textAlign: 'left' | 'center' | 'right';
@@ -78,6 +80,8 @@ const emptySlider: SliderDraft = {
       title: '',
       subtitle: '',
       imageUrl: '',
+      mobileImageUrl: '',
+      imageUrlTablet: '',
       ctaLabel: '',
       ctaHref: '',
       textAlign: 'left',
@@ -101,6 +105,8 @@ const homeHeroSliderPreset: SliderDraft = {
       title: 'Homepage banner',
       subtitle: 'Update this slide in CMS to change storefront hero instantly.',
       imageUrl: '/themes/mehfil-shereen/banner1.jpeg',
+      mobileImageUrl: '',
+      imageUrlTablet: '',
       ctaLabel: 'Shop now',
       ctaHref: '/products',
       textAlign: 'left',
@@ -247,6 +253,8 @@ export function CmsManager() {
           title: s.title.trim().slice(0, 255),
           subtitle: s.subtitle.trim().slice(0, 500) || undefined,
           imageUrl: s.imageUrl.trim(),
+          mobileImageUrl: null,
+          imageUrlTablet: s.imageUrlTablet.trim() || null,
           ctaLabel: s.ctaLabel.trim().slice(0, 120) || undefined,
           ctaHref: s.ctaHref.trim().slice(0, 500) || undefined,
           textAlign: s.textAlign,
@@ -557,6 +565,8 @@ export function CmsManager() {
                           title: '',
                           subtitle: '',
                           imageUrl: '',
+                          mobileImageUrl: '',
+                          imageUrlTablet: '',
                           ctaLabel: '',
                           ctaHref: '',
                           textAlign: 'left',
@@ -623,6 +633,8 @@ export function CmsManager() {
                         title: slide.title,
                         subtitle: slide.subtitle ?? '',
                         imageUrl: slide.imageUrl,
+                        mobileImageUrl: slide.mobileImageUrl ?? '',
+                        imageUrlTablet: slide.imageUrlTablet ?? '',
                         ctaLabel: slide.ctaLabel ?? '',
                         ctaHref: slide.ctaHref ?? '',
                         textAlign: slide.textAlign === 'center' || slide.textAlign === 'right' ? slide.textAlign : 'left',
@@ -782,7 +794,7 @@ function SlideFields({
   onChange: (next: SliderDraft['slides'][number]) => void;
   onRemove: () => void;
 }) {
-  const fileRef = useRef<HTMLInputElement>(null);
+  const desktopFileRef = useRef<HTMLInputElement>(null);
   const [uploadBusy, setUploadBusy] = useState(false);
   const [uploadErr, setUploadErr] = useState<string | null>(null);
 
@@ -792,15 +804,20 @@ function SlideFields({
     sliderSlideWidthPx > 0 &&
     sliderSlideHeightPx > 0;
 
-  const onFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onDesktopFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = '';
     if (!file) return;
     setUploadErr(null);
     setUploadBusy(true);
     try {
-      const { url } = await cmsApi.uploadSliderSlideImage(file);
-      onChange({ ...slide, imageUrl: url });
+      const result = await cmsApi.uploadSliderSlideImage(file, 'desktop');
+      onChange({
+        ...slide,
+        imageUrl: result.url,
+        imageUrlTablet: result.variants?.tablet ?? '',
+        mobileImageUrl: '',
+      });
     } catch (err) {
       setUploadErr(formatApiError(err));
     } finally {
@@ -813,11 +830,11 @@ function SlideFields({
       <Input label="Title (headline on banner)" value={slide.title} onChange={(v) => onChange({ ...slide, title: v.slice(0, 255) })} />
       <p className="text-[11px] text-zinc-500">Leave title, subtitle, and CTA empty for an image-only slide.</p>
       <input
-        ref={fileRef}
+        ref={desktopFileRef}
         type="file"
         accept="image/jpeg,image/png,image/webp,image/gif,image/avif,.jpg,.jpeg,.png,.webp,.gif,.avif"
         className="hidden"
-        onChange={(e) => void onFileSelected(e)}
+        onChange={(e) => void onDesktopFileSelected(e)}
       />
       <div className="space-y-1">
         <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">Banner image</span>
@@ -825,17 +842,19 @@ function SlideFields({
           <button
             type="button"
             disabled={uploadBusy}
-            onClick={() => fileRef.current?.click()}
+            onClick={() => desktopFileRef.current?.click()}
             className="rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-xs font-medium text-zinc-800 disabled:opacity-50 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
           >
-            {uploadBusy ? 'Uploading…' : 'Upload file'}
+            {uploadBusy ? 'Uploading…' : 'Upload image'}
           </button>
-          <span className="text-xs text-zinc-500">JPEG, PNG, WebP, GIF, AVIF · max 8MB</span>
+          <span className="text-xs text-zinc-500">
+            One image for all devices · scales fluidly · JPEG/PNG/WebP · max 8MB
+          </span>
         </div>
         {uploadErr ? <p className="text-xs text-red-600 dark:text-red-400">{uploadErr}</p> : null}
       </div>
       <Input
-        label="Image URL (optional if you uploaded)"
+        label="Image URL"
         value={slide.imageUrl}
         onChange={(v) => onChange({ ...slide, imageUrl: v })}
       />
@@ -850,20 +869,14 @@ function SlideFields({
                 }
               : sliderSlideWidthPx && sliderSlideWidthPx > 0
                 ? { maxWidth: Math.min(sliderSlideWidthPx, 560) }
-                : sliderSlideHeightPx && sliderSlideHeightPx > 0
-                  ? { maxHeight: Math.min(sliderSlideHeightPx, 220) }
-                  : undefined
+                : undefined
           }
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={resolveAdminImageUrl(slide.imageUrl)}
             alt=""
-            className={
-              previewAspectLocked
-                ? 'h-full w-full object-contain object-center bg-zinc-100 dark:bg-zinc-900'
-                : 'h-28 w-full object-contain object-center bg-zinc-100 dark:bg-zinc-900'
-            }
+            className="h-auto w-full object-contain object-center bg-zinc-100 dark:bg-zinc-900"
           />
           {(slide.title.trim() || slide.subtitle.trim() || slide.ctaLabel.trim()) && (
             <div

@@ -809,7 +809,12 @@ model CmsBannerSlide {
   sliderId     String          @map("slider_id")
   title        String          @db.VarChar(255)
   subtitle     String?
+  /// Primary / desktop banner image (required).
   imageUrl     String          @map("image_url")
+  /// Optional mobile art-direction image, or auto-generated mobile WebP from upload.
+  mobileImageUrl String?       @map("mobile_image_url")
+  /// Auto-generated tablet WebP variant from desktop upload.
+  imageUrlTablet String?       @map("image_url_tablet")
   ctaLabel     String?         @map("cta_label") @db.VarChar(120)
   ctaHref      String?         @map("cta_href") @db.VarChar(500)
   /// Horizontal text overlay alignment relative to the banner.

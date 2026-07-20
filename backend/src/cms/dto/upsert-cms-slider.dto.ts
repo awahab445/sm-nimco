@@ -30,6 +30,16 @@ class UpsertCmsSlideDto {
   @IsString()
   imageUrl!: string;
 
+  /** Optional mobile art-direction (or auto mobile WebP from desktop upload). */
+  @IsOptional()
+  @IsString()
+  mobileImageUrl?: string | null;
+
+  /** Auto-generated tablet WebP from desktop upload. */
+  @IsOptional()
+  @IsString()
+  imageUrlTablet?: string | null;
+
   @IsOptional()
   @IsString()
   @MaxLength(120)
