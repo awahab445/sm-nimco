@@ -169,7 +169,10 @@ export function SiteConfigForm() {
           Site settings
         </h1>
         <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-          Upload a custom storefront logo and adjust logo dimensions for the navbar.
+          Store logo, announcement banner, and social links shown in the storefront footer.
+        </p>
+        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+          Store logo, announcement banner, and social links shown in the storefront footer.
         </p>
       </div>
 

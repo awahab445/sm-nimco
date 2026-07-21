@@ -125,7 +125,7 @@ export default function WishlistPage() {
               >
                 <Link
                   href={`/products/${product.slug}`}
-                  className="relative h-28 w-full shrink-0 overflow-hidden bg-muted sm:h-24 sm:w-24"
+                  className="relative h-28 w-full shrink-0 overflow-hidden bg-neutral-50 sm:h-24 sm:w-24"
                 >
                   {imageUrl ? (
                     <StorefrontImage
@@ -133,7 +133,7 @@ export default function WishlistPage() {
                       alt={imageAlt(image, product.name)}
                       fill
                       sizes="96px"
-                      className="object-cover"
+                      className="object-contain object-center"
                       quality={70}
                     />
                   ) : (

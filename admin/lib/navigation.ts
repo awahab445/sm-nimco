@@ -165,7 +165,7 @@ export const adminNavGroups: NavGroup[] = [
       {
         href: '/settings/site-config',
         label: 'Site settings',
-        description: 'Store logo and branding dimensions',
+        description: 'Logo, announcement bar, and social media links',
         phase: 'N',
         requirePermission: ['settings.manage'],
       },

@@ -330,9 +330,28 @@ export interface StorefrontSiteConfig {
   showAnnouncement: boolean;
 }
 
+export type StorefrontSocialPlatform =
+  | 'facebook'
+  | 'x'
+  | 'instagram'
+  | 'youtube'
+  | 'pinterest'
+  | 'tiktok'
+  | 'whatsapp'
+  | 'linkedin';
+
+export type StorefrontSocialLink = {
+  id: string;
+  platform: StorefrontSocialPlatform;
+  url: string;
+  sortOrder: number;
+};
+
 export const siteConfigApi = {
   getSiteConfig: (): Promise<{ data: StorefrontSiteConfig }> =>
     fetchApi<{ data: StorefrontSiteConfig }>('/settings/site-config'),
+  getSocialLinks: (): Promise<{ data: StorefrontSocialLink[] }> =>
+    fetchApi<{ data: StorefrontSocialLink[] }>('/settings/social-links'),
 };
 
 export type StorefrontPolicyPage = {

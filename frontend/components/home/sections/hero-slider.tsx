@@ -9,7 +9,6 @@ import type {
   HeroSlideTextPosition,
 } from '@/lib/cms/home-page-types';
 import { resolveImageUrl } from '@/lib/resolve-image-url';
-import { storefrontUi } from '@/lib/storefront-ui';
 import { useHydrated } from '@/lib/use-hydrated';
 import { StorefrontImage } from '@/components/ui/storefront-image';
 
@@ -164,17 +163,28 @@ export function HeroSlider({
 
   const subtitleClass = `max-w-prose text-[clamp(0.65rem,1.8cqw,1.125rem)] leading-[1.25] ${subtitleTone} ${subtitleShadow}`;
 
-  const ctaFluid =
-    'shrink-0 px-[clamp(0.5rem,3cqw,1.5rem)] py-[clamp(0.25rem,1.2cqw,0.75rem)] text-[clamp(0.6rem,1.5cqw,0.875rem)] leading-none';
-  const ctaClass = hasImage
-    ? isLightText
-      ? `inline-flex ${storefrontUi.btnPrimaryInverted} ${ctaFluid}`
-      : `inline-flex ${storefrontUi.btnPrimary} ${ctaFluid}`
-    : `inline-flex ${storefrontUi.btnPrimary} ${ctaFluid}`;
+  const ctaAlign =
+    textAlign === 'center'
+      ? 'self-center'
+      : textAlign === 'right'
+        ? 'self-end'
+        : 'self-start';
+
+  const ctaBrand =
+    hasImage && isLightText ? 'btn-brand-inverted' : 'btn-brand-primary';
+
+  const ctaClass = [
+    ctaBrand,
+    'inline-flex w-fit shrink-0 items-center justify-center',
+    ctaAlign,
+    'px-6 py-2.5 text-xs md:px-8 md:py-3 md:text-sm',
+    'focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2 focus:ring-offset-background',
+    'disabled:cursor-not-allowed disabled:opacity-50',
+  ].join(' ');
 
   /**
    * Text column stays in the copy half of the banner so it doesn't collide with product art.
-   * Flex + fluid gap keeps title / subtitle / CTA proportional as the banner scales.
+   * `items-*` prevents flex stretch so the CTA stays content-sized (not full column width).
    */
   const overlayColumnClass = [
     'flex flex-col gap-[clamp(0.35rem,1.5cqw,1.25rem)]',
@@ -182,7 +192,7 @@ export function HeroSlider({
       ? 'w-full max-w-[60%] items-center'
       : textAlign === 'right'
         ? 'w-full max-w-[55%] items-end'
-        : 'w-full max-w-[55%]',
+        : 'w-full max-w-[55%] items-start',
   ].join(' ');
 
   const softScrimClass = isLightText

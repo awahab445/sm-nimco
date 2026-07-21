@@ -126,7 +126,7 @@ export function ProductCard({
 
   const media = (
     <div
-      className={`product-card__media relative w-full overflow-hidden bg-muted ${
+      className={`product-card__media relative w-full overflow-hidden bg-neutral-50 ${
         isList
           ? /* Mobile list: full-bleed stacked image; md+: side thumbnail */
             'product-card__media--list-bleed aspect-[4/5] md:aspect-[3/4] md:w-40 md:shrink-0 lg:w-48'
@@ -144,7 +144,7 @@ export function ProductCard({
                 ? '(min-width: 768px) 12rem, 100vw'
                 : '(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 50vw'
             }
-            className="h-full w-full object-cover object-center transition-transform duration-500 ease-out group-hover:scale-105"
+            className="h-full w-full object-contain object-center transition-transform duration-500 ease-out group-hover:scale-105"
             loading="lazy"
             quality={70}
           />
