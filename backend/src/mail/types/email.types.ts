@@ -34,12 +34,29 @@ export type SocialLinks = {
   linkedin?: string;
 };
 
+/** Useful storefront links shown in the shared email footer. */
+export type BrandFooterLinks = {
+  shop: string;
+  trackOrder: string;
+  privacy?: string;
+  terms?: string;
+  support?: string;
+};
+
 export type BrandConfig = {
   storeName: string;
+  /** Absolute HTTPS (or http in dev) URL — required for email clients. */
   logoUrl?: string;
+  /** Charcoal / navy text accents (Essa foreground). */
   primaryColor: string;
+  /** Orange CTA accent (`#ff4800`). */
+  ctaColor: string;
   accentColor: string;
   textColor: string;
+  mutedTextColor: string;
+  footerTextColor: string;
   backgroundColor: string;
+  borderColor: string;
   social: SocialLinks;
+  links: BrandFooterLinks;
 };

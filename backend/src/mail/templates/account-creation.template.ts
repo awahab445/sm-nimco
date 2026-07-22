@@ -13,11 +13,11 @@ export function renderAccountCreationEmail(options: {
 
   const bodyHtml = `
     <h1 style="margin:0 0 12px;font-size:24px;line-height:1.3;color:${brand.textColor};">Create Your Password</h1>
-    <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#374151;">
+    <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:${brand.textColor};">
       You requested to create an account password for ${escapeHtml(brand.storeName)}. Click the button below to set your password and access your order history.
     </p>
     ${renderPrimaryButton(setPasswordUrl, 'Create Password', brand)}
-    <p style="margin:0;font-size:13px;line-height:1.6;color:#6b7280;">
+    <p style="margin:0;font-size:13px;line-height:1.6;color:${brand.mutedTextColor};">
       This link expires soon. If you did not request this, you can safely ignore this email.
     </p>`;
 

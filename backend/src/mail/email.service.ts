@@ -27,27 +27,56 @@ export class EmailService {
     ).replace(/\/$/, '');
   }
 
-  private get apiBaseUrl(): string {
-    return (
-      process.env.APP_URL ||
-      process.env.API_URL ||
-      `http://localhost:${process.env.PORT || 3000}`
-    ).replace(/\/$/, '');
+  /**
+   * Absolute logo URL for email clients (relative paths will not load).
+   * Prefer STORE_LOGO_URL; otherwise FRONTEND_URL + /logo.png (or a relative path).
+   */
+  private resolveLogoUrl(): string | undefined {
+    const explicit = process.env.STORE_LOGO_URL?.trim();
+    if (explicit) {
+      if (/^https?:\/\//i.test(explicit)) {
+        return explicit;
+      }
+      const path = explicit.startsWith('/') ? explicit : `/${explicit}`;
+      return `${this.storefrontUrl}${path}`;
+    }
+
+    // Default storefront public asset used by the header when no override is set.
+    return `${this.storefrontUrl}/logo.png`;
   }
 
   private getBrandConfig(): BrandConfig {
+    const base = this.storefrontUrl;
+    const supportUrl =
+      process.env.STORE_SUPPORT_URL?.trim() || `${base}/shipping-returns`;
+
     return {
-      storeName: process.env.STORE_NAME || 'M. Essa Chemicals',
-      logoUrl: process.env.STORE_LOGO_URL || undefined,
-      primaryColor: process.env.STORE_BRAND_PRIMARY || '#4f90f1',
-      accentColor: process.env.STORE_BRAND_ACCENT || '#3577d9',
-      textColor: process.env.STORE_BRAND_TEXT || '#1A2E40',
-      backgroundColor: process.env.STORE_BRAND_BG || '#F5F5F5',
+      storeName: process.env.STORE_NAME?.trim() || 'M. ESSA CHEMICALS',
+      logoUrl: this.resolveLogoUrl(),
+      // Essa Chemicals: charcoal text, orange CTAs (aligned with storefront theme)
+      primaryColor: process.env.STORE_BRAND_PRIMARY || '#222222',
+      ctaColor: process.env.STORE_BRAND_CTA || '#ff4800',
+      accentColor: process.env.STORE_BRAND_ACCENT || '#ff6a33',
+      textColor: process.env.STORE_BRAND_TEXT || '#222222',
+      mutedTextColor: process.env.STORE_BRAND_MUTED || '#878787',
+      footerTextColor: process.env.STORE_BRAND_FOOTER_TEXT || '#32355d',
+      backgroundColor: process.env.STORE_BRAND_BG || '#f5f5f5',
+      borderColor: process.env.STORE_BRAND_BORDER || '#eeeeee',
       social: {
         facebook: process.env.STORE_SOCIAL_FACEBOOK || undefined,
         instagram: process.env.STORE_SOCIAL_INSTAGRAM || undefined,
         twitter: process.env.STORE_SOCIAL_TWITTER || undefined,
         linkedin: process.env.STORE_SOCIAL_LINKEDIN || undefined,
+      },
+      links: {
+        shop: process.env.STORE_SHOP_URL?.trim() || base,
+        trackOrder:
+          process.env.STORE_TRACK_ORDER_URL?.trim() || `${base}/track-order`,
+        privacy:
+          process.env.STORE_PRIVACY_URL?.trim() || `${base}/privacy-policy`,
+        terms:
+          process.env.STORE_TERMS_URL?.trim() || `${base}/terms-conditions`,
+        support: supportUrl,
       },
     };
   }
@@ -160,7 +189,7 @@ export class EmailService {
   ): Promise<void> {
     const brand = this.getBrandConfig();
     const normalizedEmail = userEmail.toLowerCase().trim();
-    const supportUrl = `${this.storefrontUrl}/contact`;
+    const supportUrl = brand.links.support;
 
     const { subject, html, text } = renderOrderCancellationEmail({
       brand,

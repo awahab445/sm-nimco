@@ -15,20 +15,20 @@ export function renderEmailVerificationEmail(options: {
 
   const bodyHtml = `
     <h1 style="margin:0 0 12px;font-size:24px;line-height:1.3;color:${brand.textColor};">Verify your email</h1>
-    <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#374151;">
+    <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:${brand.textColor};">
       Hi ${escapeHtml(greetingName)},
     </p>
-    <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#374151;">
+    <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:${brand.textColor};">
       Thanks for signing up with ${escapeHtml(brand.storeName)}. Please confirm your email address to activate your account and start shopping.
     </p>
     ${renderPrimaryButton(verificationUrl, 'Verify Email Address', brand)}
-    <p style="margin:0 0 12px;font-size:13px;line-height:1.6;color:#6b7280;">
+    <p style="margin:0 0 12px;font-size:13px;line-height:1.6;color:${brand.mutedTextColor};">
       Or copy and paste this link into your browser:
     </p>
-    <p style="margin:0 0 16px;font-size:12px;line-height:1.5;color:#4f90f1;word-break:break-all;">
+    <p style="margin:0 0 16px;font-size:12px;line-height:1.5;color:${brand.ctaColor};word-break:break-all;">
       ${escapeHtml(verificationUrl)}
     </p>
-    <p style="margin:0;font-size:13px;line-height:1.6;color:#6b7280;">
+    <p style="margin:0;font-size:13px;line-height:1.6;color:${brand.mutedTextColor};">
       If you did not create an account, you can safely ignore this email.
     </p>`;
 

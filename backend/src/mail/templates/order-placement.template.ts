@@ -14,18 +14,18 @@ function renderOrderItemsTable(
     .map(
       (item) => `
       <tr>
-        <td style="padding:12px 10px;border-bottom:1px solid #e5e7eb;font-size:14px;color:${brand.textColor};">${escapeHtml(item.name)}</td>
-        <td align="center" style="padding:12px 10px;border-bottom:1px solid #e5e7eb;font-size:14px;color:#374151;">${item.quantity}</td>
-        <td align="right" style="padding:12px 10px;border-bottom:1px solid #e5e7eb;font-size:14px;color:#374151;">${formatCurrency(item.unitPrice, order.currency)}</td>
-        <td align="right" style="padding:12px 10px;border-bottom:1px solid #e5e7eb;font-size:14px;font-weight:600;color:${brand.textColor};">${formatCurrency(item.lineTotal, order.currency)}</td>
+        <td style="padding:12px 10px;border-bottom:1px solid ${brand.borderColor};font-size:14px;color:${brand.textColor};">${escapeHtml(item.name)}</td>
+        <td align="center" style="padding:12px 10px;border-bottom:1px solid ${brand.borderColor};font-size:14px;color:${brand.mutedTextColor};">${item.quantity}</td>
+        <td align="right" style="padding:12px 10px;border-bottom:1px solid ${brand.borderColor};font-size:14px;color:${brand.mutedTextColor};">${formatCurrency(item.unitPrice, order.currency)}</td>
+        <td align="right" style="padding:12px 10px;border-bottom:1px solid ${brand.borderColor};font-size:14px;font-weight:600;color:${brand.textColor};">${formatCurrency(item.lineTotal, order.currency)}</td>
       </tr>`,
     )
     .join('');
 
   return `
-    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;margin:20px 0;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border:1px solid ${brand.borderColor};border-radius:4px;overflow:hidden;margin:20px 0;">
       <thead>
-        <tr style="background-color:#eef4fe;">
+        <tr style="background-color:#fafafa;">
           <th align="left" style="padding:12px 10px;font-size:12px;text-transform:uppercase;letter-spacing:0.4px;color:${brand.textColor};">Product</th>
           <th align="center" style="padding:12px 10px;font-size:12px;text-transform:uppercase;letter-spacing:0.4px;color:${brand.textColor};">Qty</th>
           <th align="right" style="padding:12px 10px;font-size:12px;text-transform:uppercase;letter-spacing:0.4px;color:${brand.textColor};">Price</th>
@@ -41,8 +41,8 @@ function renderOrderItemsTable(
 function renderTotals(order: OrderEmailDetails, brand: BrandConfig): string {
   const row = (label: string, value: number, bold = false) => `
     <tr>
-      <td style="padding:6px 0;font-size:14px;color:#6b7280;${bold ? `font-weight:700;color:${brand.textColor};` : ''}">${label}</td>
-      <td align="right" style="padding:6px 0;font-size:14px;color:${bold ? brand.textColor : '#374151'};${bold ? 'font-weight:700;font-size:16px;' : ''}">${formatCurrency(value, order.currency)}</td>
+      <td style="padding:6px 0;font-size:14px;color:${bold ? brand.textColor : brand.mutedTextColor};${bold ? 'font-weight:700;' : ''}">${label}</td>
+      <td align="right" style="padding:6px 0;font-size:${bold ? '16px' : '14px'};color:${brand.textColor};${bold ? 'font-weight:700;' : ''}">${formatCurrency(value, order.currency)}</td>
     </tr>`;
 
   return `
@@ -72,22 +72,22 @@ export function renderOrderPlacementEmail(options: {
 
   const bodyHtml = `
     <h1 style="margin:0 0 8px;font-size:24px;line-height:1.3;color:${brand.textColor};">Order Confirmed</h1>
-    <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#374151;">
+    <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:${brand.textColor};">
       Hi ${escapeHtml(customerName)}, thank you for your order. We have received it and will begin processing it shortly.
     </p>
-    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#f8fafc;border:1px solid #e5e7eb;border-radius:8px;margin-bottom:8px;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#fafafa;border:1px solid ${brand.borderColor};border-radius:4px;margin-bottom:8px;">
       <tr>
         <td style="padding:14px 16px;">
-          <p style="margin:0;font-size:13px;color:#6b7280;">Order Number</p>
+          <p style="margin:0;font-size:13px;color:${brand.mutedTextColor};">Order Number</p>
           <p style="margin:4px 0 0;font-size:18px;font-weight:700;color:${brand.textColor};">${escapeHtml(order.orderNumber)}</p>
-          <p style="margin:8px 0 0;font-size:12px;color:#6b7280;">Placed on ${escapeHtml(placedDate)}</p>
+          <p style="margin:8px 0 0;font-size:12px;color:${brand.mutedTextColor};">Placed on ${escapeHtml(placedDate)}</p>
         </td>
       </tr>
     </table>
     ${renderOrderItemsTable(order, brand)}
     ${renderTotals(order, brand)}
     ${trackButton}
-    <p style="margin:0;font-size:13px;line-height:1.6;color:#6b7280;">
+    <p style="margin:0;font-size:13px;line-height:1.6;color:${brand.mutedTextColor};">
       If you have any questions about your order, reply to this email or contact our support team.
     </p>`;
 

@@ -22,15 +22,15 @@ export function renderOrderCancellationEmail(options: {
   });
 
   const reasonBlock = order.reason
-    ? `<p style="margin:0 0 16px;font-size:14px;line-height:1.6;color:#374151;"><strong>Reason:</strong> ${escapeHtml(order.reason)}</p>`
+    ? `<p style="margin:0 0 16px;font-size:14px;line-height:1.6;color:${brand.textColor};"><strong>Reason:</strong> ${escapeHtml(order.reason)}</p>`
     : '';
 
   const refundBlock = `
-    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#fef2f2;border:1px solid #fecaca;border-radius:8px;margin:16px 0;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#fff7f5;border:1px solid #ffd4c7;border-radius:4px;margin:16px 0;">
       <tr>
         <td style="padding:14px 16px;">
-          <p style="margin:0 0 4px;font-size:13px;font-weight:700;color:#991b1b;">Refund Status</p>
-          <p style="margin:0;font-size:14px;line-height:1.6;color:#7f1d1d;">${escapeHtml(order.refundMessage)}</p>
+          <p style="margin:0 0 4px;font-size:13px;font-weight:700;color:${brand.ctaColor};">Refund Status</p>
+          <p style="margin:0;font-size:14px;line-height:1.6;color:${brand.textColor};">${escapeHtml(order.refundMessage)}</p>
         </td>
       </tr>
     </table>`;
@@ -41,16 +41,16 @@ export function renderOrderCancellationEmail(options: {
 
   const bodyHtml = `
     <h1 style="margin:0 0 8px;font-size:24px;line-height:1.3;color:${brand.textColor};">Order Cancelled</h1>
-    <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#374151;">
+    <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:${brand.textColor};">
       Hi ${escapeHtml(customerName)}, your order <strong>${escapeHtml(order.orderNumber)}</strong> has been cancelled as of ${escapeHtml(cancelledDate)}.
     </p>
     ${reasonBlock}
     ${refundBlock}
-    <p style="margin:0 0 8px;font-size:14px;color:#374151;">
+    <p style="margin:0 0 8px;font-size:14px;color:${brand.textColor};">
       Order total: <strong>${formatCurrency(order.grandTotal, order.currency)}</strong>
     </p>
     ${supportButton}
-    <p style="margin:0;font-size:13px;line-height:1.6;color:#6b7280;">
+    <p style="margin:0;font-size:13px;line-height:1.6;color:${brand.mutedTextColor};">
       If this cancellation was unexpected, please contact us immediately.
     </p>`;
 
