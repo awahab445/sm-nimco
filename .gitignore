@@ -1,5 +1,12 @@
 # Dependencies
 node_modules/
+.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
 
 # Logs & debug
 logs/
@@ -14,6 +21,10 @@ yarn-error.log*
 .env.*
 !.env.example
 !.env.local.example
+!**/.env.example
+!**/.env.local.example
+!**/*.env.example
+!**/*.env.*.example
 deploy/env/demo.env
 deploy/env/docker.env
 
@@ -21,6 +32,7 @@ deploy/env/docker.env
 .next/
 out/
 .turbopack/
+.turbo/
 .vercel/
 
 # Builds
@@ -30,7 +42,14 @@ build/
 
 # Tests & coverage
 coverage/
+.nyc_output/
 .jest/
+
+# Caches & temp
+.cache/
+tmp/
+temp/
+*.tmp
 
 # OS & editors
 .DS_Store
@@ -39,6 +58,7 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+*~
 
 # Optional: keep shared VS Code recommendations if you add them later
 # .vscode/
@@ -46,3 +66,8 @@ Thumbs.db
 # Prisma / local DB
 *.db
 *.db-journal
+
+# Runtime uploads that may contain user data (catalog assets already tracked stay tracked)
+backend/uploads/orders/
+backend/uploads/users/
+backend/uploads/avatars/
