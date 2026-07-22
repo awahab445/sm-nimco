@@ -549,6 +549,10 @@ export const cartApi = {
       fbp?: string;
       fbc?: string;
       eventSourceUrl?: string;
+      externalId?: string;
+      email?: string;
+      phone?: string;
+      fbLoginId?: string;
     },
   ) =>
     fetchApi<Cart>(`/cart/${encodeURIComponent(cartId)}/items`, {
@@ -623,6 +627,10 @@ export const checkoutApi = {
       fbp?: string;
       fbc?: string;
       eventSourceUrl?: string;
+      externalId?: string;
+      email?: string;
+      phone?: string;
+      fbLoginId?: string;
     },
   ) =>
     fetchApi<{ checkoutId: string }>('/checkout/start', {
@@ -637,6 +645,10 @@ export const checkoutApi = {
         ...(options?.eventSourceUrl && {
           eventSourceUrl: options.eventSourceUrl,
         }),
+        ...(options?.externalId && { externalId: options.externalId }),
+        ...(options?.email && { email: options.email }),
+        ...(options?.phone && { phone: options.phone }),
+        ...(options?.fbLoginId && { fbLoginId: options.fbLoginId }),
       }),
     }),
 

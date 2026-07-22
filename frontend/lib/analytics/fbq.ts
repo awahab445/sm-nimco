@@ -45,13 +45,60 @@ function whenFbqReady(fn: () => void, attempts = 50): void {
   }, 100);
 }
 
+/** Manual Advanced Matching — plain values; Meta hashes in-browser. */
+export type MetaPixelAdvancedMatching = {
+  em?: string;
+  ph?: string;
+  external_id?: string;
+  fb_login_id?: string;
+};
+
+function cleanAdvancedMatching(
+  userData?: MetaPixelAdvancedMatching | null,
+): Record<string, string> | null {
+  if (!userData) return null;
+  const cleaned: Record<string, string> = {};
+  if (userData.em?.trim()) cleaned.em = userData.em.trim().toLowerCase();
+  if (userData.ph?.trim()) {
+    const digits = userData.ph.replace(/[^\d]/g, '');
+    if (digits) cleaned.ph = digits;
+  }
+  if (userData.external_id?.trim()) {
+    cleaned.external_id = userData.external_id.trim();
+  }
+  if (userData.fb_login_id?.trim()) {
+    cleaned.fb_login_id = userData.fb_login_id.trim();
+  }
+  return Object.keys(cleaned).length > 0 ? cleaned : null;
+}
+
+/**
+ * Refresh Pixel Advanced Matching when known customer fields are available.
+ * Re-init with the same pixel id is Meta's documented update path.
+ */
+export function setMetaAdvancedMatching(
+  userData?: MetaPixelAdvancedMatching | null,
+): void {
+  if (!isMetaPixelActive() || !runtimeConfig?.metaPixelId) return;
+  const cleaned = cleanAdvancedMatching(userData);
+  if (!cleaned) return;
+  const pixelId = runtimeConfig.metaPixelId;
+  whenFbqReady(() => {
+    window.fbq?.('init', pixelId, cleaned);
+  });
+}
+
 export function sendFBEvent(
   eventName: string,
   params?: Record<string, unknown>,
-  options?: { eventID?: string },
+  options?: { eventID?: string; userData?: MetaPixelAdvancedMatching | null },
 ): void {
   if (!isMetaPixelActive() || typeof window === 'undefined') return;
   whenFbqReady(() => {
+    const cleaned = cleanAdvancedMatching(options?.userData);
+    if (cleaned && runtimeConfig?.metaPixelId) {
+      window.fbq?.('init', runtimeConfig.metaPixelId, cleaned);
+    }
     const eventID = options?.eventID?.trim();
     if (params && Object.keys(params).length > 0) {
       if (eventID) {

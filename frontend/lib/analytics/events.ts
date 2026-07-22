@@ -10,6 +10,7 @@ import {
 import {
   canTrackMeta,
   sendFBEvent,
+  type MetaPixelAdvancedMatching,
 } from './fbq';
 import {
   cartItemToGa4Item,
@@ -18,6 +19,10 @@ import {
   productToGa4Item,
   sumItemValue,
 } from './mappers';
+import {
+  metaMatchUserToPixelData,
+  type MetaMatchUser,
+} from './meta-capi-client';
 
 function currency(): string {
   return getAnalyticsConfig()?.currency ?? 'PKR';
@@ -143,7 +148,7 @@ export function trackCustomizeProduct(
 
 function trackAddToCart(
   items: Ga4Item[],
-  options?: { eventID?: string },
+  options?: { eventID?: string; userData?: MetaPixelAdvancedMatching },
 ): void {
   if (canTrack('trackCartEvents')) {
     sendGAEvent('add_to_cart', {
@@ -155,6 +160,7 @@ function trackAddToCart(
   if (canTrackMeta('trackCartEvents')) {
     sendFBEvent('AddToCart', fbContentFromItems(items), {
       eventID: options?.eventID,
+      userData: options?.userData,
     });
   }
 }
@@ -167,6 +173,7 @@ export function trackAddToCartFromProduct(
     price?: number;
     variantSku?: string;
     eventID?: string;
+    matchUser?: MetaMatchUser | null;
   },
 ): void {
   if (!canTrack('trackCartEvents') && !canTrackMeta('trackCartEvents')) return;
@@ -178,15 +185,21 @@ export function trackAddToCartFromProduct(
       quantity,
     }),
   ];
-  trackAddToCart(items, { eventID: options?.eventID });
+  trackAddToCart(items, {
+    eventID: options?.eventID,
+    userData: metaMatchUserToPixelData(options?.matchUser),
+  });
 }
 
 export function trackAddToCartFromCartItem(
   item: Parameters<typeof cartItemToGa4Item>[0],
-  options?: { eventID?: string },
+  options?: { eventID?: string; matchUser?: MetaMatchUser | null },
 ): void {
   if (!canTrack('trackCartEvents') && !canTrackMeta('trackCartEvents')) return;
-  trackAddToCart([cartItemToGa4Item(item)], { eventID: options?.eventID });
+  trackAddToCart([cartItemToGa4Item(item)], {
+    eventID: options?.eventID,
+    userData: metaMatchUserToPixelData(options?.matchUser),
+  });
 }
 
 export function trackAddBundleToCart(
@@ -268,6 +281,7 @@ export function trackBeginCheckout(
   checkoutId: string,
   items: Ga4Item[],
   coupon?: string,
+  matchUser?: MetaMatchUser | null,
 ): void {
   if (!canTrack('trackCheckoutSteps') && !canTrackMeta('trackCheckoutSteps')) {
     return;
@@ -283,7 +297,10 @@ export function trackBeginCheckout(
     });
   }
   if (canTrackMeta('trackCheckoutSteps')) {
-    sendFBEvent('InitiateCheckout', fbContentFromItems(items), { eventID });
+    sendFBEvent('InitiateCheckout', fbContentFromItems(items), {
+      eventID,
+      userData: metaMatchUserToPixelData(matchUser),
+    });
   }
 }
 

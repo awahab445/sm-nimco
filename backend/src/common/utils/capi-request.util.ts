@@ -65,7 +65,12 @@ export function userAgentFromRequest(req?: Request): string | undefined {
 export function buildCapiUserData(
   meta: MetaCapiClientDto | undefined,
   req: Request | undefined,
-  extras?: { email?: string | null; phone?: string | null },
+  extras?: {
+    email?: string | null;
+    phone?: string | null;
+    external_id?: string | null;
+    fb_login_id?: string | null;
+  },
 ): CapiUserData {
   return {
     fbp: meta?.fbp?.trim() || null,
@@ -73,7 +78,11 @@ export function buildCapiUserData(
     event_source_url: stripPiiFromUrl(meta?.eventSourceUrl),
     client_ip_address: clientIpFromRequest(req) || null,
     client_user_agent: userAgentFromRequest(req) || null,
-    email: extras?.email?.trim() || null,
-    phone: extras?.phone?.trim() || null,
+    email: extras?.email?.trim() || meta?.email?.trim() || null,
+    phone: extras?.phone?.trim() || meta?.phone?.trim() || null,
+    external_id:
+      extras?.external_id?.trim() || meta?.externalId?.trim() || null,
+    fb_login_id:
+      extras?.fb_login_id?.trim() || meta?.fbLoginId?.trim() || null,
   };
 }

@@ -16,6 +16,7 @@ import {
 import { checkoutItemToGa4Item } from './analytics/mappers';
 import { metaCapiClientFields } from './analytics/meta-capi-client';
 import { setGuestOrderEmail } from './guest-order-session';
+import { useAuthStore } from './auth.store';
 import {
   getPendingCouponCode,
   clearPendingCouponCode,
@@ -124,9 +125,21 @@ export function CheckoutProvider({ children }: { children: React.ReactNode }) {
     async (cartId: string, options?: { customerId?: string; customerEmail?: string }) => {
       try {
         setState((prev) => ({ ...prev, isLoading: true, error: null }));
+        const authUser = useAuthStore.getState().user;
+        const matchUser = authUser
+          ? {
+              id: authUser.id,
+              email: authUser.email,
+              phone: authUser.phone,
+            }
+          : options?.customerEmail
+            ? { email: options.customerEmail }
+            : options?.customerId
+              ? { id: options.customerId }
+              : null;
         const { checkoutId } = await checkoutApi.startCheckout(cartId, {
           ...options,
-          ...metaCapiClientFields(),
+          ...metaCapiClientFields(undefined, matchUser),
         });
         let checkoutRaw = await checkoutApi.getCheckout(checkoutId);
         const pending = getPendingCouponCode();
@@ -164,7 +177,18 @@ export function CheckoutProvider({ children }: { children: React.ReactNode }) {
         }));
 
         const gaItems = checkout.items.map(checkoutItemToGa4Item);
-        trackBeginCheckout(checkoutId, gaItems, checkout.couponCode);
+        trackBeginCheckout(
+          checkoutId,
+          gaItems,
+          checkout.couponCode,
+          matchUser ??
+            (checkout.customerId || checkout.customerEmail
+              ? {
+                  id: checkout.customerId,
+                  email: checkout.customerEmail,
+                }
+              : null),
+        );
     } catch (error) {
       if (isCartNotFoundError(error)) {
         try {

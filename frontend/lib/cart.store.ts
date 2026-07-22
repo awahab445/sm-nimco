@@ -11,6 +11,7 @@ import {
   addToCartEventId,
   metaCapiClientFields,
 } from './analytics/meta-capi-client';
+import { useAuthStore } from './auth.store';
 
 const CART_ID_KEY = 'cart-id';
 
@@ -135,16 +136,24 @@ export const useCartStore = create<CartState>((set, get) => ({
     try {
       const cartId = await get().getOrCreateCartId();
       const eventId = addToCartEventId(cartId, variantId);
+      const authUser = useAuthStore.getState().user;
+      const matchUser = authUser
+        ? {
+            id: authUser.id,
+            email: authUser.email,
+            phone: authUser.phone,
+          }
+        : null;
       const cart = await cartApi.addItem(cartId, {
         productId,
         variantId,
         quantity,
-        ...metaCapiClientFields(eventId),
+        ...metaCapiClientFields(eventId, matchUser),
       });
       set({ cart, isLoading: false, error: null });
       const added = cart.items.find((i) => i.variantId === variantId);
       if (added) {
-        trackAddToCartFromCartItem(added, { eventID: eventId });
+        trackAddToCartFromCartItem(added, { eventID: eventId, matchUser });
       }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to add to cart';

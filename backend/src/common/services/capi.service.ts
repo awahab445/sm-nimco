@@ -17,6 +17,13 @@ export type CapiUserData = {
   /** Already-hashed SHA-256 hex values (skip re-hashing). */
   em?: string | string[] | null;
   ph?: string | string[] | null;
+  /**
+   * Stable customer id for matching. Sent as plain text (not hashed),
+   * per Meta Events Manager External ID parameter.
+   */
+  external_id?: string | null;
+  /** Facebook Login ID when available — plain, never invented. */
+  fb_login_id?: string | null;
   event_source_url?: string | null;
 };
 
@@ -260,6 +267,12 @@ export class CapiService {
     if (userData.client_user_agent?.trim()) {
       payload.client_user_agent = userData.client_user_agent.trim();
     }
+    if (userData.external_id?.trim()) {
+      payload.external_id = userData.external_id.trim();
+    }
+    if (userData.fb_login_id?.trim()) {
+      payload.fb_login_id = userData.fb_login_id.trim();
+    }
 
     const em = this.resolveHashedField(userData.em, userData.email, 'email');
     if (em.length) payload.em = em;
@@ -285,9 +298,14 @@ export class CapiService {
     const normalized =
       kind === 'email'
         ? raw.trim().toLowerCase()
-        : raw.replace(/[^\d]/g, '');
+        : this.normalizePhoneDigits(raw);
     if (!normalized) return [];
     return [this.hashSha256(normalized)];
+  }
+
+  /** Digits only (E.164-ish without leading +) before SHA-256. */
+  private normalizePhoneDigits(raw: string): string {
+    return raw.replace(/[^\d]/g, '');
   }
 
   /**

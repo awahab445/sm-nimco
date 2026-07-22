@@ -50,4 +50,24 @@ export class StartCheckoutDto {
   @IsString()
   @MaxLength(2048)
   eventSourceUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(256)
+  externalId?: string;
+
+  @IsOptional()
+  @IsEmail()
+  @MaxLength(255)
+  email?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(50)
+  phone?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(256)
+  fbLoginId?: string;
 }

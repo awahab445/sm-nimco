@@ -85,6 +85,7 @@ export class CheckoutService {
     let resolvedCustomerId: string | undefined;
     let resolvedCustomerGroupId: string | undefined;
     let resolvedCustomerEmail: string | undefined;
+    let resolvedCustomerPhone: string | undefined;
 
     if (customerId) {
       // If customer ID is provided, fetch customer to get group
@@ -93,6 +94,7 @@ export class CheckoutService {
         resolvedCustomerId = customer.id;
         resolvedCustomerGroupId = customer.customerGroupId;
         resolvedCustomerEmail = customer.email;
+        resolvedCustomerPhone = customer.phone ?? undefined;
         this.logger.log(
           `Using existing customer: ${resolvedCustomerId} with group: ${resolvedCustomerGroupId}`,
         );
@@ -109,6 +111,7 @@ export class CheckoutService {
       resolvedCustomerId = customer.id;
       resolvedCustomerGroupId = customer.customerGroupId;
       resolvedCustomerEmail = customer.email;
+      resolvedCustomerPhone = customer.phone ?? undefined;
       this.logger.log(
         `Resolved customer: ${resolvedCustomerId} (${customerEmail}) with group: ${resolvedCustomerGroupId}`,
       );
@@ -228,6 +231,8 @@ export class CheckoutService {
         eventId,
         buildCapiUserData(meta, req, {
           email: resolvedCustomerEmail || customerEmail,
+          phone: resolvedCustomerPhone,
+          external_id: resolvedCustomerId,
         }),
         {
           content_ids: contentIds,

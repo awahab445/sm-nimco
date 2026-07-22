@@ -13,4 +13,6 @@ export {
   addToCartEventId,
   beginCheckoutEventId,
   purchaseEventId,
+  metaMatchUserToPixelData,
 } from './meta-capi-client';
+export type { MetaMatchUser, MetaPixelUserData } from './meta-capi-client';
