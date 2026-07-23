@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SM NIMCO & Sweets - Bakery & Nimco E-Commerce Theme</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            purpleDark:  '#1E1035',
+                            purpleDeep:  '#2E1A47',
+                            goldPrimary: '#D4AF37',
+                            goldHover:   '#B89628',
+                            bgLight:     '#FAF8F5',
+                            textDark:    '#1A1A1A',
+                            whatsapp:    '#25D366'
+                        }
+                    },
+                    fontFamily: {
+                        heading: ['Playfair Display', 'serif'],
+                        body: ['Outfit', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Outfit', sans-serif; }
+        h1, h2, h3, .font-heading { font-family: 'Playfair Display', serif; }
+        .page-section { display: none; }
+        .page-section.active { display: block; }
+        .product-card:hover { transform: translateY(-5px); }
+    </style>
+</head>
+<body class="bg-brand-bgLight text-brand-textDark antialiased min-h-screen flex flex-col justify-between">
+
+    <!-- 1. TOP ANNOUNCEMENT BAR -->
+    <div class="bg-brand-purpleDark text-brand-goldPrimary text-xs py-2 px-4 text-center font-medium border-b border-brand-goldPrimary/20">
+        ✨ Free Shipping on Orders Above Rs. 1,999 | Freshly Prepared Daily Across Pakistan 🚚
+    </div>
+
+    <!-- 2. HEADER & NAVIGATION -->
+    <header class="bg-white sticky top-0 z-40 shadow-sm border-b-2 border-brand-goldPrimary/30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            
+            <a href="#" onclick="switchPage('home')" class="flex items-center space-x-3">
+                <div class="w-12 h-12 bg-brand-purpleDark rounded-full flex items-center justify-center border-2 border-brand-goldPrimary shadow-md">
+                    <span class="text-brand-goldPrimary font-heading font-extrabold text-xl">SM</span>
+                </div>
+                <div>
+                    <span class="block font-heading font-extrabold text-xl text-brand-purpleDark leading-tight">SM NIMCO</span>
+                    <span class="block text-[10px] text-brand-goldHover font-bold tracking-widest uppercase">& Sweets House</span>
+                </div>
+            </a>
+
+            <!-- Navigation Links -->
+            <nav class="hidden md:flex space-x-8 text-sm font-semibold text-brand-purpleDark">
+                <button onclick="switchPage('home')" class="hover:text-brand-goldHover transition-colors">Home</button>
+                <button onclick="switchPage('shop')" class="hover:text-brand-goldHover transition-colors">All Nimco & Sweets</button>
+                <button onclick="switchPage('combos')" class="hover:text-brand-goldHover transition-colors">Tea Combos</button>
+                <button onclick="switchPage('contact')" class="hover:text-brand-goldHover transition-colors">Contact Us</button>
+            </nav>
+
+            <!-- Actions -->
+            <div class="flex items-center space-x-5">
+                <button onclick="switchPage('shop')" class="hidden sm:block text-gray-600 hover:text-brand-purpleDark">
+                    <i class="fa-solid fa-magnifying-glass text-lg"></i>
+                </button>
+                <button onclick="switchPage('profile')" class="text-gray-600 hover:text-brand-purpleDark">
+                    <i class="fa-regular fa-user text-lg"></i>
+                </button>
+                <button onclick="toggleCartDrawer()" class="relative bg-brand-purpleDark text-brand-goldPrimary px-4 py-2 rounded-xl flex items-center space-x-2 shadow">
+                    <i class="fa-solid fa-bag-shopping"></i>
+                    <span class="text-xs font-bold">Cart (3)</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 3. MAIN CONTENT CONTAINER -->
+    <main class="flex-grow">
+
+        <!-- PAGE 1: HOME PAGE -->
+        <section id="page-home" class="page-section active">
+            
+            <!-- Hero Banner -->
+            <div class="bg-gradient-to-r from-brand-purpleDark via-brand-purpleDeep to-brand-purpleDark text-white py-16 px-4 sm:px-8">
+                <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between">
+                    <div class="space-y-6 md:w-1/2 text-center md:text-left">
+                        <span class="bg-brand-goldPrimary/20 text-brand-goldPrimary border border-brand-goldPrimary/40 text-xs px-3 py-1 rounded-full uppercase font-bold">👑 Premium Traditional Taste</span>
+                        <h1 class="text-3xl sm:text-5xl font-extrabold leading-tight">Authentic Karachi Nimco, Sweets & Fresh Bakery</h1>
+                        <p class="text-gray-300 text-sm">Hygienically packed, crisp, and made with pure ingredients daily for your family tea time.</p>
+                        <div class="pt-2 flex justify-center md:justify-start space-x-4">
+                            <button onclick="switchPage('shop')" class="bg-brand-goldPrimary hover:bg-brand-goldHover text-brand-purpleDark font-bold px-6 py-3 rounded-xl shadow-lg">Explore All Delights</button>
+                            <button onclick="switchPage('checkout')" class="border border-brand-goldPrimary text-brand-goldPrimary font-semibold px-6 py-3 rounded-xl">Quick Order</button>
+                        </div>
+                    </div>
+                    <div class="mt-8 md:mt-0 flex justify-center">
+                        <div class="w-64 h-64 bg-brand-purpleDeep rounded-3xl border-2 border-brand-goldPrimary/30 flex flex-col items-center justify-center text-center p-4">
+                            <i class="fa-solid fa-bowl-food text-6xl text-brand-goldPrimary mb-3"></i>
+                            <h3 class="font-heading font-bold text-xl">Special Mix Nimco</h3>
+                            <p class="text-brand-goldPrimary text-xs mt-1">Flat 15% OFF On Family Combos</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Categories Banner Grid -->
+            <div class="max-w-7xl mx-auto px-4 py-8">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div onclick="switchPage('shop')" class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center space-x-3 cursor-pointer hover:border-brand-goldPrimary transition-all">
+                        <div class="w-12 h-12 bg-brand-bgLight rounded-xl flex items-center justify-center text-brand-purpleDark text-xl"><i class="fa-solid fa-bowl-rice"></i></div>
+                        <div><h4 class="font-bold text-sm text-brand-purpleDark">Special Nimco</h4><p class="text-[10px] text-gray-500">12+ Varieties</p></div>
+                    </div>
+                    <div onclick="switchPage('shop')" class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center space-x-3 cursor-pointer hover:border-brand-goldPrimary transition-all">
+                        <div class="w-12 h-12 bg-brand-bgLight rounded-xl flex items-center justify-center text-brand-purpleDark text-xl"><i class="fa-solid fa-stroopwafel"></i></div>
+                        <div><h4 class="font-bold text-sm text-brand-purpleDark">Fresh Mithai</h4><p class="text-[10px] text-gray-500">Pure Khoya Sweets</p></div>
+                    </div>
+                    <div onclick="switchPage('shop')" class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center space-x-3 cursor-pointer hover:border-brand-goldPrimary transition-all">
+                        <div class="w-12 h-12 bg-brand-bgLight rounded-xl flex items-center justify-center text-brand-purpleDark text-xl"><i class="fa-solid fa-cookie"></i></div>
+                        <div><h4 class="font-bold text-sm text-brand-purpleDark">Bakery Items</h4><p class="text-[10px] text-gray-500">Biscuits & Cakes</p></div>
+                    </div>
+                    <div onclick="switchPage('shop')" class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center space-x-3 cursor-pointer hover:border-brand-goldPrimary transition-all">
+                        <div class="w-12 h-12 bg-brand-bgLight rounded-xl flex items-center justify-center text-brand-purpleDark text-xl"><i class="fa-solid fa-box-open"></i></div>
+                        <div><h4 class="font-bold text-sm text-brand-purpleDark">Gift Boxes</h4><p class="text-[10px] text-gray-500">Festive Packs</p></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BAKERST MENU HIGHLIGHTS SECTION (MATCHING SCREENSHOT LAYOUT) -->
+            <section class="max-w-6xl mx-auto px-4 py-16">
+                <div class="text-center max-w-2xl mx-auto mb-16">
+                    <h2 class="text-3xl sm:text-5xl font-extrabold text-brand-purpleDark font-heading mb-4">From Kitchen to Table, Always Fresh</h2>
+                    <p class="text-gray-500 text-sm sm:text-base leading-relaxed">Handcrafted daily with pure ingredients, crisp Karachi spices, and traditional recipes passed through generations.</p>
+                </div>
+
+                <!-- 2-Column Clean Menu Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-y-12 gap-x-16">
+                    
+                    <!-- Menu Item 1 -->
+                    <div class="flex items-center space-x-6 cursor-pointer group" onclick="openModal('Special Mix Spicy Nimco', 270)">
+                        <div class="w-28 h-28 sm:w-32 sm:h-32 bg-amber-50 rounded-2xl flex items-center justify-center shrink-0 border border-amber-100 group-hover:scale-105 transition-transform">
+                            <i class="fa-solid fa-bowl-rice text-5xl text-brand-purpleDark"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-heading text-2xl font-bold text-brand-purpleDark group-hover:text-brand-goldHover transition">Special Mix Nimco</h3>
+                            <div class="mt-2">
+                                <span class="inline-block bg-[#9B1D48]/10 text-[#9B1D48] border border-[#9B1D48]/20 px-3 py-1 rounded-full font-extrabold text-sm sm:text-base">Rs. 270</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Menu Item 2 -->
+                    <div class="flex items-center space-x-6 cursor-pointer group" onclick="openModal('Fresh Gulab Jamun Box', 850)">
+                        <div class="w-28 h-28 sm:w-32 sm:h-32 bg-amber-50 rounded-2xl flex items-center justify-center shrink-0 border border-amber-100 group-hover:scale-105 transition-transform">
+                            <i class="fa-solid fa-stroopwafel text-5xl text-brand-goldHover"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-heading text-2xl font-bold text-brand-purpleDark group-hover:text-brand-goldHover transition">Fresh Gulab Jamun</h3>
+                            <div class="mt-2">
+                                <span class="inline-block bg-[#9B1D48]/10 text-[#9B1D48] border border-[#9B1D48]/20 px-3 py-1 rounded-full font-extrabold text-sm sm:text-base">Rs. 850</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Menu Item 3 -->
+                    <div class="flex items-center space-x-6 cursor-pointer group" onclick="openModal('Special Salted Dal Sev', 220)">
+                        <div class="w-28 h-28 sm:w-32 sm:h-32 bg-amber-50 rounded-2xl flex items-center justify-center shrink-0 border border-amber-100 group-hover:scale-105 transition-transform">
+                            <i class="fa-solid fa-cookie text-5xl text-brand-purpleDark"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-heading text-2xl font-bold text-brand-purpleDark group-hover:text-brand-goldHover transition">Salted Dal Sev</h3>
+                            <div class="mt-2">
+                                <span class="inline-block bg-[#9B1D48]/10 text-[#9B1D48] border border-[#9B1D48]/20 px-3 py-1 rounded-full font-extrabold text-sm sm:text-base">Rs. 220</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Menu Item 4 -->
+                    <div class="flex items-center space-x-6 cursor-pointer group" onclick="openModal('Fresh Motichoor Ladoo', 780)">
+                        <div class="w-28 h-28 sm:w-32 sm:h-32 bg-amber-50 rounded-2xl flex items-center justify-center shrink-0 border border-amber-100 group-hover:scale-105 transition-transform">
+                            <i class="fa-solid fa-candy-cane text-5xl text-brand-goldHover"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-heading text-2xl font-bold text-brand-purpleDark group-hover:text-brand-goldHover transition">Motichoor Ladoo</h3>
+                            <div class="mt-2">
+                                <span class="inline-block bg-[#9B1D48]/10 text-[#9B1D48] border border-[#9B1D48]/20 px-3 py-1 rounded-full font-extrabold text-sm sm:text-base">Rs. 780</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Menu Item 5 -->
+                    <div class="flex items-center space-x-6 cursor-pointer group" onclick="openModal('Bakery Zeera Biscuits', 350)">
+                        <div class="w-28 h-28 sm:w-32 sm:h-32 bg-amber-50 rounded-2xl flex items-center justify-center shrink-0 border border-amber-100 group-hover:scale-105 transition-transform">
+                            <i class="fa-solid fa-cookie-bite text-5xl text-brand-purpleDark"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-heading text-2xl font-bold text-brand-purpleDark group-hover:text-brand-goldHover transition">Zeera Biscuits</h3>
+                            <div class="mt-2">
+                                <span class="inline-block bg-[#9B1D48]/10 text-[#9B1D48] border border-[#9B1D48]/20 px-3 py-1 rounded-full font-extrabold text-sm sm:text-base">Rs. 350</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Menu Item 6 -->
+                    <div class="flex items-center space-x-6 cursor-pointer group" onclick="openModal('Special Multi-Layer Halwa', 650)">
+                        <div class="w-28 h-28 sm:w-32 sm:h-32 bg-amber-50 rounded-2xl flex items-center justify-center shrink-0 border border-amber-100 group-hover:scale-105 transition-transform">
+                            <i class="fa-solid fa-cake-candles text-5xl text-brand-goldHover"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-heading text-2xl font-bold text-brand-purpleDark group-hover:text-brand-goldHover transition">Multi-Layer Halwa</h3>
+                            <div class="mt-2">
+                                <span class="inline-block bg-[#9B1D48]/10 text-[#9B1D48] border border-[#9B1D48]/20 px-3 py-1 rounded-full font-extrabold text-sm sm:text-base">Rs. 650</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- RICH PRODUCT CATALOGUE GRID -->
+            <div class="max-w-7xl mx-auto px-4 py-8">
+                <div class="flex items-center justify-between mb-8">
+                    <div>
+                        <span class="text-brand-goldHover text-xs font-bold uppercase tracking-wider">Handcrafted Fresh Daily</span>
+                        <h2 class="text-2xl sm:text-4xl font-extrabold text-brand-purpleDark">Our Complete Delights Menu</h2>
+                    </div>
+                    <button onclick="switchPage('shop')" class="text-brand-purpleDark font-bold text-sm hover:text-brand-goldHover">View Full Catalogue →</button>
+                </div>
+
+                <!-- 8 PRODUCTS GRID -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+
+                    <!-- Product 1 -->
+                    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex flex-col justify-between product-card transition-all">
+                        <div>
+                            <div class="bg-brand-bgLight h-44 rounded-xl flex items-center justify-center relative mb-3">
+                                <span class="absolute top-2 left-2 bg-brand-goldPrimary text-brand-purpleDark font-bold text-[10px] px-2 py-0.5 rounded uppercase">BEST SELLER</span>
+                                <i class="fa-solid fa-bowl-rice text-5xl text-brand-purpleDark"></i>
+                            </div>
+                            <h3 class="font-bold text-brand-purpleDark">Special Mix Spicy Nimco</h3>
+                            <p class="text-xs text-gray-500 mt-1">Crispy peanuts, chickpeas & aromatic Karachi spices.</p>
+                            <div class="flex space-x-1 my-3">
+                                <span class="text-xs bg-brand-purpleDark text-brand-goldPrimary px-2 py-0.5 rounded font-bold">250g</span>
+                                <span class="text-xs border text-gray-600 px-2 py-0.5 rounded">500g</span>
+                                <span class="text-xs border text-gray-600 px-2 py-0.5 rounded">1KG</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-3 border-t">
+                            <div>
+                                <span class="text-xs text-gray-400 line-through block">Rs. 320</span>
+                                <span class="font-bold text-brand-purpleDark text-base">Rs. 270</span>
+                            </div>
+                            <button onclick="openModal('Special Mix Spicy Nimco', 270)" class="bg-brand-purpleDark text-brand-goldPrimary text-xs font-bold px-3 py-2 rounded-lg">View Details</button>
+                        </div>
+                    </div>
+
+                    <!-- Product 2 -->
+                    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex flex-col justify-between product-card transition-all">
+                        <div>
+                            <div class="bg-brand-bgLight h-44 rounded-xl flex items-center justify-center relative mb-3">
+                                <span class="absolute top-2 left-2 bg-red-600 text-white font-bold text-[10px] px-2 py-0.5 rounded uppercase">HOT</span>
+                                <i class="fa-solid fa-stroopwafel text-5xl text-brand-goldHover"></i>
+                            </div>
+                            <h3 class="font-bold text-brand-purpleDark">Fresh Gulab Jamun Box</h3>
+                            <p class="text-xs text-gray-500 mt-1">Rich khoya sweets dipped in aromatic cardamom syrup.</p>
+                            <div class="flex space-x-1 my-3">
+                                <span class="text-xs border text-gray-600 px-2 py-0.5 rounded">500g</span>
+                                <span class="text-xs bg-brand-purpleDark text-brand-goldPrimary px-2 py-0.5 rounded font-bold">1KG</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-3 border-t">
+                            <div>
+                                <span class="text-xs text-gray-400 line-through block">Rs. 950</span>
+                                <span class="font-bold text-brand-purpleDark text-base">Rs. 850</span>
+                            </div>
+                            <button onclick="openModal('Fresh Gulab Jamun Box', 850)" class="bg-brand-purpleDark text-brand-goldPrimary text-xs font-bold px-3 py-2 rounded-lg">View Details</button>
+                        </div>
+                    </div>
+
+                    <!-- Product 3 -->
+                    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex flex-col justify-between product-card transition-all">
+                        <div>
+                            <div class="bg-brand-bgLight h-44 rounded-xl flex items-center justify-center relative mb-3">
+                                <i class="fa-solid fa-cookie text-5xl text-brand-purpleDark"></i>
+                            </div>
+                            <h3 class="font-bold text-brand-purpleDark">Special Salted Dal Sev</h3>
+                            <p class="text-xs text-gray-500 mt-1">Lightly salted crisp gram flour noodles for tea time.</p>
+                            <div class="flex space-x-1 my-3">
+                                <span class="text-xs bg-brand-purpleDark text-brand-goldPrimary px-2 py-0.5 rounded font-bold">250g</span>
+                                <span class="text-xs border text-gray-600 px-2 py-0.5 rounded">500g</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-3 border-t">
+                            <span class="font-bold text-brand-purpleDark text-base">Rs. 220</span>
+                            <button onclick="openModal('Special Salted Dal Sev', 220)" class="bg-brand-purpleDark text-brand-goldPrimary text-xs font-bold px-3 py-2 rounded-lg">View Details</button>
+                        </div>
+                    </div>
+
+                    <!-- Product 4 -->
+                    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex flex-col justify-between product-card transition-all">
+                        <div>
+                            <div class="bg-brand-bgLight h-44 rounded-xl flex items-center justify-center relative mb-3">
+                                <span class="absolute top-2 left-2 bg-brand-purpleDark text-brand-goldPrimary font-bold text-[10px] px-2 py-0.5 rounded uppercase">COMBO</span>
+                                <i class="fa-solid fa-box-open text-5xl text-brand-goldHover"></i>
+                            </div>
+                            <h3 class="font-bold text-brand-purpleDark">Royal Family Tea Combo</h3>
+                            <p class="text-xs text-gray-500 mt-1">2 Mix Nimco Packs + 1 Mix Sweets Box.</p>
+                            <div class="flex space-x-1 my-3">
+                                <span class="text-xs bg-brand-purpleDark text-brand-goldPrimary px-2 py-0.5 rounded font-bold">Gift Box</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-3 border-t">
+                            <span class="font-bold text-brand-purpleDark text-base">Rs. 1,499</span>
+                            <button onclick="openModal('Royal Family Tea Combo', 1499)" class="bg-brand-purpleDark text-brand-goldPrimary text-xs font-bold px-3 py-2 rounded-lg">View Details</button>
+                        </div>
+                    </div>
+
+                    <!-- Product 5 -->
+                    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex flex-col justify-between product-card transition-all">
+                        <div>
+                            <div class="bg-brand-bgLight h-44 rounded-xl flex items-center justify-center relative mb-3">
+                                <i class="fa-solid fa-candy-cane text-5xl text-brand-goldHover"></i>
+                            </div>
+                            <h3 class="font-bold text-brand-purpleDark">Fresh Motichoor Ladoo</h3>
+                            <p class="text-xs text-gray-500 mt-1">Pure desi ghee ladoo prepared daily.</p>
+                            <div class="flex space-x-1 my-3">
+                                <span class="text-xs border text-gray-600 px-2 py-0.5 rounded">500g</span>
+                                <span class="text-xs bg-brand-purpleDark text-brand-goldPrimary px-2 py-0.5 rounded font-bold">1KG</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-3 border-t">
+                            <span class="font-bold text-brand-purpleDark text-base">Rs. 780</span>
+                            <button onclick="openModal('Fresh Motichoor Ladoo', 780)" class="bg-brand-purpleDark text-brand-goldPrimary text-xs font-bold px-3 py-2 rounded-lg">View Details</button>
+                        </div>
+                    </div>
+
+                    <!-- Product 6 -->
+                    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex flex-col justify-between product-card transition-all">
+                        <div>
+                            <div class="bg-brand-bgLight h-44 rounded-xl flex items-center justify-center relative mb-3">
+                                <i class="fa-solid fa-cookie-bite text-5xl text-brand-purpleDark"></i>
+                            </div>
+                            <h3 class="font-bold text-brand-purpleDark">Bakery Zeera Biscuits</h3>
+                            <p class="text-xs text-gray-500 mt-1">Crispy roasted cumin tea biscuits.</p>
+                            <div class="flex space-x-1 my-3">
+                                <span class="text-xs bg-brand-purpleDark text-brand-goldPrimary px-2 py-0.5 rounded font-bold">400g Box</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-3 border-t">
+                            <span class="font-bold text-brand-purpleDark text-base">Rs. 350</span>
+                            <button onclick="openModal('Bakery Zeera Biscuits', 350)" class="bg-brand-purpleDark text-brand-goldPrimary text-xs font-bold px-3 py-2 rounded-lg">View Details</button>
+                        </div>
+                    </div>
+
+                    <!-- Product 7 -->
+                    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex flex-col justify-between product-card transition-all">
+                        <div>
+                            <div class="bg-brand-bgLight h-44 rounded-xl flex items-center justify-center relative mb-3">
+                                <i class="fa-solid fa-mortar-pestle text-5xl text-brand-purpleDark"></i>
+                            </div>
+                            <h3 class="font-bold text-brand-purpleDark">Khatta Meetha Mix Nimco</h3>
+                            <p class="text-xs text-gray-500 mt-1">Sweet & sour blend with raisins and roasted nuts.</p>
+                            <div class="flex space-x-1 my-3">
+                                <span class="text-xs bg-brand-purpleDark text-brand-goldPrimary px-2 py-0.5 rounded font-bold">250g</span>
+                                <span class="text-xs border text-gray-600 px-2 py-0.5 rounded">500g</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-3 border-t">
+                            <span class="font-bold text-brand-purpleDark text-base">Rs. 290</span>
+                            <button onclick="openModal('Khatta Meetha Mix Nimco', 290)" class="bg-brand-purpleDark text-brand-goldPrimary text-xs font-bold px-3 py-2 rounded-lg">View Details</button>
+                        </div>
+                    </div>
+
+                    <!-- Product 8 -->
+                    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex flex-col justify-between product-card transition-all">
+                        <div>
+                            <div class="bg-brand-bgLight h-44 rounded-xl flex items-center justify-center relative mb-3">
+                                <i class="fa-solid fa-cake-candles text-5xl text-brand-goldHover"></i>
+                            </div>
+                            <h3 class="font-bold text-brand-purpleDark">Special Multi-Layer Halwa</h3>
+                            <p class="text-xs text-gray-500 mt-1">Traditional Karachi halwa topped with pistachios.</p>
+                            <div class="flex space-x-1 my-3">
+                                <span class="text-xs bg-brand-purpleDark text-brand-goldPrimary px-2 py-0.5 rounded font-bold">500g</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-3 border-t">
+                            <span class="font-bold text-brand-purpleDark text-base">Rs. 650</span>
+                            <button onclick="openModal('Special Multi-Layer Halwa', 650)" class="bg-brand-purpleDark text-brand-goldPrimary text-xs font-bold px-3 py-2 rounded-lg">View Details</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 2: SHOP LISTING PAGE -->
+        <section id="page-shop" class="page-section max-w-7xl mx-auto px-4 py-10">
+            <h1 class="text-3xl font-bold text-brand-purpleDark mb-2">Shop All Products</h1>
+            <p class="text-sm text-gray-500 mb-6">Filter through our fresh Nimco, Sweets, and Bakery collections.</p>
+            
+            <div class="flex flex-col md:flex-row gap-8">
+                <div class="w-full md:w-64 bg-white p-5 rounded-2xl border border-gray-100 h-fit space-y-4">
+                    <h3 class="font-bold text-brand-purpleDark border-b pb-2">Filter Categories</h3>
+                    <ul class="space-y-2 text-sm text-gray-600">
+                        <li><label class="flex items-center space-x-2"><input type="checkbox" checked class="accent-brand-purpleDark"> <span>All Products</span></label></li>
+                        <li><label class="flex items-center space-x-2"><input type="checkbox" class="accent-brand-purpleDark"> <span>Nimco Specials</span></label></li>
+                        <li><label class="flex items-center space-x-2"><input type="checkbox" class="accent-brand-purpleDark"> <span>Fresh Mithai</span></label></li>
+                        <li><label class="flex items-center space-x-2"><input type="checkbox" class="accent-brand-purpleDark"> <span>Bakery & Biscuits</span></label></li>
+                    </ul>
+                </div>
+                <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="bg-white p-4 rounded-2xl border flex flex-col justify-between">
+                        <div>
+                            <div class="bg-brand-bgLight h-36 rounded-xl flex items-center justify-center mb-2"><i class="fa-solid fa-bowl-rice text-4xl text-brand-purpleDark"></i></div>
+                            <h4 class="font-bold text-brand-purpleDark">Special Mix Spicy Nimco</h4>
+                            <p class="text-xs text-gray-500 mt-1">Karachi favorite spicy mix.</p>
+                        </div>
+                        <div class="flex justify-between items-center mt-4 pt-2 border-t">
+                            <span class="font-bold">Rs. 270</span>
+                            <button onclick="openModal('Special Mix Spicy Nimco', 270)" class="bg-brand-goldPrimary text-brand-purpleDark font-bold text-xs px-3 py-1.5 rounded-lg">Buy Now</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 3: CHECKOUT PAGE -->
+        <section id="page-checkout" class="page-section max-w-4xl mx-auto px-4 py-10">
+            <h1 class="text-2xl font-bold text-brand-purpleDark mb-6">Complete Your Order</h1>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <form onsubmit="handleOrderSubmit(event)" class="bg-white p-6 rounded-2xl border space-y-4">
+                    <h3 class="font-bold text-brand-purpleDark">Delivery Details</h3>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Full Name</label>
+                        <input type="text" required placeholder="Syed Muhammad Huzaifa" class="w-full border rounded-lg p-2.5 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Phone Number (For COD)</label>
+                        <input type="tel" required placeholder="0300 1234567" class="w-full border rounded-lg p-2.5 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Complete Address & City</label>
+                        <textarea required placeholder="House/Flat No, Area, City" class="w-full border rounded-lg p-2.5 text-sm h-20"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Payment Method</label>
+                        <select class="w-full border rounded-lg p-2.5 text-sm">
+                            <option>Cash on Delivery (COD)</option>
+                            <option>Direct WhatsApp Order Confirmation</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="w-full bg-brand-purpleDark text-brand-goldPrimary font-bold py-3 rounded-xl shadow">Place Order Now</button>
+                </form>
+
+                <div class="bg-white p-6 rounded-2xl border h-fit space-y-4">
+                    <h3 class="font-bold text-brand-purpleDark border-b pb-2">Order Summary</h3>
+                    <div class="flex justify-between text-sm">
+                        <span>Special Mix Nimco (250g) x 1</span>
+                        <span class="font-bold">Rs. 270</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span>Fresh Gulab Jamun (1KG) x 1</span>
+                        <span class="font-bold">Rs. 850</span>
+                    </div>
+                    <div class="border-t pt-2 flex justify-between text-sm">
+                        <span>Delivery Charges</span>
+                        <span class="text-green-600 font-bold">FREE</span>
+                    </div>
+                    <div class="border-t pt-2 flex justify-between text-base font-extrabold text-brand-purpleDark">
+                        <span>Total Payable Amount</span>
+                        <span class="text-brand-goldHover">Rs. 1,120</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 4: PROFILE PAGE -->
+        <section id="page-profile" class="page-section max-w-4xl mx-auto px-4 py-10">
+            <h1 class="text-2xl font-bold text-brand-purpleDark mb-4">My Account & Orders</h1>
+            <div class="bg-white p-6 rounded-2xl border space-y-4">
+                <div class="flex items-center space-x-4 border-b pb-4">
+                    <div class="w-12 h-12 bg-brand-purpleDark text-brand-goldPrimary rounded-full flex items-center justify-center font-bold text-xl">H</div>
+                    <div>
+                        <h3 class="font-bold text-brand-purpleDark">Syed Muhammad Huzaifa</h3>
+                        <p class="text-xs text-gray-500">Customer Account</p>
+                    </div>
+                </div>
+                <h4 class="font-bold text-sm text-brand-purpleDark pt-2">Recent Order History</h4>
+                <div class="border rounded-xl p-4 flex justify-between items-center text-xs">
+                    <div>
+                        <span class="font-bold block text-brand-purpleDark">Order #SM-8921</span>
+                        <span class="text-gray-500">Items: Special Mix Nimco, Gulab Jamun</span>
+                    </div>
+                    <span class="bg-green-100 text-green-700 px-2 py-1 rounded font-bold">Dispatched</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 5: CONTACT PAGE -->
+        <section id="page-contact" class="page-section max-w-4xl mx-auto px-4 py-10">
+            <h1 class="text-2xl font-bold text-brand-purpleDark mb-4">Contact SM NIMCO & Sweets</h1>
+            <div class="bg-white p-6 rounded-2xl border space-y-4 text-sm">
+                <p><i class="fa-solid fa-phone text-brand-goldPrimary mr-2"></i> <strong>Phone / WhatsApp:</strong> +92 344 2394143</p>
+                <p><i class="fa-solid fa-location-dot text-brand-goldPrimary mr-2"></i> <strong>Store Address:</strong> Karachi, Pakistan.</p>
+                <a href="https://wa.me/923442394143" target="_blank" class="inline-block bg-brand-whatsapp text-white font-bold px-4 py-2.5 rounded-xl">
+                    <i class="fa-brands fa-whatsapp mr-1"></i> Chat With Us on WhatsApp
+                </a>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- PRODUCT DETAILS MODAL -->
+    <div id="product-modal" class="fixed inset-0 bg-black/60 z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 relative">
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-black"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <h3 id="modal-title" class="text-xl font-bold text-brand-purpleDark mb-2">Product Name</h3>
+            <p class="text-xs text-gray-500 mb-4">Prepared with traditional Karachi recipes, 100% fresh and crunchy guaranteed.</p>
+            <div class="flex justify-between items-center border-t pt-4">
+                <span id="modal-price" class="text-xl font-extrabold text-brand-purpleDark">Rs. 0</span>
+                <button onclick="switchPage('checkout'); closeModal();" class="bg-brand-goldPrimary text-brand-purpleDark font-bold px-4 py-2 rounded-xl text-sm">Proceed To Checkout</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CART DRAWER -->
+    <div id="cart-drawer" class="fixed inset-y-0 right-0 w-80 bg-white shadow-2xl z-50 transform translate-x-full transition-transform duration-300 p-6 flex flex-col justify-between">
+        <div>
+            <div class="flex justify-between items-center border-b pb-4 mb-4">
+                <h3 class="font-bold text-brand-purpleDark">Your Shopping Cart</h3>
+                <button onclick="toggleCartDrawer()" class="text-gray-400"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="space-y-3 text-xs">
+                <div class="flex justify-between border-b pb-2">
+                    <span>Special Mix Nimco (250g)</span>
+                    <span class="font-bold">Rs. 270</span>
+                </div>
+                <div class="flex justify-between border-b pb-2">
+                    <span>Fresh Gulab Jamun (1KG)</span>
+                    <span class="font-bold">Rs. 850</span>
+                </div>
+            </div>
+        </div>
+        <div>
+            <div class="flex justify-between font-bold border-t pt-2 mb-4">
+                <span>Subtotal</span>
+                <span>Rs. 1,120</span>
+            </div>
+            <button onclick="switchPage('checkout'); toggleCartDrawer();" class="w-full bg-brand-purpleDark text-brand-goldPrimary py-3 rounded-xl font-bold text-sm">Checkout Now</button>
+        </div>
+    </div>
+
+    <!-- WHATSAPP FLOATING BUTTON -->
+    <a href="https://wa.me/923442394143" target="_blank" class="fixed bottom-6 right-6 bg-brand-whatsapp text-white w-12 h-12 rounded-full flex items-center justify-center shadow-xl z-30">
+        <i class="fa-brands fa-whatsapp text-2xl"></i>
+    </a>
+
+    <!-- EXACT BAKERST TEMPLATE STYLE FOOTER -->
+    <footer class="bg-brand-purpleDark text-white pt-16 pb-12 mt-16 border-t border-brand-goldPrimary/20">
+        <div class="max-w-7xl mx-auto px-6 sm:px-8">
+            
+            <!-- Top Header Row: Logo & Social Icons -->
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-6 pb-10">
+                <a href="#" onclick="switchPage('home')" class="flex items-center space-x-3">
+                    <div class="w-12 h-12 bg-brand-goldPrimary/10 rounded-full flex items-center justify-center border border-brand-goldPrimary">
+                        <span class="text-brand-goldPrimary font-heading font-extrabold text-xl">SM</span>
+                    </div>
+                    <span class="font-heading font-extrabold text-3xl sm:text-4xl tracking-wide text-white">SM Nimco</span>
+                </a>
+
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm font-semibold tracking-wide text-gray-300 mr-2">Follow Us</span>
+                    <a href="#" class="w-10 h-10 rounded-full border border-gray-600 flex items-center justify-center text-sm text-gray-300 hover:border-brand-goldPrimary hover:text-brand-goldPrimary transition">
+                        <i class="fa-brands fa-facebook-f"></i>
+                    </a>
+                    <a href="#" class="w-10 h-10 rounded-full border border-gray-600 flex items-center justify-center text-sm text-gray-300 hover:border-brand-goldPrimary hover:text-brand-goldPrimary transition">
+                        <i class="fa-brands fa-x-twitter"></i>
+                    </a>
+                    <a href="#" class="w-10 h-10 rounded-full border border-gray-600 flex items-center justify-center text-sm text-gray-300 hover:border-brand-goldPrimary hover:text-brand-goldPrimary transition">
+                        <i class="fa-brands fa-instagram"></i>
+                    </a>
+                    <a href="#" class="w-10 h-10 rounded-full border border-gray-600 flex items-center justify-center text-sm text-gray-300 hover:border-brand-goldPrimary hover:text-brand-goldPrimary transition">
+                        <i class="fa-brands fa-pinterest-p"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-800 my-4"></div>
+
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-10 pt-10">
+                
+                <div class="md:col-span-4 space-y-6">
+                    <h3 class="font-heading font-bold text-2xl sm:text-3xl text-white">Subscribe Our Newsletter</h3>
+                    <form onsubmit="event.preventDefault(); alert('Subscribed!');" class="space-y-4 max-w-sm">
+                        <input type="email" placeholder="Your Email" required class="w-full bg-white text-gray-900 rounded-2xl px-5 py-3.5 text-sm focus:outline-none placeholder-gray-400">
+                        <button type="submit" class="bg-[#9B1D48] hover:bg-[#83163B] text-white font-semibold px-8 py-3.5 rounded-full text-sm flex items-center justify-center space-x-2 transition shadow-lg">
+                            <span>Subscribe</span>
+                            <i class="fa-solid fa-arrow-right text-xs"></i>
+                        </button>
+                    </form>
+                </div>
+
+                <div class="md:col-span-2 space-y-4">
+                    <h4 class="font-heading font-bold text-xl text-white">Quick Links</h4>
+                    <ul class="space-y-2.5 text-sm text-gray-400">
+                        <li><a href="#" onclick="switchPage('home')" class="hover:text-white transition">Home</a></li>
+                        <li><a href="#" onclick="switchPage('shop')" class="hover:text-white transition">About Us</a></li>
+                        <li><a href="#" onclick="switchPage('shop')" class="hover:text-white transition">Menu</a></li>
+                        <li><a href="#" onclick="switchPage('shop')" class="hover:text-white transition">Services</a></li>
+                        <li><a href="#" onclick="switchPage('combos')" class="hover:text-white transition">Our Offers</a></li>
+                        <li><a href="#" onclick="switchPage('contact')" class="hover:text-white transition">Contact Us</a></li>
+                    </ul>
+                </div>
+
+                <div class="md:col-span-3 space-y-4">
+                    <h4 class="font-heading font-bold text-xl text-white">Support</h4>
+                    <ul class="space-y-2.5 text-sm text-gray-400">
+                        <li><a href="#" class="hover:text-white transition">Help Center</a></li>
+                        <li><a href="#" class="hover:text-white transition">Booking</a></li>
+                        <li><a href="#" class="hover:text-white transition">Privacy Policy</a></li>
+                        <li><a href="#" class="hover:text-white transition">Terms & Conditions</a></li>
+                        <li><a href="#" class="hover:text-white transition">FAQ</a></li>
+                    </ul>
+                </div>
+
+                <div class="md:col-span-3 space-y-4">
+                    <h4 class="font-heading font-bold text-xl text-white">Contact Info</h4>
+                    <ul class="space-y-4 text-sm text-gray-300">
+                        <li class="flex items-start space-x-3">
+                            <i class="fa-solid fa-location-dot text-brand-goldPrimary mt-1"></i>
+                            <span>Commercial Area, Karachi, Pakistan</span>
+                        </li>
+                        <li class="flex items-center space-x-3">
+                            <i class="fa-solid fa-phone text-brand-goldPrimary"></i>
+                            <span>+92 344 2394143</span>
+                        </li>
+                        <li class="flex items-center space-x-3">
+                            <i class="fa-regular fa-envelope text-brand-goldPrimary"></i>
+                            <span>orders@smnimco.com</span>
+                        </li>
+                    </ul>
+                </div>
+
+            </div>
+
+        </div>
+    </footer>
+
+    <!-- INTERACTIVE SCRIPT -->
+    <script>
+        function switchPage(pageId) {
+            document.querySelectorAll('.page-section').forEach(sec => sec.classList.remove('active'));
+            const target = document.getElementById('page-' + pageId);
+            if(target) target.classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        function openModal(title, price) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-price').innerText = 'Rs. ' + price;
+            document.getElementById('product-modal').classList.remove('hidden');
+            document.getElementById('product-modal').classList.add('flex');
+        }
+        function closeModal() {
+            document.getElementById('product-modal').classList.add('hidden');
+            document.getElementById('product-modal').classList.remove('flex');
+        }
+        function toggleCartDrawer() {
+            document.getElementById('cart-drawer').classList.toggle('translate-x-full');
+        }
+        function handleOrderSubmit(e) {
+            e.preventDefault();
+            alert('🎉 Order Placed Successfully!');
+            switchPage('home');
+        }
+    </script>
+</body>
+</html>
