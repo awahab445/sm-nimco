@@ -39,11 +39,12 @@ import { CapiService } from '../../common/services/capi.service';
 import { buildCapiUserData } from '../../common/utils/capi-request.util';
 import { resolveMetaCapiClient } from '../../common/utils/meta-capi-client.util';
 import { APP_CURRENCY } from '../../common/currency';
+import { StoreSettingsService } from '../../store-settings/services/store-settings.service';
 
 @Injectable()
 export class CheckoutService {
   private readonly logger = new Logger(CheckoutService.name);
-  private readonly minimumOrderValue = 800;
+  private readonly defaultMinimumOrderValue = 800;
 
   constructor(
     private readonly checkoutRedis: CheckoutRedisService,
@@ -58,7 +59,26 @@ export class CheckoutService {
     private readonly customerGroupService: CustomerGroupService,
     private readonly eventEmitter: EventEmitter2,
     private readonly capiService: CapiService,
+    private readonly storeSettingsService: StoreSettingsService,
   ) {}
+
+  private async assertMinimumOrderAmount(subtotal: number): Promise<void> {
+    const settings = await this.storeSettingsService.getPublicOrderSettings();
+    const minimumOrderValue =
+      settings.minimumOrderAmount ?? this.defaultMinimumOrderValue;
+    if (subtotal >= minimumOrderValue) {
+      return;
+    }
+
+    const freeDeliveryNote =
+      settings.freeDeliveryThreshold > 0
+        ? ` Note: Shopping of Rs. ${settings.freeDeliveryThreshold} or more qualifies for Free Delivery!`
+        : '';
+
+    throw new BadRequestException(
+      `A minimum order value of Rs. ${minimumOrderValue} is required to place an order. Please add more items to your cart.${freeDeliveryNote}`,
+    );
+  }
 
   /**
    * Start checkout from cart
@@ -175,6 +195,8 @@ export class CheckoutService {
     // Calculate initial totals with customer group context
     const initialTotals =
       await this.checkoutTotals.calculateTotals(initialCheckout);
+
+    await this.assertMinimumOrderAmount(initialTotals.subtotal);
 
     // Create checkout session
     const checkout: Omit<
@@ -663,11 +685,7 @@ export class CheckoutService {
     });
     await this.checkoutRedis.updateCheckout(updated);
 
-    if (updated.subtotal < this.minimumOrderValue) {
-      throw new BadRequestException(
-        'A minimum order value of Rs. 800 is required to place an order. Please add more items to your cart. Note: Shopping of Rs. 1500 or more qualifies for Free Delivery!',
-      );
-    }
+    await this.assertMinimumOrderAmount(updated.subtotal);
 
     // Comprehensive validation
     await this.checkoutValidator.validateForConfirmation(updated);

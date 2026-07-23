@@ -6,6 +6,7 @@ import { TaxCalculationService } from '../../tax/services/calculation.service';
 import { TaxCalculationItem } from '../../tax/dto/calculate-tax.dto';
 import { CustomerGroupService } from '../../customer-group/services/customer-group.service';
 import { PrismaService } from '../../catalog/services/prisma.service';
+import { StoreSettingsService } from '../../store-settings/services/store-settings.service';
 
 export interface TotalsCalculation {
   subtotal: number;
@@ -18,7 +19,7 @@ export interface TotalsCalculation {
 @Injectable()
 export class CheckoutTotalsService {
   private readonly logger = new Logger(CheckoutTotalsService.name);
-  private readonly freeDeliveryThreshold = 2000;
+  private readonly defaultFreeDeliveryThreshold = 2000;
 
   constructor(
     private readonly promotionsService: PromotionsService,
@@ -27,6 +28,7 @@ export class CheckoutTotalsService {
     /** Used for tax-class fallback only — not for order discounts. */
     private readonly customerGroupService: CustomerGroupService,
     private readonly prisma: PrismaService,
+    private readonly storeSettingsService: StoreSettingsService,
   ) {}
 
   /**
@@ -255,8 +257,15 @@ export class CheckoutTotalsService {
         checkout,
         options,
       );
+    const orderSettings =
+      await this.storeSettingsService.getPublicOrderSettings();
+    const freeDeliveryThreshold =
+      orderSettings.freeDeliveryThreshold ??
+      this.defaultFreeDeliveryThreshold;
+    const qualifiesForFreeDeliveryThreshold =
+      freeDeliveryThreshold > 0 && subtotal >= freeDeliveryThreshold;
     const shippingTotal =
-      freeShippingApplied || subtotal >= this.freeDeliveryThreshold
+      freeShippingApplied || qualifiesForFreeDeliveryThreshold
         ? 0
         : this.calculateShippingTotal(checkout.shippingMethod);
     const taxTotal = await this.calculateTaxTotal(

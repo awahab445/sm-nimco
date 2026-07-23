@@ -170,6 +170,13 @@ export const adminNavGroups: NavGroup[] = [
         requirePermission: ['settings.manage'],
       },
       {
+        href: '/settings/store',
+        label: 'Order settings',
+        description: 'Minimum order amount and free delivery threshold',
+        phase: 'N',
+        requirePermission: ['settings.manage'],
+      },
+      {
         href: '/settings/theme',
         label: 'Store theme',
         description: 'Storefront color palette and visual style',

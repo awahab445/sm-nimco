@@ -7,7 +7,7 @@ import { useAuthStore } from '@/lib/auth.store';
 import { useCartStore } from '@/lib/cart.store';
 import { formatPrice, APP_CURRENCY } from '@/lib/currency';
 import { storefrontUi } from '@/lib/storefront-ui';
-import { Address, AddressWithId, addressApi, shippingApi, paymentApi, productApi, type CartItem } from '@/lib/api-client';
+import { Address, AddressWithId, addressApi, shippingApi, paymentApi, productApi, storeSettingsApi, type CartItem } from '@/lib/api-client';
 import { resolveImageUrl } from '@/lib/resolve-image-url';
 import { CouponApplySection } from '@/components/coupon/coupon-apply-section';
 import {
@@ -20,8 +20,8 @@ import { trackAddPaymentInfo, trackAddShippingInfo } from '@/lib/analytics/event
 import { checkoutItemToGa4Item } from '@/lib/analytics/mappers';
 
 const EMPTY_CART_ITEMS: CartItem[] = [];
-const MIN_ORDER_VALUE = 800;
-const FREE_DELIVERY_THRESHOLD = 2000;
+const DEFAULT_MIN_ORDER_VALUE = 800;
+const DEFAULT_FREE_DELIVERY_THRESHOLD = 2000;
 
 const PAKISTAN_PROVINCES = [
   'Sindh',
@@ -136,6 +136,10 @@ export function OnePageCheckout() {
 
   const [formError, setFormError] = useState<string | null>(null);
   const [showMinimumOrderModal, setShowMinimumOrderModal] = useState(false);
+  const [minimumOrderAmount, setMinimumOrderAmount] = useState(DEFAULT_MIN_ORDER_VALUE);
+  const [freeDeliveryThreshold, setFreeDeliveryThreshold] = useState(
+    DEFAULT_FREE_DELIVERY_THRESHOLD,
+  );
 
   const { isAuthenticated, user } = useAuthStore();
   const [savedAddresses, setSavedAddresses] = useState<AddressWithId[]>([]);
@@ -187,6 +191,29 @@ export function OnePageCheckout() {
       cancelled = true;
     };
   }, [isAuthenticated]);
+
+  useEffect(() => {
+    let cancelled = false;
+    storeSettingsApi
+      .getStoreSettings()
+      .then((res) => {
+        if (cancelled) return;
+        const minOrder = Number(res.data.minimumOrderAmount);
+        const freeDelivery = Number(res.data.freeDeliveryThreshold);
+        if (Number.isFinite(minOrder) && minOrder >= 0) {
+          setMinimumOrderAmount(minOrder);
+        }
+        if (Number.isFinite(freeDelivery) && freeDelivery >= 0) {
+          setFreeDeliveryThreshold(freeDelivery);
+        }
+      })
+      .catch(() => {
+        // Keep defaults when settings cannot be loaded.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // When user selects a saved billing/shipping address, update form state
   useEffect(() => {
@@ -379,7 +406,8 @@ export function OnePageCheckout() {
   );
   const displaySubtotal = parsedSubtotal;
   const displayDiscountTotal = parsedDiscount;
-  const qualifiesForFreeDelivery = displaySubtotal >= FREE_DELIVERY_THRESHOLD;
+  const qualifiesForFreeDelivery =
+    freeDeliveryThreshold > 0 && displaySubtotal >= freeDeliveryThreshold;
   const displayShippingTotal = qualifiesForFreeDelivery
     ? 0
     : Number.isFinite(shippingFee)
@@ -391,7 +419,7 @@ export function OnePageCheckout() {
   );
   const amountRemainingForFreeDelivery = Math.max(
     0,
-    FREE_DELIVERY_THRESHOLD - displaySubtotal,
+    freeDeliveryThreshold - displaySubtotal,
   );
 
   const handlePlaceOrder = async (e: React.FormEvent) => {
@@ -419,7 +447,7 @@ export function OnePageCheckout() {
       setFormError('Please enter a valid email address.');
       return;
     }
-    if (displaySubtotal < MIN_ORDER_VALUE) {
+    if (displaySubtotal < minimumOrderAmount) {
       setShowMinimumOrderModal(true);
       return;
     }
@@ -1235,7 +1263,9 @@ export function OnePageCheckout() {
                 </span>
               </div>
             </div>
-            {!qualifiesForFreeDelivery && displaySubtotal >= MIN_ORDER_VALUE ? (
+            {!qualifiesForFreeDelivery &&
+            freeDeliveryThreshold > 0 &&
+            displaySubtotal >= minimumOrderAmount ? (
               <p className="mt-3 rounded-sm bg-secondary/50 px-3 py-2 text-xs font-medium text-foreground">
                 Add {formatPrice(amountRemainingForFreeDelivery, displayCurrency)} more to get Free
                 Delivery.
@@ -1275,12 +1305,17 @@ export function OnePageCheckout() {
               Minimum order required
             </h3>
             <p className="mt-3 text-sm leading-6 text-muted-foreground">
-              A minimum order value of Rs. 800 is required to place an order. Please add more items
-              to your cart.
-              <br />
-              <span className="mt-1 inline-block font-medium text-foreground">
-                Note: Shopping of Rs.1500 or more qualifies for Free Delivery!
-              </span>
+              A minimum order value of {formatPrice(minimumOrderAmount, displayCurrency)} is
+              required to place an order. Please add more items to your cart.
+              {freeDeliveryThreshold > 0 ? (
+                <>
+                  <br />
+                  <span className="mt-1 inline-block font-medium text-foreground">
+                    Note: Shopping of {formatPrice(freeDeliveryThreshold, displayCurrency)} or more
+                    qualifies for Free Delivery!
+                  </span>
+                </>
+              ) : null}
             </p>
             <div className="mt-5 flex justify-end gap-2">
               <button

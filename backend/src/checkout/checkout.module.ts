@@ -16,6 +16,7 @@ import { TaxModule } from '../tax/tax.module';
 import { CustomerModule } from '../customer/customer.module';
 import { CustomerGroupModule } from '../customer-group/customer-group.module';
 import { AnalyticsModule } from '../analytics/analytics.module';
+import { StoreSettingsModule } from '../store-settings/store-settings.module';
 
 const useRedis = process.env.REDIS_ENABLED !== 'false';
 
@@ -31,6 +32,7 @@ const useRedis = process.env.REDIS_ENABLED !== 'false';
     CustomerModule,
     CustomerGroupModule,
     AnalyticsModule,
+    StoreSettingsModule,
   ],
   controllers: [CheckoutController],
   providers: [

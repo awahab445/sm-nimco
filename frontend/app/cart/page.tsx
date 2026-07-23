@@ -19,6 +19,9 @@ import { formatVariantAttributes } from '@/lib/format-variant-attributes';
 import { storefrontUi } from '@/lib/storefront-ui';
 import { useCartItemFallbackImages } from '@/lib/use-cart-item-fallback-images';
 import { cartItemToGa4Item, trackViewCart } from '@/lib/analytics';
+import { storeSettingsApi } from '@/lib/api-client';
+
+const DEFAULT_MIN_ORDER_VALUE = 800;
 
 export default function CartPage() {
   const { cart, isLoading, error, refreshCart, updateItem, removeItem, updateBundle, removeBundle, clearCart } =
@@ -32,10 +35,30 @@ export default function CartPage() {
     discountAmount: number;
     isFreeShipping: boolean;
   }>({ code: null, discountAmount: 0, isFreeShipping: false });
+  const [minimumOrderAmount, setMinimumOrderAmount] = useState(DEFAULT_MIN_ORDER_VALUE);
 
   useEffect(() => {
     refreshCart();
   }, [refreshCart]);
+
+  useEffect(() => {
+    let cancelled = false;
+    storeSettingsApi
+      .getStoreSettings()
+      .then((res) => {
+        if (cancelled) return;
+        const minOrder = Number(res.data.minimumOrderAmount);
+        if (Number.isFinite(minOrder) && minOrder >= 0) {
+          setMinimumOrderAmount(minOrder);
+        }
+      })
+      .catch(() => {
+        // Keep default when settings cannot be loaded.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     const items = cart?.items ?? [];
@@ -63,6 +86,7 @@ export default function CartPage() {
     bundles.reduce((sum, b) => sum + b.quantity, 0);
   const cartId = cart?.id ?? null;
   const displayCurrency = cart?.currency ?? APP_CURRENCY;
+  const meetsMinimumOrder = subtotal >= minimumOrderAmount;
 
   useEffect(() => {
     const lineItems = cart?.items ?? [];
@@ -364,6 +388,14 @@ export default function CartPage() {
                 </div>
               )}
               </div>
+              {!meetsMinimumOrder && items.length + bundles.length > 0 ? (
+                <p className="mt-3 rounded-sm bg-secondary/50 px-3 py-2 text-xs font-medium text-foreground">
+                  A minimum order of {formatPrice(minimumOrderAmount, displayCurrency)} is required
+                  to checkout. Add{' '}
+                  {formatPrice(Math.max(0, minimumOrderAmount - subtotal), displayCurrency)} more to
+                  continue.
+                </p>
+              ) : null}
               <div className="mt-4">
                 <CouponApplySection
                   appliedCouponCode={couponMeta.code}
@@ -386,12 +418,22 @@ export default function CartPage() {
                   }}
                 />
               </div>
-              <Link
-                href={cartId ? `/checkout?cartId=${cartId}` : '/cart'}
-                className={`mt-4 block text-center ${storefrontUi.btnPrimaryCheckout}`}
-              >
-                Proceed to checkout
-              </Link>
+              {meetsMinimumOrder ? (
+                <Link
+                  href={cartId ? `/checkout?cartId=${cartId}` : '/cart'}
+                  className={`mt-4 block text-center ${storefrontUi.btnPrimaryCheckout}`}
+                >
+                  Proceed to checkout
+                </Link>
+              ) : (
+                <button
+                  type="button"
+                  disabled
+                  className={`mt-4 block w-full text-center opacity-60 ${storefrontUi.btnPrimaryCheckout}`}
+                >
+                  Proceed to checkout
+                </button>
+              )}
             </div>
           </div>
         </div>

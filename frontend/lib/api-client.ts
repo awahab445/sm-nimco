@@ -330,6 +330,11 @@ export interface StorefrontSiteConfig {
   showAnnouncement: boolean;
 }
 
+export interface StorefrontStoreSettings {
+  minimumOrderAmount: number;
+  freeDeliveryThreshold: number;
+}
+
 export type StorefrontSocialPlatform =
   | 'facebook'
   | 'x'
@@ -352,6 +357,11 @@ export const siteConfigApi = {
     fetchApi<{ data: StorefrontSiteConfig }>('/settings/site-config'),
   getSocialLinks: (): Promise<{ data: StorefrontSocialLink[] }> =>
     fetchApi<{ data: StorefrontSocialLink[] }>('/settings/social-links'),
+};
+
+export const storeSettingsApi = {
+  getStoreSettings: (): Promise<{ data: StorefrontStoreSettings }> =>
+    fetchApi<{ data: StorefrontStoreSettings }>('/settings/store'),
 };
 
 export type StorefrontPolicyPage = {

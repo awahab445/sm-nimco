@@ -990,12 +990,16 @@ model SiteConfig {
   @@map("site_config")
 }
 
-/// Singleton storefront theme settings (id is always "default").
+/// Singleton storefront theme + commerce threshold settings (id is always "default").
 model StoreSettings {
-  id                   String   @id @default("default")
-  currentTheme         String   @default("tailwind") @map("current_theme") @db.VarChar(32)
-  updatedAt            DateTime @updatedAt @map("updated_at")
-  updatedByAdminUserId String?  @map("updated_by_admin_user_id")
+  id                     String   @id @default("default")
+  currentTheme           String   @default("tailwind") @map("current_theme") @db.VarChar(32)
+  /// Cart/checkout subtotal must be at least this amount to place an order.
+  minimumOrderAmount     Decimal  @default(800) @map("minimum_order_amount") @db.Decimal(12, 2)
+  /// Subtotal at or above this amount qualifies for free delivery (shipping total = 0).
+  freeDeliveryThreshold  Decimal  @default(2000) @map("free_delivery_threshold") @db.Decimal(12, 2)
+  updatedAt              DateTime @updatedAt @map("updated_at")
+  updatedByAdminUserId   String?  @map("updated_by_admin_user_id")
 
   @@map("store_settings")
 }
