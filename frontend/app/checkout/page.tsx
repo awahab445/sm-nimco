@@ -14,7 +14,7 @@ function CheckoutContent() {
   const cartId = searchParams.get('cartId');
   const { user, isAuthenticated } = useAuthStore();
 
-  const { checkoutId, checkout, isLoading, startCheckout, refreshCheckout } = useCheckout();
+  const { checkoutId, checkout, isLoading, error, startCheckout, refreshCheckout } = useCheckout();
 
   const [initializing, setInitializing] = useState(true);
 
@@ -59,11 +59,14 @@ function CheckoutContent() {
 
   if (!checkout) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center">
-          <h1 className="font-display mb-4 text-2xl font-semibold tracking-tight text-foreground">Checkout not found</h1>
+      <div className="flex min-h-screen items-center justify-center px-4">
+        <div className="max-w-md text-center">
+          <h1 className="font-display mb-4 text-2xl font-semibold tracking-tight text-foreground">
+            Unable to start checkout
+          </h1>
           <p className="mb-4 text-muted-foreground">
-            Unable to load checkout session. Your cart may be empty or expired.
+            {error ||
+              'Unable to load checkout session. Your cart may be empty, below the minimum order amount, or expired.'}
           </p>
           <button
             type="button"
