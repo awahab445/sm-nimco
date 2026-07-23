@@ -193,6 +193,7 @@ export function SearchBar() {
                   placeholder="Search for products"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
+                  suppressHydrationWarning
                   className="min-w-0 flex-1 border-0 bg-transparent py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-0"
                   aria-controls="search-drawer-results"
                   aria-autocomplete="list"
@@ -294,6 +295,7 @@ export function SearchBar() {
       {hydrated ? (
         <button
           type="button"
+          suppressHydrationWarning
           className="site-header__icon-btn inline-flex items-center justify-center text-foreground transition-colors hover:text-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
           aria-label="Search products"
           aria-haspopup="dialog"

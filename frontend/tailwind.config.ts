@@ -39,6 +39,12 @@ const config = {
           'system-ui',
           'sans-serif',
         ],
+        heading: [
+          'var(--font-display)',
+          'ui-serif',
+          'Georgia',
+          'serif',
+        ],
         sans: [
           'var(--font-body)',
           'var(--font-geist-sans)',

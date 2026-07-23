@@ -35,6 +35,7 @@ import { UpdateImageDto } from '../dto/update-image.dto';
 import { AssignCategoryDto } from '../dto/assign-category.dto';
 import { ProductQueryDto } from '../dto/product-query.dto';
 import { UpsertProductOptionsDto } from '../dto/upsert-product-options.dto';
+import { BulkDeleteProductsDto } from '../dto/bulk-delete-products.dto';
 import { AdminJwtAuthGuard } from '../../admin/guards/admin-jwt-auth.guard';
 import { AdminPermissionsGuard } from '../../admin/guards/admin-permissions.guard';
 import { CheckPermission } from '../../admin/decorators/check-permission.decorator';
@@ -95,6 +96,18 @@ export class AdminProductController {
   @HttpCode(HttpStatus.CREATED)
   async create(@Body() createProductDto: CreateProductDto) {
     return this.productService.create(createProductDto);
+  }
+
+  /**
+   * Soft-delete multiple products.
+   * POST /admin/products/bulk-delete  body: { ids: string[] }
+   * Registered before :id routes so "bulk-delete" is not parsed as an id.
+   */
+  @Post('bulk-delete')
+  @CheckPermission('products', 'delete')
+  @HttpCode(HttpStatus.OK)
+  async bulkRemove(@Body() dto: BulkDeleteProductsDto) {
+    return this.productService.removeMany(dto.ids);
   }
 
   @Get(':id')

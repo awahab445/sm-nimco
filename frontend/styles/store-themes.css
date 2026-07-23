@@ -1,7 +1,7 @@
 /**
  * Storefront design tokens — one system, multiple skins.
  * Switch preset by setting data-store-theme on <html> (from admin theme via toStoreThemePresetId).
- * Store theme codes: default | essa_chemicals | ember | mehfil_shereen | ocean
+ * Store theme codes: default | essa_chemicals | ember | mehfil_shereen | ocean | sm_nimco
  * Chrome tokens (--navbar-*, --footer-*) are defined per preset below — not in globals [data-theme].
  * Dark appearance follows prefers-color-scheme; tokens stay aligned per preset.
  */
@@ -438,5 +438,127 @@
     --ring: #d4b45c;
     --popover: #1e1c1a;
     --popover-foreground: #f2ede6;
+  }
+}
+
+/* ——— sm_nimco: royal purple + gold bakery / sweets (Playfair + Outfit) ——— */
+[data-store-theme="sm_nimco"] {
+  --radius-card: 1rem;
+  --radius-button: 0.75rem;
+  --background: #faf8f5;
+  --foreground: #1a1a1a;
+  --muted: #f3efe8;
+  --muted-foreground: #6b7280;
+  --card: #ffffff;
+  --card-foreground: #1a1a1a;
+  --border: #ebe6df;
+  --input: #ddd6cc;
+  --primary: #1e1035;
+  --primary-foreground: #d4af37;
+  --primary-hover: #d4af37;
+  --primary-hover-foreground: #1e1035;
+  --btn-hover: #2e1a47;
+  --btn-hover-foreground: #d4af37;
+  --secondary: #2e1a47;
+  --secondary-foreground: #d4af37;
+  --accent: #f3efe8;
+  --accent-foreground: #1e1035;
+  --destructive: #9b1d48;
+  --destructive-foreground: #ffffff;
+  --success: #15803d;
+  --success-foreground: #f0fdf4;
+  --warning: #b89628;
+  --warning-foreground: #1a1a1a;
+  --ring: #d4af37;
+  --popover: #ffffff;
+  --popover-foreground: #1a1a1a;
+  --navbar-background: #ffffff;
+  --navbar-foreground: #1e1035;
+  --navbar-muted-foreground: #6b7280;
+  --navbar-border: color-mix(in srgb, #d4af37 30%, transparent);
+  --navbar-link-hover: #b89628;
+  --navbar-shadow: 0 1px 3px 0 color-mix(in srgb, #1e1035 8%, transparent);
+  --footer-background: #1e1035;
+  --footer-foreground: #ffffff;
+  --footer-muted-foreground: #9ca3af;
+  --footer-border: color-mix(in srgb, #d4af37 20%, transparent);
+  --footer-link-hover: #d4af37;
+  --footer-newsletter-btn: #9b1d48;
+  --footer-newsletter-btn-hover: #83163b;
+  --footer-newsletter-btn-foreground: #ffffff;
+  --btn-accent: #d4af37;
+  --btn-accent-hover: #b89628;
+  --btn-accent-foreground: #1e1035;
+  --product-price: #1e1035;
+  --product-sale-price: #9b1d48;
+  --brand-purple-dark: #1e1035;
+  --brand-purple-deep: #2e1a47;
+  --brand-gold-primary: #d4af37;
+  --brand-gold-hover: #b89628;
+  --brand-bg-light: #faf8f5;
+  --brand-burgundy: #9b1d48;
+  --brand-whatsapp: #25d366;
+  --mega-menu-shadow: 0 8px 28px -10px color-mix(in srgb, #1e1035 14%, transparent);
+}
+
+/* Keep sm_nimco storefront light even when OS prefers dark */
+@media (prefers-color-scheme: dark) {
+  [data-store-theme="sm_nimco"] {
+    --radius-card: 1rem;
+    --radius-button: 0.75rem;
+    --background: #faf8f5;
+    --foreground: #1a1a1a;
+    --muted: #f3efe8;
+    --muted-foreground: #6b7280;
+    --card: #ffffff;
+    --card-foreground: #1a1a1a;
+    --border: #ebe6df;
+    --input: #ddd6cc;
+    --primary: #1e1035;
+    --primary-foreground: #d4af37;
+    --primary-hover: #d4af37;
+    --primary-hover-foreground: #1e1035;
+    --btn-hover: #2e1a47;
+    --btn-hover-foreground: #d4af37;
+    --secondary: #2e1a47;
+    --secondary-foreground: #d4af37;
+    --accent: #f3efe8;
+    --accent-foreground: #1e1035;
+    --destructive: #9b1d48;
+    --destructive-foreground: #ffffff;
+    --success: #15803d;
+    --success-foreground: #f0fdf4;
+    --warning: #b89628;
+    --warning-foreground: #1a1a1a;
+    --ring: #d4af37;
+    --popover: #ffffff;
+    --popover-foreground: #1a1a1a;
+    --navbar-background: #ffffff;
+    --navbar-foreground: #1e1035;
+    --navbar-muted-foreground: #6b7280;
+    --navbar-border: color-mix(in srgb, #d4af37 30%, transparent);
+    --navbar-link-hover: #b89628;
+    --navbar-shadow: 0 1px 3px 0 color-mix(in srgb, #1e1035 8%, transparent);
+    --footer-background: #1e1035;
+    --footer-foreground: #ffffff;
+    --footer-muted-foreground: #9ca3af;
+    --footer-border: color-mix(in srgb, #d4af37 20%, transparent);
+    --footer-link-hover: #d4af37;
+    --footer-newsletter-btn: #9b1d48;
+    --footer-newsletter-btn-hover: #83163b;
+    --footer-newsletter-btn-foreground: #ffffff;
+    --btn-accent: #d4af37;
+    --btn-accent-hover: #b89628;
+    --btn-accent-foreground: #1e1035;
+    --product-price: #1e1035;
+    --product-sale-price: #9b1d48;
+    --brand-purple-dark: #1e1035;
+    --brand-purple-deep: #2e1a47;
+    --brand-gold-primary: #d4af37;
+    --brand-gold-hover: #b89628;
+    --brand-bg-light: #faf8f5;
+    --brand-burgundy: #9b1d48;
+    --brand-whatsapp: #25d366;
+    --mega-menu-shadow: 0 8px 28px -10px color-mix(in srgb, #1e1035 14%, transparent);
   }
 }

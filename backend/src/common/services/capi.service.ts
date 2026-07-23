@@ -81,11 +81,7 @@ export function toCatalogContentIds(
   const out: string[] = [];
   const seen = new Set<string>();
   for (const group of groups) {
-    const list = Array.isArray(group)
-      ? group
-      : group != null
-        ? [group]
-        : [];
+    const list = Array.isArray(group) ? group : group != null ? [group] : [];
     for (const raw of list) {
       const id = String(raw ?? '').trim();
       if (!id || isUuid(id) || seen.has(id)) continue;
@@ -158,14 +154,14 @@ export class CapiService {
     }
 
     const customData: Record<string, unknown> = {
-      currency: (
-        productData.currency ||
-        APP_CURRENCY ||
-        'PKR'
-      ).toUpperCase(),
+      currency: (productData.currency || APP_CURRENCY || 'PKR').toUpperCase(),
     };
 
-    if (productData.content_type || contentIds.length > 0 || contents.length > 0) {
+    if (
+      productData.content_type ||
+      contentIds.length > 0 ||
+      contents.length > 0
+    ) {
       customData.content_type = productData.content_type || 'product';
     }
     if (contentIds.length > 0) customData.content_ids = contentIds;
@@ -179,7 +175,10 @@ export class CapiService {
     if (productData.value != null && Number.isFinite(productData.value)) {
       customData.value = productData.value;
     }
-    if (productData.num_items != null && Number.isFinite(productData.num_items)) {
+    if (
+      productData.num_items != null &&
+      Number.isFinite(productData.num_items)
+    ) {
       customData.num_items = productData.num_items;
     }
     if (productData.order_id?.trim()) {

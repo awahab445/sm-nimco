@@ -82,7 +82,9 @@ export class WishlistService {
       },
     });
 
-    this.logger.debug(`Wishlist add customer=${customerId} product=${productId}`);
+    this.logger.debug(
+      `Wishlist add customer=${customerId} product=${productId}`,
+    );
 
     return this.toWishlistRow(item);
   }

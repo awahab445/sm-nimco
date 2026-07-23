@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Jost, Poppins } from "next/font/google";
+import { Geist, Jost, Outfit, Playfair_Display, Poppins } from "next/font/google";
 import "./globals.css";
 import "../styles/chrome-enhancements.css";
 import { fetchActiveTheme } from "@/lib/theme/theme.server";
@@ -38,6 +38,22 @@ const poppins = Poppins({
   adjustFontFallback: true,
 });
 
+const playfair = Playfair_Display({
+  variable: "--font-display",
+  subsets: ["latin"],
+  weight: ["600", "700", "800"],
+  display: "swap",
+  adjustFontFallback: true,
+});
+
+const outfit = Outfit({
+  variable: "--font-body",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  display: "swap",
+  adjustFontFallback: true,
+});
+
 export const metadata: Metadata = rootMetadata();
 
 export default async function RootLayout({
@@ -49,6 +65,13 @@ export default async function RootLayout({
   const storeTheme = toStoreThemePresetId(activeTheme);
   const analyticsConfig = await fetchAnalyticsConfig();
   const isEssa = storeTheme === "essa_chemicals";
+  const isSmNimco = storeTheme === "sm_nimco";
+
+  const themeFontVars = isEssa
+    ? ` ${jost.variable} ${poppins.variable}`
+    : isSmNimco
+      ? ` ${playfair.variable} ${outfit.variable}`
+      : "";
 
   return (
     <html
@@ -58,7 +81,7 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <body
-        className={`${geistSans.variable}${isEssa ? ` ${jost.variable} ${poppins.variable}` : ""} bg-background text-foreground antialiased`}
+        className={`${geistSans.variable}${themeFontVars} bg-background text-foreground antialiased`}
       >
         <GoogleTagManager gtmId={analyticsConfig.gtmId} />
         <AnalyticsProvider config={analyticsConfig}>
@@ -73,7 +96,7 @@ export default async function RootLayout({
                   }
                 >
                   <AnnouncementBar />
-                  <Header />
+                  <Header theme={storeTheme} />
                   <main className="min-w-0 max-w-full flex-1 overflow-x-clip bg-background pb-[calc(3.4375rem+env(safe-area-inset-bottom,0px))] lg:pb-0">
                     {children}
                   </main>

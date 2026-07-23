@@ -14,9 +14,13 @@ export function formatPrice(
   currency: string = APP_CURRENCY,
 ): string {
   const n = typeof value === 'string' ? parseFloat(value) : value;
+  // Explicit fraction digits — Node vs browser ICU disagree on defaults for some
+  // currencies (e.g. PKR), which causes SSR/client hydration mismatches.
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   }).format(Number.isNaN(n) ? 0 : n);
 }
 
@@ -29,6 +33,7 @@ export function formatPriceWhole(
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency,
+    minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(Number.isNaN(n) ? 0 : n);
 }

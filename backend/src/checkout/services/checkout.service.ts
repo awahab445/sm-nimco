@@ -207,8 +207,7 @@ export class CheckoutService {
     );
 
     const meta = resolveMetaCapiClient(startCheckoutDto);
-    const eventId =
-      meta.eventId?.trim() || `begin_checkout_${checkoutId}`;
+    const eventId = meta.eventId?.trim() || `begin_checkout_${checkoutId}`;
     try {
       const enriched = await this.getCheckout(checkoutId);
       type EnrichedLine = (typeof enriched.items)[number] & {
@@ -788,7 +787,7 @@ export class CheckoutService {
     const contents = (order.items ?? [])
       .filter((i) => i.sku?.trim())
       .map((i) => ({
-        id: i.sku!.trim(),
+        id: i.sku.trim(),
         quantity: i.quantity,
         item_price: Number(i.unitPrice),
       }));

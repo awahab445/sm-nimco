@@ -15,6 +15,7 @@ import {
 import { policyPageHref } from '@/lib/cms/policy-pages';
 import type { StoreThemeCode } from '@/lib/theme/types';
 import { Reveal } from '@/components/ui/reveal';
+import { SmNimcoFooter } from '@/components/themes/sm-nimco/footer';
 
 function sortByPosition<T extends { position?: number }>(items: T[]): T[] {
   return [...items].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
@@ -426,11 +427,13 @@ function FooterNewsletterForm({ inputId }: { inputId: string }) {
             placeholder="Enter email address"
             autoComplete="email"
             disabled={loading}
+            suppressHydrationWarning
             className="min-w-0 w-full flex-1 border-0 bg-transparent px-3.5 py-2 text-xs text-[var(--footer-foreground,var(--foreground))] placeholder:text-[var(--footer-muted-foreground,var(--muted-foreground))] focus:outline-none focus:ring-0 disabled:opacity-60"
           />
           <button
             type="submit"
             disabled={loading}
+            suppressHydrationWarning
             className="site-footer__newsletter-submit w-auto shrink-0 px-4 py-2 text-[13px] font-semibold tracking-normal text-[var(--footer-newsletter-btn-foreground,#fff)] transition-colors disabled:opacity-60 sm:px-5"
           >
             {loading ? 'Subscribing…' : 'Subscribe'}
@@ -691,6 +694,9 @@ function EssaFooter() {
 export function Footer({ theme }: { theme: StoreThemeCode }) {
   if (theme === 'essa_chemicals') {
     return <EssaFooter />;
+  }
+  if (theme === 'sm_nimco') {
+    return <SmNimcoFooter />;
   }
   return <DefaultFooter />;
 }

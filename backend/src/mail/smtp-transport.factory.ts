@@ -17,7 +17,8 @@ export type SmtpTransportInput = {
  */
 export function createSmtpTransporter(config: SmtpTransportInput): Transporter {
   const port = Number(config.port) || 587;
-  const secure = port === 465 ? true : port === 587 ? false : Boolean(config.secure);
+  const secure =
+    port === 465 ? true : port === 587 ? false : Boolean(config.secure);
 
   const options: SMTPTransport.Options = {
     host: config.host.trim(),

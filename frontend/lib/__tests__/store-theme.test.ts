@@ -2,7 +2,13 @@ import { STORE_THEME_IDS, getStoreThemeId, type StoreThemeId } from '../store-th
 
 describe('store-theme', () => {
   it('exposes a fixed set of theme ids', () => {
-    expect(STORE_THEME_IDS).toEqual(['default', 'ocean', 'ember', 'mehfil_shereen']);
+    expect(STORE_THEME_IDS).toEqual([
+      'default',
+      'ocean',
+      'ember',
+      'mehfil_shereen',
+      'sm_nimco',
+    ]);
   });
 
   it('getStoreThemeId returns a valid id', () => {

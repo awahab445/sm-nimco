@@ -1,9 +1,12 @@
 import type { Metadata } from 'next';
 import { getHomePageSections } from '@/lib/cms/home-page.service';
 import { HomePageView } from '@/components/home/home-page-view';
+import { SmNimcoHomeView } from '@/components/themes/sm-nimco/home-view';
 import { JsonLd } from '@/components/seo/json-ld';
 import { STORE_NAME } from '@/lib/config';
 import { absoluteUrl, buildPageMetadata, getSiteUrl } from '@/lib/seo';
+import { fetchActiveTheme } from '@/lib/theme/theme.server';
+import { toStoreThemePresetId } from '@/lib/theme/types';
 
 /** ISR: keep homepage fresh for CMS edits without forcing every request to SSR. */
 export const revalidate = 60;
@@ -16,7 +19,8 @@ export const metadata: Metadata = buildPageMetadata({
 });
 
 export default async function HomePage() {
-  const sections = await getHomePageSections();
+  const activeTheme = await fetchActiveTheme();
+  const storeTheme = toStoreThemePresetId(activeTheme);
   const siteUrl = getSiteUrl();
 
   const organizationLd = {
@@ -44,7 +48,11 @@ export default async function HomePage() {
   return (
     <>
       <JsonLd data={[organizationLd, websiteLd]} />
-      <HomePageView sections={sections} />
+      {storeTheme === 'sm_nimco' ? (
+        <SmNimcoHomeView />
+      ) : (
+        <HomePageView sections={await getHomePageSections()} />
+      )}
     </>
   );
 }

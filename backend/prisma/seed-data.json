@@ -1,0 +1,831 @@
+{
+  "exportedAt": "2026-07-23T12:40:05.543Z",
+  "categories": [],
+  "productOptions": [
+    {
+      "id": "40b86c40-f78a-4c90-9fab-1eb3a477e214",
+      "name": "Items",
+      "code": "item",
+      "isActive": true,
+      "createdAt": "2026-06-17T07:39:30.545Z",
+      "updatedAt": "2026-07-23T10:38:28.793Z",
+      "values": [
+        {
+          "id": "5e786f0a-07ee-458a-906a-019acd81a416",
+          "optionId": "40b86c40-f78a-4c90-9fab-1eb3a477e214",
+          "value": "Chips",
+          "code": null,
+          "sortOrder": 0,
+          "isActive": true,
+          "createdAt": "2026-07-23T10:38:09.007Z",
+          "updatedAt": "2026-07-23T10:38:09.007Z"
+        },
+        {
+          "id": "8c8b263f-dba4-4754-a27e-09f7968d247f",
+          "optionId": "40b86c40-f78a-4c90-9fab-1eb3a477e214",
+          "value": "Salanty",
+          "code": null,
+          "sortOrder": 1,
+          "isActive": true,
+          "createdAt": "2026-07-23T10:38:19.817Z",
+          "updatedAt": "2026-07-23T10:38:56.086Z"
+        },
+        {
+          "id": "c2c9955d-db73-4b9a-a3ca-a144331447e9",
+          "optionId": "40b86c40-f78a-4c90-9fab-1eb3a477e214",
+          "value": "Daal",
+          "code": null,
+          "sortOrder": 2,
+          "isActive": true,
+          "createdAt": "2026-07-23T10:38:51.461Z",
+          "updatedAt": "2026-07-23T10:38:51.461Z"
+        },
+        {
+          "id": "ac28f807-f7c2-4e8a-b754-5a6ab600e6ca",
+          "optionId": "40b86c40-f78a-4c90-9fab-1eb3a477e214",
+          "value": "Papri",
+          "code": null,
+          "sortOrder": 3,
+          "isActive": true,
+          "createdAt": "2026-07-23T10:39:23.137Z",
+          "updatedAt": "2026-07-23T10:40:16.405Z"
+        },
+        {
+          "id": "05511a18-deb7-4361-a8b8-27dd2c596af3",
+          "optionId": "40b86c40-f78a-4c90-9fab-1eb3a477e214",
+          "value": "Chewra",
+          "code": null,
+          "sortOrder": 4,
+          "isActive": true,
+          "createdAt": "2026-07-23T10:39:38.022Z",
+          "updatedAt": "2026-07-23T10:40:21.828Z"
+        },
+        {
+          "id": "f31500be-256c-4b03-9d06-7e89b784df4e",
+          "optionId": "40b86c40-f78a-4c90-9fab-1eb3a477e214",
+          "value": "Peanuts",
+          "code": null,
+          "sortOrder": 5,
+          "isActive": true,
+          "createdAt": "2026-07-23T10:39:59.783Z",
+          "updatedAt": "2026-07-23T10:39:59.783Z"
+        }
+      ]
+    },
+    {
+      "id": "a39db598-111e-4007-bf54-f564b2c1f587",
+      "name": "Pack",
+      "code": "pack",
+      "isActive": true,
+      "createdAt": "2026-05-08T06:43:46.941Z",
+      "updatedAt": "2026-05-08T06:43:46.941Z",
+      "values": [
+        {
+          "id": "08b9ab65-eba3-4875-a761-485f6196f74e",
+          "optionId": "a39db598-111e-4007-bf54-f564b2c1f587",
+          "value": "1Pcs",
+          "code": "1pcs",
+          "sortOrder": 0,
+          "isActive": true,
+          "createdAt": "2026-06-17T13:03:55.272Z",
+          "updatedAt": "2026-06-17T13:03:55.272Z"
+        },
+        {
+          "id": "98acf219-fadc-4e60-88f9-3b660145230d",
+          "optionId": "a39db598-111e-4007-bf54-f564b2c1f587",
+          "value": "Family pack",
+          "code": "family pack",
+          "sortOrder": 1,
+          "isActive": true,
+          "createdAt": "2026-05-08T06:44:01.979Z",
+          "updatedAt": "2026-05-08T06:44:01.979Z"
+        },
+        {
+          "id": "d79e5779-4b44-422c-bcb0-43743dba8196",
+          "optionId": "a39db598-111e-4007-bf54-f564b2c1f587",
+          "value": "Pack of 3",
+          "code": "pack of 3",
+          "sortOrder": 3,
+          "isActive": true,
+          "createdAt": "2026-05-08T06:46:44.189Z",
+          "updatedAt": "2026-05-08T06:46:44.189Z"
+        }
+      ]
+    }
+  ],
+  "products": [
+    {
+      "id": "c7b8e71d-3489-4bd7-8f88-2e541ee86e41",
+      "sku": "SKU-001",
+      "name": "Daal Mong",
+      "slug": "test-product",
+      "type": "configurable",
+      "description": "Crunch into the perfect blend of taste and tradition with SM Nimco & Sweets Daal Mong \nLight, crispy, and packed with flavor, this classic snack is made for every tea time, every gathering, and every craving. One handful is never enough!",
+      "shortDescription": null,
+      "basePrice": "50",
+      "cost": null,
+      "weight": null,
+      "status": "active",
+      "visibility": "both",
+      "taxClassId": null,
+      "attributes": {},
+      "metaData": {},
+      "createdAt": "2026-05-04T06:49:27.174Z",
+      "updatedAt": "2026-07-23T07:43:33.864Z",
+      "deletedAt": null,
+      "variants": [
+        {
+          "id": "0b5d1e30-979f-47d6-8d98-c6c2cca42d61",
+          "productId": "c7b8e71d-3489-4bd7-8f88-2e541ee86e41",
+          "sku": "SKU-001-1PCS",
+          "name": "Pack: 1Pcs",
+          "price": "50",
+          "cost": null,
+          "weight": null,
+          "attributes": {
+            "optionValues": {
+              "pack": "1Pcs"
+            },
+            "optionValueIds": {
+              "pack": "08b9ab65-eba3-4875-a761-485f6196f74e"
+            }
+          },
+          "position": 0,
+          "isActive": true,
+          "createdAt": "2026-07-23T07:43:47.564Z",
+          "updatedAt": "2026-07-23T07:43:47.564Z",
+          "optionValues": [
+            {
+              "variantId": "0b5d1e30-979f-47d6-8d98-c6c2cca42d61",
+              "optionId": "a39db598-111e-4007-bf54-f564b2c1f587",
+              "valueId": "08b9ab65-eba3-4875-a761-485f6196f74e"
+            }
+          ]
+        }
+      ],
+      "images": [
+        {
+          "id": "cf5f2804-bd3a-4314-a587-938f081ccb05",
+          "productId": "c7b8e71d-3489-4bd7-8f88-2e541ee86e41",
+          "variantId": null,
+          "url": "http://localhost:3000/uploads/products/a8a1408c-49db-4985-a350-98bd79a4d959.png",
+          "altText": "Daal Mong",
+          "position": 0,
+          "isPrimary": true,
+          "createdAt": "2026-07-23T07:43:33.965Z"
+        }
+      ],
+      "categories": [],
+      "options": [
+        {
+          "productId": "c7b8e71d-3489-4bd7-8f88-2e541ee86e41",
+          "optionId": "a39db598-111e-4007-bf54-f564b2c1f587",
+          "isRequired": true,
+          "position": 0,
+          "values": [
+            {
+              "productId": "c7b8e71d-3489-4bd7-8f88-2e541ee86e41",
+              "optionId": "a39db598-111e-4007-bf54-f564b2c1f587",
+              "valueId": "08b9ab65-eba3-4875-a761-485f6196f74e"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "0019bc5a-cfda-423a-8033-04e19527878c",
+      "sku": "SKU-002",
+      "name": "Finger Chips",
+      "slug": "test-product-1",
+      "type": "configurable",
+      "description": "Crispy, light, and full of flavor.\nSM Nimco & Sweets Finger Chips are the perfect crunchy snack for every mood, seasoned just right to keep you reaching for more.",
+      "shortDescription": null,
+      "basePrice": "100",
+      "cost": null,
+      "weight": null,
+      "status": "active",
+      "visibility": "both",
+      "taxClassId": null,
+      "attributes": {},
+      "metaData": {},
+      "createdAt": "2026-05-04T06:49:39.284Z",
+      "updatedAt": "2026-07-23T07:46:23.636Z",
+      "deletedAt": null,
+      "variants": [
+        {
+          "id": "b3717f77-56d7-4f6f-9ced-294382e4b7a1",
+          "productId": "0019bc5a-cfda-423a-8033-04e19527878c",
+          "sku": "SKU-002-1PCS",
+          "name": "Pack: 1Pcs",
+          "price": "100",
+          "cost": null,
+          "weight": null,
+          "attributes": {
+            "optionValues": {
+              "pack": "1Pcs"
+            },
+            "optionValueIds": {
+              "pack": "08b9ab65-eba3-4875-a761-485f6196f74e"
+            }
+          },
+          "position": 0,
+          "isActive": true,
+          "createdAt": "2026-07-23T07:45:48.924Z",
+          "updatedAt": "2026-07-23T07:45:48.924Z",
+          "optionValues": [
+            {
+              "variantId": "b3717f77-56d7-4f6f-9ced-294382e4b7a1",
+              "optionId": "a39db598-111e-4007-bf54-f564b2c1f587",
+              "valueId": "08b9ab65-eba3-4875-a761-485f6196f74e"
+            }
+          ]
+        }
+      ],
+      "images": [
+        {
+          "id": "f2fbb666-330b-4d88-ba99-e8c95c0a9173",
+          "productId": "0019bc5a-cfda-423a-8033-04e19527878c",
+          "variantId": null,
+          "url": "http://localhost:3000/uploads/products/8135460f-0de9-4a12-9926-ab372374450e.png",
+          "altText": "Finger Chips",
+          "position": 0,
+          "isPrimary": true,
+          "createdAt": "2026-07-23T07:46:23.728Z"
+        }
+      ],
+      "categories": [],
+      "options": [
+        {
+          "productId": "0019bc5a-cfda-423a-8033-04e19527878c",
+          "optionId": "a39db598-111e-4007-bf54-f564b2c1f587",
+          "isRequired": true,
+          "position": 0,
+          "values": [
+            {
+              "productId": "0019bc5a-cfda-423a-8033-04e19527878c",
+              "optionId": "a39db598-111e-4007-bf54-f564b2c1f587",
+              "valueId": "08b9ab65-eba3-4875-a761-485f6196f74e"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "eaacdf54-eaa9-4dcc-839e-a10a61588523",
+      "sku": "SKU-003",
+      "name": "Salty Peanuts",
+      "slug": "test-product-2",
+      "type": "configurable",
+      "description": "Simple, classic, and full of flavor.\nSM Nimco & Sweets Salty Peanuts are perfectly roasted and lightly salted for that timeless crunch you can enjoy anytime.",
+      "shortDescription": null,
+      "basePrice": "100",
+      "cost": null,
+      "weight": null,
+      "status": "active",
+      "visibility": "both",
+      "taxClassId": null,
+      "attributes": {},
+      "metaData": {},
+      "createdAt": "2026-05-04T06:49:51.979Z",
+      "updatedAt": "2026-07-23T07:49:32.531Z",
+      "deletedAt": null,
+      "variants": [
+        {
+          "id": "06a5b6d9-8bf4-4c7b-8360-5ff139eef221",
+          "productId": "eaacdf54-eaa9-4dcc-839e-a10a61588523",
+          "sku": "SKU-003-1PCS",
+          "name": "Pack: 1Pcs",
+          "price": "100",
+          "cost": null,
+          "weight": null,
+          "attributes": {
+            "optionValues": {
+              "pack": "1Pcs"
+            },
+            "optionValueIds": {
+              "pack": "08b9ab65-eba3-4875-a761-485f6196f74e"
+            }
+          },
+          "position": 0,
+          "isActive": true,
+          "createdAt": "2026-07-23T07:49:53.087Z",
+          "updatedAt": "2026-07-23T07:49:53.087Z",
+          "optionValues": [
+            {
+              "variantId": "06a5b6d9-8bf4-4c7b-8360-5ff139eef221",
+              "optionId": "a39db598-111e-4007-bf54-f564b2c1f587",
+              "valueId": "08b9ab65-eba3-4875-a761-485f6196f74e"
+            }
+          ]
+        }
+      ],
+      "images": [
+        {
+          "id": "4d007de1-0543-49ab-8e2e-a88447fdcca1",
+          "productId": "eaacdf54-eaa9-4dcc-839e-a10a61588523",
+          "variantId": null,
+          "url": "http://localhost:3000/uploads/products/9b7311ff-0b56-4838-b2c5-01da272fe372.png",
+          "altText": "Salty Peanuts",
+          "position": 0,
+          "isPrimary": true,
+          "createdAt": "2026-07-23T07:49:32.661Z"
+        }
+      ],
+      "categories": [],
+      "options": [
+        {
+          "productId": "eaacdf54-eaa9-4dcc-839e-a10a61588523",
+          "optionId": "a39db598-111e-4007-bf54-f564b2c1f587",
+          "isRequired": true,
+          "position": 0,
+          "values": [
+            {
+              "productId": "eaacdf54-eaa9-4dcc-839e-a10a61588523",
+              "optionId": "a39db598-111e-4007-bf54-f564b2c1f587",
+              "valueId": "08b9ab65-eba3-4875-a761-485f6196f74e"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "64289463-e48b-4261-bfef-e59b622eb20e",
+      "sku": "SKU-004",
+      "name": "Salanty",
+      "slug": "test-product-3",
+      "type": "configurable",
+      "description": "Pour the crunch, feel the flavor!\nSM Nimco & Sweets brings you Salanty, crispy, cheesy, and packed with the perfect kick for your snack cravings. One bite and you're hooked!",
+      "shortDescription": null,
+      "basePrice": "50",
+      "cost": null,
+      "weight": null,
+      "status": "active",
+      "visibility": "both",
+      "taxClassId": null,
+      "attributes": {},
+      "metaData": {},
+      "createdAt": "2026-05-04T06:50:26.021Z",
+      "updatedAt": "2026-07-23T07:55:19.841Z",
+      "deletedAt": null,
+      "variants": [
+        {
+          "id": "bb563a04-2bea-40d3-9c98-80590337b5d2",
+          "productId": "64289463-e48b-4261-bfef-e59b622eb20e",
+          "sku": "SKU-004-1PCS",
+          "name": "Pack: 1Pcs",
+          "price": "50",
+          "cost": null,
+          "weight": null,
+          "attributes": {
+            "optionValues": {
+              "pack": "1Pcs"
+            },
+            "optionValueIds": {
+              "pack": "08b9ab65-eba3-4875-a761-485f6196f74e"
+            }
+          },
+          "position": 0,
+          "isActive": true,
+          "createdAt": "2026-07-23T07:55:28.764Z",
+          "updatedAt": "2026-07-23T07:55:28.764Z",
+          "optionValues": [
+            {
+              "variantId": "bb563a04-2bea-40d3-9c98-80590337b5d2",
+              "optionId": "a39db598-111e-4007-bf54-f564b2c1f587",
+              "valueId": "08b9ab65-eba3-4875-a761-485f6196f74e"
+            }
+          ]
+        }
+      ],
+      "images": [
+        {
+          "id": "80dd7fb2-9881-43ef-b9ad-66ab6ce6e17d",
+          "productId": "64289463-e48b-4261-bfef-e59b622eb20e",
+          "variantId": null,
+          "url": "http://localhost:3000/uploads/products/b92ad3d5-c516-4461-a046-606cf6930887.png",
+          "altText": "Salanty",
+          "position": 0,
+          "isPrimary": true,
+          "createdAt": "2026-07-23T07:55:19.939Z"
+        }
+      ],
+      "categories": [],
+      "options": [
+        {
+          "productId": "64289463-e48b-4261-bfef-e59b622eb20e",
+          "optionId": "a39db598-111e-4007-bf54-f564b2c1f587",
+          "isRequired": true,
+          "position": 0,
+          "values": [
+            {
+              "productId": "64289463-e48b-4261-bfef-e59b622eb20e",
+              "optionId": "a39db598-111e-4007-bf54-f564b2c1f587",
+              "valueId": "08b9ab65-eba3-4875-a761-485f6196f74e"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "2e6248be-15bb-45a8-8dc1-245118193c6f",
+      "sku": "SKU-005",
+      "name": "Coin Papri",
+      "slug": "test-product-4",
+      "type": "configurable",
+      "description": "Our crispy, flavorful Coin Papri is the perfect snack for every mood, tea time, movie nights, or anytime cravings hit!",
+      "shortDescription": null,
+      "basePrice": "50",
+      "cost": null,
+      "weight": null,
+      "status": "active",
+      "visibility": "both",
+      "taxClassId": null,
+      "attributes": {},
+      "metaData": {},
+      "createdAt": "2026-06-17T12:08:05.816Z",
+      "updatedAt": "2026-07-23T07:56:32.234Z",
+      "deletedAt": null,
+      "variants": [
+        {
+          "id": "925b582b-d33f-43e0-92fb-2f34f4492328",
+          "productId": "2e6248be-15bb-45a8-8dc1-245118193c6f",
+          "sku": "SKU-005-1PCS",
+          "name": "Pack: 1Pcs",
+          "price": "50",
+          "cost": null,
+          "weight": null,
+          "attributes": {
+            "optionValues": {
+              "pack": "1Pcs"
+            },
+            "optionValueIds": {
+              "pack": "08b9ab65-eba3-4875-a761-485f6196f74e"
+            }
+          },
+          "position": 0,
+          "isActive": true,
+          "createdAt": "2026-07-23T07:57:04.290Z",
+          "updatedAt": "2026-07-23T07:57:04.290Z",
+          "optionValues": [
+            {
+              "variantId": "925b582b-d33f-43e0-92fb-2f34f4492328",
+              "optionId": "a39db598-111e-4007-bf54-f564b2c1f587",
+              "valueId": "08b9ab65-eba3-4875-a761-485f6196f74e"
+            }
+          ]
+        }
+      ],
+      "images": [
+        {
+          "id": "334cb79a-3439-4591-904c-d17832a9ccb7",
+          "productId": "2e6248be-15bb-45a8-8dc1-245118193c6f",
+          "variantId": null,
+          "url": "http://localhost:3000/uploads/products/0e2922be-e569-4fe3-ad2e-726880c689cf.png",
+          "altText": "Coin Papri",
+          "position": 2,
+          "isPrimary": true,
+          "createdAt": "2026-07-23T07:56:32.352Z"
+        }
+      ],
+      "categories": [],
+      "options": [
+        {
+          "productId": "2e6248be-15bb-45a8-8dc1-245118193c6f",
+          "optionId": "a39db598-111e-4007-bf54-f564b2c1f587",
+          "isRequired": true,
+          "position": 0,
+          "values": [
+            {
+              "productId": "2e6248be-15bb-45a8-8dc1-245118193c6f",
+              "optionId": "a39db598-111e-4007-bf54-f564b2c1f587",
+              "valueId": "08b9ab65-eba3-4875-a761-485f6196f74e"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fb39c7d5-a4c8-43b6-abed-24fa74046d1d",
+      "sku": "SKU-006",
+      "name": "Sweet Chewra",
+      "slug": "test-product-5",
+      "type": "configurable",
+      "description": "Our Sweet Chewra is loaded with nuts, spices, and a delightful sweetness that makes every bite unforgettable!",
+      "shortDescription": null,
+      "basePrice": "200",
+      "cost": null,
+      "weight": null,
+      "status": "active",
+      "visibility": "both",
+      "taxClassId": null,
+      "attributes": {},
+      "metaData": {},
+      "createdAt": "2026-06-17T12:12:32.073Z",
+      "updatedAt": "2026-07-23T07:58:08.819Z",
+      "deletedAt": null,
+      "variants": [
+        {
+          "id": "00257f56-9fe4-4719-9a33-f79b4904e920",
+          "productId": "fb39c7d5-a4c8-43b6-abed-24fa74046d1d",
+          "sku": "SKU-006-1PCS",
+          "name": "Pack: 1Pcs",
+          "price": "200",
+          "cost": null,
+          "weight": null,
+          "attributes": {
+            "optionValues": {
+              "pack": "1Pcs"
+            },
+            "optionValueIds": {
+              "pack": "08b9ab65-eba3-4875-a761-485f6196f74e"
+            }
+          },
+          "position": 0,
+          "isActive": true,
+          "createdAt": "2026-07-23T07:58:19.245Z",
+          "updatedAt": "2026-07-23T07:58:19.245Z",
+          "optionValues": [
+            {
+              "variantId": "00257f56-9fe4-4719-9a33-f79b4904e920",
+              "optionId": "a39db598-111e-4007-bf54-f564b2c1f587",
+              "valueId": "08b9ab65-eba3-4875-a761-485f6196f74e"
+            }
+          ]
+        }
+      ],
+      "images": [
+        {
+          "id": "a2589ff3-c10d-429c-a702-99c00487d544",
+          "productId": "fb39c7d5-a4c8-43b6-abed-24fa74046d1d",
+          "variantId": null,
+          "url": "http://localhost:3000/uploads/products/c5ca334f-6032-41ef-8e81-93e647679abe.png",
+          "altText": "Sweet Chewra",
+          "position": 2,
+          "isPrimary": true,
+          "createdAt": "2026-07-23T07:58:08.920Z"
+        }
+      ],
+      "categories": [],
+      "options": [
+        {
+          "productId": "fb39c7d5-a4c8-43b6-abed-24fa74046d1d",
+          "optionId": "a39db598-111e-4007-bf54-f564b2c1f587",
+          "isRequired": true,
+          "position": 0,
+          "values": [
+            {
+              "productId": "fb39c7d5-a4c8-43b6-abed-24fa74046d1d",
+              "optionId": "a39db598-111e-4007-bf54-f564b2c1f587",
+              "valueId": "08b9ab65-eba3-4875-a761-485f6196f74e"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "11920e18-2c21-473c-a201-54cfa6870a03",
+      "sku": "SKU-007",
+      "name": "Crincal Salty Chips",
+      "slug": "fatty-brown-washing-soap",
+      "type": "configurable",
+      "description": "Our Crincal Salty Chips are perfectly crisp, lightly salted, and made to satisfy your snack cravings anytime.",
+      "shortDescription": null,
+      "basePrice": "150",
+      "cost": null,
+      "weight": null,
+      "status": "active",
+      "visibility": "both",
+      "taxClassId": null,
+      "attributes": {},
+      "metaData": {},
+      "createdAt": "2026-06-17T12:15:17.430Z",
+      "updatedAt": "2026-07-23T08:00:10.309Z",
+      "deletedAt": null,
+      "variants": [
+        {
+          "id": "dbcab713-f6a9-4fa3-9f13-2f0ec970cfde",
+          "productId": "11920e18-2c21-473c-a201-54cfa6870a03",
+          "sku": "SKU-007-1PCS",
+          "name": "Pack: 1Pcs",
+          "price": "150",
+          "cost": null,
+          "weight": null,
+          "attributes": {
+            "optionValues": {
+              "pack": "1Pcs"
+            },
+            "optionValueIds": {
+              "pack": "08b9ab65-eba3-4875-a761-485f6196f74e"
+            }
+          },
+          "position": 0,
+          "isActive": true,
+          "createdAt": "2026-07-23T08:00:21.319Z",
+          "updatedAt": "2026-07-23T08:00:21.319Z",
+          "optionValues": [
+            {
+              "variantId": "dbcab713-f6a9-4fa3-9f13-2f0ec970cfde",
+              "optionId": "a39db598-111e-4007-bf54-f564b2c1f587",
+              "valueId": "08b9ab65-eba3-4875-a761-485f6196f74e"
+            }
+          ]
+        }
+      ],
+      "images": [
+        {
+          "id": "d0bfb10c-3f0f-4d24-9502-5466864047ca",
+          "productId": "11920e18-2c21-473c-a201-54cfa6870a03",
+          "variantId": null,
+          "url": "http://localhost:3000/uploads/products/01432300-e178-4f58-a785-cfc2c738d169.png",
+          "altText": "Crincal Salty Chips",
+          "position": 2,
+          "isPrimary": true,
+          "createdAt": "2026-07-23T08:00:10.381Z"
+        }
+      ],
+      "categories": [],
+      "options": [
+        {
+          "productId": "11920e18-2c21-473c-a201-54cfa6870a03",
+          "optionId": "a39db598-111e-4007-bf54-f564b2c1f587",
+          "isRequired": true,
+          "position": 0,
+          "values": [
+            {
+              "productId": "11920e18-2c21-473c-a201-54cfa6870a03",
+              "optionId": "a39db598-111e-4007-bf54-f564b2c1f587",
+              "valueId": "08b9ab65-eba3-4875-a761-485f6196f74e"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variantOptionValues": [
+    {
+      "variantId": "e35461a9-65b7-4ab2-a26a-d1d3d46bfb9a",
+      "optionId": "a39db598-111e-4007-bf54-f564b2c1f587",
+      "valueId": "08b9ab65-eba3-4875-a761-485f6196f74e"
+    },
+    {
+      "variantId": "efbf85a4-a7b1-4ead-83db-4c7df04e3790",
+      "optionId": "a39db598-111e-4007-bf54-f564b2c1f587",
+      "valueId": "08b9ab65-eba3-4875-a761-485f6196f74e"
+    },
+    {
+      "variantId": "dab15350-43b5-4b34-b7b5-19109578dfb6",
+      "optionId": "a39db598-111e-4007-bf54-f564b2c1f587",
+      "valueId": "08b9ab65-eba3-4875-a761-485f6196f74e"
+    },
+    {
+      "variantId": "0b5d1e30-979f-47d6-8d98-c6c2cca42d61",
+      "optionId": "a39db598-111e-4007-bf54-f564b2c1f587",
+      "valueId": "08b9ab65-eba3-4875-a761-485f6196f74e"
+    },
+    {
+      "variantId": "b3717f77-56d7-4f6f-9ced-294382e4b7a1",
+      "optionId": "a39db598-111e-4007-bf54-f564b2c1f587",
+      "valueId": "08b9ab65-eba3-4875-a761-485f6196f74e"
+    },
+    {
+      "variantId": "06a5b6d9-8bf4-4c7b-8360-5ff139eef221",
+      "optionId": "a39db598-111e-4007-bf54-f564b2c1f587",
+      "valueId": "08b9ab65-eba3-4875-a761-485f6196f74e"
+    },
+    {
+      "variantId": "bb563a04-2bea-40d3-9c98-80590337b5d2",
+      "optionId": "a39db598-111e-4007-bf54-f564b2c1f587",
+      "valueId": "08b9ab65-eba3-4875-a761-485f6196f74e"
+    },
+    {
+      "variantId": "925b582b-d33f-43e0-92fb-2f34f4492328",
+      "optionId": "a39db598-111e-4007-bf54-f564b2c1f587",
+      "valueId": "08b9ab65-eba3-4875-a761-485f6196f74e"
+    },
+    {
+      "variantId": "00257f56-9fe4-4719-9a33-f79b4904e920",
+      "optionId": "a39db598-111e-4007-bf54-f564b2c1f587",
+      "valueId": "08b9ab65-eba3-4875-a761-485f6196f74e"
+    },
+    {
+      "variantId": "dbcab713-f6a9-4fa3-9f13-2f0ec970cfde",
+      "optionId": "a39db598-111e-4007-bf54-f564b2c1f587",
+      "valueId": "08b9ab65-eba3-4875-a761-485f6196f74e"
+    }
+  ],
+  "bundleDeals": [
+    {
+      "id": "86599038-0d58-4469-81ea-7f5ea9f24d4d",
+      "title": "Azadi Namkeen Deal",
+      "slug": "azadi-deal",
+      "description": null,
+      "status": "active",
+      "isFeatured": true,
+      "dealPrice": "910",
+      "compareAtTotal": "1000",
+      "savingsAmount": "90",
+      "savingsPercent": "9",
+      "imageUrl": null,
+      "validFrom": "2026-07-23T05:46:00.000Z",
+      "validTo": "2026-08-14T05:46:00.000Z",
+      "metadata": {},
+      "createdAt": "2026-07-23T10:47:59.953Z",
+      "updatedAt": "2026-07-23T10:48:14.470Z",
+      "deletedAt": null,
+      "items": [
+        {
+          "id": "d08795b6-10fa-4c48-a1e6-5dbe6fe15d59",
+          "bundleDealId": "86599038-0d58-4469-81ea-7f5ea9f24d4d",
+          "productId": "c7b8e71d-3489-4bd7-8f88-2e541ee86e41",
+          "variantId": "0b5d1e30-979f-47d6-8d98-c6c2cca42d61",
+          "quantity": 3,
+          "position": 0,
+          "unitListPrice": "50"
+        },
+        {
+          "id": "7d2119a3-ad43-4e23-8be4-9e21ab4df320",
+          "bundleDealId": "86599038-0d58-4469-81ea-7f5ea9f24d4d",
+          "productId": "fb39c7d5-a4c8-43b6-abed-24fa74046d1d",
+          "variantId": "00257f56-9fe4-4719-9a33-f79b4904e920",
+          "quantity": 2,
+          "position": 1,
+          "unitListPrice": "200"
+        },
+        {
+          "id": "7d629f34-29dc-40c2-9cce-0574ae47175d",
+          "bundleDealId": "86599038-0d58-4469-81ea-7f5ea9f24d4d",
+          "productId": "64289463-e48b-4261-bfef-e59b622eb20e",
+          "variantId": "bb563a04-2bea-40d3-9c98-80590337b5d2",
+          "quantity": 3,
+          "position": 2,
+          "unitListPrice": "50"
+        },
+        {
+          "id": "4b87a3e5-70d2-43e0-8a7b-b15cc4033dee",
+          "bundleDealId": "86599038-0d58-4469-81ea-7f5ea9f24d4d",
+          "productId": "eaacdf54-eaa9-4dcc-839e-a10a61588523",
+          "variantId": "06a5b6d9-8bf4-4c7b-8360-5ff139eef221",
+          "quantity": 3,
+          "position": 3,
+          "unitListPrice": "100"
+        }
+      ]
+    },
+    {
+      "id": "cfed3405-716c-4f9e-a0fb-3906f4f4ad1c",
+      "title": "Chips Deals",
+      "slug": "chips-deals",
+      "description": null,
+      "status": "active",
+      "isFeatured": true,
+      "dealPrice": "870",
+      "compareAtTotal": "950",
+      "savingsAmount": "80",
+      "savingsPercent": "8.42",
+      "imageUrl": "/uploads/deals/82a9448c-bc9e-4790-8e84-4e6b037dcb8a.png",
+      "validFrom": "2026-07-23T05:48:00.000Z",
+      "validTo": "2026-07-31T05:48:00.000Z",
+      "metadata": {},
+      "createdAt": "2026-07-23T10:50:32.915Z",
+      "updatedAt": "2026-07-23T11:06:58.290Z",
+      "deletedAt": null,
+      "items": [
+        {
+          "id": "adbf736b-ef57-45b8-8a15-9e3ecd7bb92d",
+          "bundleDealId": "cfed3405-716c-4f9e-a0fb-3906f4f4ad1c",
+          "productId": "11920e18-2c21-473c-a201-54cfa6870a03",
+          "variantId": "dbcab713-f6a9-4fa3-9f13-2f0ec970cfde",
+          "quantity": 2,
+          "position": 0,
+          "unitListPrice": "150"
+        },
+        {
+          "id": "55ea5c6a-0afa-426d-a4aa-881e75a523c7",
+          "bundleDealId": "cfed3405-716c-4f9e-a0fb-3906f4f4ad1c",
+          "productId": "0019bc5a-cfda-423a-8033-04e19527878c",
+          "variantId": "b3717f77-56d7-4f6f-9ced-294382e4b7a1",
+          "quantity": 4,
+          "position": 1,
+          "unitListPrice": "100"
+        },
+        {
+          "id": "0ef98167-7474-4a5e-b67d-7f979799e5a8",
+          "bundleDealId": "cfed3405-716c-4f9e-a0fb-3906f4f4ad1c",
+          "productId": "2e6248be-15bb-45a8-8dc1-245118193c6f",
+          "variantId": "925b582b-d33f-43e0-92fb-2f34f4492328",
+          "quantity": 5,
+          "position": 2,
+          "unitListPrice": "50"
+        }
+      ]
+    }
+  ],
+  "storeSettings": [
+    {
+      "id": "default",
+      "currentTheme": "sm-nimco",
+      "updatedAt": "2026-07-23T07:16:58.741Z",
+      "updatedByAdminUserId": "f4b18155-4045-41e5-8bfc-c9371013bbd3"
+    }
+  ]
+}

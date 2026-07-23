@@ -2,7 +2,13 @@
  * Storefront visual preset (skin). Controlled by NEXT_PUBLIC_STORE_THEME on the server;
  * the same token layer in styles/store-themes.css drives all colors and radii.
  */
-export const STORE_THEME_IDS = ['default', 'ocean', 'ember', 'mehfil_shereen'] as const;
+export const STORE_THEME_IDS = [
+  'default',
+  'ocean',
+  'ember',
+  'mehfil_shereen',
+  'sm_nimco',
+] as const;
 
 export type StoreThemeId = (typeof STORE_THEME_IDS)[number];
 

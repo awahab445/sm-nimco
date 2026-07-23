@@ -197,9 +197,7 @@ export class MailTransportService implements OnModuleDestroy {
       }
     }
 
-    throw lastError instanceof Error
-      ? lastError
-      : new Error(String(lastError));
+    throw lastError instanceof Error ? lastError : new Error(String(lastError));
   }
 
   async sendMail(

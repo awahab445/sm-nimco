@@ -36,7 +36,10 @@ export class UpsertSocialLinkItemDto {
 
   @IsString()
   @MaxLength(1024)
-  @IsUrl({ require_protocol: true }, { message: 'URL must include http:// or https://' })
+  @IsUrl(
+    { require_protocol: true },
+    { message: 'URL must include http:// or https://' },
+  )
   url!: string;
 
   @IsOptional()

@@ -320,6 +320,32 @@ export class ProductService {
     return product;
   }
 
+  /**
+   * Soft-delete many products in one update (sets deletedAt).
+   * Already-archived IDs are ignored (deletedAt IS NULL filter).
+   */
+  async removeMany(ids: string[]) {
+    const uniqueIds = [...new Set(ids.map((id) => id.trim()).filter(Boolean))];
+    if (uniqueIds.length === 0) {
+      return { deletedCount: 0, ids: [] as string[] };
+    }
+
+    const result = await this.prisma.product.updateMany({
+      where: {
+        id: { in: uniqueIds },
+        deletedAt: null,
+      },
+      data: {
+        deletedAt: new Date(),
+      },
+    });
+
+    return {
+      deletedCount: result.count,
+      ids: uniqueIds,
+    };
+  }
+
   async assignCategory(productId: string, categoryId: string, position = 0) {
     await this.findOneById(productId);
 

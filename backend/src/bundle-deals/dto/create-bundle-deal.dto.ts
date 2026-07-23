@@ -10,7 +10,7 @@ import {
   Min,
   ValidateNested,
 } from 'class-validator';
-import { Transform, Type } from 'class-transformer';
+import { plainToInstance, Transform, Type } from 'class-transformer';
 import { BundleDealItemDto } from './bundle-deal-item.dto';
 
 export function parseBooleanField(value: unknown): boolean | undefined {
@@ -28,15 +28,26 @@ export function parseNumberField(value: unknown): number | undefined {
   return Number(value);
 }
 
+/**
+ * Multipart FormData sends `items` as a JSON string. Parse it and convert to
+ * BundleDealItemDto class instances so ValidationPipe whitelist /
+ * forbidNonWhitelisted work on nested properties (productId, variantId, quantity).
+ */
 export function parseItemsField(value: unknown): BundleDealItemDto[] | unknown {
+  let parsed: unknown = value;
   if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (!trimmed) return value;
     try {
-      return JSON.parse(value) as BundleDealItemDto[];
+      parsed = JSON.parse(trimmed) as unknown;
     } catch {
       return value;
     }
   }
-  return value;
+  if (!Array.isArray(parsed)) return parsed;
+  return plainToInstance(BundleDealItemDto, parsed, {
+    enableImplicitConversion: true,
+  });
 }
 
 export enum BundleDealStatus {

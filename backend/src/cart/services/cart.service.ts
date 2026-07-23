@@ -337,8 +337,7 @@ export class CartService {
     const added = enriched.items.find((i) => i.variantId === variantId);
     const sku = String(variant.sku ?? '').trim();
     const eventId =
-      meta.eventId?.trim() ||
-      `atc_${cartId}_${variantId}_${Date.now()}`;
+      meta.eventId?.trim() || `atc_${cartId}_${variantId}_${Date.now()}`;
     if (sku) {
       const unitPrice = Number(added?.price ?? variant.price);
       this.capiService.enqueue(
@@ -358,8 +357,8 @@ export class CartService {
           value: unitPrice * quantity,
           currency: enriched.currency || APP_CURRENCY,
           num_items: quantity,
-          content_name:
-            (added as { productName?: string } | undefined)?.productName,
+          content_name: (added as { productName?: string } | undefined)
+            ?.productName,
           content_type: 'product',
         },
       );

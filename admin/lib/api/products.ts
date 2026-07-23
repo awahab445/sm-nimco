@@ -204,6 +204,13 @@ export async function deleteAdminProduct(id: string) {
   return fetchApi<unknown>(`/admin/products/${id}`, { method: 'DELETE' });
 }
 
+export async function bulkDeleteAdminProducts(ids: string[]) {
+  return fetchApi<{ deletedCount: number; ids: string[] }>('/admin/products/bulk-delete', {
+    method: 'POST',
+    body: JSON.stringify({ ids }),
+  });
+}
+
 export type CreateVariantBody = {
   sku: string;
   name: string;

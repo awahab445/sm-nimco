@@ -3,6 +3,7 @@ export const PROVISIONED_THEME_IDS = [
   'mehfil-e-shireen',
   'ember',
   'tailwind',
+  'sm-nimco',
 ] as const;
 
 export type ProvisionedThemeId = (typeof PROVISIONED_THEME_IDS)[number];
@@ -17,6 +18,8 @@ const LEGACY_THEME_MAP: Record<string, ProvisionedThemeId> = {
   tailwind: 'tailwind',
   'essa-chemicals': 'essa-chemicals',
   essa_chemicals: 'essa-chemicals',
+  'sm-nimco': 'sm-nimco',
+  sm_nimco: 'sm-nimco',
 };
 
 export function isProvisionedThemeId(value: string): value is ProvisionedThemeId {
@@ -32,7 +35,12 @@ export function normalizeProvisionedThemeId(value: string | null | undefined): P
   return 'tailwind';
 }
 
-export type StoreThemeCode = 'default' | 'ember' | 'mehfil_shereen' | 'essa_chemicals';
+export type StoreThemeCode =
+  | 'default'
+  | 'ember'
+  | 'mehfil_shereen'
+  | 'essa_chemicals'
+  | 'sm_nimco';
 
 /** Maps admin-provisioned theme id to the internal store-themes.css preset key. */
 export function toStoreThemePresetId(theme: ProvisionedThemeId): StoreThemeCode {
@@ -43,6 +51,8 @@ export function toStoreThemePresetId(theme: ProvisionedThemeId): StoreThemeCode 
       return 'ember';
     case 'essa-chemicals':
       return 'essa_chemicals';
+    case 'sm-nimco':
+      return 'sm_nimco';
     case 'tailwind':
     default:
       return 'default';
@@ -91,5 +101,13 @@ export const THEME_PRESETS: Record<
     primaryHover: '#9a7a3a',
     secondary: '#141c2c',
     background: '#ffffff',
+  },
+  'sm-nimco': {
+    label: 'SM NIMCO & Sweets',
+    description: 'Royal purple and gold traditional bakery & nimco theme',
+    primary: '#1E1035',
+    primaryHover: '#D4AF37',
+    secondary: '#2E1A47',
+    background: '#FAF8F5',
   },
 };

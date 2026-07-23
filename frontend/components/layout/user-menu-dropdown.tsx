@@ -51,6 +51,7 @@ export function UserMenuDropdown() {
       {hydrated ? (
         <button
           type="button"
+          suppressHydrationWarning
           className="site-header__icon-btn inline-flex items-center justify-center text-foreground transition-colors hover:text-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
           aria-label={isAuthenticated ? 'Account menu' : 'Sign in menu'}
           aria-expanded={open}

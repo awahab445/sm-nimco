@@ -7,7 +7,14 @@ import {
   fetchAdminCategories,
   type AdminCategoryListItem,
 } from '@/lib/api/categories';
-import { fetchAdminProducts, moneyToNumber, type AdminProductListRow, type ProductStatus } from '@/lib/api/products';
+import {
+  bulkDeleteAdminProducts,
+  deleteAdminProduct,
+  fetchAdminProducts,
+  moneyToNumber,
+  type AdminProductListRow,
+  type ProductStatus,
+} from '@/lib/api/products';
 import { formatApiError } from '@/lib/api/error-message';
 import { PermissionGate } from '@/components/permission-gate';
 
@@ -29,6 +36,12 @@ export function ProductsList() {
   const [status, setStatus] = useState<'' | ProductStatus>('');
   const [categoryId, setCategoryId] = useState('');
   const [page, setPage] = useState(1);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [toast, setToast] = useState<{ kind: 'success' | 'error'; message: string } | null>(
+    null,
+  );
 
   useEffect(() => {
     const t = setTimeout(() => {
@@ -37,6 +50,16 @@ export function ProductsList() {
     }, 350);
     return () => clearTimeout(t);
   }, [searchInput]);
+
+  useEffect(() => {
+    setSelectedIds(new Set());
+  }, [page, search, status, categoryId]);
+
+  useEffect(() => {
+    if (!toast) return;
+    const timer = window.setTimeout(() => setToast(null), 4000);
+    return () => window.clearTimeout(timer);
+  }, [toast]);
 
   const load = useCallback(async () => {
     setError(null);
@@ -68,8 +91,103 @@ export function ProductsList() {
       .catch(() => setCategories([]));
   }, []);
 
+  const allVisibleSelected =
+    rows.length > 0 && rows.every((row) => selectedIds.has(row.id));
+  const someVisibleSelected = rows.some((row) => selectedIds.has(row.id));
+
+  const toggleSelectAll = () => {
+    setSelectedIds((current) => {
+      if (allVisibleSelected) {
+        const next = new Set(current);
+        rows.forEach((row) => next.delete(row.id));
+        return next;
+      }
+      const next = new Set(current);
+      rows.forEach((row) => next.add(row.id));
+      return next;
+    });
+  };
+
+  const toggleSelectOne = (productId: string) => {
+    setSelectedIds((current) => {
+      const next = new Set(current);
+      if (next.has(productId)) {
+        next.delete(productId);
+      } else {
+        next.add(productId);
+      }
+      return next;
+    });
+  };
+
+  const onDeleteOne = async (row: AdminProductListRow) => {
+    if (
+      !window.confirm(
+        `Are you sure you want to delete "${row.name}"?\n\nThis archives the product (soft delete). It will no longer appear in the catalog.`,
+      )
+    ) {
+      return;
+    }
+    setDeletingId(row.id);
+    try {
+      await deleteAdminProduct(row.id);
+      setSelectedIds((current) => {
+        const next = new Set(current);
+        next.delete(row.id);
+        return next;
+      });
+      setToast({ kind: 'success', message: `"${row.name}" deleted successfully.` });
+      await load();
+    } catch (e) {
+      setToast({ kind: 'error', message: formatApiError(e) });
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const onBulkDelete = async () => {
+    const ids = [...selectedIds];
+    if (ids.length === 0) return;
+    if (
+      !window.confirm(
+        `Are you sure you want to delete ${ids.length} selected product${ids.length === 1 ? '' : 's'}?\n\nThis archives them (soft delete). They will no longer appear in the catalog.`,
+      )
+    ) {
+      return;
+    }
+    setBulkDeleting(true);
+    try {
+      const res = await bulkDeleteAdminProducts(ids);
+      setSelectedIds(new Set());
+      setToast({
+        kind: 'success',
+        message: `${res.deletedCount} product${res.deletedCount === 1 ? '' : 's'} deleted successfully.`,
+      });
+      await load();
+    } catch (e) {
+      setToast({ kind: 'error', message: formatApiError(e) });
+    } finally {
+      setBulkDeleting(false);
+    }
+  };
+
+  const busy = deletingId !== null || bulkDeleting;
+
   return (
     <div className="mx-auto max-w-6xl">
+      {toast ? (
+        <div
+          className={`fixed right-4 top-4 z-50 max-w-sm rounded-lg border px-3 py-2 text-sm shadow-lg ${
+            toast.kind === 'success'
+              ? 'border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-200'
+              : 'border-red-200 bg-red-50 text-red-800 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-200'
+          }`}
+          role="status"
+        >
+          {toast.message}
+        </div>
+      ) : null}
+
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
@@ -80,17 +198,14 @@ export function ProductsList() {
           </p>
         </div>
         <PermissionGate anyOf={['products.create']}>
-          <Link
-            href="/products/new"
-            className={`shrink-0 ${adminUi.btnPrimary}`}
-          >
+          <Link href="/products/new" className={`shrink-0 ${adminUi.btnPrimary}`}>
             New product
           </Link>
         </PermissionGate>
       </div>
 
       <div className="mt-6 flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-end">
-        <div className="flex-1 min-w-[200px]">
+        <div className="min-w-[200px] flex-1">
           <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400">Search</label>
           <input
             value={searchInput}
@@ -117,7 +232,9 @@ export function ProductsList() {
           </select>
         </div>
         <div className="w-full min-w-[200px] sm:flex-1">
-          <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400">Category</label>
+          <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400">
+            Category
+          </label>
           <select
             value={categoryId}
             onChange={(e) => {
@@ -139,6 +256,32 @@ export function ProductsList() {
         </div>
       </div>
 
+      {selectedIds.size > 0 ? (
+        <PermissionGate anyOf={['products.delete']}>
+          <div className="mt-4 flex flex-wrap items-center gap-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm dark:border-red-900/40 dark:bg-red-950/30">
+            <span className="font-medium text-red-900 dark:text-red-200">
+              {selectedIds.size} product{selectedIds.size === 1 ? '' : 's'} selected
+            </span>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => void onBulkDelete()}
+              className="rounded-lg bg-red-700 px-3 py-1.5 font-medium text-white disabled:opacity-50 hover:bg-red-800"
+            >
+              {bulkDeleting ? 'Deleting…' : 'Delete Selected'}
+            </button>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => setSelectedIds(new Set())}
+              className="font-medium text-red-900 underline disabled:opacity-50 dark:text-red-200"
+            >
+              Clear selection
+            </button>
+          </div>
+        </PermissionGate>
+      ) : null}
+
       {error ? (
         <p className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-200">
           {error}
@@ -151,17 +294,33 @@ export function ProductsList() {
         ) : rows.length === 0 ? (
           <div className="p-8 text-center text-sm text-zinc-500">No products found.</div>
         ) : (
-          <table className="w-full min-w-[800px] text-left text-sm">
+          <table className="w-full min-w-[880px] text-left text-sm">
             <thead className="border-b border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900/50">
               <tr>
-                <th className="px-3 py-3 font-medium text-zinc-700 dark:text-zinc-300 w-14" />
+                <th className="w-10 px-3 py-3">
+                  <PermissionGate anyOf={['products.delete']}>
+                    <input
+                      type="checkbox"
+                      checked={allVisibleSelected}
+                      ref={(el) => {
+                        if (el) el.indeterminate = someVisibleSelected && !allVisibleSelected;
+                      }}
+                      onChange={toggleSelectAll}
+                      aria-label="Select all products on this page"
+                      className="h-4 w-4 rounded border-zinc-300"
+                    />
+                  </PermissionGate>
+                </th>
+                <th className="w-14 px-3 py-3 font-medium text-zinc-700 dark:text-zinc-300" />
                 <th className="px-3 py-3 font-medium text-zinc-700 dark:text-zinc-300">Product</th>
                 <th className="px-3 py-3 font-medium text-zinc-700 dark:text-zinc-300">SKU</th>
                 <th className="px-3 py-3 font-medium text-zinc-700 dark:text-zinc-300">Type</th>
                 <th className="px-3 py-3 font-medium text-zinc-700 dark:text-zinc-300">Price</th>
                 <th className="px-3 py-3 font-medium text-zinc-700 dark:text-zinc-300">Status</th>
                 <th className="px-3 py-3 font-medium text-zinc-700 dark:text-zinc-300">Variants</th>
-                <th className="px-3 py-3 font-medium text-zinc-700 dark:text-zinc-300 text-right"> </th>
+                <th className="px-3 py-3 text-right font-medium text-zinc-700 dark:text-zinc-300">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
@@ -170,12 +329,23 @@ export function ProductsList() {
                 return (
                   <tr key={row.id} className="hover:bg-zinc-50/80 dark:hover:bg-zinc-900/30">
                     <td className="px-3 py-2">
+                      <PermissionGate anyOf={['products.delete']}>
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.has(row.id)}
+                          onChange={() => toggleSelectOne(row.id)}
+                          aria-label={`Select ${row.name}`}
+                          className="h-4 w-4 rounded border-zinc-300"
+                        />
+                      </PermissionGate>
+                    </td>
+                    <td className="px-3 py-2">
                       {img ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
                           src={img.url}
                           alt=""
-                          className="h-10 w-10 rounded-md object-cover bg-zinc-100 dark:bg-zinc-800"
+                          className="h-10 w-10 rounded-md bg-zinc-100 object-cover dark:bg-zinc-800"
                         />
                       ) : (
                         <div className="h-10 w-10 rounded-md bg-zinc-100 dark:bg-zinc-800" />
@@ -207,12 +377,25 @@ export function ProductsList() {
                       {row._count?.variants ?? 0}
                     </td>
                     <td className="px-3 py-2 text-right">
-                      <Link
-                        href={`/products/${row.id}`}
-                        className="text-sm font-medium text-zinc-900 underline dark:text-zinc-100"
-                      >
-                        Open
-                      </Link>
+                      <div className="inline-flex items-center gap-3">
+                        <Link
+                          href={`/products/${row.id}`}
+                          className="text-sm font-medium text-zinc-900 underline dark:text-zinc-100"
+                        >
+                          Open
+                        </Link>
+                        <PermissionGate anyOf={['products.delete']}>
+                          <button
+                            type="button"
+                            disabled={busy}
+                            onClick={() => void onDeleteOne(row)}
+                            className="text-sm font-medium text-red-700 underline disabled:opacity-50 dark:text-red-400"
+                            title={`Delete ${row.name}`}
+                          >
+                            {deletingId === row.id ? 'Deleting…' : 'Delete'}
+                          </button>
+                        </PermissionGate>
+                      </div>
                     </td>
                   </tr>
                 );

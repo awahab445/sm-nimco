@@ -24,6 +24,7 @@ import { CartPreviewDropdown } from '@/components/layout/cart-preview-dropdown';
 import { DesktopShopMegaMenu, MobileCategoryAccordions } from '@/components/layout/store-mega-menu';
 import { SearchBar } from '@/components/search/search-bar';
 import { useWishlistStore } from '@/lib/wishlist.store';
+import type { StoreThemeCode } from '@/lib/theme/types';
 
 const DESKTOP_NAV_MIN_WIDTH = 1024;
 /** Intrinsic Image hints — visual size is driven by CSS (icon + HTML wordmark). */
@@ -96,8 +97,9 @@ function HeartIcon({ className }: { className?: string }) {
   );
 }
 
-export function Header() {
+export function Header({ theme = 'default' }: { theme?: StoreThemeCode }) {
   const pathname = usePathname();
+  const isSmNimco = theme === 'sm_nimco';
   const { isAuthenticated } = useAuthStore();
   const cart = useCartStore((s) => s.cart);
   const wishlistCount = useWishlistStore((s) => s.productIds.length);
@@ -314,6 +316,7 @@ export function Header() {
   const mobileMenuButton = hydrated ? (
     <button
       type="button"
+      suppressHydrationWarning
       className="site-header__menu-btn inline-flex shrink-0 items-center justify-center p-1 text-foreground transition-colors hover:text-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
       aria-expanded={mobileNavOpen}
       aria-controls="mobile-main-nav"
@@ -340,7 +343,31 @@ export function Header() {
   const { lead: brandLead, trail: brandTrail } = splitStoreName(STORE_NAME);
   const logoIntrinsic = Math.max(logoWidth, logoHeight, LOGO_DISPLAY_MIN);
 
-  const brandLogo = (
+  const smNimcoBrandLogo = (
+    <Link
+      href="/"
+      className="site-header__logo inline-flex max-w-full items-center gap-3 bg-transparent outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+      aria-label={`${STORE_NAME} home`}
+    >
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-2 border-[var(--brand-gold-primary,#d4af37)] bg-[var(--brand-purple-dark,#1e1035)] shadow-md">
+        <span className="font-heading text-xl font-extrabold text-[var(--brand-gold-primary,#d4af37)]">
+          SM
+        </span>
+      </div>
+      <div className="min-w-0 text-left leading-tight">
+        <span className="site-header__store-name block font-heading text-xl font-extrabold text-[var(--brand-purple-dark,#1e1035)]">
+          SM NIMCO
+        </span>
+        <span className="block text-[10px] font-bold uppercase tracking-widest text-[var(--brand-gold-hover,#b89628)]">
+          &amp; Sweets House
+        </span>
+      </div>
+    </Link>
+  );
+
+  const brandLogo = isSmNimco ? (
+    smNimcoBrandLogo
+  ) : (
     <Link
       href="/"
       className="site-header__logo inline-flex max-w-full items-center gap-2 bg-transparent outline-none focus-visible:ring-2 focus-visible:ring-ring/40 sm:gap-2.5"
@@ -410,9 +437,13 @@ export function Header() {
       <UserMenuDropdown />
       {wishlistButton}
       {cartNavItem ? (
-        <CartPreviewDropdown label={cartNavItem.label} href={cartNavItem.href} />
+        <CartPreviewDropdown
+          label={cartNavItem.label}
+          href={cartNavItem.href}
+          variant={isSmNimco ? 'sm-nimco' : 'default'}
+        />
       ) : (
-        <CartPreviewDropdown />
+        <CartPreviewDropdown variant={isSmNimco ? 'sm-nimco' : 'default'} />
       )}
     </div>
   );

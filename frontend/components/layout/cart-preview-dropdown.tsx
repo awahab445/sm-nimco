@@ -20,6 +20,8 @@ const PREVIEW_ITEM_LIMIT = 8;
 type CartPreviewDropdownProps = {
   label?: string;
   href?: string;
+  /** SM NIMCO purple/gold pill trigger with visible count text. */
+  variant?: 'default' | 'sm-nimco';
 };
 
 function CartBundlePreviewLine({
@@ -119,7 +121,11 @@ function CartPreviewLine({
   );
 }
 
-export function CartPreviewDropdown({ label = 'Cart', href = '/cart' }: CartPreviewDropdownProps) {
+export function CartPreviewDropdown({
+  label = 'Cart',
+  href = '/cart',
+  variant = 'default',
+}: CartPreviewDropdownProps) {
   const hydrated = useHydrated();
   const titleId = useId();
   const cart = useCartStore((s) => s.cart);
@@ -225,9 +231,11 @@ export function CartPreviewDropdown({ label = 'Cart', href = '/cart' }: CartPrev
         >
           <div className="flex items-center justify-between border-b border-border px-5 py-4">
             <p id={titleId} className="font-display text-sm font-semibold uppercase tracking-[0.12em] text-foreground">
-              {cartItemCount > 0
-                ? `Shopping cart (${cartItemCount})`
-                : 'Shopping cart'}
+              {variant === 'sm-nimco'
+                ? 'Your Shopping Cart'
+                : cartItemCount > 0
+                  ? `Shopping cart (${cartItemCount})`
+                  : 'Shopping cart'}
             </p>
             <button
               type="button"
@@ -303,10 +311,14 @@ export function CartPreviewDropdown({ label = 'Cart', href = '/cart' }: CartPrev
                 </Link>
                 <Link
                   href="/checkout"
-                  className={`${storefrontUi.btnPrimaryCheckout} mt-0 w-full py-3 text-center`}
+                  className={
+                    variant === 'sm-nimco'
+                      ? 'mt-0 w-full rounded-xl bg-[var(--brand-purple-dark,#1e1035)] py-3 text-center text-sm font-bold text-[var(--brand-gold-primary,#d4af37)] transition-colors hover:bg-[var(--brand-purple-deep,#2e1a47)]'
+                      : `${storefrontUi.btnPrimaryCheckout} mt-0 w-full py-3 text-center`
+                  }
                   onClick={closeDrawer}
                 >
-                  Checkout
+                  {variant === 'sm-nimco' ? 'Checkout Now' : 'Checkout'}
                 </Link>
               </div>
             </div>
@@ -319,7 +331,12 @@ export function CartPreviewDropdown({ label = 'Cart', href = '/cart' }: CartPrev
     <>
       <button
         type="button"
-        className="header-cart-trigger site-header__icon-btn relative inline-flex items-center justify-center text-foreground transition-colors hover:text-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+        suppressHydrationWarning
+        className={
+          variant === 'sm-nimco'
+            ? 'header-cart-trigger relative inline-flex items-center space-x-2 rounded-xl bg-[var(--brand-purple-dark,#1e1035)] px-4 py-2 text-[var(--brand-gold-primary,#d4af37)] shadow transition-colors hover:bg-[var(--brand-purple-deep,#2e1a47)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40'
+            : 'header-cart-trigger site-header__icon-btn relative inline-flex items-center justify-center text-foreground transition-colors hover:text-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40'
+        }
         aria-label={
           cartItemCount > 0
             ? `${label}, ${cartItemCount} ${cartItemCount === 1 ? 'item' : 'items'}`
@@ -330,17 +347,26 @@ export function CartPreviewDropdown({ label = 'Cart', href = '/cart' }: CartPrev
         aria-expanded={open}
         onClick={() => setOpen(true)}
       >
-        <span className="relative inline-flex h-[22px] w-[22px] items-center justify-center [&_.cart-icon]:text-inherit">
-          <ShoppingBagIcon className="h-[22px] w-[22px] shrink-0" aria-hidden />
-          {hydrated ? (
-            <span
-              className={`chrome-count-box ${badgePulse ? 'chrome-cart-badge--pulse' : ''}`}
-              aria-hidden
-            >
-              {cartItemCount > 99 ? '99+' : cartItemCount}
+        {variant === 'sm-nimco' ? (
+          <>
+            <ShoppingBagIcon className="h-4 w-4 shrink-0" aria-hidden />
+            <span className="text-xs font-bold">
+              Cart ({hydrated ? cartItemCount : 0})
             </span>
-          ) : null}
-        </span>
+          </>
+        ) : (
+          <span className="relative inline-flex h-[22px] w-[22px] items-center justify-center [&_.cart-icon]:text-inherit">
+            <ShoppingBagIcon className="h-[22px] w-[22px] shrink-0" aria-hidden />
+            {hydrated ? (
+              <span
+                className={`chrome-count-box ${badgePulse ? 'chrome-cart-badge--pulse' : ''}`}
+                aria-hidden
+              >
+                {cartItemCount > 99 ? '99+' : cartItemCount}
+              </span>
+            ) : null}
+          </span>
+        )}
       </button>
       {hydrated && drawer ? createPortal(drawer, document.body) : null}
     </>

@@ -92,11 +92,14 @@ export function BundleDealForm({ dealId }: Props) {
 
   const itemInputs: BundleDealItemInput[] = useMemo(
     () =>
-      selected.map((row) => ({
-        productId: row.productId,
-        variantId: resolveVariantId(row),
-        quantity: row.quantity,
-      })),
+      selected.map((row) => {
+        const variantId = resolveVariantId(row);
+        return {
+          productId: row.productId,
+          ...(variantId ? { variantId } : {}),
+          quantity: Number(row.quantity) || 1,
+        };
+      }),
     [selected],
   );
 

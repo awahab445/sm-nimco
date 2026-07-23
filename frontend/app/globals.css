@@ -45,6 +45,51 @@ html[data-store-theme='essa_chemicals'] .site-header .site-header__menu-btn {
   color: var(--navbar-foreground, #222222);
 }
 
+html[data-store-theme='sm_nimco'] .site-header {
+  background-color: var(--navbar-background, #ffffff);
+  color: var(--navbar-foreground, #1e1035);
+  border-bottom: 2px solid color-mix(in srgb, var(--brand-gold-primary, #d4af37) 30%, transparent);
+}
+
+html[data-store-theme='sm_nimco'] .site-header nav > a,
+html[data-store-theme='sm_nimco'] .site-header nav .chrome-nav-link,
+html[data-store-theme='sm_nimco'] .site-header nav .header-nav-trigger,
+html[data-store-theme='sm_nimco'] .site-header nav .header-nav-trigger span,
+html[data-store-theme='sm_nimco'] .site-header .site-header__store-name,
+html[data-store-theme='sm_nimco'] .site-header .header-cart-trigger,
+html[data-store-theme='sm_nimco'] .site-header .header-cart-trigger svg,
+html[data-store-theme='sm_nimco'] .site-header .site-header__icon-btn,
+html[data-store-theme='sm_nimco'] .site-header .site-header__icon-btn svg,
+html[data-store-theme='sm_nimco'] .site-header button[aria-haspopup='menu'],
+html[data-store-theme='sm_nimco'] .site-header button[aria-haspopup='menu'] svg,
+html[data-store-theme='sm_nimco'] .site-header .site-header__menu-btn {
+  color: var(--navbar-foreground, #1e1035);
+}
+
+html[data-store-theme='sm_nimco'] .site-top-bar {
+  background-color: var(--brand-purple-dark, #1e1035) !important;
+  color: var(--brand-gold-primary, #d4af37) !important;
+  border-color: color-mix(in srgb, var(--brand-gold-primary, #d4af37) 20%, transparent) !important;
+}
+
+html[data-store-theme='sm_nimco'] .header-cart-preview {
+  border-radius: 0;
+}
+
+html[data-store-theme='sm_nimco'] .header-cart-preview a[href='/checkout'],
+html[data-store-theme='sm_nimco'] .header-cart-preview .btn-brand-primary {
+  background-color: var(--brand-purple-dark, #1e1035);
+  color: var(--brand-gold-primary, #d4af37);
+}
+
+html[data-store-theme='sm_nimco'] .sm-nimco-product-card {
+  transition: transform 0.2s ease;
+}
+
+html[data-store-theme='sm_nimco'] .sm-nimco-product-card:hover {
+  transform: translateY(-5px);
+}
+
 /* Chrome/navbar tokens live in store-themes.css ([data-store-theme]) — not in [data-theme]. */
 [data-theme="tailwind"] {
   --primary: #4f90f1;
@@ -126,6 +171,26 @@ html[data-store-theme='essa_chemicals'] .site-header .site-header__menu-btn {
   --ring: #c4a052;
 }
 
+[data-theme="sm-nimco"] {
+  --primary: #1e1035;
+  --primary-hover: #d4af37;
+  --primary-foreground: #d4af37;
+  --btn-hover: #2e1a47;
+  --btn-hover-foreground: #d4af37;
+  --secondary: #2e1a47;
+  --secondary-foreground: #d4af37;
+  --background: #faf8f5;
+  --foreground: #1a1a1a;
+  --muted: #f3efe8;
+  --muted-foreground: #6b7280;
+  --card: #ffffff;
+  --card-foreground: #1a1a1a;
+  --border: #ebe6df;
+  --accent: #f3efe8;
+  --accent-foreground: #1e1035;
+  --ring: #d4af37;
+}
+
 html {
   overflow-x: clip;
   background-color: var(--background);
@@ -201,6 +266,21 @@ html[data-store-theme='essa_chemicals'] h3,
 html[data-store-theme='essa_chemicals'] h4,
 html[data-store-theme='essa_chemicals'] .font-display {
   font-family: var(--font-display), var(--font-body), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* SM NIMCO: Playfair Display headings + Outfit body */
+html[data-store-theme='sm_nimco'],
+html[data-store-theme='sm_nimco'] body {
+  font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+}
+
+html[data-store-theme='sm_nimco'] h1,
+html[data-store-theme='sm_nimco'] h2,
+html[data-store-theme='sm_nimco'] h3,
+html[data-store-theme='sm_nimco'] h4,
+html[data-store-theme='sm_nimco'] .font-display,
+html[data-store-theme='sm_nimco'] .font-heading {
+  font-family: var(--font-display), var(--font-body), ui-serif, Georgia, serif;
 }
 
 @layer base {

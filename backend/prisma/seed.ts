@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { ensureAdminRbacSeeded } from '../src/admin/seed/ensure-admin-rbac';
+import { seedCatalogFromSnapshot } from './seed-catalog';
 
 const prisma = new PrismaClient();
 
@@ -387,7 +388,10 @@ async function main() {
     create: { id: 'default', isEnabled: false, currency: 'PKR' },
   });
 
-  console.log('Seed completed: shipping/payment defaults + CMS starter data.');
+  // Catalog snapshot exported from local admin data (products, options, deals, theme)
+  await seedCatalogFromSnapshot(prisma);
+
+  console.log('Seed completed: shipping/payment defaults + CMS starter data + catalog snapshot.');
 }
 
 main()

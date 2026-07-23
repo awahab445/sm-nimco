@@ -184,8 +184,7 @@ export class MetaCommerceExportService {
       this.plainText(product.description) ||
       this.plainText(product.shortDescription) ||
       title;
-    const images =
-      variant.images.length > 0 ? variant.images : product.images;
+    const images = variant.images.length > 0 ? variant.images : product.images;
     const image =
       this.primaryImageUrl(variant.images) ||
       this.primaryImageUrl(product.images);

@@ -37,6 +37,14 @@ const THEME_OPTIONS = [
     secondary: '#eef4fe',
     background: '#F5F5F5',
   },
+  {
+    id: 'sm-nimco',
+    label: 'SM NIMCO & Sweets',
+    description: 'Royal purple and gold traditional bakery & nimco theme',
+    primary: '#1E1035',
+    secondary: '#D4AF37',
+    background: '#FAF8F5',
+  },
 ] as const;
 
 export function ThemeSelector() {
@@ -116,7 +124,7 @@ export function ThemeSelector() {
       {loading ? (
         <p className="text-sm text-zinc-500">Loading theme settings…</p>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {THEME_OPTIONS.map((theme) => {
             const selected = activeTheme === theme.id;
             return (

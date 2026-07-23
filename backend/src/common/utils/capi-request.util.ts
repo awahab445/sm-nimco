@@ -82,7 +82,6 @@ export function buildCapiUserData(
     phone: extras?.phone?.trim() || meta?.phone?.trim() || null,
     external_id:
       extras?.external_id?.trim() || meta?.externalId?.trim() || null,
-    fb_login_id:
-      extras?.fb_login_id?.trim() || meta?.fbLoginId?.trim() || null,
+    fb_login_id: extras?.fb_login_id?.trim() || meta?.fbLoginId?.trim() || null,
   };
 }

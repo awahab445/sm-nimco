@@ -3,6 +3,7 @@ export const STORE_THEME_IDS = [
   'mehfil-e-shireen',
   'ember',
   'tailwind',
+  'sm-nimco',
 ] as const;
 
 export type StoreThemeId = (typeof STORE_THEME_IDS)[number];
@@ -17,6 +18,8 @@ const LEGACY_THEME_MAP: Record<string, StoreThemeId> = {
   tailwind: 'tailwind',
   'essa-chemicals': 'essa-chemicals',
   essa_chemicals: 'essa-chemicals',
+  'sm-nimco': 'sm-nimco',
+  sm_nimco: 'sm-nimco',
 };
 
 export function isStoreThemeId(value: string): value is StoreThemeId {

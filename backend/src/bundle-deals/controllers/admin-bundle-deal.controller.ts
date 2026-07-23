@@ -134,7 +134,14 @@ export class AdminBundleDealController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @UseInterceptors(FileInterceptor('image', dealImageUploadOptions))
-  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+  @UsePipes(
+    new ValidationPipe({
+      transform: true,
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transformOptions: { enableImplicitConversion: true },
+    }),
+  )
   async create(
     @Body() dto: CreateBundleDealDto,
     @UploadedFile(optionalDealImagePipe)
@@ -149,7 +156,14 @@ export class AdminBundleDealController {
   @Patch(':id')
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(FileInterceptor('image', dealImageUploadOptions))
-  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+  @UsePipes(
+    new ValidationPipe({
+      transform: true,
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transformOptions: { enableImplicitConversion: true },
+    }),
+  )
   async update(
     @Param('id') id: string,
     @Body() dto: UpdateBundleDealDto,
