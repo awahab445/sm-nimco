@@ -99,7 +99,7 @@ export class ShippingLabelService {
       }
     }
 
-    const storeName = process.env.STORE_NAME?.trim() || 'M. Essa Chemicals';
+    const storeName = process.env.STORE_NAME?.trim() || 'SM NIMCO & Sweets';
 
     const orderById = new Map(orders.map((order) => [order.id, order]));
     const labels: ShippingLabelViewModel[] = [];

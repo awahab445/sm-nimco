@@ -249,7 +249,7 @@ model Order {
   customerName      String?        @map("customer_name") @db.VarChar(255)
   billingAddress    Json           @map("billing_address")
   shippingAddress   Json           @map("shipping_address")
-  currency          String         @default("USD") @db.VarChar(3)
+  currency          String         @default("PKR") @db.VarChar(3)
   subtotal          Decimal        @db.Decimal(12, 2)
   discountTotal     Decimal        @default(0) @map("discount_total") @db.Decimal(12, 2)
   shippingTotal     Decimal        @default(0) @map("shipping_total") @db.Decimal(12, 2)

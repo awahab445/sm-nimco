@@ -16,6 +16,10 @@ import {
   moneyToNumber,
 } from '@/lib/api/products';
 import { formatApiError } from '@/lib/api/error-message';
+import {
+  PRODUCT_IMAGE_PLACEHOLDER,
+  resolveImageUrl,
+} from '@/lib/resolve-image-url';
 
 const STATUSES: ProductStatus[] = ['draft', 'active', 'disabled'];
 const VIS: ProductVisibility[] = ['catalog', 'search', 'both', 'none'];
@@ -415,9 +419,15 @@ export function ProductForm({ mode, initial, productId, onCancel, onSaved }: Pro
           <div className="mt-2">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={initial.images[0].url}
+              src={
+                resolveImageUrl(initial.images[0].url) || PRODUCT_IMAGE_PLACEHOLDER
+              }
               alt={initial.images[0].altText ?? initial.name}
               className="h-20 w-20 rounded-lg border border-zinc-200 object-cover dark:border-zinc-800"
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = PRODUCT_IMAGE_PLACEHOLDER;
+              }}
             />
           </div>
         ) : null}

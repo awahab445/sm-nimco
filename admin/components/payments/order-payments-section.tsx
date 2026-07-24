@@ -9,16 +9,7 @@ import {
   type PaymentRecord,
 } from '@/lib/api/payments';
 import { formatApiError } from '@/lib/api/error-message';
-
-function money(amount: string | number, currency: string) {
-  const n = typeof amount === 'string' ? Number(amount) : amount;
-  if (Number.isNaN(n)) return `${amount} ${currency}`;
-  try {
-    return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(n);
-  } catch {
-    return `${n.toFixed(2)} ${currency}`;
-  }
-}
+import { formatPrice } from '@/lib/currency';
 
 export function OrderPaymentsSection({ orderId }: { orderId: string }) {
   const [rows, setRows] = useState<PaymentRecord[]>([]);
@@ -130,7 +121,7 @@ export function OrderPaymentsSection({ orderId }: { orderId: string }) {
                       <div className="text-xs text-zinc-500">{p.paymentMethod.provider}</div>
                     </td>
                     <td className="px-3 py-2">{p.status}</td>
-                    <td className="px-3 py-2 tabular-nums">{money(p.amount, p.currency)}</td>
+                    <td className="px-3 py-2 tabular-nums">{formatPrice(p.amount, p.currency)}</td>
                     <td className="px-3 py-2 text-zinc-600 dark:text-zinc-400">
                       {new Date(p.createdAt).toLocaleString()}
                     </td>

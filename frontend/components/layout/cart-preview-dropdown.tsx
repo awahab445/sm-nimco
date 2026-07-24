@@ -7,7 +7,7 @@ import { ShoppingBagIcon } from '@/components/icons/shopping-bag-icon';
 import { useCartStore } from '@/lib/cart.store';
 import { useHydrated } from '@/lib/use-hydrated';
 import { CartLineItemThumb } from '@/components/cart/cart-line-item-thumb';
-import { formatPrice, APP_CURRENCY } from '@/lib/currency';
+import { formatPrice, APP_CURRENCY, resolveDisplayCurrency } from '@/lib/currency';
 import { formatVariantAttributes } from '@/lib/format-variant-attributes';
 import { storefrontUi } from '@/lib/storefront-ui';
 import {
@@ -137,7 +137,7 @@ export function CartPreviewDropdown({
   const cartItemCount =
     items.reduce((sum, i) => sum + (i.quantity ?? 0), 0) +
     bundles.reduce((sum, b) => sum + (b.quantity ?? 0), 0);
-  const displayCurrency = cart?.currency ?? APP_CURRENCY;
+  const displayCurrency = resolveDisplayCurrency(cart?.currency ?? APP_CURRENCY);
   const subtotal =
     items.reduce((sum, i) => sum + (i.price ?? 0) * (i.quantity ?? 0), 0) +
     bundles.reduce((sum, b) => sum + (b.dealUnitPrice ?? 0) * (b.quantity ?? 0), 0);
@@ -349,8 +349,11 @@ export function CartPreviewDropdown({
       >
         {variant === 'sm-nimco' ? (
           <>
-            <ShoppingBagIcon className="h-4 w-4 shrink-0" aria-hidden />
-            <span className="text-xs font-bold">
+            <ShoppingBagIcon
+              className="h-4 w-4 shrink-0 text-[var(--brand-gold-primary,#d4af37)]"
+              aria-hidden
+            />
+            <span className="text-xs font-bold text-[var(--brand-gold-primary,#d4af37)]">
               Cart ({hydrated ? cartItemCount : 0})
             </span>
           </>

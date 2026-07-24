@@ -15,6 +15,10 @@ import {
 } from '@/lib/api/bundle-deals';
 import { fetchAdminProducts, fetchAdminProduct, type AdminProductListRow } from '@/lib/api/products';
 import { formatApiError } from '@/lib/api/error-message';
+import {
+  PRODUCT_IMAGE_PLACEHOLDER,
+  resolveImageUrl,
+} from '@/lib/resolve-image-url';
 
 type SelectedRow = BundleDealItemInput & {
   key: string;
@@ -46,14 +50,6 @@ function slugify(title: string) {
 
 function formatRs(amount: number) {
   return `Rs. ${amount.toLocaleString('en-PK', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
-}
-
-function resolveAdminImageUrl(url: string): string {
-  const trimmed = url.trim();
-  if (!trimmed) return '';
-  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
-  const base = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000').replace(/\/$/, '');
-  return `${base}${trimmed.startsWith('/') ? trimmed : `/${trimmed}`}`;
 }
 
 type Props = {
@@ -258,7 +254,7 @@ export function BundleDealForm({ dealId }: Props) {
   };
 
   const heroPreviewSrc =
-    pendingImagePreview ?? (imageUrl ? resolveAdminImageUrl(imageUrl) : '');
+    pendingImagePreview ?? (imageUrl ? resolveImageUrl(imageUrl) : '');
 
   const canSave = selected.length >= 3 && title.trim() && dealPrice.trim() && Number(dealPrice) >= 0;
 
@@ -407,7 +403,15 @@ export function BundleDealForm({ dealId }: Props) {
           <label className="block text-sm text-zinc-700 dark:text-zinc-300">Hero image</label>
           {heroPreviewSrc ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={heroPreviewSrc} alt="" className="mt-2 h-32 w-auto rounded-lg border object-cover" />
+            <img
+              src={heroPreviewSrc}
+              alt=""
+              className="mt-2 h-32 w-auto rounded-lg border object-cover"
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = PRODUCT_IMAGE_PLACEHOLDER;
+              }}
+            />
           ) : null}
           {pendingImageFile ? (
             <p className="mt-2 text-xs text-zinc-500">
@@ -454,7 +458,15 @@ export function BundleDealForm({ dealId }: Props) {
                   >
                     {p.images?.[0]?.url ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={p.images[0].url} alt="" className="h-8 w-8 rounded object-cover" />
+                      <img
+                        src={resolveImageUrl(p.images[0].url) || PRODUCT_IMAGE_PLACEHOLDER}
+                        alt=""
+                        className="h-8 w-8 rounded object-cover"
+                        onError={(e) => {
+                          e.currentTarget.onerror = null;
+                          e.currentTarget.src = PRODUCT_IMAGE_PLACEHOLDER;
+                        }}
+                      />
                     ) : (
                       <span className="flex h-8 w-8 items-center justify-center rounded bg-zinc-100 text-xs">—</span>
                     )}
@@ -480,7 +492,15 @@ export function BundleDealForm({ dealId }: Props) {
               >
                 {row.thumbnail ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={row.thumbnail} alt="" className="h-12 w-12 rounded object-cover" />
+                  <img
+                    src={resolveImageUrl(row.thumbnail) || PRODUCT_IMAGE_PLACEHOLDER}
+                    alt=""
+                    className="h-12 w-12 rounded object-cover"
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = PRODUCT_IMAGE_PLACEHOLDER;
+                    }}
+                  />
                 ) : null}
                 <div className="min-w-0 flex-1">
                   <p className="font-medium text-sm">{row.productName}</p>

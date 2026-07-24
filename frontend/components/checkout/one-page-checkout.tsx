@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useCheckout } from '@/lib/checkout-context';
 import { useAuthStore } from '@/lib/auth.store';
 import { useCartStore } from '@/lib/cart.store';
-import { formatPrice, APP_CURRENCY } from '@/lib/currency';
+import { formatPrice, APP_CURRENCY, resolveDisplayCurrency } from '@/lib/currency';
 import { storefrontUi } from '@/lib/storefront-ui';
 import { Address, AddressWithId, addressApi, shippingApi, paymentApi, productApi, storeSettingsApi, type CartItem } from '@/lib/api-client';
 import { resolveImageUrl } from '@/lib/resolve-image-url';
@@ -396,7 +396,7 @@ export function OnePageCheckout() {
     [shippingOptions, selectedShippingId]
   );
 
-  const displayCurrency = checkout?.currency ?? APP_CURRENCY;
+  const displayCurrency = resolveDisplayCurrency(checkout?.currency ?? APP_CURRENCY);
   const parsedSubtotal = Number(checkout?.subtotal ?? 0);
   const parsedDiscount = Number(checkout?.discountTotal ?? 0);
   const parsedTax = Number(checkout?.taxTotal ?? 0);

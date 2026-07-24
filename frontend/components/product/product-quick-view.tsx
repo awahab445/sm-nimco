@@ -8,7 +8,7 @@ import { useCartStore } from '@/lib/cart.store';
 import { notifyAddToCartError } from '@/lib/notify-add-to-cart';
 import { formatPrice } from '@/lib/currency';
 import { imageAlt } from '@/lib/seo';
-import { resolveImageUrl } from '@/lib/resolve-image-url';
+import { getProductImageSrcs, getProductImagesOrdered } from '@/lib/resolve-image-url';
 import { StorefrontImage } from '@/components/ui/storefront-image';
 import { getVariantForCart } from '@/lib/product-cart-variant';
 import { ShoppingBagIcon } from '@/components/icons/shopping-bag-icon';
@@ -30,8 +30,10 @@ export function ProductQuickView({ product, open, onClose, availableQuantity }: 
   const variant = getVariantForCart(product);
   const inStock = availableQuantity === undefined ? true : availableQuantity > 0;
   const canAdd = Boolean(variant && inStock);
-  const image = product.images?.find((i) => i.isPrimary) ?? product.images?.[0];
-  const imageUrl = resolveImageUrl(image?.url);
+  const orderedImages = getProductImagesOrdered(product.images);
+  const image = orderedImages[0];
+  const imageSrcs = getProductImageSrcs(product.images);
+  const imageUrl = imageSrcs[0];
   const blurb =
     product.shortDescription?.trim() ||
     (product.description
@@ -105,6 +107,7 @@ export function ProductQuickView({ product, open, onClose, availableQuantity }: 
           {imageUrl ? (
             <StorefrontImage
               src={imageUrl}
+              fallbackSrcs={imageSrcs.slice(1)}
               alt={imageAlt(image, product.name)}
               fill
               sizes="(min-width: 640px) 40vw, 100vw"
@@ -141,10 +144,14 @@ export function ProductQuickView({ product, open, onClose, availableQuantity }: 
                   type="button"
                   onClick={handleAdd}
                   disabled={adding}
-                  className="btn-pdp-atc product-quick-view__atc inline-flex min-w-0 flex-1 items-center justify-center gap-2 px-4 py-3 disabled:cursor-not-allowed disabled:opacity-50"
+                  suppressHydrationWarning
+                  className="btn-pdp-atc product-quick-view__atc inline-flex min-w-0 flex-1 items-center justify-center gap-2 px-4 py-3 font-bold text-[var(--primary-foreground,#d4af37)] disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  <ShoppingBagIcon className="h-4 w-4 shrink-0" strokeWidth={1.4} />
-                  <span className="truncate">
+                  <ShoppingBagIcon
+                    className="h-4 w-4 shrink-0 text-[var(--primary-foreground,#d4af37)]"
+                    strokeWidth={1.4}
+                  />
+                  <span className="truncate font-bold text-[var(--primary-foreground,#d4af37)]">
                     {added ? 'Added' : adding ? 'Adding…' : 'Add to cart'}
                   </span>
                 </button>
@@ -164,7 +171,7 @@ export function ProductQuickView({ product, open, onClose, availableQuantity }: 
             <Link
               href={`/products/${product.slug}`}
               onClick={onClose}
-              className="mt-3 block w-full py-1.5 text-center text-xs font-medium uppercase tracking-wider text-foreground underline-offset-4 transition-colors hover:text-[var(--navbar-link-hover,var(--primary-hover))] hover:underline"
+              className="mt-3 block w-full py-1.5 text-center text-xs font-bold uppercase tracking-wider text-[var(--brand-purple-dark,var(--foreground))] underline-offset-4 transition-colors hover:text-[var(--brand-gold-hover,var(--navbar-link-hover,var(--primary-hover)))] hover:underline"
             >
               View full details
             </Link>

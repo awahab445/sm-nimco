@@ -4,16 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { fetchPayment, type PaymentRecord } from '@/lib/api/payments';
 import { formatApiError } from '@/lib/api/error-message';
-
-function money(amount: string | number, currency: string) {
-  const n = typeof amount === 'string' ? Number(amount) : amount;
-  if (Number.isNaN(n)) return `${amount} ${currency}`;
-  try {
-    return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(n);
-  } catch {
-    return `${n.toFixed(2)} ${currency}`;
-  }
-}
+import { formatPrice } from '@/lib/currency';
 
 export function PaymentDetailView({ paymentId }: { paymentId: string }) {
   const [row, setRow] = useState<PaymentRecord | null>(null);
@@ -74,7 +65,7 @@ export function PaymentDetailView({ paymentId }: { paymentId: string }) {
           </div>
           <div>
             <dt className="text-zinc-500">Amount</dt>
-            <dd className="font-medium tabular-nums">{money(row.amount, row.currency)}</dd>
+            <dd className="font-medium tabular-nums">{formatPrice(row.amount, row.currency)}</dd>
           </div>
           <div>
             <dt className="text-zinc-500">Order</dt>

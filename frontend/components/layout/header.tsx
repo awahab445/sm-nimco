@@ -383,7 +383,7 @@ export function Header({ theme = 'default' }: { theme?: StoreThemeCode }) {
         unoptimized={logoSrc.startsWith('http')}
       />
       <span className="min-w-0 text-left leading-none" aria-hidden="true">
-        {/* Mobile: stacked wordmark — M. ESSA / CHEMICALS */}
+        {/* Mobile: stacked wordmark — e.g. "SM NIMCO &" / "Sweets" */}
         <span className="flex flex-col gap-0.5 lg:hidden">
           <span className="site-header__store-name text-[13px] font-bold tracking-[0.04em] text-foreground sm:text-sm">
             {brandLead}

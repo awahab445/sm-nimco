@@ -7,7 +7,7 @@ import { useCartStore } from '@/lib/cart.store';
 import { notifyAddToCartError } from '@/lib/notify-add-to-cart';
 import { formatPrice } from '@/lib/currency';
 import { imageAlt } from '@/lib/seo';
-import { resolveImageUrl } from '@/lib/resolve-image-url';
+import { getProductImageSrcs, getProductImagesOrdered } from '@/lib/resolve-image-url';
 import { StorefrontImage } from '@/components/ui/storefront-image';
 import { getVariantForCart } from '@/lib/product-cart-variant';
 import { ShoppingBagIcon } from '@/components/icons/shopping-bag-icon';
@@ -57,8 +57,16 @@ export function ProductCard({
   const variant = getVariantForCart(product);
   const inStock = availableQuantity === undefined ? true : availableQuantity > 0;
   const canAddToCart = Boolean(variant && inStock);
-  const image = product.images?.find((i) => i.isPrimary) ?? product.images?.[0];
-  const imageUrl = resolveImageUrl(image?.url);
+  const orderedImages = getProductImagesOrdered(product.images);
+  const image = orderedImages[0];
+  const imageSrcs = getProductImageSrcs(product.images);
+  const imageUrl = imageSrcs[0];
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Product Image Src:', imageUrl, {
+      product: product.name,
+      candidates: imageSrcs,
+    });
+  }
   const isNew =
     product.createdAt != null &&
     Date.now() - new Date(product.createdAt).getTime() < 1000 * 60 * 60 * 24 * 30;
@@ -137,6 +145,7 @@ export function ProductCard({
         {imageUrl ? (
           <StorefrontImage
             src={imageUrl}
+            fallbackSrcs={imageSrcs.slice(1)}
             alt={imageAlt(image, product.name)}
             fill
             sizes={

@@ -5,14 +5,14 @@
 
 export { APP_CURRENCY, DEFAULT_CURRENCY } from './currency';
 
-/** Storefront display name (header, footer, logo alt text). */
+/** Storefront display name (header, footer, logo alt text, SEO). */
 export const STORE_NAME =
   (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_STORE_NAME?.trim()) ||
-  'M. ESSA CHEMICALS';
+  'SM NIMCO & Sweets';
 
 /**
  * Split store name for header wordmark: last word on its own line (mobile),
- * rest on the first line — e.g. "M. ESSA" / "CHEMICALS".
+ * rest on the first line — e.g. "SM NIMCO &" / "Sweets".
  */
 export function splitStoreName(name: string): { lead: string; trail: string | null } {
   const trimmed = name.trim().replace(/\s+/g, ' ');

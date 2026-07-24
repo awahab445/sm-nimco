@@ -5,7 +5,7 @@ const WHATSAPP_PHONE = '3711317164';
 
 /** Pre-filled message when the chat opens. */
 const WHATSAPP_MESSAGE =
-  'Hi M. Essa Chemicals, I have a query regarding your products!';
+  'Hi SM NIMCO & Sweets, I have a query regarding your products!';
 
 const WHATSAPP_URL = `https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`;
 

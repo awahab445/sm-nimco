@@ -11,16 +11,7 @@ import {
   type StorefrontPaymentMethod,
 } from '@/lib/api/payments';
 import { formatApiError } from '@/lib/api/error-message';
-
-function money(amount: string | number, currency: string) {
-  const n = typeof amount === 'string' ? Number(amount) : amount;
-  if (Number.isNaN(n)) return `${amount} ${currency}`;
-  try {
-    return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(n);
-  } catch {
-    return `${n.toFixed(2)} ${currency}`;
-  }
-}
+import { formatPrice } from '@/lib/currency';
 
 export function PaymentsHub() {
   const [methods, setMethods] = useState<StorefrontPaymentMethod[]>([]);
@@ -207,7 +198,7 @@ export function PaymentsHub() {
                       <div className="font-mono text-xs text-zinc-500">{p.orderId.slice(0, 8)}…</div>
                     </td>
                     <td className="px-4 py-3 tabular-nums font-medium">
-                      {money(p.amount, p.currency)}
+                      {formatPrice(p.amount, p.currency)}
                     </td>
                     <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400">
                       {new Date(p.createdAt).toLocaleString()}

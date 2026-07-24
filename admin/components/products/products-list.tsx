@@ -16,7 +16,12 @@ import {
   type ProductStatus,
 } from '@/lib/api/products';
 import { formatApiError } from '@/lib/api/error-message';
+import {
+  PRODUCT_IMAGE_PLACEHOLDER,
+  resolveImageUrl,
+} from '@/lib/resolve-image-url';
 import { PermissionGate } from '@/components/permission-gate';
+import { formatPrice } from '@/lib/currency';
 
 const STATUS_OPTIONS: { value: '' | ProductStatus; label: string }[] = [
   { value: '', label: 'All statuses' },
@@ -343,9 +348,13 @@ export function ProductsList() {
                       {img ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
-                          src={img.url}
+                          src={resolveImageUrl(img.url) || PRODUCT_IMAGE_PLACEHOLDER}
                           alt=""
                           className="h-10 w-10 rounded-md bg-zinc-100 object-cover dark:bg-zinc-800"
+                          onError={(e) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.src = PRODUCT_IMAGE_PLACEHOLDER;
+                          }}
                         />
                       ) : (
                         <div className="h-10 w-10 rounded-md bg-zinc-100 dark:bg-zinc-800" />
@@ -358,7 +367,7 @@ export function ProductsList() {
                     <td className="px-3 py-2 text-zinc-600 dark:text-zinc-400">{row.sku}</td>
                     <td className="px-3 py-2 text-zinc-600 dark:text-zinc-400">{row.type}</td>
                     <td className="px-3 py-2 text-zinc-600 dark:text-zinc-400">
-                      {moneyToNumber(row.basePrice).toFixed(2)}
+                      {formatPrice(moneyToNumber(row.basePrice))}
                     </td>
                     <td className="px-3 py-2">
                       <span

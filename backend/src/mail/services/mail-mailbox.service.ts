@@ -247,13 +247,13 @@ export class MailMailboxService {
     try {
       await transporter.verify();
       if (dto.testRecipient) {
-        const fromName = dto.fromName?.trim() || 'M. Essa Chemicals';
+        const fromName = dto.fromName?.trim() || 'SM NIMCO & Sweets';
         const fromAddress =
           dto.fromAddress?.trim().toLowerCase() || dto.smtpUser.trim();
         await transporter.sendMail({
           from: `"${fromName}" <${fromAddress}>`,
           to: dto.testRecipient.trim().toLowerCase(),
-          subject: 'SMTP test — M. Essa Chemicals',
+          subject: 'SMTP test — SM NIMCO & Sweets',
           text: 'This is a test message from your mail server configuration.',
           html: '<p>This is a test message from your mail server configuration.</p>',
         });

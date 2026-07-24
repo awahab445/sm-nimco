@@ -33,6 +33,11 @@ import {
   fetchProductInventoryMatrix,
   setProductInventoryQuantities,
 } from '@/lib/api/inventory';
+import {
+  PRODUCT_IMAGE_PLACEHOLDER,
+  resolveImageUrl,
+} from '@/lib/resolve-image-url';
+import { formatPrice } from '@/lib/currency';
 import { ProductForm } from './product-form';
 
 type Tab = 'general' | 'variants' | 'inventory' | 'images' | 'categories';
@@ -785,7 +790,7 @@ function VariantsPanel({
                 <td className="px-3 py-2 text-xs text-zinc-500">
                   {variantOptionsLabel(v)}
                 </td>
-                <td className="px-3 py-2">{moneyToNumber(v.price).toFixed(2)}</td>
+                <td className="px-3 py-2">{formatPrice(moneyToNumber(v.price))}</td>
                 <td className="px-3 py-2">{v.isActive ? 'Yes' : 'No'}</td>
                 <td className="px-3 py-2 text-right">
                   <button type="button" className="mr-3 underline" onClick={() => openEdit(v)}>
@@ -1331,7 +1336,15 @@ function ImagesPanel({
                   onDragEnd={() => setDraggingImageId(null)}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={img.url} alt="" className="h-10 w-10 rounded object-cover bg-zinc-100" />
+                  <img
+                    src={resolveImageUrl(img.url) || PRODUCT_IMAGE_PLACEHOLDER}
+                    alt=""
+                    className="h-10 w-10 rounded object-cover bg-zinc-100"
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = PRODUCT_IMAGE_PLACEHOLDER;
+                    }}
+                  />
                 </td>
                 <td className="max-w-[200px] truncate px-3 py-2">{img.url}</td>
                 <td className="px-3 py-2">{img.altText ?? '—'}</td>

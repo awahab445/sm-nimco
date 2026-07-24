@@ -12,16 +12,7 @@ import {
   type PaymentStatus,
 } from '@/lib/api/orders';
 import { formatApiError } from '@/lib/api/error-message';
-
-function money(amount: string | number, currency: string) {
-  const n = typeof amount === 'string' ? Number(amount) : amount;
-  if (Number.isNaN(n)) return `${amount} ${currency}`;
-  try {
-    return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(n);
-  } catch {
-    return `${n.toFixed(2)} ${currency}`;
-  }
-}
+import { formatPrice } from '@/lib/currency';
 
 function statusPill(label: string, tone: 'neutral' | 'success' | 'warning' | 'danger') {
   const tones = {
@@ -389,7 +380,7 @@ export function OrdersList() {
                     )}
                   </td>
                   <td className="px-4 py-3 text-right font-medium text-zinc-900 dark:text-zinc-50">
-                    {money(o.grandTotal, o.currency)}
+                    {formatPrice(o.grandTotal, o.currency)}
                   </td>
                   <td className="px-4 py-3 text-right">
                     <Link

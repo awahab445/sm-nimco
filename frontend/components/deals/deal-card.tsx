@@ -19,7 +19,7 @@ export function DealCard({ deal, featured }: Props) {
 
   return (
     <article
-      className={`${storefrontUi.card} overflow-hidden border border-border shadow-product-card transition-shadow hover:shadow-lg ${
+      className={`group ${storefrontUi.card} overflow-hidden border border-border shadow-product-card transition-shadow hover:shadow-lg ${
         featured ? 'flex flex-col md:flex-row md:items-stretch' : ''
       }`}
     >
@@ -27,21 +27,22 @@ export function DealCard({ deal, featured }: Props) {
         href={`/deals/${deal.slug}`}
         className={
           featured
-            ? // Featured: fixed aspect + contain so promo text in the art isn't cropped
-              'relative block w-full shrink-0 overflow-hidden bg-secondary/40 aspect-[4/3] sm:aspect-[16/10] md:aspect-auto md:min-h-[20rem] md:w-1/2'
-            : 'relative block h-48 overflow-hidden bg-secondary/30'
+            ? 'relative flex w-full shrink-0 items-center justify-center overflow-hidden bg-[#f8f6f0] p-2 aspect-[4/3] sm:aspect-[16/10] md:aspect-auto md:min-h-[20rem] md:w-1/2'
+            : 'relative flex h-48 items-center justify-center overflow-hidden bg-[#f8f6f0] p-2 sm:h-52'
         }
       >
         {imageSrc ? (
-          <StorefrontImage
-            src={imageSrc}
-            alt={deal.title}
-            fill
-            sizes={featured ? '(min-width: 768px) 50vw, 100vw' : '(min-width: 768px) 33vw, 100vw'}
-            className={featured ? 'object-contain object-center' : 'object-cover'}
-            loading="lazy"
-            quality={70}
-          />
+          <div className="relative h-full w-full">
+            <StorefrontImage
+              src={imageSrc}
+              alt={deal.title}
+              fill
+              sizes={featured ? '(min-width: 768px) 50vw, 100vw' : '(min-width: 768px) 33vw, 100vw'}
+              className="object-contain object-center transition-transform duration-300 group-hover:scale-105"
+              loading="lazy"
+              quality={70}
+            />
+          </div>
         ) : (
           <div className="flex h-full w-full items-center justify-center text-muted-foreground">
             Bundle

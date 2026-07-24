@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useCartStore } from '@/lib/cart.store';
 import { useAuthStore } from '@/lib/auth.store';
-import { formatPrice, APP_CURRENCY } from '@/lib/currency';
+import { formatPrice, APP_CURRENCY, resolveDisplayCurrency } from '@/lib/currency';
 import { CartLineItemThumb } from '@/components/cart/cart-line-item-thumb';
 import { CouponApplySection } from '@/components/coupon/coupon-apply-section';
 import { ShoppingBagIcon } from '@/components/icons/shopping-bag-icon';
@@ -85,7 +85,7 @@ export default function CartPage() {
     items.reduce((sum, i) => sum + i.quantity, 0) +
     bundles.reduce((sum, b) => sum + b.quantity, 0);
   const cartId = cart?.id ?? null;
-  const displayCurrency = cart?.currency ?? APP_CURRENCY;
+  const displayCurrency = resolveDisplayCurrency(cart?.currency ?? APP_CURRENCY);
   const meetsMinimumOrder = subtotal >= minimumOrderAmount;
 
   useEffect(() => {

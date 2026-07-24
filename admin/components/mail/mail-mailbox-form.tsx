@@ -33,7 +33,7 @@ export function MailMailboxForm({ mailboxId }: Props) {
   const [smtpSecure, setSmtpSecure] = useState(false);
   const [smtpUser, setSmtpUser] = useState('');
   const [smtpPass, setSmtpPass] = useState('');
-  const [fromName, setFromName] = useState('M. Essa Chemicals');
+  const [fromName, setFromName] = useState('SM NIMCO & Sweets');
   const [fromAddress, setFromAddress] = useState('');
   const [isActive, setIsActive] = useState(true);
   const [isDefault, setIsDefault] = useState(false);

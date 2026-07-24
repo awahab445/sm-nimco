@@ -51,17 +51,17 @@ export class EmailService {
       process.env.STORE_SUPPORT_URL?.trim() || `${base}/shipping-returns`;
 
     return {
-      storeName: process.env.STORE_NAME?.trim() || 'M. ESSA CHEMICALS',
+      storeName: process.env.STORE_NAME?.trim() || 'SM NIMCO & Sweets',
       logoUrl: this.resolveLogoUrl(),
-      // Essa Chemicals: charcoal text, orange CTAs (aligned with storefront theme)
-      primaryColor: process.env.STORE_BRAND_PRIMARY || '#222222',
-      ctaColor: process.env.STORE_BRAND_CTA || '#ff4800',
-      accentColor: process.env.STORE_BRAND_ACCENT || '#ff6a33',
-      textColor: process.env.STORE_BRAND_TEXT || '#222222',
-      mutedTextColor: process.env.STORE_BRAND_MUTED || '#878787',
-      footerTextColor: process.env.STORE_BRAND_FOOTER_TEXT || '#32355d',
-      backgroundColor: process.env.STORE_BRAND_BG || '#f5f5f5',
-      borderColor: process.env.STORE_BRAND_BORDER || '#eeeeee',
+      // Brand tokens (override via STORE_BRAND_* env vars)
+      primaryColor: process.env.STORE_BRAND_PRIMARY || '#1e1035',
+      ctaColor: process.env.STORE_BRAND_CTA || '#d4af37',
+      accentColor: process.env.STORE_BRAND_ACCENT || '#b89628',
+      textColor: process.env.STORE_BRAND_TEXT || '#1a1a1a',
+      mutedTextColor: process.env.STORE_BRAND_MUTED || '#6b7280',
+      footerTextColor: process.env.STORE_BRAND_FOOTER_TEXT || '#ffffff',
+      backgroundColor: process.env.STORE_BRAND_BG || '#faf8f5',
+      borderColor: process.env.STORE_BRAND_BORDER || '#ebe6df',
       social: {
         facebook: process.env.STORE_SOCIAL_FACEBOOK || undefined,
         instagram: process.env.STORE_SOCIAL_INSTAGRAM || undefined,

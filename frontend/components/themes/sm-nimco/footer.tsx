@@ -187,7 +187,7 @@ function NewsletterForm() {
         suppressHydrationWarning
         className="flex items-center justify-center space-x-2 rounded-full bg-[var(--brand-burgundy,#9b1d48)] px-8 py-3.5 text-sm font-semibold text-white shadow-lg transition hover:bg-[var(--footer-newsletter-btn-hover,#83163b)] disabled:opacity-60"
       >
-        <span>{loading ? 'Subscribing…' : 'Subscribe'}</span>
+        <span className="text-white">{loading ? 'Subscribing…' : 'Subscribe'}</span>
         <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden>
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14M13 5l7 7-7 7" />
         </svg>
@@ -210,7 +210,7 @@ function LinkColumn({ title, links }: { title: string; links: FooterLink[] }) {
   return (
     <div className="space-y-4">
       <h4 className="font-heading text-xl font-bold text-white">{title}</h4>
-      <ul className="space-y-2.5 text-sm text-gray-400">
+      <ul className="space-y-2.5 text-sm text-gray-300">
         {links.map((link) => {
           const external =
             link.href.startsWith('mailto:') ||
@@ -219,11 +219,17 @@ function LinkColumn({ title, links }: { title: string; links: FooterLink[] }) {
           return (
             <li key={`${link.href}-${link.label}`}>
               {external ? (
-                <a href={link.href} className="transition hover:text-white">
+                <a
+                  href={link.href}
+                  className="text-gray-300 transition hover:text-[var(--brand-gold-primary,#d4af37)]"
+                >
                   {link.label}
                 </a>
               ) : (
-                <Link href={link.href} className="transition hover:text-white">
+                <Link
+                  href={link.href}
+                  className="text-gray-300 transition hover:text-[var(--brand-gold-primary,#d4af37)]"
+                >
                   {link.label}
                 </Link>
               )}
@@ -237,9 +243,9 @@ function LinkColumn({ title, links }: { title: string; links: FooterLink[] }) {
 
 function ContactRow({ icon, children }: { icon: ReactNode; children: ReactNode }) {
   return (
-    <li className="flex items-start space-x-3">
+    <li className="flex items-start space-x-3 text-gray-300">
       <span className="mt-0.5 text-[var(--brand-gold-primary,#d4af37)]">{icon}</span>
-      <span>{children}</span>
+      <span className="text-gray-300">{children}</span>
     </li>
   );
 }

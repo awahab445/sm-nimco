@@ -1,13 +1,24 @@
 export function formatCurrency(amount: number, currency: string): string {
-  try {
-    return new Intl.NumberFormat('en-PK', {
-      style: 'currency',
-      currency: currency || 'PKR',
+  const code = (currency || 'PKR').toUpperCase();
+  const n = Number.isFinite(amount) ? amount : 0;
+
+  if (code === 'PKR') {
+    return `Rs. ${n.toLocaleString('en-PK', {
       minimumFractionDigits: 0,
       maximumFractionDigits: 2,
-    }).format(amount);
+      useGrouping: true,
+    })}`;
+  }
+
+  try {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: code,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    }).format(n);
   } catch {
-    return `${currency} ${amount.toFixed(2)}`;
+    return `${code} ${n.toFixed(2)}`;
   }
 }
 

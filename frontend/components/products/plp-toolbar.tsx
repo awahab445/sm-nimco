@@ -110,6 +110,7 @@ export function PlpSortControl({ value, onChange }: SortControlProps) {
         aria-haspopup="listbox"
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
+        suppressHydrationWarning
       >
         <span className="hidden truncate md:inline">{current.label}</span>
         <span className="md:hidden">Sort</span>
@@ -212,6 +213,7 @@ export function PlpLayoutSwitch({ value, onChange }: LayoutSwitchProps) {
             className={`${btnClass} items-center justify-center`}
             aria-pressed={active}
             aria-label={label}
+            suppressHydrationWarning
           >
             <span className={`${icon}${active ? ' is-active' : ''}`} />
           </button>

@@ -13,7 +13,7 @@ import {
 } from '../catalog/services/meta-commerce-export.service';
 
 const PRODUCT_BASE_URL = 'https://shop.essachemicals.pk/products/';
-const META_BRAND = 'M. Essa Chemicals';
+const META_BRAND = 'SM NIMCO & Sweets';
 
 @Controller()
 export class FeedsController {

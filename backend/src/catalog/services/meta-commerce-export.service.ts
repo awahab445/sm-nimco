@@ -35,7 +35,7 @@ export const META_COMMERCE_COLUMNS = [
 export type MetaCommerceColumn = (typeof META_COMMERCE_COLUMNS)[number];
 export type MetaCommerceRow = Record<MetaCommerceColumn, string>;
 
-const META_BRAND = 'M. Essa Chemicals';
+const META_BRAND = 'SM NIMCO & Sweets';
 
 type ProductForExport = Prisma.ProductGetPayload<{
   include: {

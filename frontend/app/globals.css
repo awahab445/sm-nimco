@@ -56,8 +56,6 @@ html[data-store-theme='sm_nimco'] .site-header nav .chrome-nav-link,
 html[data-store-theme='sm_nimco'] .site-header nav .header-nav-trigger,
 html[data-store-theme='sm_nimco'] .site-header nav .header-nav-trigger span,
 html[data-store-theme='sm_nimco'] .site-header .site-header__store-name,
-html[data-store-theme='sm_nimco'] .site-header .header-cart-trigger,
-html[data-store-theme='sm_nimco'] .site-header .header-cart-trigger svg,
 html[data-store-theme='sm_nimco'] .site-header .site-header__icon-btn,
 html[data-store-theme='sm_nimco'] .site-header .site-header__icon-btn svg,
 html[data-store-theme='sm_nimco'] .site-header button[aria-haspopup='menu'],
@@ -66,10 +64,27 @@ html[data-store-theme='sm_nimco'] .site-header .site-header__menu-btn {
   color: var(--navbar-foreground, #1e1035);
 }
 
+/* Cart trigger sits on purple — must stay gold/white (not navbar dark text). */
+html[data-store-theme='sm_nimco'] .site-header .header-cart-trigger,
+html[data-store-theme='sm_nimco'] .site-header .header-cart-trigger:hover,
+html[data-store-theme='sm_nimco'] .site-header .header-cart-trigger:focus-visible,
+html[data-store-theme='sm_nimco'] .site-header .header-cart-trigger svg,
+html[data-store-theme='sm_nimco'] .site-header .header-cart-trigger span,
+html[data-store-theme='sm_nimco'] .site-header .header-cart-trigger .cart-icon {
+  color: var(--brand-gold-primary, #d4af37) !important;
+}
+
 html[data-store-theme='sm_nimco'] .site-top-bar {
   background-color: var(--brand-purple-dark, #1e1035) !important;
   color: var(--brand-gold-primary, #d4af37) !important;
   border-color: color-mix(in srgb, var(--brand-gold-primary, #d4af37) 20%, transparent) !important;
+}
+
+html[data-store-theme='sm_nimco'] .site-top-bar,
+html[data-store-theme='sm_nimco'] .site-top-bar span,
+html[data-store-theme='sm_nimco'] .site-top-bar a,
+html[data-store-theme='sm_nimco'] .site-top-bar p {
+  color: var(--brand-gold-primary, #d4af37) !important;
 }
 
 html[data-store-theme='sm_nimco'] .header-cart-preview {
@@ -78,8 +93,44 @@ html[data-store-theme='sm_nimco'] .header-cart-preview {
 
 html[data-store-theme='sm_nimco'] .header-cart-preview a[href='/checkout'],
 html[data-store-theme='sm_nimco'] .header-cart-preview .btn-brand-primary {
-  background-color: var(--brand-purple-dark, #1e1035);
-  color: var(--brand-gold-primary, #d4af37);
+  background-color: var(--brand-purple-dark, #1e1035) !important;
+  color: var(--brand-gold-primary, #d4af37) !important;
+}
+
+/* Purple surfaces: mark wrappers; pair with explicit text-white / text-gold utilities. */
+html[data-store-theme='sm_nimco'] .sm-nimco-on-purple {
+  color: #ffffff;
+}
+
+html[data-store-theme='sm_nimco'] .site-footer--sm-nimco {
+  color: var(--footer-foreground, #ffffff);
+}
+
+html[data-store-theme='sm_nimco'] .site-footer--sm-nimco :where(h1, h2, h3, h4) {
+  color: #ffffff;
+}
+
+html[data-store-theme='sm_nimco'] .site-footer--sm-nimco a:hover {
+  color: var(--footer-link-hover, var(--brand-gold-primary, #d4af37));
+}
+
+html[data-store-theme='sm_nimco'] .btn-pdp-atc,
+html[data-store-theme='sm_nimco'] .btn-pdp-atc span,
+html[data-store-theme='sm_nimco'] .btn-pdp-atc svg,
+html[data-store-theme='sm_nimco'] .btn-pdp-atc .cart-icon,
+html[data-store-theme='sm_nimco'] .product-quick-view__atc,
+html[data-store-theme='sm_nimco'] .product-quick-view__atc span,
+html[data-store-theme='sm_nimco'] .product-quick-view__atc svg {
+  color: var(--brand-gold-primary, #d4af37) !important;
+}
+
+html[data-store-theme='sm_nimco'] .btn-pdp-atc:hover:not(:disabled),
+html[data-store-theme='sm_nimco'] .btn-pdp-atc:hover:not(:disabled) span,
+html[data-store-theme='sm_nimco'] .btn-pdp-atc:hover:not(:disabled) svg,
+html[data-store-theme='sm_nimco'] .product-quick-view__atc:hover:not(:disabled),
+html[data-store-theme='sm_nimco'] .product-quick-view__atc:hover:not(:disabled) span,
+html[data-store-theme='sm_nimco'] .product-quick-view__atc:hover:not(:disabled) svg {
+  color: var(--brand-gold-primary, #d4af37) !important;
 }
 
 html[data-store-theme='sm_nimco'] .sm-nimco-product-card {
@@ -387,6 +438,21 @@ button .cart-icon {
   .btn-pdp-atc:disabled {
     cursor: not-allowed;
     opacity: 0.5;
+  }
+
+  /* Keep ATC label/icon readable — base `span`/`button` text-foreground must not win. */
+  .btn-pdp-atc,
+  .btn-pdp-atc span,
+  .btn-pdp-atc svg,
+  .btn-pdp-atc .cart-icon {
+    color: var(--primary-foreground);
+  }
+
+  .btn-pdp-atc:hover:not(:disabled),
+  .btn-pdp-atc:hover:not(:disabled) span,
+  .btn-pdp-atc:hover:not(:disabled) svg,
+  .btn-pdp-atc:hover:not(:disabled) .cart-icon {
+    color: var(--btn-hover-foreground, var(--primary-foreground));
   }
 
   .btn-brand-secondary {
@@ -1031,6 +1097,13 @@ html[data-store-theme='ember'][data-immersive-hero] .site-header.is-scrolled {
 .site-header .header-cart-trigger:hover,
 .site-header .site-header__menu-btn:hover {
   color: var(--navbar-muted-foreground);
+}
+
+/* SM NIMCO: purple cart chip must keep gold label/icon even on hover */
+html[data-store-theme='sm_nimco'] .site-header .header-cart-trigger:hover,
+html[data-store-theme='sm_nimco'] .site-header .header-cart-trigger:hover svg,
+html[data-store-theme='sm_nimco'] .site-header .header-cart-trigger:hover span {
+  color: var(--brand-gold-primary, #d4af37) !important;
 }
 
 html[data-store-theme='essa_chemicals'] .site-header nav a:hover,

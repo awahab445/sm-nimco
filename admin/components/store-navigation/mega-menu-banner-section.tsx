@@ -4,20 +4,16 @@ import { adminUi } from '@/lib/admin-ui';
 import { useRef, useState } from 'react';
 import { uploadStorefrontNavBannerImage, type StorefrontNavRow } from '@/lib/api/storefront-navigation';
 import { formatApiError } from '@/lib/api/error-message';
+import {
+  PRODUCT_IMAGE_PLACEHOLDER,
+  resolveImageUrl,
+} from '@/lib/resolve-image-url';
 
 export type BannerFormState = {
   bannerImageUrl: string;
   bannerHref: string;
   bannerAlt: string;
 };
-
-function resolveAdminImageUrl(url: string): string {
-  const trimmed = url.trim();
-  if (!trimmed) return '';
-  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
-  const base = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000').replace(/\/$/, '');
-  return `${base}${trimmed.startsWith('/') ? trimmed : `/${trimmed}`}`;
-}
 
 type MegaMenuBannerSectionProps = {
   targets: StorefrontNavRow[];
@@ -62,7 +58,7 @@ export function MegaMenuBannerSection({
     }
   };
 
-  const previewSrc = resolveAdminImageUrl(bannerForm.bannerImageUrl);
+  const previewSrc = resolveImageUrl(bannerForm.bannerImageUrl);
   const selectedTarget = targets.find((t) => t.id === selectedId) ?? targets[0] ?? null;
 
   if (targets.length === 0) {
@@ -124,6 +120,10 @@ export function MegaMenuBannerSection({
                 src={previewSrc}
                 alt={bannerForm.bannerAlt.trim() || 'Mega menu banner preview'}
                 className="h-20 w-36 object-contain object-center"
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = PRODUCT_IMAGE_PLACEHOLDER;
+                }}
               />
             </div>
           ) : (

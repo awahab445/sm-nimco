@@ -98,7 +98,7 @@ export class MailTransportService implements OnModuleDestroy {
       fromName:
         this.readEnv('MAIL_FROM_NAME') ||
         this.readEnv('STORE_NAME') ||
-        'M. Essa Chemicals',
+        'SM NIMCO & Sweets',
       fromAddress:
         this.readEnv('MAIL_FROM_ADDRESS') || user || 'noreply@localhost',
     };

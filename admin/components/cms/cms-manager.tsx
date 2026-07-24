@@ -9,6 +9,10 @@ import {
   type CmsSlider,
 } from '@/lib/api/cms';
 import { formatApiError } from '@/lib/api/error-message';
+import {
+  PRODUCT_IMAGE_PLACEHOLDER,
+  resolveImageUrl,
+} from '@/lib/resolve-image-url';
 import { RichTextEditor } from './rich-text-editor';
 import { HomeLayoutPromoHelper } from './home-layout-promo-helper';
 
@@ -771,14 +775,6 @@ function ActionRow({ onReset }: { onReset: () => void }) {
   );
 }
 
-function resolveAdminImageUrl(url: string): string {
-  const trimmed = url.trim();
-  if (!trimmed) return trimmed;
-  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
-  const base = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000').replace(/\/+$/, '');
-  return `${base}${trimmed.startsWith('/') ? trimmed : `/${trimmed}`}`;
-}
-
 function SlideFields({
   slide,
   sliderSlideWidthPx,
@@ -874,9 +870,13 @@ function SlideFields({
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={resolveAdminImageUrl(slide.imageUrl)}
+            src={resolveImageUrl(slide.imageUrl) || PRODUCT_IMAGE_PLACEHOLDER}
             alt=""
             className="h-auto w-full object-contain object-center bg-zinc-100 dark:bg-zinc-900"
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = PRODUCT_IMAGE_PLACEHOLDER;
+            }}
           />
           {(slide.title.trim() || slide.subtitle.trim() || slide.ctaLabel.trim()) && (
             <div

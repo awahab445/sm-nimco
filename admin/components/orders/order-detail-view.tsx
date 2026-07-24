@@ -13,16 +13,7 @@ import {
 } from '@/lib/api/orders';
 import { formatApiError } from '@/lib/api/error-message';
 import { OrderPaymentsSection } from '@/components/payments/order-payments-section';
-
-function money(amount: string | number, currency: string) {
-  const n = typeof amount === 'string' ? Number(amount) : amount;
-  if (Number.isNaN(n)) return `${amount} ${currency}`;
-  try {
-    return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(n);
-  } catch {
-    return `${n.toFixed(2)} ${currency}`;
-  }
-}
+import { formatPrice } from '@/lib/currency';
 
 function formatAddress(a: Record<string, unknown> | null | undefined): string {
   if (!a || typeof a !== 'object') return '—';
@@ -208,10 +199,10 @@ export function OrderDetailView({ orderId }: { orderId: string }) {
                   <td className="px-4 py-2 text-zinc-800 dark:text-zinc-200">{item.name}</td>
                   <td className="px-4 py-2 text-right tabular-nums">{item.quantity}</td>
                   <td className="px-4 py-2 text-right tabular-nums">
-                    {money(item.unitPrice, order.currency)}
+                    {formatPrice(item.unitPrice, order.currency)}
                   </td>
                   <td className="px-4 py-2 text-right font-medium tabular-nums text-zinc-900 dark:text-zinc-50">
-                    {money(item.rowTotal, order.currency)}
+                    {formatPrice(item.rowTotal, order.currency)}
                   </td>
                 </tr>
               ))}
@@ -226,31 +217,31 @@ export function OrderDetailView({ orderId }: { orderId: string }) {
           <div className="flex justify-between gap-4">
             <dt className="text-zinc-600 dark:text-zinc-400">Subtotal</dt>
             <dd className="tabular-nums text-zinc-900 dark:text-zinc-50">
-              {money(order.subtotal, order.currency)}
+              {formatPrice(order.subtotal, order.currency)}
             </dd>
           </div>
           <div className="flex justify-between gap-4">
             <dt className="text-zinc-600 dark:text-zinc-400">Discount</dt>
             <dd className="tabular-nums text-zinc-900 dark:text-zinc-50">
-              {money(order.discountTotal, order.currency)}
+              {formatPrice(order.discountTotal, order.currency)}
             </dd>
           </div>
           <div className="flex justify-between gap-4">
             <dt className="text-zinc-600 dark:text-zinc-400">Shipping</dt>
             <dd className="tabular-nums text-zinc-900 dark:text-zinc-50">
-              {money(order.shippingTotal, order.currency)}
+              {formatPrice(order.shippingTotal, order.currency)}
             </dd>
           </div>
           <div className="flex justify-between gap-4">
             <dt className="text-zinc-600 dark:text-zinc-400">Tax</dt>
             <dd className="tabular-nums text-zinc-900 dark:text-zinc-50">
-              {money(order.taxTotal, order.currency)}
+              {formatPrice(order.taxTotal, order.currency)}
             </dd>
           </div>
           <div className="flex justify-between gap-4 border-t border-zinc-200 pt-2 dark:border-zinc-800">
             <dt className="font-medium text-zinc-900 dark:text-zinc-50">Grand total</dt>
             <dd className="font-semibold tabular-nums text-zinc-900 dark:text-zinc-50">
-              {money(order.grandTotal, order.currency)}
+              {formatPrice(order.grandTotal, order.currency)}
             </dd>
           </div>
         </dl>

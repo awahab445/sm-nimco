@@ -21,6 +21,57 @@ const backendOrigin = (
   process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
 ).replace(/\/+$/, '');
 
+function remotePatternFromOrigin(origin: string): {
+  protocol: 'http' | 'https';
+  hostname: string;
+  port?: string;
+  pathname: string;
+} | null {
+  try {
+    const url = new URL(origin);
+    const protocol = url.protocol.replace(':', '') as 'http' | 'https';
+    if (protocol !== 'http' && protocol !== 'https') return null;
+    return {
+      protocol,
+      hostname: url.hostname,
+      ...(url.port ? { port: url.port } : {}),
+      pathname: '/**',
+    };
+  } catch {
+    return null;
+  }
+}
+
+const localhostPatterns = [3000, 3001, 3002].flatMap((port) => [
+  {
+    protocol: 'http' as const,
+    hostname: 'localhost',
+    port: String(port),
+    pathname: '/**',
+  },
+  {
+    protocol: 'http' as const,
+    hostname: '127.0.0.1',
+    port: String(port),
+    pathname: '/**',
+  },
+]);
+
+const apiPattern = remotePatternFromOrigin(backendOrigin);
+const remotePatterns = [
+  ...localhostPatterns,
+  ...(apiPattern ? [apiPattern] : []),
+].filter(
+  (pattern, index, all) =>
+    all.findIndex(
+      (p) =>
+        p.protocol === pattern.protocol &&
+        p.hostname === pattern.hostname &&
+        p.port === pattern.port &&
+        p.pathname === pattern.pathname,
+    ) === index,
+);
+
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   // Pin tracing root to this monorepo (avoids picking up C:\Users\pc\package-lock.json).
@@ -30,6 +81,7 @@ const nextConfig: NextConfig = {
     minimumCacheTTL: 60 * 60 * 24 * 30,
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    remotePatterns,
   },
   async rewrites() {
     return [

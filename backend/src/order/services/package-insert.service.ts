@@ -59,7 +59,7 @@ export class PackageInsertService {
       );
     }
 
-    const storeName = process.env.STORE_NAME?.trim() || 'M. Essa Chemicals';
+    const storeName = process.env.STORE_NAME?.trim() || 'SM NIMCO & Sweets';
     const supportPhone =
       process.env.STORE_SUPPORT_PHONE?.trim() || '021-32345678';
     const storeUrl =

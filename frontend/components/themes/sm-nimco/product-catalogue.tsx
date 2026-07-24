@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import type { Product } from '@/lib/api-client';
-import { getVariantForCart } from '@/lib/product-cart-variant';
 import { SmNimcoProductCard } from './product-card';
 
 interface SmNimcoProductCatalogueProps {
@@ -37,13 +36,12 @@ export function SmNimcoProductCatalogue({
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {products.map((product, index) => {
-            const variant = getVariantForCart(product);
+          {          products.map((product, index) => {
             return (
               <SmNimcoProductCard
                 key={product.id}
                 product={product}
-                availableQuantity={variant ? availability[variant.id] : undefined}
+                availabilityByVariant={availability}
                 badge={index === 0 ? 'BEST SELLER' : index === 1 ? 'HOT' : undefined}
               />
             );
