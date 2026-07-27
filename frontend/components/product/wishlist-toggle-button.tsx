@@ -89,6 +89,7 @@ export function WishlistToggleButton({
   return (
     <button
       type="button"
+      suppressHydrationWarning
       onClick={handleClick}
       disabled={busy}
       className={`${base} ${activeColor} ${className}`.trim()}

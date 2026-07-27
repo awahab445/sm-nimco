@@ -97,7 +97,7 @@ export default async function RootLayout({
                 >
                   <AnnouncementBar />
                   <Header theme={storeTheme} />
-                  <main className="min-w-0 max-w-full flex-1 overflow-x-clip bg-background pb-[calc(3.4375rem+env(safe-area-inset-bottom,0px))] lg:pb-0">
+                  <main className="min-w-0 max-w-full flex-1 overflow-x-clip bg-background pb-[calc(3.4375rem+var(--mobile-mini-cart-height,0px)+env(safe-area-inset-bottom,0px))] lg:pb-0">
                     {children}
                   </main>
                   <Footer theme={storeTheme} />

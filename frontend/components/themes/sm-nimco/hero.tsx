@@ -6,7 +6,7 @@ export function SmNimcoHero() {
     <section className="sm-nimco-on-purple bg-gradient-to-r from-[var(--brand-purple-dark,#1e1035)] via-[var(--brand-purple-deep,#2e1a47)] to-[var(--brand-purple-dark,#1e1035)] px-4 py-16 text-white sm:px-8">
       <div className="mx-auto flex max-w-7xl flex-col items-center justify-between md:flex-row">
         <div className="space-y-6 text-center md:w-1/2 md:text-left">
-          <span className="inline-block rounded-full border border-[var(--brand-gold-primary,#d4af37)]/40 bg-[var(--brand-gold-primary,#d4af37)]/20 px-3 py-1 text-xs font-bold uppercase text-[var(--brand-gold-primary,#d4af37)]">
+          <span className="inline-block rounded-full border border-white/25 bg-white/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-white">
             Premium Traditional Taste
           </span>
           <h1 className="font-heading text-3xl font-extrabold leading-tight text-white sm:text-5xl">
@@ -16,7 +16,7 @@ export function SmNimcoHero() {
             Hygienically packed, crisp, and made with pure ingredients daily for your family tea
             time.
           </p>
-          <div className="flex justify-center space-x-4 pt-2 md:justify-start">
+          <div className="flex flex-wrap justify-center gap-3 pt-2 md:justify-start">
             <Link
               href="/products"
               className="rounded-xl bg-[var(--brand-gold-primary,#d4af37)] px-6 py-3 font-bold text-[var(--brand-purple-dark,#1e1035)] shadow-lg transition-colors hover:bg-[var(--brand-gold-hover,#b89628)]"
@@ -24,7 +24,7 @@ export function SmNimcoHero() {
               Explore All Delights
             </Link>
             <Link
-              href="/checkout"
+              href="/cart"
               className="rounded-xl border border-[var(--brand-gold-primary,#d4af37)] px-6 py-3 font-semibold text-[var(--brand-gold-primary,#d4af37)] transition-colors hover:bg-white/5"
             >
               Quick Order

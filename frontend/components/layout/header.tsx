@@ -5,6 +5,19 @@ import Link from 'next/link';
 import { useEffect, useId, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { createPortal } from 'react-dom';
+import {
+  ChevronRight,
+  CircleHelp,
+  Flame,
+  Info,
+  LayoutGrid,
+  MapPin,
+  ShoppingBag,
+  Tag,
+  Truck,
+  UserRound,
+  type LucideIcon,
+} from 'lucide-react';
 import { useAuthStore } from '@/lib/auth.store';
 import { useCartStore } from '@/lib/cart.store';
 import { useHydrated } from '@/lib/use-hydrated';
@@ -95,6 +108,22 @@ function HeartIcon({ className }: { className?: string }) {
       <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
     </svg>
   );
+}
+
+function resolveMobileNavIcon(href: string, label: string): LucideIcon {
+  const path = normalizeNavPath(href).toLowerCase();
+  const name = label.trim().toLowerCase();
+
+  if (path.includes('deal') || name.includes('deal') || name.includes('offer')) return Flame;
+  if (path.includes('product') || name.includes('shop') || name.includes('product')) return ShoppingBag;
+  if (path.includes('track') || name.includes('track')) return Truck;
+  if (path.includes('about') || name.includes('about')) return Info;
+  if (path.includes('contact') || name.includes('help')) return CircleHelp;
+  if (path.includes('categor') || name.includes('categor')) return LayoutGrid;
+  if (path.includes('account') || name.includes('profile')) return UserRound;
+  if (path.includes('map') || name.includes('location') || path.includes('store-locator')) return MapPin;
+  if (name.includes('tag')) return Tag;
+  return ShoppingBag;
 }
 
 export function Header({ theme = 'default' }: { theme?: StoreThemeCode }) {
@@ -284,31 +313,46 @@ export function Header({ theme = 'default' }: { theme?: StoreThemeCode }) {
   }
 
   function mobileNavItem(item: StorefrontNavItem) {
-    if (item.openMegaMenu) {
-      return (
-        <Link
-          key={item.id}
-          href={item.href}
-          className="mobile-nav-link"
-          onClick={closeMobileNav}
-          aria-current={isNavLinkActive(item.href, pathname) ? 'page' : undefined}
-        >
-          {item.label}
-        </Link>
-      );
-    }
-    if (isCartHref(item.href)) {
-      return null;
-    }
+    if (isCartHref(item.href)) return null;
+
+    const Icon = resolveMobileNavIcon(item.href, item.label);
+    const active = isNavLinkActive(item.href, pathname);
+    const rowClass = isSmNimco
+      ? `group flex items-center justify-between gap-3 rounded-xl px-4 py-3 font-medium text-gray-800 transition-all hover:bg-amber-50 hover:text-[var(--brand-purple-dark,#1e1035)] ${
+          active
+            ? 'bg-amber-50 text-[var(--brand-purple-dark,#1e1035)]'
+            : ''
+        }`
+      : `group flex items-center justify-between gap-3 rounded-xl px-4 py-3 font-medium text-foreground transition-all hover:bg-muted/70 ${
+          active ? 'bg-muted/70 text-primary' : ''
+        }`;
+
     return (
       <Link
         key={item.id}
         href={item.href}
-        className="mobile-nav-link"
+        className={rowClass}
         onClick={closeMobileNav}
-        aria-current={isNavLinkActive(item.href, pathname) ? 'page' : undefined}
+        aria-current={active ? 'page' : undefined}
       >
-        {item.label}
+        <span className="flex min-w-0 items-center gap-3">
+          <Icon
+            className={`h-5 w-5 shrink-0 transition-colors ${
+              isSmNimco
+                ? 'text-[var(--brand-gold-hover,#b89628)] group-hover:text-[var(--brand-purple-dark,#1e1035)]'
+                : 'text-muted-foreground group-hover:text-primary'
+            }`}
+            strokeWidth={1.75}
+            aria-hidden
+          />
+          <span className="truncate text-[15px]">{item.label}</span>
+        </span>
+        <ChevronRight
+          className={`h-4 w-4 shrink-0 opacity-40 transition-all group-hover:translate-x-0.5 group-hover:opacity-70 ${
+            isSmNimco ? 'text-[var(--brand-purple-dark,#1e1035)]' : 'text-foreground'
+          }`}
+          aria-hidden
+        />
       </Link>
     );
   }
@@ -458,65 +502,132 @@ export function Header({ theme = 'default' }: { theme?: StoreThemeCode }) {
         aria-labelledby={mobileNavTitleId}
       >
         <div
-          className="mobile-nav-drawer__panel relative flex h-[100dvh] max-h-[100dvh] w-[min(100vw-50px,21.25rem)] max-w-[min(100vw-50px,21.25rem)] shrink-0 flex-col bg-card shadow-product-card"
+          className={`mobile-nav-drawer__panel relative flex h-[100dvh] max-h-[100dvh] w-[min(100vw-50px,21.25rem)] max-w-[min(100vw-50px,21.25rem)] shrink-0 flex-col bg-card shadow-2xl animate-plp-drawer-enter ${
+            isSmNimco ? 'border-r border-[var(--brand-gold-primary,#d4af37)]/15' : ''
+          }`}
           style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
         >
-          <div className="flex min-h-14 shrink-0 border-b border-border bg-foreground/[0.06] pt-[max(0px,env(safe-area-inset-top))]">
+          <div
+            className={`flex min-h-14 shrink-0 pt-[max(0px,env(safe-area-inset-top))] ${
+              isSmNimco
+                ? 'border-b border-amber-500/20 bg-[var(--brand-purple-dark,#1e1035)] p-4 text-white'
+                : 'border-b border-border bg-foreground/[0.06]'
+            }`}
+          >
             <button
               type="button"
               id={mobileNavTitleId}
-              className={`mobile-nav-drawer__tab flex flex-1 items-center justify-center px-2 text-sm font-medium ${
-                mobileNavTab === 'menu' ? 'is-active' : ''
+              className={`mobile-nav-drawer__tab relative flex flex-1 items-center justify-center px-2 text-sm font-semibold transition-colors ${
+                isSmNimco
+                  ? `rounded-lg py-2.5 ${
+                      mobileNavTab === 'menu'
+                        ? 'text-white'
+                        : 'text-white/60 hover:text-white/90'
+                    }`
+                  : `min-h-14 font-medium ${mobileNavTab === 'menu' ? 'is-active' : ''}`
               }`}
               aria-pressed={mobileNavTab === 'menu'}
               onClick={() => setMobileNavTab('menu')}
             >
               Menu
+              {isSmNimco && mobileNavTab === 'menu' ? (
+                <span
+                  className="absolute inset-x-4 bottom-0 h-0.5 rounded-full bg-[var(--brand-gold-primary,#d4af37)]"
+                  aria-hidden
+                />
+              ) : null}
             </button>
             <button
               type="button"
-              className={`mobile-nav-drawer__tab flex flex-1 items-center justify-center px-2 text-sm font-medium ${
-                mobileNavTab === 'categories' ? 'is-active' : ''
+              className={`mobile-nav-drawer__tab relative flex flex-1 items-center justify-center px-2 text-sm font-semibold transition-colors ${
+                isSmNimco
+                  ? `rounded-lg py-2.5 ${
+                      mobileNavTab === 'categories'
+                        ? 'text-white'
+                        : 'text-white/60 hover:text-white/90'
+                    }`
+                  : `min-h-14 font-medium ${mobileNavTab === 'categories' ? 'is-active' : ''}`
               }`}
               aria-pressed={mobileNavTab === 'categories'}
               onClick={() => setMobileNavTab('categories')}
             >
               Categories
+              {isSmNimco && mobileNavTab === 'categories' ? (
+                <span
+                  className="absolute inset-x-4 bottom-0 h-0.5 rounded-full bg-[var(--brand-gold-primary,#d4af37)]"
+                  aria-hidden
+                />
+              ) : null}
             </button>
           </div>
 
           <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
             {mobileNavTab === 'menu' ? (
-              <nav className="flex flex-col" aria-label="Mobile navigation">
-                {mainNav.map((item) => mobileNavItem(item))}
-                {hydrated && isAuthenticated ? (
-                  <Link href="/account" className="mobile-nav-link" onClick={closeMobileNav}>
-                    My Profile
-                  </Link>
-                ) : (
-                  <>
-                    <Link href="/login" className="mobile-nav-link" onClick={closeMobileNav}>
-                      Log in
-                    </Link>
+              <nav className="flex h-full flex-col px-3 py-4" aria-label="Mobile navigation">
+                <div className="flex flex-col gap-1">
+                  {mainNav.map((item) => mobileNavItem(item))}
+                </div>
+
+                <div className="mt-6 space-y-3 border-t border-gray-100 px-1 pb-2 pt-4">
+                  {isAuthenticated ? (
                     <Link
-                      href="/register"
-                      className="mobile-nav-link font-semibold"
+                      href="/account"
+                      className={
+                        isSmNimco
+                          ? 'flex items-center justify-between gap-3 rounded-xl border border-[var(--brand-purple-dark,#1e1035)] px-4 py-2.5 font-semibold text-[var(--brand-purple-dark,#1e1035)] transition-colors hover:bg-gray-50'
+                          : 'flex items-center justify-between gap-3 rounded-xl border border-border px-4 py-2.5 font-semibold text-foreground transition-colors hover:bg-muted/70'
+                      }
                       onClick={closeMobileNav}
                     >
-                      Sign up
+                      <span className="flex items-center gap-3">
+                        <UserRound className="h-5 w-5 shrink-0" strokeWidth={1.75} aria-hidden />
+                        My Profile
+                      </span>
+                      <ChevronRight className="h-4 w-4 opacity-50" aria-hidden />
                     </Link>
-                  </>
-                )}
+                  ) : (
+                    <>
+                      <Link
+                        href="/login"
+                        className={
+                          isSmNimco
+                            ? 'block w-full rounded-xl border border-[var(--brand-purple-dark,#1e1035)] py-2.5 text-center font-semibold text-[var(--brand-purple-dark,#1e1035)] transition-colors hover:bg-gray-50'
+                            : 'block w-full rounded-xl border border-border py-2.5 text-center font-semibold text-foreground transition-colors hover:bg-muted/70'
+                        }
+                        onClick={closeMobileNav}
+                      >
+                        Log in
+                      </Link>
+                      <Link
+                        href="/register"
+                        className={
+                          isSmNimco
+                            ? 'block w-full rounded-xl bg-[var(--brand-purple-dark,#1e1035)] py-2.5 text-center font-bold text-[var(--brand-gold-primary,#d4af37)] shadow-md transition-colors hover:bg-[#2d184f]'
+                            : 'block w-full rounded-xl bg-primary py-2.5 text-center font-bold text-primary-foreground shadow-md transition-colors hover:bg-btn-hover'
+                        }
+                        onClick={closeMobileNav}
+                      >
+                        Sign up
+                      </Link>
+                    </>
+                  )}
+                </div>
               </nav>
             ) : (
-              <MobileCategoryAccordions roots={megaMenu} onNavigate={closeMobileNav} />
+              <div className="px-1 py-2">
+                <MobileCategoryAccordions roots={megaMenu} onNavigate={closeMobileNav} />
+              </div>
             )}
           </div>
         </div>
 
         <button
           type="button"
-          className="mobile-nav-drawer__close inline-flex h-[50px] w-[50px] shrink-0 items-center justify-center bg-primary text-primary-foreground transition-colors hover:bg-btn-hover"
+          className={`mobile-nav-drawer__close inline-flex h-[50px] w-[50px] shrink-0 items-center justify-center transition-colors ${
+            isSmNimco
+              ? 'bg-[var(--brand-purple-dark,#1e1035)] text-[var(--brand-gold-primary,#d4af37)] hover:bg-[#2d184f]'
+              : 'bg-primary text-primary-foreground hover:bg-btn-hover'
+          }`}
           aria-label="Close menu"
           onClick={closeMobileNav}
         >
@@ -527,7 +638,7 @@ export function Header({ theme = 'default' }: { theme?: StoreThemeCode }) {
 
         <button
           type="button"
-          className="min-h-0 min-w-0 flex-1 cursor-pointer bg-foreground/40 backdrop-blur-[1px]"
+          className="min-h-0 min-w-0 flex-1 cursor-pointer bg-black/40 backdrop-blur-sm animate-plp-backdrop-enter"
           aria-label="Close menu"
           onClick={closeMobileNav}
         />

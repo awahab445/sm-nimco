@@ -1,7 +1,7 @@
 'use client';
 
-/** Edit your WhatsApp number (country code, no + or spaces). */
-const WHATSAPP_PHONE = '3711317164';
+/** Digits only with country code (no + or spaces). Matches store phone +92 371 1317164. */
+const WHATSAPP_PHONE = '923711317164';
 
 /** Pre-filled message when the chat opens. */
 const WHATSAPP_MESSAGE =
@@ -24,7 +24,9 @@ function WhatsAppIcon({ className }: { className?: string }) {
 
 export function WhatsAppWidget() {
   return (
-    <div className="fixed bottom-[70px] right-4 z-50 motion-safe:animate-whatsapp-bounce lg:bottom-6 lg:right-6 lg:z-[9999]">
+    <div
+      className="fixed bottom-[calc(3.4375rem+var(--mobile-mini-cart-height,0px)+4.25rem+env(safe-area-inset-bottom,0px))] right-4 z-[95] motion-safe:animate-whatsapp-bounce lg:bottom-6 lg:right-6 lg:z-[80]"
+    >
       <a
         href={WHATSAPP_URL}
         target="_blank"

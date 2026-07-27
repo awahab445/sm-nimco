@@ -13,9 +13,10 @@ import { storefrontUi } from '@/lib/storefront-ui';
 import {
   useCartItemFallbackImages,
 } from '@/lib/use-cart-item-fallback-images';
-import type { CartBundleRow, CartItem } from '@/lib/api-client';
+import { storeSettingsApi, type CartBundleRow, type CartItem } from '@/lib/api-client';
 
 const PREVIEW_ITEM_LIMIT = 8;
+const DEFAULT_MIN_ORDER_VALUE = 800;
 
 type CartPreviewDropdownProps = {
   label?: string;
@@ -147,6 +148,26 @@ export function CartPreviewDropdown({
   const baselineReadyRef = useRef(false);
   const sawLoadingRef = useRef(false);
   const [badgePulse, setBadgePulse] = useState(false);
+  const [minimumOrderAmount, setMinimumOrderAmount] = useState(DEFAULT_MIN_ORDER_VALUE);
+
+  useEffect(() => {
+    let cancelled = false;
+    storeSettingsApi
+      .getStoreSettings()
+      .then((res) => {
+        if (cancelled) return;
+        const minOrder = Number(res.data.minimumOrderAmount);
+        if (Number.isFinite(minOrder) && minOrder > 0) {
+          setMinimumOrderAmount(minOrder);
+        }
+      })
+      .catch(() => {
+        /* keep default */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Auto-open on real add-to-cart count increases, but never on initial hydrate
   // (refresh loads cart 0 → N and must not slide the tray open).
@@ -213,6 +234,12 @@ export function CartPreviewDropdown({
   const previewSlice = previewRows.slice(0, PREVIEW_ITEM_LIMIT);
   const hiddenCount = Math.max(0, previewRows.length - PREVIEW_ITEM_LIMIT);
   const isEmpty = items.length === 0 && bundles.length === 0;
+  const cartId = cart?.id ?? null;
+  const meetsMinimumOrder = subtotal >= minimumOrderAmount;
+  const checkoutHref =
+    cartId && meetsMinimumOrder
+      ? `/checkout?cartId=${encodeURIComponent(cartId)}`
+      : '/cart';
 
   const drawer =
     hydrated && open ? (
@@ -227,7 +254,7 @@ export function CartPreviewDropdown({
           role="dialog"
           aria-modal="true"
           aria-labelledby={titleId}
-          className="header-cart-preview relative flex h-full w-full max-w-md flex-col bg-card text-foreground shadow-product-card animate-[plp-sheet-enter_0.28s_ease-out]"
+          className="header-cart-preview relative flex h-full w-full max-w-md flex-col bg-card text-foreground shadow-product-card animate-cart-drawer-enter"
         >
           <div className="flex items-center justify-between border-b border-border px-5 py-4">
             <p id={titleId} className="font-display text-sm font-semibold uppercase tracking-[0.12em] text-foreground">
@@ -294,7 +321,7 @@ export function CartPreviewDropdown({
           </div>
 
           {!isEmpty ? (
-            <div className="border-t border-border px-5 py-4">
+            <div className="border-t border-border px-5 py-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))]">
               <div className="flex items-center justify-between text-sm">
                 <span className="uppercase tracking-wide text-muted-foreground">Subtotal</span>
                 <span className="font-semibold text-foreground">
@@ -302,6 +329,13 @@ export function CartPreviewDropdown({
                 </span>
               </div>
               <div className="mt-4 flex flex-col gap-2">
+                {!meetsMinimumOrder ? (
+                  <p className="rounded-sm bg-secondary/50 px-3 py-2 text-xs font-medium text-foreground">
+                    Minimum order {formatPrice(minimumOrderAmount, displayCurrency)}. Add{' '}
+                    {formatPrice(Math.max(0, minimumOrderAmount - subtotal), displayCurrency)} more
+                    to checkout.
+                  </p>
+                ) : null}
                 <Link
                   href={href}
                   className={`${storefrontUi.btnSecondary} w-full py-3 text-center`}
@@ -309,17 +343,31 @@ export function CartPreviewDropdown({
                 >
                   View cart
                 </Link>
-                <Link
-                  href="/checkout"
-                  className={
-                    variant === 'sm-nimco'
-                      ? 'mt-0 w-full rounded-xl bg-[var(--brand-purple-dark,#1e1035)] py-3 text-center text-sm font-bold text-[var(--brand-gold-primary,#d4af37)] transition-colors hover:bg-[var(--brand-purple-deep,#2e1a47)]'
-                      : `${storefrontUi.btnPrimaryCheckout} mt-0 w-full py-3 text-center`
-                  }
-                  onClick={closeDrawer}
-                >
-                  {variant === 'sm-nimco' ? 'Checkout Now' : 'Checkout'}
-                </Link>
+                {meetsMinimumOrder ? (
+                  <Link
+                    href={checkoutHref}
+                    className={
+                      variant === 'sm-nimco'
+                        ? 'mt-0 w-full rounded-xl bg-[var(--brand-purple-dark,#1e1035)] py-3 text-center text-sm font-bold text-[var(--brand-gold-primary,#d4af37)] transition-colors hover:bg-[var(--brand-purple-deep,#2e1a47)]'
+                        : `${storefrontUi.btnPrimaryCheckout} mt-0 w-full py-3 text-center`
+                    }
+                    onClick={closeDrawer}
+                  >
+                    {variant === 'sm-nimco' ? 'Checkout Now' : 'Checkout'}
+                  </Link>
+                ) : (
+                  <Link
+                    href="/cart"
+                    className={
+                      variant === 'sm-nimco'
+                        ? 'mt-0 w-full rounded-xl bg-[var(--brand-purple-dark,#1e1035)] py-3 text-center text-sm font-bold text-[var(--brand-gold-primary,#d4af37)] opacity-80 transition-colors hover:bg-[var(--brand-purple-deep,#2e1a47)]'
+                        : `${storefrontUi.btnPrimaryCheckout} mt-0 w-full py-3 text-center opacity-80`
+                    }
+                    onClick={closeDrawer}
+                  >
+                    Add more to checkout
+                  </Link>
+                )}
               </div>
             </div>
           ) : null}

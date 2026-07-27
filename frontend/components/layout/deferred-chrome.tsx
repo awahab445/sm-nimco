@@ -8,6 +8,12 @@ const MobileBottomNav = dynamic(
   { ssr: false },
 );
 
+const MobileMiniCartBar = dynamic(
+  () =>
+    import('@/components/layout/mobile-mini-cart-bar').then((m) => m.MobileMiniCartBar),
+  { ssr: false },
+);
+
 const WhatsAppWidget = dynamic(
   () => import('@/components/whatsapp-widget').then((m) => m.WhatsAppWidget),
   { ssr: false },
@@ -23,6 +29,7 @@ export function DeferredChrome() {
   return (
     <>
       <MobileBottomNav />
+      <MobileMiniCartBar />
       <WhatsAppWidget />
       <StorefrontToast />
     </>

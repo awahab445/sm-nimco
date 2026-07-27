@@ -103,7 +103,7 @@ export function ProductQuickView({ product, open, onClose, availableQuantity }: 
         </button>
 
         {/* Mobile: capped height so ATC/icons stay in the sheet. Desktop: side media column. */}
-        <div className="product-quick-view__media relative h-[min(38dvh,16rem)] w-full shrink-0 bg-neutral-50 sm:h-auto sm:min-h-[22rem] sm:w-[46%]">
+        <div className="product-quick-view__media relative h-[min(38dvh,16rem)] max-h-[30dvh] w-full shrink-0 bg-neutral-50 sm:h-auto sm:max-h-none sm:min-h-[22rem] sm:w-[46%]">
           {imageUrl ? (
             <StorefrontImage
               src={imageUrl}

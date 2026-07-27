@@ -166,7 +166,26 @@ export class BundleDealService {
       this.prisma.bundleDeal.findMany({
         where,
         include: {
-          items: { select: { id: true } },
+          _count: { select: { items: true } },
+          items: {
+            take: 4,
+            orderBy: { position: 'asc' },
+            include: {
+              product: {
+                select: {
+                  id: true,
+                  name: true,
+                  slug: true,
+                  sku: true,
+                  images: {
+                    orderBy: [{ isPrimary: 'desc' }, { position: 'asc' }],
+                    take: 1,
+                    select: { url: true },
+                  },
+                },
+              },
+            },
+          },
         },
         orderBy: [{ isFeatured: 'desc' }, { updatedAt: 'desc' }],
         skip,
@@ -178,8 +197,7 @@ export class BundleDealService {
     return {
       data: deals.map((d) => ({
         ...this.mapDeal(d),
-        itemCount: d.items.length,
-        items: undefined,
+        itemCount: d._count.items,
       })),
       meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
     };

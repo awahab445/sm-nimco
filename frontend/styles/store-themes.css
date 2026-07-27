@@ -441,7 +441,20 @@
   }
 }
 
-/* ——— sm_nimco: royal purple + gold bakery / sweets (Playfair + Outfit) ——— */
+/* ——— sm_nimco: royal purple + gold bakery / sweets (Playfair + Outfit) ———
+ *
+ * Contrast / pairing safeguards (avoid gold-on-gold & dark-on-dark):
+ * - Gold text (#d4af37 / --primary-foreground / --brand-gold-*) ONLY on purple
+ *   surfaces (--primary, --brand-purple-dark, --btn-hover, footer purple).
+ * - On light surfaces (--background, --card, --secondary, navbar white): use
+ *   purple text (--primary / --brand-purple-dark / --foreground). Do NOT use
+ *   --primary-hover or --navbar-link-hover as body/hover text on white/cream
+ *   (~2:1 contrast — fails AA). Prefer purple hover or gold-on-purple chips.
+ * - --primary-hover and --primary-foreground are BOTH gold by design for
+ *   purple buttons; never pair bg-primary-hover with text-primary-foreground.
+ * - --secondary is a LIGHT cream tint for badges/optionSelected/hover fills;
+ *   dark purple accents use --brand-purple-deep / --btn-hover instead.
+ */
 [data-store-theme="sm_nimco"] {
   --radius-card: 1rem;
   --radius-button: 0.75rem;
@@ -459,8 +472,9 @@
   --primary-hover-foreground: #1e1035;
   --btn-hover: #2e1a47;
   --btn-hover-foreground: #d4af37;
-  --secondary: #2e1a47;
-  --secondary-foreground: #d4af37;
+  /* Light surface tint — must stay readable with dark text (not purple-on-purple). */
+  --secondary: #f3efe8;
+  --secondary-foreground: #1e1035;
   --accent: #f3efe8;
   --accent-foreground: #1e1035;
   --destructive: #9b1d48;
@@ -520,8 +534,9 @@
     --primary-hover-foreground: #1e1035;
     --btn-hover: #2e1a47;
     --btn-hover-foreground: #d4af37;
-    --secondary: #2e1a47;
-    --secondary-foreground: #d4af37;
+    /* Light surface tint — must stay readable with dark text (not purple-on-purple). */
+    --secondary: #f3efe8;
+    --secondary-foreground: #1e1035;
     --accent: #f3efe8;
     --accent-foreground: #1e1035;
     --destructive: #9b1d48;

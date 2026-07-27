@@ -228,8 +228,8 @@ html[data-store-theme='sm_nimco'] .sm-nimco-product-card:hover {
   --primary-foreground: #d4af37;
   --btn-hover: #2e1a47;
   --btn-hover-foreground: #d4af37;
-  --secondary: #2e1a47;
-  --secondary-foreground: #d4af37;
+  --secondary: #f3efe8;
+  --secondary-foreground: #1e1035;
   --background: #faf8f5;
   --foreground: #1a1a1a;
   --muted: #f3efe8;
@@ -475,7 +475,8 @@ button .cart-icon {
   }
 
   .btn-brand-secondary:hover:not(:disabled) {
-    background-color: color-mix(in srgb, var(--secondary) 60%, transparent);
+    background-color: color-mix(in srgb, var(--accent, var(--muted)) 85%, var(--card));
+    color: var(--accent-foreground, var(--primary));
   }
 
   .btn-brand-secondary:focus-visible {

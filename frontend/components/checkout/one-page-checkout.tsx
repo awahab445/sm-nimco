@@ -422,6 +422,15 @@ export function OnePageCheckout() {
     freeDeliveryThreshold - displaySubtotal,
   );
 
+  const placeOrderDisabled =
+    isLoading ||
+    loadingShipping ||
+    !selectedShippingId ||
+    !selectedPaymentCode ||
+    !validateAddress(billingAddress) ||
+    !validateAddress(effectiveShippingAddress) ||
+    !isEmailValid(customerEmail);
+
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
@@ -557,7 +566,10 @@ export function OnePageCheckout() {
   );
 
   return (
-    <form onSubmit={handlePlaceOrder} className="space-y-8">
+    <form
+      onSubmit={handlePlaceOrder}
+      className="space-y-8 pb-[calc(5.5rem+3.4375rem+env(safe-area-inset-bottom,0px))] lg:pb-0"
+    >
       {error && (
         <div className={storefrontUi.alertError}>
           {error}
@@ -1282,22 +1294,37 @@ export function OnePageCheckout() {
             </div>
             <button
               type="submit"
-              disabled={
-                isLoading ||
-                loadingShipping ||
-                !selectedShippingId ||
-                !selectedPaymentCode ||
-                !validateAddress(billingAddress) ||
-                !validateAddress(effectiveShippingAddress) ||
-                !isEmailValid(customerEmail)
-              }
-              className={storefrontUi.btnPrimaryCheckout}
+              disabled={placeOrderDisabled}
+              className={`${storefrontUi.btnPrimaryCheckout} hidden lg:block`}
             >
               {isLoading ? 'Processing…' : 'Place order'}
             </button>
           </div>
         </div>
       </div>
+
+      {/* Mobile sticky Place order — pinned above bottom toolbar */}
+      <div
+        className="fixed inset-x-0 z-[95] border-t border-border/70 bg-background/95 px-3 py-2.5 shadow-[0_0_0.9rem_rgba(0,0,0,0.12)] backdrop-blur-[8px] lg:hidden"
+        style={{ bottom: 'calc(3.4375rem + var(--mobile-mini-cart-height, 0px) + env(safe-area-inset-bottom, 0px))' }}
+      >
+        <div className="mx-auto flex max-w-6xl items-center gap-3">
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-xs text-muted-foreground">Total</p>
+            <p className="truncate text-base font-semibold text-foreground">
+              {formatPrice(displayGrandTotal, displayCurrency)}
+            </p>
+          </div>
+          <button
+            type="submit"
+            disabled={placeOrderDisabled}
+            className={`${storefrontUi.btnPrimaryCheckout} mt-0 min-w-[9.5rem] flex-none px-5 py-2.5`}
+          >
+            {isLoading ? 'Processing…' : 'Place order'}
+          </button>
+        </div>
+      </div>
+
       {showMinimumOrderModal ? (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-foreground/55 px-4 backdrop-blur-[1px]">
           <div className={`w-full max-w-md ${storefrontUi.card} border border-border p-6 shadow-product-card`}>

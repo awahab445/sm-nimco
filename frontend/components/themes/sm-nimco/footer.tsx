@@ -282,7 +282,7 @@ export function SmNimcoFooter() {
   ];
 
   return (
-    <footer className="site-footer site-footer--sm-nimco mt-16 border-t border-[var(--footer-border)] bg-[var(--footer-background,#1e1035)] pb-12 pt-16 text-white">
+    <footer className="site-footer site-footer--sm-nimco mt-16 border-t border-[var(--footer-border)] bg-[var(--footer-background,#1e1035)] pb-[calc(4.5rem+var(--mobile-mini-cart-height,0px)+env(safe-area-inset-bottom,0px))] pt-16 text-white lg:pb-12">
       <div className="mx-auto max-w-7xl px-6 sm:px-8">
         <div className="flex flex-col items-center justify-between gap-6 pb-10 sm:flex-row">
           <Link href="/" className="flex items-center space-x-3">
@@ -317,7 +317,7 @@ export function SmNimcoFooter() {
           ) : null}
         </div>
 
-        <div className="my-4 border-t border-gray-800" />
+        <div className="my-4 border-t border-amber-500/20" />
 
         <div className="grid grid-cols-1 gap-10 pt-10 md:grid-cols-12">
           <div className="space-y-6 md:col-span-4">
@@ -370,7 +370,7 @@ export function SmNimcoFooter() {
           </div>
         </div>
 
-        <p className="mt-10 text-center text-xs text-gray-500">
+        <p className="mt-10 text-center text-xs text-gray-300">
           © {new Date().getFullYear()} {STORE_NAME}. All rights reserved.
         </p>
       </div>

@@ -12,6 +12,56 @@ type Props = {
   featured?: boolean;
 };
 
+const PREVIEW_THUMB_LIMIT = 4;
+
+function BundleItemPreviewStrip({ deal }: { deal: StorefrontBundleDeal }) {
+  const thumbs = (deal.items ?? [])
+    .map((item) => {
+      const url = resolveImageUrl(item.product?.images?.[0]?.url);
+      if (!url) return null;
+      return {
+        id: item.id,
+        url,
+        name: item.product?.name ?? 'Bundle item',
+      };
+    })
+    .filter((t): t is { id: string; url: string; name: string } => t != null)
+    .slice(0, PREVIEW_THUMB_LIMIT);
+
+  if (thumbs.length === 0) return null;
+
+  const remaining = Math.max(0, (deal.itemCount ?? deal.items?.length ?? 0) - thumbs.length);
+
+  return (
+    <div className="mt-3 flex items-center gap-1.5" aria-label="Products included in this bundle">
+      <div className="flex -space-x-2">
+        {thumbs.map((thumb) => (
+          <div
+            key={thumb.id}
+            className="relative h-9 w-9 overflow-hidden rounded-full border-2 border-card bg-[var(--brand-bg-light,#f8f6f0)]"
+            title={thumb.name}
+          >
+            <StorefrontImage
+              src={thumb.url}
+              alt=""
+              fill
+              sizes="36px"
+              className="object-contain object-center p-0.5"
+              loading="lazy"
+              quality={60}
+            />
+          </div>
+        ))}
+      </div>
+      {remaining > 0 ? (
+        <span className="text-[11px] font-semibold text-muted-foreground">+{remaining} more</span>
+      ) : (
+        <span className="text-[11px] font-medium text-muted-foreground">Included</span>
+      )}
+    </div>
+  );
+}
+
 export function DealCard({ deal, featured }: Props) {
   const itemLabel = deal.itemCount != null ? `${deal.itemCount} items` : 'Bundle';
   const imageSrc = resolveImageUrl(deal.imageUrl);
@@ -27,8 +77,8 @@ export function DealCard({ deal, featured }: Props) {
         href={`/deals/${deal.slug}`}
         className={
           featured
-            ? 'relative flex w-full shrink-0 items-center justify-center overflow-hidden bg-[#f8f6f0] p-2 aspect-[4/3] sm:aspect-[16/10] md:aspect-auto md:min-h-[20rem] md:w-1/2'
-            : 'relative flex h-48 items-center justify-center overflow-hidden bg-[#f8f6f0] p-2 sm:h-52'
+            ? 'relative flex w-full shrink-0 items-center justify-center overflow-hidden bg-[var(--brand-bg-light,#f8f6f0)] p-2 aspect-[4/3] sm:aspect-[16/10] md:aspect-auto md:min-h-[20rem] md:w-1/2'
+            : 'relative flex h-48 items-center justify-center overflow-hidden bg-[var(--brand-bg-light,#f8f6f0)] p-2 sm:h-52'
         }
       >
         {imageSrc ? (
@@ -61,6 +111,7 @@ export function DealCard({ deal, featured }: Props) {
             {deal.title}
           </Link>
         </h2>
+        <BundleItemPreviewStrip deal={deal} />
         <div className="mt-3 flex flex-wrap items-baseline gap-2">
           <span className="text-sm text-muted-foreground line-through">
             {formatPrice(deal.compareAtTotal)}

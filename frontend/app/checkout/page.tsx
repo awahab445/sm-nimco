@@ -33,8 +33,6 @@ function CheckoutContent() {
         } else {
           await refreshCheckout();
         }
-      } catch (err) {
-        console.error('Failed to initialize checkout:', err);
       } finally {
         setInitializing(false);
       }

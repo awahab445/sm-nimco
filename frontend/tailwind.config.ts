@@ -58,6 +58,7 @@ const config = {
         'whatsapp-bounce': 'whatsapp-bounce 2.5s ease-in-out infinite',
         'plp-sheet-enter': 'plp-sheet-enter 0.32s ease-out',
         'plp-drawer-enter': 'plp-drawer-enter 0.3s cubic-bezier(0.19, 1, 0.22, 1)',
+        'cart-drawer-enter': 'cart-drawer-enter 0.3s cubic-bezier(0.19, 1, 0.22, 1)',
         'plp-backdrop-enter': 'plp-backdrop-enter 0.24s ease-out',
       },
       keyframes: {
@@ -75,6 +76,10 @@ const config = {
         },
         'plp-drawer-enter': {
           from: { transform: 'translateX(-100%)' },
+          to: { transform: 'translateX(0)' },
+        },
+        'cart-drawer-enter': {
+          from: { transform: 'translateX(100%)' },
           to: { transform: 'translateX(0)' },
         },
         'plp-backdrop-enter': {

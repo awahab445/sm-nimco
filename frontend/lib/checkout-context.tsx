@@ -218,7 +218,8 @@ export function CheckoutProvider({ children }: { children: React.ReactNode }) {
         error: message,
         isLoading: false,
       }));
-      throw error;
+      // Do not rethrow — callers read `error` from context. Rethrowing surfaces as a
+      // Next.js "Console ApiError" overlay for expected cases (e.g. below minimum order).
     }
   }, []);
 

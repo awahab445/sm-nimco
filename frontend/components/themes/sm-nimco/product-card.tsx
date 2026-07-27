@@ -11,6 +11,7 @@ import { getProductImageSrcs, getProductImagesOrdered } from '@/lib/resolve-imag
 import { StorefrontImage } from '@/components/ui/storefront-image';
 import { getVariantForCart } from '@/lib/product-cart-variant';
 import { ProductQuickView } from '@/components/product/product-quick-view';
+import { WishlistToggleButton } from '@/components/product/wishlist-toggle-button';
 
 interface SmNimcoProductCardProps {
   product: Product;
@@ -144,6 +145,13 @@ export function SmNimcoProductCard({
                 {badge}
               </span>
             ) : null}
+            <WishlistToggleButton
+              productId={product.id}
+              variant="icon"
+              stopPropagation
+              className="absolute right-3 top-3 z-10 inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--brand-purple-dark,#1e1035)]/10 bg-white/95 text-[var(--brand-purple-dark,#1e1035)] shadow-sm transition-colors hover:border-[var(--brand-gold-primary,#d4af37)] hover:text-[var(--brand-gold-hover,#b89628)]"
+              iconClassName="h-[18px] w-[18px]"
+            />
             {imageUrl ? (
               <div className="relative h-full w-full">
                 <StorefrontImage
@@ -164,7 +172,7 @@ export function SmNimcoProductCard({
             )}
           </div>
           <div className="px-4">
-          <h3 className="font-bold text-[var(--brand-purple-dark,#1e1035)]">{product.name}</h3>
+          <h3 className="line-clamp-2 font-bold text-[var(--brand-purple-dark,#1e1035)]">{product.name}</h3>
           <p className="mt-1 line-clamp-2 text-xs text-gray-500">{description}</p>
           {showVariantSelector ? (
             <div
@@ -198,16 +206,16 @@ export function SmNimcoProductCard({
           </div>
         </div>
 
-        <div className="flex items-center justify-between border-t px-4 py-3">
-          <span className="text-base font-bold text-[var(--brand-purple-dark,#1e1035)]">
+        <div className="flex flex-col gap-3 border-t px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
+          <span className="shrink-0 text-base font-bold text-[var(--brand-purple-dark,#1e1035)]">
             {formatPrice(displayPrice)}
           </span>
-          <div className="flex gap-2">
+          <div className="flex min-w-0 flex-wrap gap-2 sm:justify-end">
             <button
               type="button"
               onClick={openDetails}
               suppressHydrationWarning
-              className="rounded-lg bg-[var(--brand-purple-dark,#1e1035)] px-3 py-2 text-xs font-bold text-[var(--brand-gold-primary,#d4af37)] transition-colors hover:bg-[var(--brand-purple-deep,#2e1a47)] hover:text-[var(--brand-gold-primary,#d4af37)]"
+              className="min-w-0 flex-1 rounded-lg bg-[var(--brand-purple-dark,#1e1035)] px-3 py-2 text-xs font-bold text-[var(--brand-gold-primary,#d4af37)] transition-colors hover:bg-[var(--brand-purple-deep,#2e1a47)] hover:text-[var(--brand-gold-primary,#d4af37)] sm:flex-none"
             >
               View Details
             </button>
@@ -217,7 +225,7 @@ export function SmNimcoProductCard({
                 onClick={handleAddToCart}
                 disabled={adding}
                 suppressHydrationWarning
-                className="rounded-lg bg-[var(--brand-gold-primary,#d4af37)] px-3 py-2 text-xs font-bold text-[var(--brand-purple-dark,#1e1035)] transition-colors hover:bg-[var(--brand-gold-hover,#b89628)] hover:text-[var(--brand-purple-dark,#1e1035)] disabled:opacity-60"
+                className="min-w-0 flex-1 rounded-lg bg-[var(--brand-gold-primary,#d4af37)] px-3 py-2 text-xs font-bold text-[var(--brand-purple-dark,#1e1035)] transition-colors hover:bg-[var(--brand-gold-hover,#b89628)] hover:text-[var(--brand-purple-dark,#1e1035)] disabled:opacity-60 sm:flex-none"
               >
                 {adding ? '…' : 'Add'}
               </button>

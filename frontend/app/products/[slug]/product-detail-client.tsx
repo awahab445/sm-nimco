@@ -659,7 +659,7 @@ export function ProductDetailClient() {
         className={`fixed inset-x-0 z-[95] border-t border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] bg-background/95 px-3 py-2.5 shadow-[0_0_0.9rem_rgba(0,0,0,0.12)] backdrop-blur-[8px] transition-transform duration-200 md:px-4 lg:hidden ${
           buyBoxAtcInView ? 'pointer-events-none translate-y-full opacity-0' : 'translate-y-0 opacity-100'
         }`}
-        style={{ bottom: 'calc(3.4375rem + env(safe-area-inset-bottom, 0px))' }}
+        style={{ bottom: 'calc(3.4375rem + var(--mobile-mini-cart-height, 0px) + env(safe-area-inset-bottom, 0px))' }}
         aria-hidden={buyBoxAtcInView}
       >
         <div className="mx-auto flex max-w-7xl items-center gap-3 md:gap-4">
