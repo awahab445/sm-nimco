@@ -40,6 +40,7 @@ export default function WishlistPage() {
   const addToCart = useCartStore((s) => s.addToCart);
 
   const [addingId, setAddingId] = useState<string | null>(null);
+  const [movingAll, setMovingAll] = useState(false);
 
   useEffect(() => {
     void hydrate();
@@ -54,6 +55,7 @@ export default function WishlistPage() {
 
   const products = productsFromStore(isAuthenticated, items, guestProducts);
   const empty = isHydrated && productIds.length === 0;
+  const movableCount = products.filter((p) => Boolean(getVariantForCart(p))).length;
 
   const handleRemove = async (productId: string) => {
     try {
@@ -81,17 +83,73 @@ export default function WishlistPage() {
     }
   };
 
+  const handleMoveAllToCart = async () => {
+    if (movableCount === 0 || movingAll) return;
+    setMovingAll(true);
+    let added = 0;
+    let failed = 0;
+    const movedIds: string[] = [];
+    try {
+      for (const product of products) {
+        const variant = getVariantForCart(product);
+        if (!variant) {
+          failed += 1;
+          continue;
+        }
+        try {
+          await addToCart(product.id, variant.id, 1);
+          added += 1;
+          movedIds.push(product.id);
+        } catch {
+          failed += 1;
+        }
+      }
+      for (const id of movedIds) {
+        try {
+          await remove(id);
+        } catch {
+          /* keep in wishlist if remove fails */
+        }
+      }
+      if (added > 0) {
+        showStorefrontToast(
+          failed > 0
+            ? `Moved ${added} to cart (${failed} skipped)`
+            : `Moved ${added} ${added === 1 ? 'item' : 'items'} to cart`,
+          'success',
+        );
+      } else {
+        showStorefrontToast('Could not move items to cart', 'error');
+      }
+    } finally {
+      setMovingAll(false);
+    }
+  };
+
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
-      <header className="mb-8">
-        <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
-          Wishlist
-        </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          {empty
-            ? 'Save products you love and find them here later.'
-            : `${productIds.length} ${productIds.length === 1 ? 'item' : 'items'}`}
-        </p>
+    <div className="mx-auto w-full max-w-6xl px-4 py-8 pb-[calc(5.5rem+var(--mobile-mini-cart-height,0px)+env(safe-area-inset-bottom,0px))] sm:px-6 sm:py-10 lg:px-8 lg:pb-10">
+      <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+            Wishlist
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {empty
+              ? 'Save products you love and find them here later.'
+              : `${productIds.length} ${productIds.length === 1 ? 'item' : 'items'}`}
+          </p>
+        </div>
+        {!empty && movableCount > 0 ? (
+          <button
+            type="button"
+            onClick={() => void handleMoveAllToCart()}
+            disabled={movingAll || addingId !== null}
+            className={`inline-flex w-full items-center justify-center gap-2 sm:w-auto ${storefrontUi.btnPrimary} bg-[var(--brand-purple-dark,#1e1035)] px-5 py-2.5 text-[var(--brand-gold-primary,#d4af37)] hover:bg-[var(--brand-purple-deep,#2e1a47)] disabled:cursor-not-allowed disabled:opacity-50`}
+          >
+            <ShoppingBagIcon className="h-4 w-4" strokeWidth={1.4} />
+            {movingAll ? 'Moving…' : 'Move all to cart'}
+          </button>
+        ) : null}
       </header>
 
       {!isHydrated || (isLoading && products.length === 0 && !empty) ? (

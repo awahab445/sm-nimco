@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { useAuthStore } from '@/lib/auth.store';
 import { useCartStore } from '@/lib/cart.store';
+import { lockBodyScroll } from '@/lib/body-scroll-lock';
 import { useHydrated } from '@/lib/use-hydrated';
 import { getStoreLogoSrc, splitStoreName, STORE_NAME } from '@/lib/config';
 import {
@@ -253,11 +254,10 @@ export function Header({ theme = 'default' }: { theme?: StoreThemeCode }) {
       if (e.key === 'Escape') setMobileNavOpen(false);
     };
     document.addEventListener('keydown', onKey);
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    const unlock = lockBodyScroll();
     return () => {
       document.removeEventListener('keydown', onKey);
-      document.body.style.overflow = prevOverflow;
+      unlock();
     };
   }, [mobileNavOpen]);
 

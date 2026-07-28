@@ -11,6 +11,7 @@ import {
   type MegaMenuProductSpotlight,
 } from '@/lib/mega-menu-config';
 import { resolveImageUrl } from '@/lib/resolve-image-url';
+import { useHydrated } from '@/lib/use-hydrated';
 
 const MEGA_MENU_BANNER_COL_PX = 280;
 
@@ -114,10 +115,11 @@ function useMegaMenuPanelPosition(open: boolean): CSSProperties {
 
   useEffect(() => {
     if (!open) return;
-    sync();
+    const frame = requestAnimationFrame(() => sync());
     window.addEventListener('resize', sync);
     window.addEventListener('scroll', sync, true);
     return () => {
+      cancelAnimationFrame(frame);
       window.removeEventListener('resize', sync);
       window.removeEventListener('scroll', sync, true);
     };
@@ -169,13 +171,9 @@ export function DesktopShopMegaMenu({
 }: DesktopMegaMenuProps) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const mounted = useHydrated();
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const panelStyle = useMegaMenuPanelPosition(open);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const cancelClose = useCallback(() => {
     if (closeTimer.current) {

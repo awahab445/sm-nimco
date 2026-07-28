@@ -139,7 +139,7 @@ export function DealIncludedItems({ items }: Props) {
                 } ${isLoading ? 'opacity-70' : ''}`}
               >
                 {image ? (
-                  // eslint-disable-next-line @next/next/no-img-element
+                   
                   <img
                     src={image}
                     alt=""

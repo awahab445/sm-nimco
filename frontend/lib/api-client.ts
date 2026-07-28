@@ -36,6 +36,81 @@ function extractApiErrorMessage(errorData: unknown, statusText: string): string 
   return `API Error: ${statusText}`;
 }
 
+/** Safely parse JSON bodies; non-JSON responses become a plain text payload. */
+function safeParseJson(text: string): unknown {
+  const trimmed = text.trim();
+  if (!trimmed) return {};
+  try {
+    return JSON.parse(trimmed) as unknown;
+  } catch {
+    return { message: trimmed };
+  }
+}
+
+/** Backend PaymentFlowType enum values (Prisma / Nest). */
+export type PaymentFlowType =
+  | 'CLIENT_SECRET'
+  | 'REDIRECT'
+  | 'HOSTED_PAGE'
+  | 'OFFLINE';
+
+/** Storefront lifecycle aliases returned as `type` alongside canonical `flowType`. */
+export type PaymentFlowTypeAlias =
+  | 'client_side'
+  | 'redirect'
+  | 'hosted'
+  | 'offline';
+
+const PAYMENT_FLOW_CANONICAL: Record<string, PaymentFlowType> = {
+  CLIENT_SIDE: 'CLIENT_SECRET',
+  CLIENT_SECRET: 'CLIENT_SECRET',
+  REDIRECT: 'REDIRECT',
+  HOSTED: 'HOSTED_PAGE',
+  HOSTED_PAGE: 'HOSTED_PAGE',
+  OFFLINE: 'OFFLINE',
+};
+
+const PAYMENT_FLOW_ALIAS: Record<PaymentFlowType, PaymentFlowTypeAlias> = {
+  CLIENT_SECRET: 'client_side',
+  REDIRECT: 'redirect',
+  HOSTED_PAGE: 'hosted',
+  OFFLINE: 'offline',
+};
+
+/** Normalize any backend/legacy flow string to the canonical enum. */
+export function normalizePaymentFlowType(
+  flowType: string | null | undefined,
+): PaymentFlowType | '' {
+  if (!flowType) return '';
+  return PAYMENT_FLOW_CANONICAL[flowType.toUpperCase()] ?? '';
+}
+
+/** Map canonical flow type to storefront lifecycle alias. */
+export function toPaymentFlowAlias(
+  flowType: string | null | undefined,
+): PaymentFlowTypeAlias | '' {
+  const canonical = normalizePaymentFlowType(flowType);
+  return canonical ? PAYMENT_FLOW_ALIAS[canonical] : '';
+}
+
+function normalizePaymentIntentResponse<
+  T extends {
+    flowType?: string;
+    type?: string;
+  },
+>(intent: T): T & { flowType: PaymentFlowType | string; type: string } {
+  const flowType =
+    normalizePaymentFlowType(intent.flowType) ||
+    normalizePaymentFlowType(intent.type) ||
+    intent.flowType ||
+    '';
+  const type =
+    intent.type ||
+    toPaymentFlowAlias(flowType) ||
+    String(intent.type ?? '');
+  return { ...intent, flowType, type };
+}
+
 /** Low-level JSON fetch to `NEXT_PUBLIC_API_URL`. Exported for server-side CMS / layout calls. */
 export async function fetchApi<T>(
   endpoint: string,
@@ -66,10 +141,7 @@ export async function fetchApi<T>(
 
   if (!response.ok) {
     const errorText = await response.text().catch(() => '');
-    const errorData =
-      errorText && errorText.trim().length > 0
-        ? (JSON.parse(errorText) as unknown)
-        : {};
+    const errorData = safeParseJson(errorText);
     throw new ApiError(
       extractApiErrorMessage(errorData, response.statusText),
       response.status,
@@ -85,7 +157,7 @@ export async function fetchApi<T>(
   if (!text || text.trim().length === 0) {
     return undefined as T;
   }
-  return JSON.parse(text) as T;
+  return safeParseJson(text) as T;
 }
 
 // Product types (match backend catalog response)
@@ -700,7 +772,7 @@ export const checkoutApi = {
       body: JSON.stringify({ quantity }),
     }),
 
-  confirmCheckout: (
+  confirmCheckout: async (
     checkoutId: string,
     data: {
       customerEmail: string;
@@ -716,21 +788,28 @@ export const checkoutApi = {
       fbc?: string;
       eventSourceUrl?: string;
     },
-  ) =>
-    fetchApi<{
+  ) => {
+    const result = await fetchApi<{
       orderId: string;
       orderNumber: string;
       paymentIntent?: {
         paymentId: string;
         gatewayTransactionId?: string;
-        flowType: 'redirect' | 'hosted' | 'client_side';
+        flowType: PaymentFlowType;
+        type?: PaymentFlowTypeAlias | string;
         clientSecret?: string;
         redirectUrl?: string;
       };
     }>(`/checkout/${checkoutId}/confirm`, {
       method: 'POST',
       body: JSON.stringify(data),
-    }),
+    });
+    if (!result.paymentIntent) return result;
+    return {
+      ...result,
+      paymentIntent: normalizePaymentIntentResponse(result.paymentIntent),
+    };
+  },
 };
 
 // Shipping API
@@ -846,33 +925,50 @@ export const subscriptionApi = {
 
 // Payment API
 export const paymentApi = {
-  getPaymentMethods: () =>
-    fetchApi<Array<{
-      code: string;
-      name: string;
-      provider: string;
-      flowType: string;
-      type: string;
-      metadata?: Record<string, any>;
-    }>>('/payments/methods'),
+  getPaymentMethods: async () => {
+    const methods = await fetchApi<
+      Array<{
+        code: string;
+        name: string;
+        provider: string;
+        flowType: PaymentFlowType | string;
+        type: string;
+        metadata?: Record<string, unknown>;
+      }>
+    >('/payments/methods');
+    return methods.map((method) => {
+      const flowType =
+        normalizePaymentFlowType(method.flowType) ||
+        normalizePaymentFlowType(method.type) ||
+        method.flowType;
+      return {
+        ...method,
+        flowType,
+        type: method.type || toPaymentFlowAlias(flowType) || method.type,
+      };
+    });
+  },
 
-  createIntent: (data: {
+  createIntent: async (data: {
     orderId: string;
     paymentMethodCode: string;
     returnUrl?: string;
     cancelUrl?: string;
-  }) =>
-    fetchApi<{
+  }) => {
+    const intent = await fetchApi<{
       paymentId: string;
       gatewayTransactionId?: string;
-      flowType: 'redirect' | 'hosted' | 'client_side';
+      flowType: PaymentFlowType | string;
+      type?: string;
       clientSecret?: string;
       redirectUrl?: string;
-      metadata?: Record<string, any>;
+      metadata?: Record<string, unknown>;
     }>('/payments/intent', {
       method: 'POST',
       body: JSON.stringify(data),
-    }),
+    });
+    return normalizePaymentIntentResponse(intent);
+  },
 
   getPayment: (paymentId: string) =>
     fetchApi(`/payments/${paymentId}`),
@@ -979,7 +1075,7 @@ export interface CustomerProfile {
     taxClassId?: string;
     discountPercent?: number;
   };
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   createdAt: string;
   updatedAt: string;
 }

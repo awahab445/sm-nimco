@@ -5,6 +5,7 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import type { Swiper as SwiperClass } from 'swiper';
 import { FreeMode, Navigation } from 'swiper/modules';
 import { resolveImageUrl } from '@/lib/resolve-image-url';
+import { lockBodyScroll } from '@/lib/body-scroll-lock';
 import { imageAlt } from '@/lib/seo';
 import type { ProductImage } from '@/lib/api-client';
 import { StorefrontImage } from '@/components/ui/storefront-image';
@@ -178,11 +179,10 @@ export function ProductImageGallery({ images, productName, selectedId, onSelect 
       if (e.key === 'Escape') setLightboxOpen(false);
     };
     window.addEventListener('keydown', onKey);
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    const unlock = lockBodyScroll();
     return () => {
       window.removeEventListener('keydown', onKey);
-      document.body.style.overflow = prev;
+      unlock();
     };
   }, [lightboxOpen]);
 
@@ -287,7 +287,7 @@ export function ProductImageGallery({ images, productName, selectedId, onSelect 
               <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" />
             </svg>
           </button>
-          {/* eslint-disable-next-line @next/next/no-img-element -- full-res lightbox; avoid optimizer constraints */}
+          { }
           <img
             src={imageUrl}
             alt={mainAlt}

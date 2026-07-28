@@ -59,7 +59,7 @@ export function ReviewStep({ onBack }: ReviewStepProps) {
         ...(checkout.customerEmail ? { email: checkout.customerEmail } : {}),
       });
       router.push(`/checkout/success?${sp.toString()}`);
-    } catch (err) {
+    } catch {
       // Error is handled by context
     }
   };

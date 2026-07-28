@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { orderApi } from '@/lib/api-client';
 import { useCartStore } from '@/lib/cart.store';
@@ -55,16 +55,17 @@ interface Address {
 }
 
 // Type guard for address
-const isAddress = (obj: any): obj is Address => {
+const isAddress = (obj: unknown): obj is Address => {
+  if (!obj || typeof obj !== 'object') return false;
+  const a = obj as Record<string, unknown>;
   return (
-    obj &&
-    typeof obj.firstName === 'string' &&
-    typeof obj.lastName === 'string' &&
-    typeof obj.addressLine1 === 'string' &&
-    typeof obj.city === 'string' &&
-    typeof obj.state === 'string' &&
-    typeof obj.postalCode === 'string' &&
-    typeof obj.country === 'string'
+    typeof a.firstName === 'string' &&
+    typeof a.lastName === 'string' &&
+    typeof a.addressLine1 === 'string' &&
+    typeof a.city === 'string' &&
+    typeof a.state === 'string' &&
+    typeof a.postalCode === 'string' &&
+    typeof a.country === 'string'
   );
 };
 
@@ -86,8 +87,8 @@ interface Order {
   updatedAt?: string;
   cancelledAt?: string;
   completedAt?: string;
-  billingAddress: Address | Record<string, any>;
-  shippingAddress: Address | Record<string, any>;
+  billingAddress: Address | Record<string, unknown>;
+  shippingAddress: Address | Record<string, unknown>;
   items: OrderItem[];
   notes?: string;
 }
@@ -104,11 +105,7 @@ export default function OrderDetailPage() {
   const [reorderLoading, setReorderLoading] = useState(false);
   const [reorderError, setReorderError] = useState<string | null>(null);
 
-  useEffect(() => {
-    void loadOrder();
-  }, [orderId, searchParams]);
-
-  const loadOrder = async () => {
+  const loadOrder = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -139,13 +136,17 @@ export default function OrderDetailPage() {
       } else {
         orderData = await orderApi.getOrder(orderId);
       }
-      setOrder(orderData as unknown as Order);
+      setOrder(orderData as Order);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to load order');
     } finally {
       setLoading(false);
     }
-  };
+  }, [orderId, searchParams]);
+
+  useEffect(() => {
+    void loadOrder();
+  }, [loadOrder]);
 
   useEffect(() => {
     if (!order) return;
@@ -158,7 +159,7 @@ export default function OrderDetailPage() {
         ? order.grandTotal
         : parseFloat(String(order.grandTotal));
     trackRefund(order.orderNumber, Number.isFinite(value) ? value : 0);
-  }, [order?.orderNumber, order?.status, order?.paymentStatus, order?.grandTotal]);
+  }, [order]);
 
   const handleReorder = async () => {
     if (!order) return;
@@ -185,7 +186,7 @@ export default function OrderDetailPage() {
     }
   };
 
-  const formatAddress = (address: Address | Record<string, any>) => {
+  const formatAddress = (address: Address | Record<string, unknown>) => {
     if (!isAddress(address)) {
       return <div className="text-sm text-muted-foreground">Address not available</div>;
     }

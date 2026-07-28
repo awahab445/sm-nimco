@@ -72,7 +72,8 @@ export default function CartPage() {
     items.forEach((i) => {
       next[i.variantId] = i.quantity;
     });
-    setLocalQty(next);
+    const id = requestAnimationFrame(() => setLocalQty(next));
+    return () => cancelAnimationFrame(id);
   }, [cart?.items]);
 
   const items = cart?.items ?? [];
@@ -97,20 +98,24 @@ export default function CartPage() {
       bundleRows.reduce((sum, b) => sum + b.dealUnitPrice * b.quantity, 0);
 
     if (!code) {
-      setCouponMeta((prev) =>
-        prev.code === null && prev.discountAmount === 0 && prev.isFreeShipping === false
-          ? prev
-          : { code: null, discountAmount: 0, isFreeShipping: false },
-      );
-      return;
+      const id = requestAnimationFrame(() => {
+        setCouponMeta((prev) =>
+          prev.code === null && prev.discountAmount === 0 && prev.isFreeShipping === false
+            ? prev
+            : { code: null, discountAmount: 0, isFreeShipping: false },
+        );
+      });
+      return () => cancelAnimationFrame(id);
     }
     if (lineItems.length === 0 && bundleRows.length === 0) {
-      setCouponMeta((prev) =>
-        prev.code === code && prev.discountAmount === 0 && prev.isFreeShipping === false
-          ? prev
-          : { code, discountAmount: 0, isFreeShipping: false },
-      );
-      return;
+      const id = requestAnimationFrame(() => {
+        setCouponMeta((prev) =>
+          prev.code === code && prev.discountAmount === 0 && prev.isFreeShipping === false
+            ? prev
+            : { code, discountAmount: 0, isFreeShipping: false },
+        );
+      });
+      return () => cancelAnimationFrame(id);
     }
     let cancelled = false;
     validateCouponCodeForCartLike({

@@ -38,8 +38,11 @@ export function CategoryPageClient() {
   useEffect(() => {
     if (!slug) return;
     let cancelled = false;
-    setLoading(true);
-    setError(null);
+    void Promise.resolve().then(() => {
+      if (cancelled) return;
+      setLoading(true);
+      setError(null);
+    });
     categoryApi
       .getCategoryBySlug(slug)
       .then((cat) => {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { formatPriceWhole } from '@/lib/currency';
 
 /** Allow typing empty / partial numbers in Min/Max fields; commit on blur. */
@@ -17,20 +17,23 @@ type Props = {
 export function PlpDualRangePrice({ boundsMin, boundsMax, valueMin, valueMax, onChange }: Props) {
   const loB = Math.min(boundsMin, boundsMax);
   const hiB = Math.max(boundsMin, boundsMax, loB + 1);
+  const syncedLo = valueMin ?? loB;
+  const syncedHi = valueMax ?? hiB;
 
-  const [lo, setLo] = useState(valueMin ?? loB);
-  const [hi, setHi] = useState(valueMax ?? hiB);
-  const [minInput, setMinInput] = useState(() => String(Math.round(valueMin ?? loB)));
-  const [maxInput, setMaxInput] = useState(() => String(Math.round(valueMax ?? hiB)));
+  const [lo, setLo] = useState(syncedLo);
+  const [hi, setHi] = useState(syncedHi);
+  const [minInput, setMinInput] = useState(() => String(Math.round(syncedLo)));
+  const [maxInput, setMaxInput] = useState(() => String(Math.round(syncedHi)));
+  const [prevSynced, setPrevSynced] = useState({ lo: syncedLo, hi: syncedHi });
 
-  useEffect(() => {
-    const nextLo = valueMin ?? loB;
-    const nextHi = valueMax ?? hiB;
-    setLo(nextLo);
-    setHi(nextHi);
-    setMinInput(String(Math.round(nextLo)));
-    setMaxInput(String(Math.round(nextHi)));
-  }, [valueMin, valueMax, loB, hiB]);
+  // Adjust local draft when controlled bounds/values change (render-time sync).
+  if (prevSynced.lo !== syncedLo || prevSynced.hi !== syncedHi) {
+    setPrevSynced({ lo: syncedLo, hi: syncedHi });
+    setLo(syncedLo);
+    setHi(syncedHi);
+    setMinInput(String(Math.round(syncedLo)));
+    setMaxInput(String(Math.round(syncedHi)));
+  }
 
   const commit = (a: number, b: number) => {
     const mn = Math.round(Math.min(a, b));

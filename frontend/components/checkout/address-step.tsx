@@ -84,7 +84,7 @@ export function AddressStep({ onNext }: AddressStepProps) {
         shippingAddress: shippingWithCountry,
       });
       onNext();
-    } catch (err) {
+    } catch {
       // Error is handled by context
     }
   };

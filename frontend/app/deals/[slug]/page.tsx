@@ -45,7 +45,7 @@ export default async function DealDetailPage({ params }: Props) {
       <div className="mb-10">
         {heroImageSrc ? (
           <div className="mb-6 w-full overflow-hidden rounded-lg bg-[#f8f6f0] p-2 aspect-[2/1] md:aspect-[3/1]">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
+            { }
             <img
               src={heroImageSrc}
               alt={deal.title}

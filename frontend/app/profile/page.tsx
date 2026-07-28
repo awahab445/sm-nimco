@@ -34,18 +34,18 @@ export default function ProfilePage() {
           lastName: data.lastName || '',
           phone: data.phone || '',
         });
-      } catch (err: any) {
+      } catch (err: unknown) {
         if (err instanceof ApiError && err.status === 401) {
           router.push('/login');
         } else {
-          setError(err.message || 'Failed to load profile');
+          setError(err instanceof Error ? err.message : 'Failed to load profile');
         }
       } finally {
         setLoading(false);
       }
     };
 
-    loadProfile();
+    void loadProfile();
   }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -59,11 +59,11 @@ export default function ProfilePage() {
       setProfile(updated);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
-    } catch (err: any) {
+    } catch (err: unknown) {
       if (err instanceof ApiError && err.status === 401) {
         router.push('/login');
       } else {
-        setError(err.message || 'Failed to update profile');
+        setError(err instanceof Error ? err.message : 'Failed to update profile');
       }
     } finally {
       setSaving(false);

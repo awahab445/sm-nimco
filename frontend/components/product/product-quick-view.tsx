@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import type { Product } from '@/lib/api-client';
 import { useCartStore } from '@/lib/cart.store';
+import { lockBodyScroll } from '@/lib/body-scroll-lock';
 import { notifyAddToCartError } from '@/lib/notify-add-to-cart';
 import { formatPrice } from '@/lib/currency';
 import { imageAlt } from '@/lib/seo';
@@ -46,14 +47,13 @@ export function ProductQuickView({ product, open, onClose, availableQuantity }: 
 
   useEffect(() => {
     if (!open) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    const unlock = lockBodyScroll();
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
     };
     document.addEventListener('keydown', onKey);
     return () => {
-      document.body.style.overflow = prev;
+      unlock();
       document.removeEventListener('keydown', onKey);
     };
   }, [open, onClose]);

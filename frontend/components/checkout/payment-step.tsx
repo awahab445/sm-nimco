@@ -16,7 +16,7 @@ interface PaymentMethod {
   provider: string;
   flowType: string;
   type: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export function PaymentStep({ onNext, onBack }: PaymentStepProps) {
@@ -37,14 +37,14 @@ export function PaymentStep({ onNext, onBack }: PaymentStepProps) {
         if (codMethod) {
           setSelectedMethod('cod');
         }
-      } catch (err: any) {
-        setFormError(err.message || 'Failed to load payment methods');
+      } catch (err: unknown) {
+        setFormError(err instanceof Error ? err.message : 'Failed to load payment methods');
       } finally {
         setLoadingMethods(false);
       }
     };
 
-    loadPaymentMethods();
+    void loadPaymentMethods();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {

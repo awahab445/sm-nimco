@@ -7,13 +7,33 @@ import { createPortal } from 'react-dom';
 import { productApi } from '@/lib/api-client';
 import { formatPrice } from '@/lib/currency';
 import { useHydrated } from '@/lib/use-hydrated';
+import { lockBodyScroll } from '@/lib/body-scroll-lock';
 import { storefrontUi } from '@/lib/storefront-ui';
 import { trackSearch } from '@/lib/analytics/events';
 import { STOREFRONT_OPEN_SEARCH_EVENT } from '@/lib/storefront-events';
+import { useCartStore } from '@/lib/cart.store';
+import { getVariantForCart } from '@/lib/product-cart-variant';
+import { notifyAddToCartError } from '@/lib/notify-add-to-cart';
+import { showStorefrontToast } from '@/lib/storefront-toast';
+import { ShoppingBagIcon } from '@/components/icons/shopping-bag-icon';
 
 const DEBOUNCE_MS = 300;
 const MIN_QUERY_LENGTH = 2;
 const SUGGESTIONS_LIMIT = 8;
+
+const POPULAR_SEARCH_CHIPS = [
+  { label: 'Mix Nimco', query: 'Mix Nimco' },
+  { label: 'Gulab Jamun', query: 'Gulab Jamun' },
+  { label: 'Sweets', query: 'Sweets' },
+  { label: 'Samosa', query: 'Samosa' },
+  { label: 'Namkeen', query: 'Namkeen' },
+] as const;
+
+const CATEGORY_SHORTCUTS = [
+  { label: 'All products', href: '/products' },
+  { label: 'Deals', href: '/deals' },
+  { label: 'Wishlist', href: '/wishlist' },
+] as const;
 
 type SuggestionItem = {
   id: string;
@@ -46,6 +66,7 @@ function SearchIcon({ className }: { className?: string }) {
 export function SearchBar() {
   const router = useRouter();
   const hydrated = useHydrated();
+  const addToCart = useCartStore((s) => s.addToCart);
   const titleId = useId();
   const inputId = useId();
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -53,6 +74,7 @@ export function SearchBar() {
   const [suggestions, setSuggestions] = useState<SuggestionItem[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [addingId, setAddingId] = useState<string | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -99,12 +121,11 @@ export function SearchBar() {
       if (e.key === 'Escape') closeDrawer();
     };
     document.addEventListener('keydown', onKey);
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    const unlock = lockBodyScroll();
     const focusTimer = window.setTimeout(() => inputRef.current?.focus(), 50);
     return () => {
       document.removeEventListener('keydown', onKey);
-      document.body.style.overflow = prevOverflow;
+      unlock();
       window.clearTimeout(focusTimer);
     };
   }, [drawerOpen, closeDrawer]);
@@ -113,7 +134,11 @@ export function SearchBar() {
     if (!drawerOpen) return;
     const q = query.trim();
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    if (q.length < MIN_QUERY_LENGTH) return;
+    if (q.length < MIN_QUERY_LENGTH) {
+      setSuggestions([]);
+      setTotal(0);
+      return;
+    }
     debounceRef.current = setTimeout(() => fetchSuggestions(q), DEBOUNCE_MS);
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -134,12 +159,77 @@ export function SearchBar() {
     }
   };
 
+  const applyChip = (chipQuery: string) => {
+    setQuery(chipQuery);
+    inputRef.current?.focus();
+    fetchSuggestions(chipQuery);
+  };
+
+  const handleQuickAdd = async (item: SuggestionItem) => {
+    if (addingId) return;
+    setAddingId(item.id);
+    try {
+      const product = await productApi.getProductById(item.id);
+      const variant = getVariantForCart(product);
+      if (!variant) {
+        showStorefrontToast('Open the product to choose options', 'error');
+        router.push(`/products/${item.slug}`);
+        closeDrawer();
+        return;
+      }
+      await addToCart(product.id, variant.id, 1);
+      showStorefrontToast('Added to cart', 'success');
+    } catch (err) {
+      notifyAddToCartError(err);
+    } finally {
+      setAddingId(null);
+    }
+  };
+
   const formatSuggestionPrice = (value: string | number) => {
     const n = typeof value === 'string' ? parseFloat(value) : value;
     return Number.isNaN(n) ? '' : formatPrice(n);
   };
 
   const showResults = query.trim().length >= MIN_QUERY_LENGTH;
+
+  const idleDiscovery = (
+    <div className="px-4 py-5">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--brand-purple-dark,#1e1035)]">
+        Popular searches
+      </p>
+      <div className="mt-3 flex flex-wrap gap-2">
+        {POPULAR_SEARCH_CHIPS.map((chip) => (
+          <button
+            key={chip.query}
+            type="button"
+            onClick={() => applyChip(chip.query)}
+            className="rounded-full border border-[color-mix(in_srgb,var(--brand-gold-primary,#d4af37)_40%,transparent)] bg-[color-mix(in_srgb,var(--brand-gold-primary,#d4af37)_10%,transparent)] px-3 py-1.5 text-xs font-medium text-[var(--brand-purple-dark,#1e1035)] transition-colors hover:bg-[color-mix(in_srgb,var(--brand-gold-primary,#d4af37)_18%,transparent)]"
+          >
+            {chip.label}
+          </button>
+        ))}
+      </div>
+      <p className="mt-6 text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--brand-purple-dark,#1e1035)]">
+        Quick links
+      </p>
+      <div className="mt-3 flex flex-wrap gap-2">
+        {CATEGORY_SHORTCUTS.map((link) => (
+          <Link
+            key={link.href}
+            href={link.href}
+            onClick={closeDrawer}
+            className="rounded-full border border-border bg-muted/40 px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:border-[var(--brand-purple-dark,#1e1035)] hover:text-[var(--brand-purple-dark,#1e1035)]"
+          >
+            {link.label}
+          </Link>
+        ))}
+      </div>
+      <p className="mt-8 text-center text-sm text-muted-foreground">
+        Type at least {MIN_QUERY_LENGTH} characters to search.
+      </p>
+    </div>
+  );
 
   const drawer =
     drawerOpen && hydrated ? (
@@ -218,14 +308,12 @@ export function SearchBar() {
 
           <div
             id="search-drawer-results"
-            className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
+            className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-[calc(3.4375rem+var(--mobile-mini-cart-height,0px)+env(safe-area-inset-bottom,0px))] lg:pb-4"
             role="listbox"
             aria-label="Search results"
           >
             {!showResults ? (
-              <p className="px-4 py-8 text-center text-sm text-muted-foreground">
-                Type at least {MIN_QUERY_LENGTH} characters to search.
-              </p>
+              idleDiscovery
             ) : loading ? (
               <div className="flex items-center justify-center py-10 text-sm text-muted-foreground">
                 <span
@@ -243,32 +331,47 @@ export function SearchBar() {
                 <ul className="py-1">
                   {suggestions.map((item) => (
                     <li key={item.id} role="option" aria-selected={false}>
-                      <Link
-                        href={`/products/${item.slug}`}
-                        onClick={closeDrawer}
-                        className="flex items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-muted"
-                      >
-                        <div className="h-12 w-12 shrink-0 overflow-hidden rounded-sm bg-muted">
-                          {item.images?.[0]?.url ? (
-                            <img
-                              src={item.images[0].url}
-                              alt=""
-                              className="h-full w-full object-cover"
-                              loading="lazy"
-                            />
+                      <div className="flex items-center gap-2 px-4 py-2.5 transition-colors hover:bg-muted">
+                        <Link
+                          href={`/products/${item.slug}`}
+                          onClick={closeDrawer}
+                          className="flex min-w-0 flex-1 items-center gap-3 text-left"
+                        >
+                          <div className="h-12 w-12 shrink-0 overflow-hidden rounded-sm bg-muted">
+                            {item.images?.[0]?.url ? (
+                              <img
+                                src={item.images[0].url}
+                                alt=""
+                                className="h-full w-full object-cover"
+                                loading="lazy"
+                              />
+                            ) : (
+                              <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">
+                                —
+                              </div>
+                            )}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <span className="block truncate font-medium text-foreground">{item.name}</span>
+                            <span className="text-sm text-muted-foreground">
+                              {formatSuggestionPrice(item.basePrice)}
+                            </span>
+                          </div>
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={() => void handleQuickAdd(item)}
+                          disabled={addingId === item.id}
+                          className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-sm bg-[var(--brand-purple-dark,#1e1035)] text-[var(--brand-gold-primary,#d4af37)] transition-colors hover:bg-[var(--brand-purple-deep,#2e1a47)] disabled:cursor-not-allowed disabled:opacity-50"
+                          aria-label={`Add ${item.name} to cart`}
+                        >
+                          {addingId === item.id ? (
+                            <span className="text-xs font-bold">…</span>
                           ) : (
-                            <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">
-                              —
-                            </div>
+                            <ShoppingBagIcon className="h-4 w-4" strokeWidth={1.5} />
                           )}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <span className="block truncate font-medium text-foreground">{item.name}</span>
-                          <span className="text-sm text-muted-foreground">
-                            {formatSuggestionPrice(item.basePrice)}
-                          </span>
-                        </div>
-                      </Link>
+                        </button>
+                      </div>
                     </li>
                   ))}
                 </ul>

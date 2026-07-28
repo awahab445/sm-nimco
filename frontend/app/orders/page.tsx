@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { orderApi } from '@/lib/api-client';
 import { useCartStore } from '@/lib/cart.store';
@@ -57,11 +57,7 @@ export default function OrdersPage() {
   const [reorderOrderId, setReorderOrderId] = useState<string | null>(null);
   const [reorderError, setReorderError] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadOrders();
-  }, [page]);
-
-  const loadOrders = async () => {
+  const loadOrders = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -78,7 +74,11 @@ export default function OrdersPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page]);
+
+  useEffect(() => {
+    void loadOrders();
+  }, [loadOrders]);
 
   const handleReorder = async (order: Order) => {
     const items = order.items

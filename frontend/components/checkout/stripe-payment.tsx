@@ -28,7 +28,7 @@ export function StripePayment({ clientSecret, onSuccess, onError }: StripePaymen
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!stripeLoaded || !window.Stripe) {
+    if (!stripeLoaded || typeof window.Stripe !== 'function') {
       onError('Stripe.js not loaded');
       return;
     }
@@ -54,8 +54,8 @@ export function StripePayment({ clientSecret, onSuccess, onError }: StripePaymen
       } else {
         onSuccess();
       }
-    } catch (err: any) {
-      onError(err.message || 'Payment processing failed');
+    } catch (err: unknown) {
+      onError(err instanceof Error ? err.message : 'Payment processing failed');
     } finally {
       setProcessing(false);
     }
@@ -103,9 +103,17 @@ export function StripePayment({ clientSecret, onSuccess, onError }: StripePaymen
 }
 
 // Extend Window interface for Stripe
+type StripeConfirmResult = { error?: { message?: string } };
+type StripeInstance = {
+  confirmCardPayment: (
+    clientSecret: string,
+    data: { payment_method: { card: Record<string, never> } },
+  ) => Promise<StripeConfirmResult>;
+};
+
 declare global {
   interface Window {
-    Stripe: any;
+    Stripe?: (publishableKey: string) => StripeInstance;
   }
 }
 

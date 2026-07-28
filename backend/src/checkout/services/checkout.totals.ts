@@ -260,8 +260,7 @@ export class CheckoutTotalsService {
     const orderSettings =
       await this.storeSettingsService.getPublicOrderSettings();
     const freeDeliveryThreshold =
-      orderSettings.freeDeliveryThreshold ??
-      this.defaultFreeDeliveryThreshold;
+      orderSettings.freeDeliveryThreshold ?? this.defaultFreeDeliveryThreshold;
     const qualifiesForFreeDeliveryThreshold =
       freeDeliveryThreshold > 0 && subtotal >= freeDeliveryThreshold;
     const shippingTotal =

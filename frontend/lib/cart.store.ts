@@ -92,7 +92,7 @@ export const useCartStore = create<CartState>((set, get) => ({
   },
 
   getOrCreateCartId: async () => {
-    let cartId = getStoredCartId();
+    const cartId = getStoredCartId();
     if (cartId) {
       set({ cartId });
       return cartId;

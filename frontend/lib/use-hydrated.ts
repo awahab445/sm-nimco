@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useSyncExternalStore } from 'react';
 
-/** True after the client has mounted. Use to skip SSR for nodes extensions often mutate before hydration. */
+const emptySubscribe = () => () => undefined;
+
+/** True after the client has mounted. Safe for portals / extension-mutated DOM. */
 export function useHydrated(): boolean {
-  const [hydrated, setHydrated] = useState(false);
-  useEffect(() => setHydrated(true), []);
-  return hydrated;
+  return useSyncExternalStore(emptySubscribe, () => true, () => false);
 }

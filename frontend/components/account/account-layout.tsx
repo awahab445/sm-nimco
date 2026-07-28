@@ -9,7 +9,7 @@ interface AccountLayoutProps {
   user: User;
 }
 
-export function AccountLayout({ children, user: _user }: AccountLayoutProps) {
+export function AccountLayout({ children }: AccountLayoutProps) {
   return (
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">

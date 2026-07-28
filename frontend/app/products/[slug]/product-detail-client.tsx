@@ -12,6 +12,7 @@ import { ProductImageGallery } from '@/components/product/product-image-gallery'
 import { ProductStockAlert } from '@/components/product/product-stock-alert';
 import { RelatedProductsShelf } from '@/components/product/related-products-shelf';
 import { WishlistToggleButton } from '@/components/product/wishlist-toggle-button';
+import { PdpLowStockUrgency, PdpTrustReassurance } from '@/components/product/pdp-conversion-boosters';
 import { resolveImageUrl } from '@/lib/resolve-image-url';
 import { trackCustomizeProduct, trackViewItem } from '@/lib/analytics/events';
 
@@ -252,20 +253,6 @@ export function ProductDetailClient() {
 
   const variants = product?.variants ?? [];
   const hasVariant = variants.length > 0;
-  const currentVariant = selectedVariant ?? variants[0] ?? null;
-
-  useEffect(() => {
-    if (!product || !currentVariant) return;
-    const price =
-      typeof currentVariant.price === 'string'
-        ? parseFloat(currentVariant.price)
-        : Number(currentVariant.price);
-    trackViewItem(product, {
-      variantName: currentVariant.name,
-      price: Number.isFinite(price) ? price : undefined,
-      variantSku: currentVariant.sku,
-    });
-  }, [product, currentVariant?.id, currentVariant?.name, currentVariant?.price, currentVariant?.sku]);
 
   const activeVariants = variants.filter((v) => v);
   const optionDefinitions: OptionDefinition[] = (() => {
@@ -293,12 +280,9 @@ export function ProductDetailClient() {
     }));
   })();
 
-  useEffect(() => {
-    if (!currentVariant) return;
-    const opts = extractVariantOptions(currentVariant);
-    setSelectedOptions((prev) => ({ ...prev, ...opts }));
-  }, [currentVariant?.id]);
+  const requiresOptionSelection = optionDefinitions.some((def) => def.values.length > 0);
 
+  /** Exact match: every selected option must equal the variant; skip unset keys. */
   const matchesSelectedOptions = (variant: ProductVariant, options: Record<string, string>) => {
     const variantOptions = extractVariantOptions(variant);
     for (const def of optionDefinitions) {
@@ -309,28 +293,56 @@ export function ProductDetailClient() {
     return true;
   };
 
+  /** True when a value remains reachable given the other selected options. */
+  const isOptionValueAvailable = (optionCode: string, value: string) => {
+    const candidate = { ...selectedOptions, [optionCode]: value };
+    return variants.some((v) => matchesSelectedOptions(v, candidate));
+  };
+
+  const findExactVariant = (options: Record<string, string>) => {
+    const allChosen =
+      !requiresOptionSelection ||
+      optionDefinitions.every((def) => def.values.length === 0 || Boolean(options[def.code]));
+    if (!allChosen) return null;
+    return variants.find((v) => matchesSelectedOptions(v, options)) ?? null;
+  };
+
+  const currentVariant =
+    findExactVariant(selectedOptions) ??
+    (!requiresOptionSelection ? selectedVariant ?? variants[0] ?? null : null);
+
+  useEffect(() => {
+    if (!product || !currentVariant) return;
+    const price =
+      typeof currentVariant.price === 'string'
+        ? parseFloat(currentVariant.price)
+        : Number(currentVariant.price);
+    trackViewItem(product, {
+      variantName: currentVariant.name,
+      price: Number.isFinite(price) ? price : undefined,
+      variantSku: currentVariant.sku,
+    });
+  }, [product, currentVariant]);
+
+  useEffect(() => {
+    if (!currentVariant) return;
+    const opts = extractVariantOptions(currentVariant);
+    setSelectedOptions((prev) => ({ ...prev, ...opts }));
+  }, [currentVariant]);
+
   const handleOptionSelect = (key: string, value: string) => {
+    if (!isOptionValueAvailable(key, value)) return;
     const nextOptions = { ...selectedOptions, [key]: value };
     setSelectedOptions(nextOptions);
-    const exact = variants.find((v) => matchesSelectedOptions(v, nextOptions));
-    const nextVariant =
-      exact ??
-      variants.find((v) => {
-        const vo = extractVariantOptions(v);
-        return vo[key] === value;
-      }) ??
-      null;
-    if (nextVariant) {
-      setSelectedVariant(nextVariant);
-    }
-    if (product && nextVariant) {
+    // Exact combination only — never fall back to a loosely related variant.
+    const exact = findExactVariant(nextOptions);
+    setSelectedVariant(exact);
+    if (product && exact) {
       const price =
-        typeof nextVariant.price === 'string'
-          ? parseFloat(nextVariant.price)
-          : Number(nextVariant.price);
+        typeof exact.price === 'string' ? parseFloat(exact.price) : Number(exact.price);
       trackCustomizeProduct(product, {
-        variantSku: nextVariant.sku,
-        variantName: nextVariant.name,
+        variantSku: exact.sku,
+        variantName: exact.name,
         price: Number.isFinite(price) ? price : undefined,
         optionKey: key,
         optionValue: value,
@@ -363,7 +375,7 @@ export function ProductDetailClient() {
     if (!selectedImageId || !orderedGalleryImages.some((img) => img.id === selectedImageId)) {
       setSelectedImageId(orderedGalleryImages[0].id);
     }
-  }, [currentVariantId, product?.id, orderedGalleryImages.length]);
+  }, [currentVariantId, product?.id, orderedGalleryImages, selectedImageId]);
 
   useEffect(() => {
     setStockAlert(null);
@@ -383,7 +395,7 @@ export function ProductDetailClient() {
   }, [product?.id]);
 
   const handleAddToCart = async () => {
-    const v = selectedVariant ?? variants[0];
+    const v = findExactVariant(selectedOptions) ?? (!requiresOptionSelection ? variants[0] : null);
     if (!product || !v || adding) return;
     setAdding(true);
     setStockAlert(null);
@@ -452,16 +464,20 @@ export function ProductDetailClient() {
     typeof product.basePrice === 'string' ? parseFloat(product.basePrice) : Number(product.basePrice);
   const priceNum = typeof price === 'string' ? parseFloat(price) : Number(price);
   const onSale = Number.isFinite(baseNum) && Number.isFinite(priceNum) && priceNum < baseNum;
-  const atcDisabled = adding || !hasVariant || !currentVariant || !inStock;
+  const variantFullySelected = Boolean(findExactVariant(selectedOptions));
+  const atcDisabled =
+    adding || !hasVariant || !currentVariant || !inStock || (requiresOptionSelection && !variantFullySelected);
   const atcLabel = added
     ? 'Added to cart'
     : adding
       ? 'Adding…'
-      : hasVariant
-        ? inStock
-          ? 'Add to cart'
-          : 'Out of stock'
-        : 'Unavailable';
+      : !hasVariant
+        ? 'Unavailable'
+        : requiresOptionSelection && !variantFullySelected
+          ? 'Select options'
+          : inStock
+            ? 'Add to cart'
+            : 'Out of stock';
 
   const primaryImage =
     orderedGalleryImages.find((i) => i.id === selectedImageId) ?? orderedGalleryImages[0];
@@ -546,6 +562,7 @@ export function ProductDetailClient() {
                         <div className={`mt-2.5 flex flex-wrap ${colorMode ? 'gap-2.5' : 'gap-2'}`}>
                           {def.values.map((value) => {
                             const active = selectedOptions[def.code] === value;
+                            const available = isOptionValueAvailable(def.code, value);
                             const color = colorMode ? swatchColor(value) : null;
                             if (color) {
                               return (
@@ -553,13 +570,17 @@ export function ProductDetailClient() {
                                   key={`${def.code}-${value}`}
                                   type="button"
                                   onClick={() => handleOptionSelect(def.code, value)}
-                                  title={value}
+                                  disabled={!available}
+                                  title={available ? value : `${value} (unavailable)`}
                                   aria-label={value}
                                   aria-pressed={active}
+                                  aria-disabled={!available}
                                   className={`h-[2.4rem] w-[2.4rem] rounded-full border p-0.5 transition-all ${
-                                    active
-                                      ? 'border-2 border-foreground'
-                                      : 'border border-[color-mix(in_srgb,var(--foreground)_20%,transparent)] hover:border-foreground'
+                                    !available
+                                      ? 'cursor-not-allowed opacity-35'
+                                      : active
+                                        ? 'border-2 border-foreground'
+                                        : 'border border-[color-mix(in_srgb,var(--foreground)_20%,transparent)] hover:border-foreground'
                                   }`}
                                 >
                                   <span
@@ -574,10 +595,14 @@ export function ProductDetailClient() {
                                 key={`${def.code}-${value}`}
                                 type="button"
                                 onClick={() => handleOptionSelect(def.code, value)}
+                                disabled={!available}
+                                aria-disabled={!available}
                                 className={`min-w-[3rem] rounded-[0.3rem] border px-4 py-1.5 text-center text-sm transition-all duration-300 ${
-                                  active
-                                    ? 'border-primary bg-primary text-primary-foreground'
-                                    : 'border-[color-mix(in_srgb,var(--foreground)_10%,transparent)] bg-transparent text-foreground hover:border-foreground'
+                                  !available
+                                    ? 'cursor-not-allowed border-border/40 text-muted-foreground/50 line-through opacity-50'
+                                    : active
+                                      ? 'border-primary bg-primary text-primary-foreground'
+                                      : 'border-[color-mix(in_srgb,var(--foreground)_10%,transparent)] bg-transparent text-foreground hover:border-foreground'
                                 }`}
                               >
                                 {value}
@@ -611,6 +636,10 @@ export function ProductDetailClient() {
               >
                 {atcLabel}
               </button>
+
+              <PdpLowStockUrgency availableQty={availableQty} />
+
+              <PdpTrustReassurance />
 
               {added ? (
                 <Link
@@ -665,7 +694,6 @@ export function ProductDetailClient() {
         <div className="mx-auto flex max-w-7xl items-center gap-3 md:gap-4">
           {stickyThumb ? (
             <div className="relative hidden h-[3.25rem] w-[3.25rem] shrink-0 overflow-hidden rounded-full bg-muted md:block">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={stickyThumb} alt="" className="h-full w-full object-contain" />
             </div>
           ) : null}

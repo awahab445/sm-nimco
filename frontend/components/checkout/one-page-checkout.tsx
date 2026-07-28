@@ -254,7 +254,7 @@ export function OnePageCheckout() {
     if (showAddressForm && checkout?.shippingAddress) {
       setShippingAddress({ ...checkout.shippingAddress, country: 'PK' });
     }
-  }, [checkout?.id, showAddressForm, isAuthenticated, user?.email]);
+  }, [checkout?.id, checkout?.customerEmail, checkout?.shippingMethod?.methodId, checkout?.billingAddress, checkout?.shippingAddress, showAddressForm, isAuthenticated, user?.email]);
 
   const isEmailValid = (email: string) => !!email.trim() && email.includes('@');
 
@@ -377,17 +377,14 @@ export function OnePageCheckout() {
       cancelled = true;
     };
   }, [
+    checkout,
     checkout?.id,
     checkout?.items,
     checkout?.subtotal,
     checkout?.currency,
     checkout?.customerGroupId,
-    effectiveShippingAddress.firstName,
-    effectiveShippingAddress.lastName,
-    effectiveShippingAddress.city,
-    effectiveShippingAddress.state,
-    effectiveShippingAddress.postalCode,
-    effectiveShippingAddress.country,
+    effectiveShippingAddress,
+    selectedShippingId,
     useSameAddress,
   ]);
 

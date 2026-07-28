@@ -1,0 +1,30 @@
+/**
+ * Shared body scroll-lock with reference counting so nested/overlapping
+ * overlays (nav, search, cart, filters, lightbox) do not unlock early.
+ */
+
+let lockCount = 0;
+let previousOverflow = '';
+
+export function lockBodyScroll(): () => void {
+  if (typeof document === 'undefined') {
+    return () => undefined;
+  }
+
+  if (lockCount === 0) {
+    previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+  }
+  lockCount += 1;
+
+  let released = false;
+  return () => {
+    if (released) return;
+    released = true;
+    lockCount = Math.max(0, lockCount - 1);
+    if (lockCount === 0) {
+      document.body.style.overflow = previousOverflow;
+      previousOverflow = '';
+    }
+  };
+}

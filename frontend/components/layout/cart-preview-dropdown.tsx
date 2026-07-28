@@ -6,6 +6,7 @@ import { createPortal } from 'react-dom';
 import { ShoppingBagIcon } from '@/components/icons/shopping-bag-icon';
 import { useCartStore } from '@/lib/cart.store';
 import { useHydrated } from '@/lib/use-hydrated';
+import { lockBodyScroll } from '@/lib/body-scroll-lock';
 import { CartLineItemThumb } from '@/components/cart/cart-line-item-thumb';
 import { formatPrice, APP_CURRENCY, resolveDisplayCurrency } from '@/lib/currency';
 import { formatVariantAttributes } from '@/lib/format-variant-attributes';
@@ -14,9 +15,12 @@ import {
   useCartItemFallbackImages,
 } from '@/lib/use-cart-item-fallback-images';
 import { storeSettingsApi, type CartBundleRow, type CartItem } from '@/lib/api-client';
+import { CartThresholdProgress } from '@/components/cart/cart-threshold-progress';
+import { CartQuickUpsells } from '@/components/cart/cart-quick-upsells';
 
 const PREVIEW_ITEM_LIMIT = 8;
 const DEFAULT_MIN_ORDER_VALUE = 800;
+const DEFAULT_FREE_DELIVERY = 2000;
 
 type CartPreviewDropdownProps = {
   label?: string;
@@ -149,6 +153,7 @@ export function CartPreviewDropdown({
   const sawLoadingRef = useRef(false);
   const [badgePulse, setBadgePulse] = useState(false);
   const [minimumOrderAmount, setMinimumOrderAmount] = useState(DEFAULT_MIN_ORDER_VALUE);
+  const [freeDeliveryThreshold, setFreeDeliveryThreshold] = useState(DEFAULT_FREE_DELIVERY);
 
   useEffect(() => {
     let cancelled = false;
@@ -157,8 +162,12 @@ export function CartPreviewDropdown({
       .then((res) => {
         if (cancelled) return;
         const minOrder = Number(res.data.minimumOrderAmount);
+        const freeDelivery = Number(res.data.freeDeliveryThreshold);
         if (Number.isFinite(minOrder) && minOrder > 0) {
           setMinimumOrderAmount(minOrder);
+        }
+        if (Number.isFinite(freeDelivery) && freeDelivery >= 0) {
+          setFreeDeliveryThreshold(freeDelivery);
         }
       })
       .catch(() => {
@@ -210,11 +219,10 @@ export function CartPreviewDropdown({
         if (e.key === 'Escape') closeDrawer();
       };
       document.addEventListener('keydown', onKey);
-      const prevOverflow = document.body.style.overflow;
-      document.body.style.overflow = 'hidden';
+      const unlock = lockBodyScroll();
       return () => {
         document.removeEventListener('keydown', onKey);
-        document.body.style.overflow = prevOverflow;
+        unlock();
       };
     }
   }, [open, refreshCart, closeDrawer]);
@@ -316,6 +324,10 @@ export function CartPreviewDropdown({
                     +{hiddenCount} more in cart
                   </p>
                 ) : null}
+                <CartQuickUpsells
+                  cartProductIds={items.map((i) => i.productId).filter(Boolean)}
+                  currency={displayCurrency}
+                />
               </>
             )}
           </div>
@@ -328,14 +340,15 @@ export function CartPreviewDropdown({
                   {formatPrice(subtotal, displayCurrency)}
                 </span>
               </div>
+              <div className="mt-3">
+                <CartThresholdProgress
+                  subtotal={subtotal}
+                  currency={displayCurrency}
+                  minimumOrderAmount={minimumOrderAmount}
+                  freeDeliveryThreshold={freeDeliveryThreshold}
+                />
+              </div>
               <div className="mt-4 flex flex-col gap-2">
-                {!meetsMinimumOrder ? (
-                  <p className="rounded-sm bg-secondary/50 px-3 py-2 text-xs font-medium text-foreground">
-                    Minimum order {formatPrice(minimumOrderAmount, displayCurrency)}. Add{' '}
-                    {formatPrice(Math.max(0, minimumOrderAmount - subtotal), displayCurrency)} more
-                    to checkout.
-                  </p>
-                ) : null}
                 <Link
                   href={href}
                   className={`${storefrontUi.btnSecondary} w-full py-3 text-center`}

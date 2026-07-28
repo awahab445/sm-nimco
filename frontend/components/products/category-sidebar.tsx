@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { createPortal } from 'react-dom';
 import { categoryApi, type Category } from '@/lib/api-client';
+import { lockBodyScroll } from '@/lib/body-scroll-lock';
+import { useHydrated } from '@/lib/use-hydrated';
 
 function flattenCategories(cats: { data?: Category[] } | Category[]): Category[] {
   if (Array.isArray(cats)) return cats;
@@ -26,13 +28,9 @@ export function CategorySidebar({ filterCategoryId = null }: CategorySidebarProp
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const mounted = useHydrated();
   const sheetTitleId = useId();
   const sheetId = useId();
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -58,11 +56,10 @@ export function CategorySidebar({ filterCategoryId = null }: CategorySidebarProp
       if (e.key === 'Escape') setSheetOpen(false);
     };
     document.addEventListener('keydown', onKey);
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    const unlock = lockBodyScroll();
     return () => {
       document.removeEventListener('keydown', onKey);
-      document.body.style.overflow = prev;
+      unlock();
     };
   }, [sheetOpen]);
 

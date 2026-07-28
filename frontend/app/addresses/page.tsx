@@ -8,6 +8,11 @@ import { storefrontUi } from '@/lib/storefront-ui';
 
 type ViewMode = 'list' | 'add' | 'edit';
 
+function errorMessage(err: unknown, fallback: string): string {
+  if (err instanceof Error && err.message.trim()) return err.message;
+  return fallback;
+}
+
 export default function AddressesPage() {
   const [addresses, setAddresses] = useState<AddressWithId[]>([]);
   const [loading, setLoading] = useState(true);
@@ -19,7 +24,7 @@ export default function AddressesPage() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    loadAddresses();
+    void loadAddresses();
   }, []);
 
   const loadAddresses = async () => {
@@ -28,8 +33,8 @@ export default function AddressesPage() {
       setError(null);
       const data = await AddressService.getAddresses();
       setAddresses(data);
-    } catch (err: any) {
-      setError(err.message || 'Failed to load addresses');
+    } catch (err: unknown) {
+      setError(errorMessage(err, 'Failed to load addresses'));
     } finally {
       setLoading(false);
     }
@@ -53,8 +58,8 @@ export default function AddressesPage() {
     try {
       await AddressService.deleteAddress(id);
       await loadAddresses();
-    } catch (err: any) {
-      setError(err.message || 'Failed to delete address');
+    } catch (err: unknown) {
+      setError(errorMessage(err, 'Failed to delete address'));
     }
   };
 
@@ -62,8 +67,8 @@ export default function AddressesPage() {
     try {
       await AddressService.setDefaultBilling(id);
       await loadAddresses();
-    } catch (err: any) {
-      setError(err.message || 'Failed to set default billing address');
+    } catch (err: unknown) {
+      setError(errorMessage(err, 'Failed to set default billing address'));
     }
   };
 
@@ -71,8 +76,8 @@ export default function AddressesPage() {
     try {
       await AddressService.setDefaultShipping(id);
       await loadAddresses();
-    } catch (err: any) {
-      setError(err.message || 'Failed to set default shipping address');
+    } catch (err: unknown) {
+      setError(errorMessage(err, 'Failed to set default shipping address'));
     }
   };
 
@@ -90,8 +95,8 @@ export default function AddressesPage() {
       setViewMode('list');
       setEditingAddress(null);
       await loadAddresses();
-    } catch (err: any) {
-      setError(err.message || 'Failed to save address');
+    } catch (err: unknown) {
+      setError(errorMessage(err, 'Failed to save address'));
       throw err;
     } finally {
       setSubmitting(false);
@@ -168,7 +173,7 @@ export default function AddressesPage() {
       {addresses.length === 0 ? (
         <div className={`p-12 text-center ${storefrontUi.card}`}>
             <p className="mb-4 text-muted-foreground">
-              You don't have any saved addresses yet.
+              You don&apos;t have any saved addresses yet.
             </p>
             <button onClick={handleAdd} className={storefrontUi.btnPrimary}>
               Add Your First Address

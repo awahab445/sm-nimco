@@ -1,9 +1,8 @@
 'use client';
 
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback } from 'react';
 import {
   checkoutApi,
-  orderApi,
   CheckoutSession,
   Address,
   ShippingMethod,
@@ -48,7 +47,18 @@ interface CheckoutContextType extends CheckoutState {
   updateAddresses: (addresses: { billingAddress?: Address; shippingAddress?: Address }) => Promise<void>;
   updateShippingMethod: (shipping: ShippingMethod) => Promise<void>;
   setPaymentInfo: (info: PaymentInfo) => void;
-  confirmCheckout: (paymentPayload?: PaymentInfo) => Promise<{ orderId: string; orderNumber: string; paymentIntent?: any }>;
+  confirmCheckout: (paymentPayload?: PaymentInfo) => Promise<{
+    orderId: string;
+    orderNumber: string;
+    paymentIntent?: {
+      paymentId: string;
+      gatewayTransactionId?: string;
+      flowType: string;
+      type?: string;
+      clientSecret?: string;
+      redirectUrl?: string;
+    };
+  }>;
   setCurrentStep: (step: number) => void;
   setPaymentRedirectUrl: (url: string | null) => void;
   refreshCheckout: () => Promise<void>;
@@ -306,7 +316,9 @@ export function CheckoutProvider({ children }: { children: React.ReactNode }) {
           ...(returnUrl && { returnUrl }),
           ...(cancelUrl && { cancelUrl }),
           ...(state.checkout?.customerId && { customerId: state.checkout.customerId }),
-          ...(state.checkout?.customerGroupId && { customerGroupId: state.checkout.customerGroupId }),
+          ...(state.checkout?.customerGroupId && {
+            customerGroupId: state.checkout.customerGroupId,
+          }),
           ...metaCapiClientFields(),
         };
         if (info.customerEmail) {
@@ -334,7 +346,11 @@ export function CheckoutProvider({ children }: { children: React.ReactNode }) {
         throw error;
       }
     },
-    [state.checkoutId, state.paymentInfo],
+    [
+      state.checkoutId,
+      state.paymentInfo,
+      state.checkout,
+    ],
   );
 
   const setCurrentStep = useCallback((step: number) => {

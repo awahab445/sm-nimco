@@ -11,7 +11,7 @@ const config = {
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
   },
-  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.mjs'],
   transform: {
     '^.+\\.(ts|tsx)$': ['ts-jest', { useESM: false }],
   },

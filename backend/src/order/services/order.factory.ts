@@ -125,14 +125,39 @@ export class OrderFactory {
     reservationIds: string[];
     taxCalculationItems: TaxCalculationItem[];
   }> {
-    // Fetch cart from Redis
+    // Fetch cart from Redis (source of truth for order lines after checkout sync)
     const cart = await this.cartRedis.getCart(createOrderDto.cartId);
     if (!cart) {
       throw new NotFoundException(`Cart ${createOrderDto.cartId} not found`);
     }
 
+    // Drop invalid quantities defensively (should already be synced from checkout).
+    cart.items = cart.items.filter((item) => item.quantity > 0);
+
     if (!cart.items || cart.items.length === 0) {
       throw new BadRequestException('Cannot create order from empty cart');
+    }
+
+    // Fail closed if checkout passed an explicit line snapshot that diverges from cart.
+    const checkoutLineItems = createOrderDto.metadata?.checkoutLineItems as
+      | Array<{ variantId: string; quantity: number }>
+      | undefined;
+    if (checkoutLineItems?.length) {
+      if (checkoutLineItems.length !== cart.items.length) {
+        throw new BadRequestException(
+          'Cart is out of sync with checkout. Please refresh and try again.',
+        );
+      }
+      for (const expected of checkoutLineItems) {
+        const cartItem = cart.items.find(
+          (item) => item.variantId === expected.variantId,
+        );
+        if (!cartItem || cartItem.quantity !== expected.quantity) {
+          throw new BadRequestException(
+            'Cart is out of sync with checkout. Please refresh and try again.',
+          );
+        }
+      }
     }
 
     // Generate order number

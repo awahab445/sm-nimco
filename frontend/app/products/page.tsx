@@ -34,6 +34,8 @@ import {
 import { PlpPagination } from '@/components/products/plp-pagination';
 import { plpBrowseApi, type PlpBrowseTreeNode } from '@/lib/api-client';
 import { findBrowseNodeLabel } from '@/lib/plp-browse-tree';
+import { lockBodyScroll } from '@/lib/body-scroll-lock';
+import { useHydrated } from '@/lib/use-hydrated';
 import { trackSearch, trackViewItemList } from '@/lib/analytics/events';
 
 function flattenCategories(res: { data?: Category[] } | CategoryTreeLike[]): Category[] {
@@ -101,7 +103,7 @@ function ProductsContent() {
   const [draft, setDraft] = useState<PlpFilterState>(applied);
   const [previewFacets, setPreviewFacets] = useState<ProductFacets | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const mounted = useHydrated();
   const [browseLabel, setBrowseLabel] = useState('Categories');
   const [browseTree, setBrowseTree] = useState<PlpBrowseTreeNode[]>([]);
   const [sortBy, setSortBy] = useState<PlpSortOption>('featured');
@@ -114,10 +116,6 @@ function ProductsContent() {
   const facetQuery = useMemo(() => plpStateToFacetQuery(applied), [applied]);
   const facetQueryKey = useMemo(() => JSON.stringify(facetQuery), [facetQuery]);
   const viewListDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -168,22 +166,19 @@ function ProductsContent() {
 
   useEffect(() => {
     if (!drawerOpen) return;
-    setDraft(clonePlpFilters(applied));
-  }, [drawerOpen, applied]);
-
-  useEffect(() => {
-    if (!drawerOpen) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    const unlock = lockBodyScroll();
     return () => {
-      document.body.style.overflow = prev;
+      unlock();
     };
   }, [drawerOpen]);
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
-    setError(null);
+    void Promise.resolve().then(() => {
+      if (cancelled) return;
+      setLoading(true);
+      setError(null);
+    });
     productApi
       .listProducts(listQuery)
       .then((res) => {
@@ -204,7 +199,7 @@ function ProductsContent() {
     return () => {
       cancelled = true;
     };
-  }, [listQueryKey]);
+  }, [listQuery, listQueryKey]);
 
   useEffect(() => {
     let cancelled = false;
@@ -219,22 +214,21 @@ function ProductsContent() {
     return () => {
       cancelled = true;
     };
-  }, [facetQueryKey]);
+  }, [facetQuery, facetQueryKey]);
 
   const previewDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
   const previewGen = useRef(0);
   useEffect(() => {
     if (!drawerOpen) {
       previewGen.current += 1;
-      setPreviewFacets(null);
-      setPreviewLoading(false);
+      if (previewDebounce.current) clearTimeout(previewDebounce.current);
       return;
     }
     if (previewDebounce.current) clearTimeout(previewDebounce.current);
-    setPreviewFacets(null);
-    setPreviewLoading(true);
     const gen = ++previewGen.current;
     previewDebounce.current = setTimeout(() => {
+      setPreviewFacets(null);
+      setPreviewLoading(true);
       const q = plpStateToFacetQuery(draft);
       productApi
         .getFacets(q)
@@ -329,7 +323,22 @@ function ProductsContent() {
 
   const applyDrawerFilters = () => {
     replaceFilters({ ...draft, page: 1 });
+    setPreviewFacets(null);
+    setPreviewLoading(false);
     setDrawerOpen(false);
+  };
+
+  const closeDrawer = () => {
+    setPreviewFacets(null);
+    setPreviewLoading(false);
+    setDrawerOpen(false);
+  };
+
+  const openFiltersDrawer = () => {
+    setDraft(clonePlpFilters(applied));
+    setPreviewFacets(null);
+    setPreviewLoading(false);
+    setDrawerOpen(true);
   };
 
   const drawer =
@@ -339,7 +348,7 @@ function ProductsContent() {
           type="button"
           className="fixed inset-0 z-[260] animate-plp-backdrop-enter bg-foreground/35 lg:hidden"
           aria-label="Close filters"
-          onClick={() => setDrawerOpen(false)}
+          onClick={closeDrawer}
         />
         <div
           className="fixed inset-y-0 left-0 z-[261] flex w-[min(22rem,88vw)] animate-plp-drawer-enter flex-col border-r border-border/60 bg-background shadow-[4px_0_28px_color-mix(in_srgb,var(--foreground)_10%,transparent)] lg:hidden"
@@ -356,7 +365,7 @@ function ProductsContent() {
               type="button"
               className="p-1 text-foreground transition-colors hover:text-[var(--navbar-link-hover,var(--primary-hover))]"
               aria-label="Close filters"
-              onClick={() => setDrawerOpen(false)}
+              onClick={closeDrawer}
             >
               <svg className="h-4 w-4" viewBox="0 0 16 14" fill="none" aria-hidden>
                 <path d="M15 0L1 14m14 0L1 0" stroke="currentColor" strokeWidth="1.25" />
@@ -422,11 +431,6 @@ function ProductsContent() {
 
   const isInitialLoad = loading && data === null;
   const isRefreshing = loading && data !== null;
-
-  const openFiltersDrawer = () => {
-    setDraft(clonePlpFilters(applied));
-    setDrawerOpen(true);
-  };
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 pb-16 pt-6 sm:px-6 sm:pt-8 lg:px-8">

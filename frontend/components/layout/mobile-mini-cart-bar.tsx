@@ -9,9 +9,13 @@ import { useCartStore } from '@/lib/cart.store';
 import { useHydrated } from '@/lib/use-hydrated';
 import { formatPrice, APP_CURRENCY, resolveDisplayCurrency } from '@/lib/currency';
 import { storeSettingsApi } from '@/lib/api-client';
+import { CartThresholdProgress } from '@/components/cart/cart-threshold-progress';
 
 const DEFAULT_MIN_ORDER_VALUE = 800;
+const DEFAULT_FREE_DELIVERY = 2000;
 const MINI_CART_HEIGHT_VAR = '--mobile-mini-cart-height';
+/** Bar body + compact progress strip (keeps sticky ATC / WhatsApp clearances in sync). */
+const MINI_CART_VISIBLE_HEIGHT = '4.15rem';
 
 function pathBlocked(pathname: string): boolean {
   const p = pathname.length > 1 && pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
@@ -26,6 +30,7 @@ export function MobileMiniCartBar() {
   const hydrated = useHydrated();
   const cart = useCartStore((s) => s.cart);
   const [minimumOrderAmount, setMinimumOrderAmount] = useState(DEFAULT_MIN_ORDER_VALUE);
+  const [freeDeliveryThreshold, setFreeDeliveryThreshold] = useState(DEFAULT_FREE_DELIVERY);
 
   const items = cart?.items ?? [];
   const bundles = cart?.bundles ?? [];
@@ -53,8 +58,12 @@ export function MobileMiniCartBar() {
       .then((res) => {
         if (cancelled) return;
         const minOrder = Number(res.data.minimumOrderAmount);
+        const freeDelivery = Number(res.data.freeDeliveryThreshold);
         if (Number.isFinite(minOrder) && minOrder > 0) {
           setMinimumOrderAmount(minOrder);
+        }
+        if (Number.isFinite(freeDelivery) && freeDelivery >= 0) {
+          setFreeDeliveryThreshold(freeDelivery);
         }
       })
       .catch(() => {
@@ -69,7 +78,7 @@ export function MobileMiniCartBar() {
     if (typeof document === 'undefined') return;
     document.documentElement.style.setProperty(
       MINI_CART_HEIGHT_VAR,
-      visible ? '3.25rem' : '0px',
+      visible ? MINI_CART_VISIBLE_HEIGHT : '0px',
     );
     return () => {
       document.documentElement.style.setProperty(MINI_CART_HEIGHT_VAR, '0px');
@@ -85,6 +94,13 @@ export function MobileMiniCartBar() {
       role="region"
       aria-label="Cart summary"
     >
+      <CartThresholdProgress
+        subtotal={subtotal}
+        currency={displayCurrency}
+        minimumOrderAmount={minimumOrderAmount}
+        freeDeliveryThreshold={freeDeliveryThreshold}
+        compact
+      />
       <div className="mx-auto flex h-[3.25rem] max-w-7xl items-center gap-3 px-3 sm:px-4">
         <div className="flex min-w-0 flex-1 items-center gap-2.5">
           <span className="relative inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--brand-gold-primary,#d4af37)]/15">

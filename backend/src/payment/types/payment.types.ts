@@ -37,7 +37,10 @@ export enum PaymentProviderCode {
 export interface PaymentIntentResult {
   paymentId: string;
   gatewayTransactionId: string;
+  /** Canonical Nest/Prisma enum value. */
   flowType: PaymentFlowType;
+  /** Storefront lifecycle alias: client_side | redirect | hosted | offline. */
+  type?: string;
   clientSecret?: string;
   redirectUrl?: string;
   metadata?: Record<string, any>;

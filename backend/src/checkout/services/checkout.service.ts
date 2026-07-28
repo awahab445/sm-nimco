@@ -16,6 +16,7 @@ import {
 import { CheckoutTotalsService } from './checkout.totals';
 import { CheckoutValidatorService } from './checkout.validator';
 import { CartRedisService, Cart } from '../../cart/services/cart.redis';
+import { CartService } from '../../cart/services/cart.service';
 import { OrderService } from '../../order/services/order.service';
 import { PaymentService } from '../../payment/services/payment.service';
 import { VariantService } from '../../catalog/services/variant.service';
@@ -51,6 +52,7 @@ export class CheckoutService {
     private readonly checkoutTotals: CheckoutTotalsService,
     private readonly checkoutValidator: CheckoutValidatorService,
     private readonly cartRedis: CartRedisService,
+    private readonly cartService: CartService,
     private readonly orderService: OrderService,
     private readonly paymentService: PaymentService,
     private readonly variantService: VariantService,
@@ -61,6 +63,80 @@ export class CheckoutService {
     private readonly capiService: CapiService,
     private readonly storeSettingsService: StoreSettingsService,
   ) {}
+
+  /**
+   * Keep the cart (and its stock reservations) aligned with checkout line edits.
+   * Orders are created from the cart, so checkout qty changes must not drift.
+   */
+  private async syncCartItemWithCheckout(
+    cartId: string,
+    variantId: string,
+    quantity: number,
+  ): Promise<string | undefined> {
+    if (quantity === 0) {
+      await this.cartService.removeCartItem(cartId, variantId);
+      return undefined;
+    }
+
+    const cart = await this.cartService.updateCartItem(cartId, variantId, {
+      quantity,
+    });
+    return cart.items.find((item) => item.variantId === variantId)
+      ?.reservationId;
+  }
+
+  /**
+   * Final pre-order guard: force cart quantities/reservations to match checkout.
+   */
+  private async ensureCartMatchesCheckout(
+    checkout: CheckoutSession,
+  ): Promise<Cart> {
+    const cart = await this.cartRedis.getCart(checkout.cartId);
+    if (!cart) {
+      throw new NotFoundException(`Cart ${checkout.cartId} not found`);
+    }
+
+    const checkoutVariantIds = new Set(
+      checkout.items.map((item) => item.variantId),
+    );
+
+    // Remove cart lines that are no longer in checkout (releases reservations).
+    for (const cartItem of [...cart.items]) {
+      if (!checkoutVariantIds.has(cartItem.variantId)) {
+        await this.cartService.removeCartItem(
+          checkout.cartId,
+          cartItem.variantId,
+        );
+      }
+    }
+
+    // Sync quantities for every checkout line (re-reserves stock as needed).
+    for (const item of checkout.items) {
+      const reservationId = await this.syncCartItemWithCheckout(
+        checkout.cartId,
+        item.variantId,
+        item.quantity,
+      );
+      item.reservationId = reservationId ?? item.reservationId;
+    }
+
+    const synced = await this.cartRedis.getCart(checkout.cartId);
+    if (!synced || synced.items.length === 0) {
+      throw new BadRequestException('Cannot create order from empty cart');
+    }
+
+    // Fail closed if any quantity still diverges.
+    for (const item of checkout.items) {
+      const cartItem = synced.items.find((c) => c.variantId === item.variantId);
+      if (!cartItem || cartItem.quantity !== item.quantity) {
+        throw new BadRequestException(
+          'Cart is out of sync with checkout. Please refresh and try again.',
+        );
+      }
+    }
+
+    return synced;
+  }
 
   private async assertMinimumOrderAmount(subtotal: number): Promise<void> {
     const settings = await this.storeSettingsService.getPublicOrderSettings();
@@ -573,12 +649,20 @@ export class CheckoutService {
 
     const { quantity } = updateDto;
 
+    // Sync cart + reservations first so order creation cannot drift from checkout UI.
+    const reservationId = await this.syncCartItemWithCheckout(
+      rawCheckout.cartId,
+      variantId,
+      quantity,
+    );
+
     if (quantity === 0) {
       rawCheckout.items.splice(itemIndex, 1);
     } else {
       rawCheckout.items[itemIndex] = {
         ...rawCheckout.items[itemIndex],
         quantity,
+        ...(reservationId !== undefined && { reservationId }),
       };
     }
 
@@ -690,6 +774,10 @@ export class CheckoutService {
     // Comprehensive validation
     await this.checkoutValidator.validateForConfirmation(updated);
 
+    // Align cart + reservations with checkout before cart-backed order creation.
+    await this.ensureCartMatchesCheckout(updated);
+    await this.checkoutRedis.updateCheckout(updated);
+
     // Snapshot customer group for order (load full group details)
     let customerGroupSnapshot: {
       id: string;
@@ -712,6 +800,13 @@ export class CheckoutService {
       }
     }
 
+    const checkoutLineItems = updated.items.map((item) => ({
+      variantId: item.variantId,
+      productId: item.productId,
+      quantity: item.quantity,
+      reservationId: item.reservationId,
+    }));
+
     // Create order from checkout (snapshots customer group and addresses)
     const order = await this.orderService.createOrder(
       {
@@ -733,6 +828,7 @@ export class CheckoutService {
         metadata: {
           ...confirmCheckoutDto.metadata,
           checkoutId: checkoutId,
+          checkoutLineItems,
           customerGroupSnapshot, // Include group snapshot in metadata
           shippingMethod: updated.shippingMethod ?? null,
         },
@@ -838,6 +934,8 @@ export class CheckoutService {
         paymentId: paymentIntent.paymentId,
         gatewayTransactionId: paymentIntent.gatewayTransactionId,
         flowType: paymentIntent.flowType,
+        // Storefront lifecycle alias (client_side | redirect | hosted | offline).
+        type: paymentIntent.type,
         clientSecret: paymentIntent.clientSecret,
         redirectUrl: paymentIntent.redirectUrl,
       },

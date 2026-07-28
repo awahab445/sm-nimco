@@ -60,15 +60,15 @@ export function ShippingStep({ onNext, onBack }: ShippingStepProps) {
         if (!selectedMethodId && options.length > 0) {
           setSelectedMethodId(options[0].methodId);
         }
-      } catch (err: any) {
-        setOptionsError(err.message || 'Failed to load shipping options');
+      } catch (err: unknown) {
+        setOptionsError(err instanceof Error ? err.message : 'Failed to load shipping options');
       } finally {
         setLoadingOptions(false);
       }
     };
 
-    loadShippingOptions();
-  }, [checkout?.shippingAddress, checkout?.items, checkout?.subtotal, checkout?.currency, checkout?.customerGroupId]);
+    void loadShippingOptions();
+  }, [checkout?.shippingAddress, checkout?.items, checkout?.subtotal, checkout?.currency, checkout?.customerGroupId, selectedMethodId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,7 +90,7 @@ export function ShippingStep({ onNext, onBack }: ShippingStepProps) {
         estimatedDays: selectedOption.estimatedDays || 0,
       });
       onNext();
-    } catch (err) {
+    } catch {
       // Error is handled by context
     }
   };

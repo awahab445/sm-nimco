@@ -88,11 +88,11 @@ function CheckoutSuccessContent() {
 
       try {
         setLoading(true);
-        let orderData: any;
+        let orderData: Order;
         let payments: Awaited<ReturnType<typeof paymentApi.getPaymentsByOrder>> = [];
         if (orderId) {
           try {
-            orderData = await orderApi.getOrder(orderId);
+            orderData = (await orderApi.getOrder(orderId)) as Order;
             try {
               payments = await paymentApi.getPaymentsByOrder(orderData.id);
             } catch {
@@ -100,7 +100,7 @@ function CheckoutSuccessContent() {
             }
           } catch (orderIdErr) {
             if (email && orderNumber) {
-              orderData = await orderApi.trackOrder(orderNumber, email);
+              orderData = (await orderApi.trackOrder(orderNumber, email)) as Order;
               try {
                 payments = await paymentApi.trackPayments(orderNumber, email);
               } catch {
@@ -111,7 +111,7 @@ function CheckoutSuccessContent() {
             }
           }
         } else if (email && orderNumber) {
-          orderData = await orderApi.trackOrder(orderNumber, email);
+          orderData = (await orderApi.trackOrder(orderNumber, email)) as Order;
           try {
             payments = await paymentApi.trackPayments(orderNumber, email);
           } catch {
@@ -158,7 +158,7 @@ function CheckoutSuccessContent() {
       currency: order.currency,
       items: order.items,
     });
-  }, [order?.orderNumber, order?.items, order?.grandTotal, order?.taxTotal, order?.shippingTotal, order?.couponCode, order?.currency]);
+  }, [order?.orderNumber, order?.items, order?.grandTotal, order?.taxTotal, order?.shippingTotal, order?.shippingFee, order?.shippingPrice, order?.couponCode, order?.currency]);
 
   // Poll for payment status updates (only for online/redirect gateways; not for COD)
   useEffect(() => {

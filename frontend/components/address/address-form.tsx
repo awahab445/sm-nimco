@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Address } from '@/lib/api-client';
 import { storefrontUi } from '@/lib/storefront-ui';
 
@@ -35,12 +35,12 @@ export function AddressForm({
     },
   );
   const [formError, setFormError] = useState<string | null>(null);
+  const [prevAddress, setPrevAddress] = useState(address);
 
-  useEffect(() => {
-    if (address) {
-      setFormData(address);
-    }
-  }, [address]);
+  if (address !== prevAddress) {
+    setPrevAddress(address);
+    if (address) setFormData(address);
+  }
 
   const validateAddress = (addr: Address): boolean => {
     return !!(
@@ -65,8 +65,8 @@ export function AddressForm({
 
     try {
       await onSubmit(formData);
-    } catch (err: any) {
-      setFormError(err.message || 'Failed to save address');
+    } catch (err: unknown) {
+      setFormError(err instanceof Error ? err.message : 'Failed to save address');
     }
   };
 

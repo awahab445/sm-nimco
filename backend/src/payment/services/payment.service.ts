@@ -170,10 +170,13 @@ export class PaymentService {
       `Payment intent created: ${payment.id} for order ${orderId} using ${paymentMethodCode}`,
     );
 
+    // Canonical enum for API clients; `type` matches storefront lifecycle aliases.
+    const flowType = intentResult.flowType;
     return {
       paymentId: payment.id,
       gatewayTransactionId: intentResult.gatewayTransactionId,
-      flowType: intentResult.flowType,
+      flowType,
+      type: this.mapFlowTypeToFrontendType(String(flowType)),
       clientSecret: intentResult.clientSecret,
       redirectUrl: intentResult.redirectUrl,
       metadata: intentResult.metadata,
