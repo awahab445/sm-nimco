@@ -1,18 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useCheckout } from '@/lib/checkout-context';
-import { Address } from '@/lib/api-client';
+import { Address, shippingApi } from '@/lib/api-client';
+import {
+  PAKISTAN_PROVINCES,
+  getCitySelectOptions,
+} from '@/lib/constants/locations';
 import { storefrontUi } from '@/lib/storefront-ui';
 
-const PAKISTAN_PROVINCES = [
-  'Sindh',
-  'Punjab',
-  'Khyber Pakhtunkhwa',
-  'Balochistan',
-  'Azad Kashmir',
-  'Gilgit-Baltistan',
-] as const;
+type CityOption = { id: string; name: string };
 
 interface AddressStepProps {
   onNext: () => void;
@@ -44,6 +41,31 @@ export function AddressStep({ onNext }: AddressStepProps) {
     },
   );
   const [formError, setFormError] = useState<string | null>(null);
+
+  const [apiProvinces, setApiProvinces] = useState<string[]>([]);
+  const [billingCities, setBillingCities] = useState<CityOption[]>([]);
+  const [shippingCities, setShippingCities] = useState<CityOption[]>([]);
+
+  useEffect(() => {
+    shippingApi.getProvinces().then(setApiProvinces).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    const province = billingAddress.state?.trim();
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- async fetch on dependency change
+    if (!province) { setBillingCities([]); return; }
+    shippingApi.getCities(province).then(cities => setBillingCities(cities.map(c => ({ id: c.id, name: c.name })))).catch(() => setBillingCities([]));
+  }, [billingAddress.state]);
+
+  useEffect(() => {
+    const province = shippingAddress.state?.trim();
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- async fetch on dependency change
+    if (!province) { setShippingCities([]); return; }
+    shippingApi.getCities(province).then(cities => setShippingCities(cities.map(c => ({ id: c.id, name: c.name })))).catch(() => setShippingCities([]));
+  }, [shippingAddress.state]);
+
+  const billingCityOptions = getCitySelectOptions(billingAddress.state, billingAddress.city);
+  const shippingCityOptions = getCitySelectOptions(shippingAddress.state, shippingAddress.city);
 
   const validateAddress = (addr: Address): boolean => {
     const country = addr.country?.trim() || 'PK';
@@ -168,21 +190,6 @@ export function AddressStep({ onNext }: AddressStepProps) {
             />
           </div>
           <div>
-            <label htmlFor="billing-city" className={storefrontUi.labelMb}>
-              City *
-            </label>
-            <input
-              id="billing-city"
-              type="text"
-              required
-              value={billingAddress.city}
-              onChange={(e) =>
-                setBillingAddress({ ...billingAddress, city: e.target.value })
-              }
-              className={storefrontUi.input}
-            />
-          </div>
-          <div>
             <label htmlFor="billing-state" className={storefrontUi.labelMb}>
               State/Province *
             </label>
@@ -191,14 +198,38 @@ export function AddressStep({ onNext }: AddressStepProps) {
               required
               value={billingAddress.state}
               onChange={(e) =>
-                setBillingAddress({ ...billingAddress, state: e.target.value })
+                setBillingAddress({ ...billingAddress, state: e.target.value, city: '' })
               }
               className={storefrontUi.select}
             >
               <option value="">Select province</option>
-              {PAKISTAN_PROVINCES.map((province) => (
+              {(apiProvinces.length > 0 ? apiProvinces : PAKISTAN_PROVINCES).map((province) => (
                 <option key={province} value={province}>
                   {province}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label htmlFor="billing-city" className={storefrontUi.labelMb}>
+              City *
+            </label>
+            <select
+              id="billing-city"
+              required
+              disabled={!billingAddress.state}
+              value={billingAddress.city}
+              onChange={(e) =>
+                setBillingAddress({ ...billingAddress, city: e.target.value })
+              }
+              className={`${storefrontUi.select} disabled:cursor-not-allowed disabled:opacity-50`}
+            >
+              <option value="">
+                {!billingAddress.state ? 'Select Province first' : 'Select city'}
+              </option>
+              {(billingCities.length > 0 ? billingCities : billingCityOptions.map(c => ({ id: c, name: c }))).map((city) => (
+                <option key={city.id} value={city.name}>
+                  {city.name}
                 </option>
               ))}
             </select>
@@ -310,21 +341,6 @@ export function AddressStep({ onNext }: AddressStepProps) {
               />
             </div>
             <div>
-              <label htmlFor="shipping-city" className={storefrontUi.labelMb}>
-                City *
-              </label>
-              <input
-                id="shipping-city"
-                type="text"
-                required
-                value={shippingAddress.city}
-                onChange={(e) =>
-                  setShippingAddress({ ...shippingAddress, city: e.target.value })
-                }
-                className={storefrontUi.input}
-              />
-            </div>
-            <div>
               <label htmlFor="shipping-state" className={storefrontUi.labelMb}>
                 State/Province *
               </label>
@@ -333,14 +349,38 @@ export function AddressStep({ onNext }: AddressStepProps) {
                 required
                 value={shippingAddress.state}
                 onChange={(e) =>
-                  setShippingAddress({ ...shippingAddress, state: e.target.value })
+                  setShippingAddress({ ...shippingAddress, state: e.target.value, city: '' })
                 }
                 className={storefrontUi.select}
               >
                 <option value="">Select province</option>
-                {PAKISTAN_PROVINCES.map((province) => (
+                {(apiProvinces.length > 0 ? apiProvinces : PAKISTAN_PROVINCES).map((province) => (
                   <option key={province} value={province}>
                     {province}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="shipping-city" className={storefrontUi.labelMb}>
+                City *
+              </label>
+              <select
+                id="shipping-city"
+                required
+                disabled={!shippingAddress.state}
+                value={shippingAddress.city}
+                onChange={(e) =>
+                  setShippingAddress({ ...shippingAddress, city: e.target.value })
+                }
+                className={`${storefrontUi.select} disabled:cursor-not-allowed disabled:opacity-50`}
+              >
+                <option value="">
+                  {!shippingAddress.state ? 'Select Province first' : 'Select city'}
+                </option>
+                {(shippingCities.length > 0 ? shippingCities : shippingCityOptions.map(c => ({ id: c, name: c }))).map((city) => (
+                  <option key={city.id} value={city.name}>
+                    {city.name}
                   </option>
                 ))}
               </select>

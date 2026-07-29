@@ -18,19 +18,44 @@ import {
 import { formatVariantAttributes } from '@/lib/format-variant-attributes';
 import { trackAddPaymentInfo, trackAddShippingInfo } from '@/lib/analytics/events';
 import { checkoutItemToGa4Item } from '@/lib/analytics/mappers';
+import {
+  PAKISTAN_PROVINCES,
+  getCitySelectOptions,
+} from '@/lib/constants/locations';
+
+type CityOption = { id: string; name: string };
+
+function CheckoutLineThumb({
+  imageUrl,
+  alt,
+}: {
+  imageUrl?: string;
+  alt: string;
+}) {
+  const [failed, setFailed] = useState(false);
+  const showImage = Boolean(imageUrl) && !failed;
+
+  return (
+    <div className="h-14 w-14 flex-shrink-0 overflow-hidden rounded-md bg-muted">
+      {showImage ? (
+        <img
+          src={imageUrl}
+          alt={alt}
+          className="h-full w-full object-cover"
+          onError={() => setFailed(true)}
+        />
+      ) : (
+        <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">
+          No image
+        </div>
+      )}
+    </div>
+  );
+}
 
 const EMPTY_CART_ITEMS: CartItem[] = [];
 const DEFAULT_MIN_ORDER_VALUE = 800;
 const DEFAULT_FREE_DELIVERY_THRESHOLD = 2000;
-
-const PAKISTAN_PROVINCES = [
-  'Sindh',
-  'Punjab',
-  'Khyber Pakhtunkhwa',
-  'Balochistan',
-  'Azad Kashmir',
-  'Gilgit-Baltistan',
-] as const;
 
 const emptyAddress: Address = {
   firstName: '',
@@ -96,6 +121,10 @@ export function OnePageCheckout() {
   const clearCart = useCartStore((s) => s.clearCart);
   const cartItems = useCartStore((s) => s.cart?.items ?? EMPTY_CART_ITEMS);
 
+  const [apiProvinces, setApiProvinces] = useState<string[]>([]);
+  const [billingCities, setBillingCities] = useState<CityOption[]>([]);
+  const [shippingCities, setShippingCities] = useState<CityOption[]>([]);
+
   const [localQty, setLocalQty] = useState<Record<string, number>>({});
   const [updatingVariantId, setUpdatingVariantId] = useState<string | null>(null);
   const [fallbackProductImages, setFallbackProductImages] = useState<Record<string, string>>({});
@@ -133,6 +162,13 @@ export function OnePageCheckout() {
   );
   const [loadingShipping, setLoadingShipping] = useState(false);
   const [shippingError, setShippingError] = useState<string | null>(null);
+  const [matrixShippingFee, setMatrixShippingFee] = useState<{
+    rateAmount: number;
+    matchedBy: 'city' | 'province';
+    totalWeightKg: number;
+    isCodAvailable: boolean;
+  } | null>(null);
+  const [loadingMatrixFee, setLoadingMatrixFee] = useState(false);
 
   const [formError, setFormError] = useState<string | null>(null);
   const [showMinimumOrderModal, setShowMinimumOrderModal] = useState(false);
@@ -154,6 +190,22 @@ export function OnePageCheckout() {
 
   const hasSavedAddresses = savedAddresses.length > 0;
   const showAddressForm = !isAuthenticated || !hasSavedAddresses || useSavedAddressForm;
+
+  useEffect(() => {
+    shippingApi.getProvinces().then(setApiProvinces).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    const province = billingAddress.state?.trim();
+    if (!province) { setBillingCities([]); return; }
+    shippingApi.getCities(province).then(cities => setBillingCities(cities.map(c => ({ id: c.id, name: c.name })))).catch(() => setBillingCities([]));
+  }, [billingAddress.state]);
+
+  useEffect(() => {
+    const province = shippingAddress.state?.trim();
+    if (!province) { setShippingCities([]); return; }
+    shippingApi.getCities(province).then(cities => setShippingCities(cities.map(c => ({ id: c.id, name: c.name })))).catch(() => setShippingCities([]));
+  }, [shippingAddress.state]);
 
   // Load saved addresses when logged in
   useEffect(() => {
@@ -341,6 +393,11 @@ export function OnePageCheckout() {
     setLoadingShipping(true);
     setShippingError(null);
 
+    const cityList = useSameAddress ? billingCities : shippingCities;
+    const matchedCity = cityList.find(
+      (c) => c.name.toLowerCase() === effectiveShippingAddress.city.trim().toLowerCase(),
+    );
+
     shippingApi
       .calculateShipping({
         shippingAddress: {
@@ -357,12 +414,15 @@ export function OnePageCheckout() {
         subtotal: checkout.subtotal,
         currency: checkout.currency,
         customerGroupId: checkout.customerGroupId,
+        cityId: matchedCity?.id,
       })
       .then((options) => {
         if (!cancelled) {
           setShippingOptions(options);
           if (!selectedShippingId && options.length > 0) {
-            setSelectedShippingId(options[0].methodId);
+            const zoneOpt = options.find((o) => o.methodCode === 'courier_zone_rate');
+            const matrixOpt = options.find((o) => o.methodCode === 'matrix_rate');
+            setSelectedShippingId((zoneOpt ?? matrixOpt ?? options[0]).methodId);
           }
         }
       })
@@ -386,7 +446,73 @@ export function OnePageCheckout() {
     effectiveShippingAddress,
     selectedShippingId,
     useSameAddress,
+    billingCities,
+    shippingCities,
   ]);
+
+  // Live matrix rate as soon as province, city, and cart items are resolved
+  useEffect(() => {
+    const province = effectiveShippingAddress.state?.trim();
+    const city = effectiveShippingAddress.city?.trim();
+    const items = checkout?.items;
+
+    if (!province || !city || !items?.length) {
+      setMatrixShippingFee(null);
+      return;
+    }
+
+    let cancelled = false;
+    setLoadingMatrixFee(true);
+
+    shippingApi
+      .calculateShippingFee({
+        province,
+        city,
+        items: items.map((item) => ({
+          variantId: item.variantId,
+          quantity: item.quantity,
+        })),
+      })
+      .then((res) => {
+        if (cancelled) return;
+        if (res.data) {
+          setMatrixShippingFee({
+            rateAmount: res.data.rateAmount,
+            matchedBy: res.data.matchedBy,
+            totalWeightKg: res.data.totalWeightKg,
+            isCodAvailable: res.data.isCodAvailable,
+          });
+        } else {
+          setMatrixShippingFee(null);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setMatrixShippingFee(null);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingMatrixFee(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    effectiveShippingAddress.state,
+    effectiveShippingAddress.city,
+    checkout?.items,
+  ]);
+
+  // Drop COD selection when matrix rate disallows COD for this destination
+  useEffect(() => {
+    if (
+      matrixShippingFee != null &&
+      !matrixShippingFee.isCodAvailable &&
+      selectedPaymentCode === 'cod'
+    ) {
+      const fallback = paymentMethods.find((m) => m.code !== 'cod');
+      setSelectedPaymentCode(fallback?.code ?? null);
+    }
+  }, [matrixShippingFee, selectedPaymentCode, paymentMethods]);
 
   const selectedShipping = useMemo(
     () => shippingOptions.find((o) => o.methodId === selectedShippingId),
@@ -397,9 +523,13 @@ export function OnePageCheckout() {
   const parsedSubtotal = Number(checkout?.subtotal ?? 0);
   const parsedDiscount = Number(checkout?.discountTotal ?? 0);
   const parsedTax = Number(checkout?.taxTotal ?? 0);
-  // Prefer the live shipping selection — checkout.shippingTotal is 0 until saved server-side
+  // Prefer live matrix courier rate when available; else selected method / session total
   const shippingFee = Number(
-    selectedShipping != null ? selectedShipping.cost : checkout?.shippingTotal ?? 0,
+    matrixShippingFee != null
+      ? matrixShippingFee.rateAmount
+      : selectedShipping != null
+        ? selectedShipping.cost
+        : checkout?.shippingTotal ?? 0,
   );
   const displaySubtotal = parsedSubtotal;
   const displayDiscountTotal = parsedDiscount;
@@ -491,7 +621,13 @@ export function OnePageCheckout() {
       await updateShippingMethod({
         methodId: selectedShipping.methodId,
         methodName: selectedShipping.methodName,
-        cost: Number(selectedShipping.cost),
+        cost: Number(
+          qualifiesForFreeDelivery
+            ? 0
+            : matrixShippingFee != null
+              ? matrixShippingFee.rateAmount
+              : selectedShipping.cost,
+        ),
         currency: selectedShipping.currency,
         estimatedDays: selectedShipping.estimatedDays ?? 0,
       });
@@ -536,6 +672,8 @@ export function OnePageCheckout() {
 
   const inputClass = storefrontUi.input;
   const labelClass = storefrontUi.labelMb;
+  const billingCityOptions = getCitySelectOptions(billingAddress.state, billingAddress.city);
+  const shippingCityOptions = getCitySelectOptions(shippingAddress.state, shippingAddress.city);
 
   const isEmailLocked = isAuthenticated && !!user?.email;
 
@@ -665,29 +803,40 @@ export function OnePageCheckout() {
                     />
                   </div>
                   <div>
-                    <label htmlFor="billing-city" className={labelClass}>City *</label>
-                    <input
-                      id="billing-city"
-                      type="text"
-                      required
-                      value={billingAddress.city}
-                      onChange={(e) => setBillingAddress({ ...billingAddress, city: e.target.value })}
-                      className={inputClass}
-                    />
-                  </div>
-                  <div>
                     <label htmlFor="billing-state" className={labelClass}>State / Province *</label>
                     <select
                       id="billing-state"
                       required
                       value={billingAddress.state}
-                      onChange={(e) => setBillingAddress({ ...billingAddress, state: e.target.value })}
+                      onChange={(e) =>
+                        setBillingAddress({ ...billingAddress, state: e.target.value, city: '' })
+                      }
                       className={storefrontUi.select}
                     >
                       <option value="">Select province</option>
-                      {PAKISTAN_PROVINCES.map((province) => (
+                      {(apiProvinces.length > 0 ? apiProvinces : PAKISTAN_PROVINCES).map((province) => (
                         <option key={province} value={province}>
                           {province}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label htmlFor="billing-city" className={labelClass}>City *</label>
+                    <select
+                      id="billing-city"
+                      required
+                      disabled={!billingAddress.state}
+                      value={billingAddress.city}
+                      onChange={(e) => setBillingAddress({ ...billingAddress, city: e.target.value })}
+                      className={`${storefrontUi.select} disabled:cursor-not-allowed disabled:opacity-50`}
+                    >
+                      <option value="">
+                        {!billingAddress.state ? 'Select Province first' : 'Select city'}
+                      </option>
+                      {(billingCities.length > 0 ? billingCities : billingCityOptions.map(c => ({ id: c, name: c }))).map((city) => (
+                        <option key={city.id} value={city.name}>
+                          {city.name}
                         </option>
                       ))}
                     </select>
@@ -820,33 +969,42 @@ export function OnePageCheckout() {
                       />
                     </div>
                     <div>
-                      <label htmlFor="shipping-city" className={labelClass}>City *</label>
-                      <input
-                        id="shipping-city"
-                        type="text"
-                        required
-                        value={shippingAddress.city}
-                        onChange={(e) =>
-                          setShippingAddress({ ...shippingAddress, city: e.target.value })
-                        }
-                        className={inputClass}
-                      />
-                    </div>
-                    <div>
                       <label htmlFor="shipping-state" className={labelClass}>State / Province *</label>
                       <select
                         id="shipping-state"
                         required
                         value={shippingAddress.state}
                         onChange={(e) =>
-                          setShippingAddress({ ...shippingAddress, state: e.target.value })
+                          setShippingAddress({ ...shippingAddress, state: e.target.value, city: '' })
                         }
                         className={storefrontUi.select}
                       >
                         <option value="">Select province</option>
-                        {PAKISTAN_PROVINCES.map((province) => (
+                        {(apiProvinces.length > 0 ? apiProvinces : PAKISTAN_PROVINCES).map((province) => (
                           <option key={province} value={province}>
                             {province}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label htmlFor="shipping-city" className={labelClass}>City *</label>
+                      <select
+                        id="shipping-city"
+                        required
+                        disabled={!shippingAddress.state}
+                        value={shippingAddress.city}
+                        onChange={(e) =>
+                          setShippingAddress({ ...shippingAddress, city: e.target.value })
+                        }
+                        className={`${storefrontUi.select} disabled:cursor-not-allowed disabled:opacity-50`}
+                      >
+                        <option value="">
+                          {!shippingAddress.state ? 'Select Province first' : 'Select city'}
+                        </option>
+                        {(shippingCities.length > 0 ? shippingCities : shippingCityOptions.map(c => ({ id: c, name: c }))).map((city) => (
+                          <option key={city.id} value={city.name}>
+                            {city.name}
                           </option>
                         ))}
                       </select>
@@ -1042,7 +1200,14 @@ export function OnePageCheckout() {
               <p className="text-sm text-muted-foreground">Loading payment methods…</p>
             ) : (
               <div className="space-y-2">
-                {paymentMethods.map((m) => (
+                {paymentMethods
+                  .filter(
+                    (m) =>
+                      m.code !== 'cod' ||
+                      matrixShippingFee == null ||
+                      matrixShippingFee.isCodAvailable,
+                  )
+                  .map((m) => (
                   <label
                     key={m.code}
                     className={`flex cursor-pointer items-center gap-3 rounded-sm border p-4 transition-colors ${
@@ -1062,6 +1227,11 @@ export function OnePageCheckout() {
                     <span className="font-medium text-foreground">{m.name}</span>
                   </label>
                 ))}
+                {matrixShippingFee != null && !matrixShippingFee.isCodAvailable ? (
+                  <p className="text-xs text-muted-foreground">
+                    Cash on Delivery is not available for this destination/weight.
+                  </p>
+                ) : null}
               </div>
             )}
           </section>
@@ -1122,19 +1292,10 @@ export function OnePageCheckout() {
                           resolveImageUrl(fallbackCartImage) ??
                           resolveImageUrl(fallbackProductImage);
                         return (
-                      <div className="h-14 w-14 flex-shrink-0 overflow-hidden rounded-md bg-muted">
-                        {imageUrl ? (
-                          <img
-                            src={imageUrl}
-                            alt={item.productName || 'Product'}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">
-                            No image
-                          </div>
-                        )}
-                      </div>
+                      <CheckoutLineThumb
+                        imageUrl={imageUrl}
+                        alt={item.productName || 'Product'}
+                      />
                         );
                       })()}
                       {/* Name, variant attributes, price and quantity */}
@@ -1264,13 +1425,26 @@ export function OnePageCheckout() {
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Shipping</span>
                 <span>
-                  {selectedShipping
-                    ? qualifiesForFreeDelivery
+                  {loadingMatrixFee || loadingShipping
+                    ? 'Calculating…'
+                    : qualifiesForFreeDelivery
                       ? 'Free'
-                      : formatPrice(displayShippingTotal, displayCurrency)
-                    : '—'}
+                      : matrixShippingFee != null || selectedShipping
+                        ? formatPrice(displayShippingTotal, displayCurrency)
+                        : '—'}
                 </span>
               </div>
+              {matrixShippingFee != null && !qualifiesForFreeDelivery ? (
+                <p className="text-xs text-muted-foreground">
+                  Weight-based rate
+                  {matrixShippingFee.totalWeightKg > 0
+                    ? ` · ${matrixShippingFee.totalWeightKg.toFixed(2)} kg`
+                    : ''}
+                  {matrixShippingFee.matchedBy === 'city'
+                    ? ' · city match'
+                    : ' · province default'}
+                </p>
+              ) : null}
             </div>
             {!qualifiesForFreeDelivery &&
             freeDeliveryThreshold > 0 &&

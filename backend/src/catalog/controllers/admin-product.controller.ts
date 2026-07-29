@@ -9,7 +9,6 @@ import {
   Query,
   HttpCode,
   HttpStatus,
-  Req,
   UploadedFile,
   UseInterceptors,
   ParseFilePipeBuilder,
@@ -21,7 +20,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { randomUUID } from 'crypto';
-import type { Request, Response } from 'express';
+import type { Response } from 'express';
 import { ProductService } from '../services/product.service';
 import { VariantService } from '../services/variant.service';
 import { ImageService } from '../services/image.service';
@@ -234,20 +233,14 @@ export class AdminProductController {
         .build({ fileIsRequired: true }),
     )
     file: any,
-    @Req() req: Request,
   ) {
-    const publicBaseUrl = process.env.PUBLIC_BASE_URL?.trim();
-    const protoRaw =
-      (req.headers['x-forwarded-proto'] as string | undefined) || req.protocol;
-    const proto = protoRaw === 'https' ? 'https' : 'http';
-    const host = req.get('host')?.trim() || 'localhost:3000';
     const normalizedPath = file.path.replace(/\\/g, '/');
+    // Store relative /uploads/... paths; storefront resolves via Next rewrite.
     const publicPath = normalizedPath.startsWith('uploads/')
       ? `/${normalizedPath}`
       : `/uploads/products/${file.filename}`;
-    const baseUrl = publicBaseUrl || `${proto}://${host}`;
     return {
-      url: `${baseUrl}${publicPath}`,
+      url: publicPath,
       filename: file.filename,
     };
   }

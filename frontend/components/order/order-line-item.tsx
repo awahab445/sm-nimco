@@ -1,4 +1,6 @@
-import type { ReactNode } from 'react';
+'use client';
+
+import { useState, type ReactNode } from 'react';
 import {
   getOrderItemImageUrl,
   getOrderItemProductName,
@@ -24,15 +26,18 @@ export function OrderLineItem({
   const productName = getOrderItemProductName(item);
   const variantSubtitle = getOrderItemVariantSubtitle(item);
   const imageUrl = getOrderItemImageUrl(item);
+  const [failed, setFailed] = useState(false);
+  const showImage = Boolean(imageUrl) && !failed;
 
   return (
     <div className={`flex gap-3 ${className}`.trim()}>
       <div className="h-14 w-14 shrink-0 overflow-hidden rounded-md bg-muted">
-        {imageUrl ? (
+        {showImage ? (
           <img
-            src={imageUrl}
+            src={imageUrl!}
             alt={productName}
             className="h-full w-full object-cover"
+            onError={() => setFailed(true)}
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-[10px] text-muted-foreground">

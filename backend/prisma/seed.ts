@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { ensureAdminRbacSeeded } from '../src/admin/seed/ensure-admin-rbac';
 import { seedCatalogFromSnapshot } from './seed-catalog';
+import { seedCities } from './seed-cities';
 
 const prisma = new PrismaClient();
 
@@ -390,6 +391,9 @@ async function main() {
 
   // Catalog snapshot exported from local admin data (products, options, deals, theme)
   await seedCatalogFromSnapshot(prisma);
+
+  await seedCities(prisma);
+  console.log('Seed: courier zones and cities from cities-data.xlsb.');
 
   console.log('Seed completed: shipping/payment defaults + CMS starter data + catalog snapshot.');
 }

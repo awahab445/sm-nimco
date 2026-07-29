@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { CartItem } from '@/lib/api-client';
 import { getCartItemImageUrl } from '@/lib/use-cart-item-fallback-images';
 
@@ -18,18 +19,21 @@ export function CartLineItemThumb({
   size = 'md',
 }: CartLineItemThumbProps) {
   const imageUrl = getCartItemImageUrl(item, fallbackProductImages);
+  const [failed, setFailed] = useState(false);
+  const showImage = Boolean(imageUrl) && !failed;
 
   return (
     <div
       className={`${sizeClass[size]} shrink-0 overflow-hidden rounded-lg border border-border bg-muted shadow-sm`}
     >
-      {imageUrl ? (
+      {showImage ? (
         <img
           src={imageUrl}
           alt={item.productName || 'Product'}
           className="h-full w-full object-cover"
           loading="lazy"
           decoding="async"
+          onError={() => setFailed(true)}
         />
       ) : (
         <div className="flex h-full w-full items-center justify-center text-[10px] text-muted-foreground">

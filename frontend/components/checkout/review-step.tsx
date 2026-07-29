@@ -1,11 +1,29 @@
 'use client';
 
+import { useState } from 'react';
 import { useCheckout } from '@/lib/checkout-context';
 import { useRouter } from 'next/navigation';
 import { useCartStore } from '@/lib/cart.store';
 import { formatPrice } from '@/lib/currency';
 import { formatVariantAttributes } from '@/lib/format-variant-attributes';
+import { resolveImageUrl } from '@/lib/resolve-image-url';
 import { storefrontUi } from '@/lib/storefront-ui';
+
+function ReviewItemThumb({ src, alt }: { src: string; alt: string }) {
+  const [failed, setFailed] = useState(false);
+  const imageUrl = resolveImageUrl(src);
+  if (!imageUrl || failed) return null;
+  return (
+    <div className="flex-shrink-0">
+      <img
+        src={imageUrl}
+        alt={alt}
+        className="h-20 w-20 rounded-md object-cover"
+        onError={() => setFailed(true)}
+      />
+    </div>
+  );
+}
 
 interface ReviewStepProps {
   onBack: () => void;
@@ -75,15 +93,12 @@ export function ReviewStep({ onBack }: ReviewStepProps) {
           <div className={`${storefrontUi.card} divide-y divide-border/60`}>
             {checkout.items.map((item, index) => (
               <div key={index} className="p-4 flex gap-4">
-                {item.productImage && (
-                  <div className="flex-shrink-0">
-                    <img
-                      src={item.productImage}
-                      alt={item.productName || 'Product'}
-                      className="w-20 h-20 object-cover rounded-md"
-                    />
-                  </div>
-                )}
+                {item.productImage ? (
+                  <ReviewItemThumb
+                    src={item.productImage}
+                    alt={item.productName || 'Product'}
+                  />
+                ) : null}
                 <div className="flex-1 flex justify-between">
                   <div>
                     <div className="font-medium text-foreground">

@@ -830,6 +830,7 @@ export const shippingApi = {
     subtotal?: number;
     currency?: string;
     customerGroupId?: string;
+    cityId?: string;
   }) =>
     fetchApi<Array<{
       methodId: string;
@@ -840,6 +841,46 @@ export const shippingApi = {
       estimatedDays?: number;
       description?: string;
     }>>('/shipping/calculate', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  getProvinces: () =>
+    fetchApi<string[]>('/shipping/provinces'),
+
+  getCities: (province: string) =>
+    fetchApi<Array<{
+      id: string;
+      cityCode: string;
+      name: string;
+      province: string;
+      zoneId: string;
+    }>>(`/shipping/cities?province=${encodeURIComponent(province)}`),
+
+  calculateShippingFee: (data: {
+    province: string;
+    city?: string;
+    totalWeightKg?: number;
+    items?: Array<{
+      variantId: string;
+      quantity: number;
+      weight?: number;
+    }>;
+  }) =>
+    fetchApi<{
+      success: boolean;
+      data: {
+        rateId: string;
+        province: string;
+        city: string | null;
+        minWeightKg: number;
+        maxWeightKg: number;
+        rateAmount: number;
+        isCodAvailable: boolean;
+        matchedBy: 'city' | 'province';
+        totalWeightKg: number;
+      } | null;
+    }>('/shipping/rates/calculate', {
       method: 'POST',
       body: JSON.stringify(data),
     }),

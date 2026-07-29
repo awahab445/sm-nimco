@@ -47,6 +47,12 @@ export function ShippingZonesHome() {
         </div>
         <div className="flex flex-wrap gap-2">
           <Link
+            href="/shipping/rates"
+            className="rounded-lg border border-zinc-300 px-4 py-2 text-center text-sm font-medium dark:border-zinc-600"
+          >
+            Shipping rates (CSV)
+          </Link>
+          <Link
             href="/shipping/zones/new"
             className={adminUi.btnPrimary}
           >

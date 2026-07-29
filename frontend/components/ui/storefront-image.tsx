@@ -36,10 +36,11 @@ export function StorefrontImage({
     index < candidates.length ? candidates[index]! : PRODUCT_IMAGE_PLACEHOLDER;
 
   const isAbsolute = /^https?:\/\//i.test(currentSrc);
+  const isUploads = currentSrc.startsWith('/uploads/') || currentSrc.includes('/uploads/');
   const isSvg = /\.svg(?:$|\?)/i.test(currentSrc);
   // Always skip the optimizer for API uploads + SVG (avoids /_next/image 400s).
   const unoptimized =
-    isSvg || isAbsolute || isBackendAssetUrl(currentSrc);
+    isSvg || isAbsolute || isUploads || isBackendAssetUrl(currentSrc);
 
   return (
     <Image

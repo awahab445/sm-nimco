@@ -1,8 +1,14 @@
 'use client';
 
-import { useState } from 'react';
-import { Address } from '@/lib/api-client';
+import { useState, useEffect } from 'react';
+import { Address, shippingApi } from '@/lib/api-client';
+import {
+  PAKISTAN_PROVINCES,
+  getCitySelectOptions,
+} from '@/lib/constants/locations';
 import { storefrontUi } from '@/lib/storefront-ui';
+
+type CityOption = { id: string; name: string };
 
 interface AddressFormProps {
   address?: Address;
@@ -30,7 +36,7 @@ export function AddressForm({
       city: '',
       state: '',
       postalCode: '',
-      country: '',
+      country: 'PK',
       phone: '',
     },
   );
@@ -41,6 +47,23 @@ export function AddressForm({
     setPrevAddress(address);
     if (address) setFormData(address);
   }
+
+  const [apiProvinces, setApiProvinces] = useState<string[]>([]);
+  const [apiCities, setApiCities] = useState<CityOption[]>([]);
+
+  useEffect(() => {
+    shippingApi.getProvinces().then(setApiProvinces).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    const province = formData.state?.trim();
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- async fetch on dependency change
+    if (!province) { setApiCities([]); return; }
+    shippingApi.getCities(province).then(cities => setApiCities(cities.map(c => ({ id: c.id, name: c.name })))).catch(() => setApiCities([]));
+  }, [formData.state]);
+
+  const cityOptions = getCitySelectOptions(formData.state, formData.city);
+  const cityDisabled = !formData.state;
 
   const validateAddress = (addr: Address): boolean => {
     return !!(
@@ -64,7 +87,7 @@ export function AddressForm({
     }
 
     try {
-      await onSubmit(formData);
+      await onSubmit({ ...formData, country: formData.country || 'PK' });
     } catch (err: unknown) {
       setFormError(err instanceof Error ? err.message : 'Failed to save address');
     }
@@ -72,6 +95,10 @@ export function AddressForm({
 
   const updateField = (field: keyof Address, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleProvinceChange = (province: string) => {
+    setFormData((prev) => ({ ...prev, state: province, city: '' }));
   };
 
   const fieldInput = storefrontUi.input;
@@ -156,30 +183,45 @@ export function AddressForm({
           />
         </div>
         <div>
-          <label htmlFor="city" className={storefrontUi.label}>
-            City *
-          </label>
-          <input
-            id="city"
-            type="text"
-            required
-            value={formData.city}
-            onChange={(e) => updateField('city', e.target.value)}
-            className={`mt-1 ${fieldInput}`}
-          />
-        </div>
-        <div>
           <label htmlFor="state" className={storefrontUi.label}>
             State/Province *
           </label>
-          <input
+          <select
             id="state"
-            type="text"
             required
             value={formData.state}
-            onChange={(e) => updateField('state', e.target.value)}
-            className={`mt-1 ${fieldInput}`}
-          />
+            onChange={(e) => handleProvinceChange(e.target.value)}
+            className={`mt-1 ${storefrontUi.select}`}
+          >
+            <option value="">Select province</option>
+            {(apiProvinces.length > 0 ? apiProvinces : PAKISTAN_PROVINCES).map((province) => (
+              <option key={province} value={province}>
+                {province}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label htmlFor="city" className={storefrontUi.label}>
+            City *
+          </label>
+          <select
+            id="city"
+            required
+            disabled={cityDisabled}
+            value={formData.city}
+            onChange={(e) => updateField('city', e.target.value)}
+            className={`mt-1 ${storefrontUi.select} disabled:cursor-not-allowed disabled:opacity-50`}
+          >
+            <option value="">
+              {cityDisabled ? 'Select Province first' : 'Select city'}
+            </option>
+            {(apiCities.length > 0 ? apiCities : cityOptions.map(c => ({ id: c, name: c }))).map((city) => (
+              <option key={city.id} value={city.name}>
+                {city.name}
+              </option>
+            ))}
+          </select>
         </div>
         <div>
           <label htmlFor="postalCode" className={storefrontUi.label}>
@@ -201,10 +243,9 @@ export function AddressForm({
           <input
             id="country"
             type="text"
-            required
-            value={formData.country}
-            onChange={(e) => updateField('country', e.target.value)}
-            className={`mt-1 ${fieldInput}`}
+            readOnly
+            value="PK"
+            className={`mt-1 ${fieldInput} bg-muted cursor-not-allowed`}
           />
         </div>
         <div className="md:col-span-2">

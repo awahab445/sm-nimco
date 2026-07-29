@@ -281,12 +281,28 @@ export async function seedCatalogFromSnapshot(prisma: PrismaClient): Promise<voi
     // Images — replace set for this product to avoid orphans
     await prisma.productImage.deleteMany({ where: { productId } });
     for (const image of product.images ?? []) {
+      const rawUrl = asString(image.url);
+      const url =
+        rawUrl.startsWith('http://') || rawUrl.startsWith('https://')
+          ? (() => {
+              try {
+                const parsed = new URL(rawUrl);
+                return parsed.pathname.startsWith('/uploads/')
+                  ? parsed.pathname
+                  : rawUrl;
+              } catch {
+                return rawUrl;
+              }
+            })()
+          : rawUrl.startsWith('uploads/')
+            ? `/${rawUrl}`
+            : rawUrl;
       await prisma.productImage.create({
         data: {
           id: asString(image.id),
           productId,
           variantId: asNullableString(image.variantId),
-          url: asString(image.url),
+          url,
           altText: asNullableString(image.altText),
           position: asNumber(image.position),
           isPrimary: asBool(image.isPrimary, false),

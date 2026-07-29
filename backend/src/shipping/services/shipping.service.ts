@@ -31,6 +31,8 @@ import {
   OrderDeliveredEvent,
 } from '../events/shipping.events';
 import { ShippingEligibilityEvaluator } from './shipping-eligibility-evaluator.service';
+import { ShippingRateService } from './shipping-rate.service';
+import { CourierCityService } from './courier-city.service';
 
 @Injectable()
 export class ShippingService {
@@ -40,6 +42,8 @@ export class ShippingService {
     private readonly prisma: PrismaService,
     private readonly eventEmitter: EventEmitter2,
     private readonly eligibilityEvaluator: ShippingEligibilityEvaluator,
+    private readonly shippingRateService: ShippingRateService,
+    private readonly courierCityService: CourierCityService,
   ) {}
 
   // ============================================================================
@@ -447,10 +451,10 @@ export class ShippingService {
       customerGroupId,
     } = dto;
 
-    // Calculate total weight
-    const totalWeight = items.reduce(
-      (sum, item) => sum + (item.weight || 0) * item.quantity,
-      0,
+    // Prefer explicit item weights; fill gaps from product/variant catalog weights
+    const totalWeight = await this.shippingRateService.resolveTotalWeightKg(
+      undefined,
+      items,
     );
 
     // Calculate total amount if not provided
@@ -461,14 +465,73 @@ export class ShippingService {
     // Find matching zones (sorted by priority)
     const zones = await this.findMatchingZones(shippingAddress);
 
-    if (zones.length === 0) {
-      this.logger.warn(
-        `No shipping zones found for address: ${JSON.stringify(shippingAddress)}`,
+    const options: ShippingOptionDto[] = [];
+
+    // Matrix courier rates (city → province fallback by weight band)
+    let matrixFee: Awaited<
+      ReturnType<ShippingRateService['calculateShippingFee']>
+    > = null;
+    if (shippingAddress.region?.trim()) {
+      matrixFee = await this.shippingRateService.calculateShippingFee(
+        shippingAddress.region,
+        shippingAddress.city,
+        totalWeight,
       );
-      return [];
+    }
+    if (matrixFee) {
+      options.push({
+        methodId: matrixFee.rateId,
+        methodCode: 'matrix_rate',
+        methodName: 'Standard Delivery',
+        cost: matrixFee.rateAmount,
+        currency,
+        description:
+          matrixFee.matchedBy === 'city'
+            ? `Courier rate for ${matrixFee.city}`
+            : `Courier rate for ${matrixFee.province}`,
+      });
     }
 
-    const options: ShippingOptionDto[] = [];
+    // Weight-tier zone rate (5kg / 10kg / overage) from CourierCity → CourierZone
+    const cityId = dto.cityId?.trim();
+    let zoneInfo = cityId
+      ? await this.courierCityService.resolveZoneForCityId(cityId)
+      : null;
+    if (!zoneInfo && shippingAddress.city?.trim()) {
+      zoneInfo = await this.courierCityService.resolveZoneForCity(
+        shippingAddress.city,
+      );
+    }
+    if (zoneInfo) {
+      const cost = this.courierCityService.calculateTierCost(totalWeight, {
+        rateUpTo5kg: zoneInfo.rateUpTo5kg,
+        rateUpTo10kg: zoneInfo.rateUpTo10kg,
+        perKgOver10kg: zoneInfo.perKgOver10kg,
+      });
+      const tierLabel =
+        totalWeight <= 5
+          ? '≤5kg'
+          : totalWeight <= 10
+            ? '≤10kg'
+            : '>10kg';
+      options.push({
+        methodId: zoneInfo.zoneId,
+        methodCode: 'courier_zone_rate',
+        methodName: 'Courier Zone Delivery',
+        cost,
+        currency,
+        description: `${zoneInfo.zoneName} (${tierLabel}) for ${shippingAddress.city || 'city'}`,
+      });
+    }
+
+    if (zones.length === 0) {
+      if (options.length === 0) {
+        this.logger.warn(
+          `No shipping zones or matrix rates for address: ${JSON.stringify(shippingAddress)}`,
+        );
+      }
+      return options.sort((a, b) => a.cost - b.cost);
+    }
 
     // Get methods for each zone (higher priority zones first)
     for (const zone of zones) {
@@ -543,7 +606,11 @@ export class ShippingService {
       }
 
       // If we found methods in a high-priority zone, break (don't check lower priority zones)
-      if (options.length > 0 && zone.priority > 0) {
+      // Keep any matrix option already added
+      const zoneMethodCount = options.filter(
+        (o) => o.methodCode !== 'matrix_rate',
+      ).length;
+      if (zoneMethodCount > 0 && zone.priority > 0) {
         break;
       }
     }

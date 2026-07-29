@@ -3,7 +3,6 @@ import {
   IsNotEmpty,
   IsOptional,
   IsNumber,
-  IsObject,
   ValidateNested,
   IsArray,
   Min,
@@ -70,6 +69,11 @@ export class CalculateShippingDto {
   @IsOptional()
   @IsString()
   customerGroupId?: string;
+
+  /** Optional courier city UUID — preferred over city name for zone lookup. */
+  @IsOptional()
+  @IsString()
+  cityId?: string;
 }
 
 export class ShippingOptionDto {
