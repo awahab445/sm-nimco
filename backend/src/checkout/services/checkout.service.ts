@@ -262,6 +262,8 @@ export class CheckoutService {
       discountTotal: 0,
       shippingTotal: 0,
       taxTotal: 0,
+      gstAmount: 0,
+      taxRatePercent: 18,
       grandTotal: 0,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),

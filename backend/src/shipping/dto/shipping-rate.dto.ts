@@ -44,6 +44,10 @@ export class CalculateFeeCartItemDto {
   @IsNumber()
   @Min(0)
   weight?: number;
+
+  @IsOptional()
+  @IsString()
+  shippingWeightUnit?: string;
 }
 
 export class UpdateShippingRateDto {

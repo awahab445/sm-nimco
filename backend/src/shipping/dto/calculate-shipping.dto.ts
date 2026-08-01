@@ -44,6 +44,10 @@ export class CartItemDto {
   @IsNumber()
   @Min(0)
   weight?: number;
+
+  @IsOptional()
+  @IsString()
+  shippingWeightUnit?: string;
 }
 
 export class CalculateShippingDto {
@@ -80,8 +84,14 @@ export class ShippingOptionDto {
   methodId: string;
   methodCode: string;
   methodName: string;
+  /** Calculated courier/method cost before free-delivery override. */
   cost: number;
   currency: string;
   estimatedDays?: number;
   description?: string;
+  /** Same as cost before free-delivery; retained when shipping is free. */
+  originalCost?: number;
+  /** Charge applied at checkout (0 when free delivery qualifies). */
+  effectivePrice?: number;
+  isFreeShipping?: boolean;
 }

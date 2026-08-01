@@ -55,6 +55,9 @@ export interface CheckoutSession {
   discountTotal: number;
   shippingTotal: number;
   taxTotal: number;
+  /** Explicit GST amount (same as taxTotal for storefront GST). */
+  gstAmount?: number;
+  taxRatePercent?: number;
   grandTotal: number;
   status: 'pending' | 'completed' | 'expired' | 'cancelled';
   createdAt: string;

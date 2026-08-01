@@ -21,6 +21,9 @@ export function ShippingStep({ onNext, onBack }: ShippingStepProps) {
     currency: string;
     estimatedDays?: number;
     description?: string;
+    originalCost?: number;
+    effectivePrice?: number;
+    isFreeShipping?: boolean;
   }>>([]);
   const [selectedMethodId, setSelectedMethodId] = useState<string | null>(
     checkout?.shippingMethod?.methodId || null,
@@ -85,7 +88,11 @@ export function ShippingStep({ onNext, onBack }: ShippingStepProps) {
       await updateShippingMethod({
         methodId: selectedOption.methodId,
         methodName: selectedOption.methodName,
-        cost: selectedOption.cost,
+        cost: Number(
+          selectedOption.isFreeShipping
+            ? (selectedOption.effectivePrice ?? 0)
+            : (selectedOption.effectivePrice ?? selectedOption.cost),
+        ),
         currency: selectedOption.currency,
         estimatedDays: selectedOption.estimatedDays || 0,
       });
@@ -148,7 +155,24 @@ export function ShippingStep({ onNext, onBack }: ShippingStepProps) {
                         )}
                       </div>
                       <div className="ml-4 text-lg font-semibold text-foreground">
-                        {formatPrice(option.cost, option.currency)}
+                        {option.isFreeShipping ? (
+                          <span className="inline-flex items-baseline gap-2">
+                            {(option.originalCost ?? 0) > 0 ? (
+                              <span className="text-sm font-normal text-muted-foreground line-through">
+                                {formatPrice(
+                                  Number(option.originalCost),
+                                  option.currency,
+                                )}
+                              </span>
+                            ) : null}
+                            <span className="text-success">FREE</span>
+                          </span>
+                        ) : (
+                          formatPrice(
+                            Number(option.effectivePrice ?? option.cost),
+                            option.currency,
+                          )
+                        )}
                       </div>
                     </div>
                   </div>

@@ -546,12 +546,28 @@ function VariantsPanel({
   const [note, setNote] = useState<string | null>(null);
   const [editing, setEditing] = useState<ProductVariant | null>(null);
   const [price, setPrice] = useState('');
+  const [editShippingWeight, setEditShippingWeight] = useState('1');
+  const [editShippingWeightUnit, setEditShippingWeightUnit] = useState<'KG' | 'G'>('KG');
   const [active, setActive] = useState(true);
   const [saving, setSaving] = useState(false);
   const [bulkOptionCode, setBulkOptionCode] = useState('');
   const [bulkOptionValue, setBulkOptionValue] = useState('');
   const [bulkPrice, setBulkPrice] = useState('');
   const [bulkSaving, setBulkSaving] = useState(false);
+  const [weightOverrides, setWeightOverrides] = useState<
+    Record<string, { weight: string; unit: 'KG' | 'G' }>
+  >({});
+  const [savingWeightId, setSavingWeightId] = useState<string | null>(null);
+
+  function draftForVariant(v: ProductVariant): { weight: string; unit: 'KG' | 'G' } {
+    return (
+      weightOverrides[v.id] ?? {
+        weight: String(v.shippingWeight ?? 1),
+        unit: String(v.shippingWeightUnit ?? 'KG').toUpperCase() === 'G' ? 'G' : 'KG',
+      }
+    );
+  }
+
   function variantOptionsLabel(v: ProductVariant): string {
     if (v.optionValues && v.optionValues.length > 0) {
       return v.optionValues
@@ -609,6 +625,10 @@ function VariantsPanel({
   function openEdit(v: ProductVariant) {
     setEditing(v);
     setPrice(String(moneyToNumber(v.price)));
+    setEditShippingWeight(String(v.shippingWeight ?? 1));
+    setEditShippingWeightUnit(
+      String(v.shippingWeightUnit ?? 'KG').toUpperCase() === 'G' ? 'G' : 'KG',
+    );
     setActive(v.isActive);
     setErr(null);
     setNote(null);
@@ -622,6 +642,11 @@ function VariantsPanel({
       setErr('Invalid price');
       return;
     }
+    const nextWeight = parseFloat(editShippingWeight);
+    if (!Number.isFinite(nextWeight) || nextWeight < 0) {
+      setErr('Invalid shipping weight');
+      return;
+    }
     setSaving(true);
     setErr(null);
     setNote(null);
@@ -629,6 +654,8 @@ function VariantsPanel({
       await updateVariant(editing.id, {
         price: nextPrice,
         isActive: active,
+        shippingWeight: nextWeight,
+        shippingWeightUnit: editShippingWeightUnit,
       });
       setEditing(null);
       onChanged();
@@ -636,6 +663,41 @@ function VariantsPanel({
       setErr(formatApiError(e2));
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function saveInlineShippingWeight(variantId: string) {
+    const current = product.variants.find((v) => v.id === variantId);
+    if (!current) return;
+    const draft = draftForVariant(current);
+    const nextWeight = parseFloat(draft.weight);
+    if (!Number.isFinite(nextWeight) || nextWeight < 0) {
+      setErr('Invalid shipping weight');
+      return;
+    }
+    const currentUnit =
+      String(current.shippingWeightUnit ?? 'KG').toUpperCase() === 'G' ? 'G' : 'KG';
+    if (Number(current.shippingWeight ?? 1) === nextWeight && currentUnit === draft.unit) {
+      return;
+    }
+    setSavingWeightId(variantId);
+    setErr(null);
+    try {
+      await updateVariant(variantId, {
+        shippingWeight: nextWeight,
+        shippingWeightUnit: draft.unit,
+      });
+      setWeightOverrides((prev) => {
+        const next = { ...prev };
+        delete next[variantId];
+        return next;
+      });
+      setNote('Shipping weight updated.');
+      onChanged();
+    } catch (e2) {
+      setErr(formatApiError(e2));
+    } finally {
+      setSavingWeightId(null);
     }
   }
 
@@ -771,19 +833,23 @@ function VariantsPanel({
         </form>
       ) : null}
       <div className="overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-800">
-        <table className="w-full min-w-[640px] text-left text-sm">
+        <table className="w-full min-w-[820px] text-left text-sm">
           <thead className="bg-zinc-50 dark:bg-zinc-900/50">
             <tr>
               <th className="px-3 py-2 font-medium">SKU</th>
               <th className="px-3 py-2 font-medium">Name</th>
               <th className="px-3 py-2 font-medium">Options</th>
               <th className="px-3 py-2 font-medium">Price</th>
+              <th className="px-3 py-2 font-medium">Shipping Weight</th>
+              <th className="px-3 py-2 font-medium">Unit</th>
               <th className="px-3 py-2 font-medium">Active</th>
               <th className="px-3 py-2 font-medium text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
-            {product.variants.map((v) => (
+            {product.variants.map((v) => {
+              const draft = draftForVariant(v);
+              return (
               <tr key={v.id}>
                 <td className="px-3 py-2">{v.sku}</td>
                 <td className="px-3 py-2">{v.name}</td>
@@ -791,6 +857,66 @@ function VariantsPanel({
                   {variantOptionsLabel(v)}
                 </td>
                 <td className="px-3 py-2">{formatPrice(moneyToNumber(v.price))}</td>
+                <td className="px-3 py-2">
+                  <input
+                    type="number"
+                    min={0}
+                    step="0.001"
+                    value={draft.weight}
+                    disabled={savingWeightId === v.id}
+                    onChange={(e) =>
+                      setWeightOverrides((prev) => ({
+                        ...prev,
+                        [v.id]: { ...draft, weight: e.target.value },
+                      }))
+                    }
+                    onBlur={() => void saveInlineShippingWeight(v.id)}
+                    className="w-24 rounded-lg border border-zinc-300 px-2 py-1.5 text-sm dark:border-zinc-600 dark:bg-zinc-900"
+                  />
+                </td>
+                <td className="px-3 py-2">
+                  <select
+                    value={draft.unit}
+                    disabled={savingWeightId === v.id}
+                    onChange={(e) => {
+                      const unit = e.target.value === 'G' ? 'G' : 'KG';
+                      setWeightOverrides((prev) => ({
+                        ...prev,
+                        [v.id]: { ...draft, unit },
+                      }));
+                      void (async () => {
+                        const nextWeight = parseFloat(draft.weight);
+                        if (!Number.isFinite(nextWeight) || nextWeight < 0) {
+                          setErr('Invalid shipping weight');
+                          return;
+                        }
+                        setSavingWeightId(v.id);
+                        setErr(null);
+                        try {
+                          await updateVariant(v.id, {
+                            shippingWeight: nextWeight,
+                            shippingWeightUnit: unit,
+                          });
+                          setWeightOverrides((prev) => {
+                            const next = { ...prev };
+                            delete next[v.id];
+                            return next;
+                          });
+                          setNote('Shipping weight updated.');
+                          onChanged();
+                        } catch (e2) {
+                          setErr(formatApiError(e2));
+                        } finally {
+                          setSavingWeightId(null);
+                        }
+                      })();
+                    }}
+                    className="rounded-lg border border-zinc-300 px-2 py-1.5 text-sm dark:border-zinc-600 dark:bg-zinc-900"
+                  >
+                    <option value="KG">kg</option>
+                    <option value="G">g</option>
+                  </select>
+                </td>
                 <td className="px-3 py-2">{v.isActive ? 'Yes' : 'No'}</td>
                 <td className="px-3 py-2 text-right">
                   <button type="button" className="mr-3 underline" onClick={() => openEdit(v)}>
@@ -801,7 +927,8 @@ function VariantsPanel({
                   </button>
                 </td>
               </tr>
-            ))}
+              );
+            })}
           </tbody>
         </table>
       </div>
@@ -832,6 +959,31 @@ function VariantsPanel({
                   onChange={(e) => setPrice(e.target.value)}
                   className="mt-1 w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900"
                 />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                  Shipping weight
+                </label>
+                <div className="mt-1 flex gap-2">
+                  <input
+                    type="number"
+                    min={0}
+                    step="0.001"
+                    value={editShippingWeight}
+                    onChange={(e) => setEditShippingWeight(e.target.value)}
+                    className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900"
+                  />
+                  <select
+                    value={editShippingWeightUnit}
+                    onChange={(e) =>
+                      setEditShippingWeightUnit(e.target.value === 'G' ? 'G' : 'KG')
+                    }
+                    className="w-24 rounded-lg border border-zinc-300 px-2 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900"
+                  >
+                    <option value="KG">kg</option>
+                    <option value="G">g</option>
+                  </select>
+                </div>
               </div>
               <label className="flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-200">
                 <input type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} />

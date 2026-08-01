@@ -220,21 +220,41 @@ export class TaxService {
     taxClassId: string | null,
   ): Promise<Tax[]> {
     const now = new Date();
+    const dateFilter = {
+      AND: [
+        {
+          OR: [{ startDate: null }, { startDate: { lte: now } }],
+        },
+        {
+          OR: [{ endDate: null }, { endDate: { gte: now } }],
+        },
+      ],
+    };
+
+    const baseWhere = {
+      country,
+      ...(taxClassId && { taxClassId }),
+      isActive: true,
+      ...dateFilter,
+    };
+
+    // Prefer region-specific rates when a region is provided; fall back to
+    // country-wide rates (region = null) so GST still matches with a province set.
+    if (region) {
+      const regional = await this.prisma.tax.findMany({
+        where: { ...baseWhere, region },
+        include: { taxClass: true },
+        orderBy: { rate: 'desc' },
+      });
+      if (regional.length > 0) {
+        return regional.map((t) => this.mapTaxFromPrisma(t));
+      }
+    }
 
     const taxes = await this.prisma.tax.findMany({
       where: {
-        country,
-        ...(region && { region }),
-        ...(taxClassId && { taxClassId }),
-        isActive: true,
-        AND: [
-          {
-            OR: [{ startDate: null }, { startDate: { lte: now } }],
-          },
-          {
-            OR: [{ endDate: null }, { endDate: { gte: now } }],
-          },
-        ],
+        ...baseWhere,
+        region: null,
       },
       include: { taxClass: true },
       orderBy: { rate: 'desc' },

@@ -24,4 +24,11 @@ export class UpdateStoreOrderSettingsDto {
   @Min(AMOUNT_MIN)
   @Max(AMOUNT_MAX)
   freeDeliveryThreshold?: number;
+
+  @IsOptional()
+  @Transform(toOptionalNumber)
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  @Max(100)
+  shippingGstPercentage?: number;
 }

@@ -4,6 +4,7 @@ export type StoreOrderSettings = {
   id: string;
   minimumOrderAmount: number;
   freeDeliveryThreshold: number;
+  shippingGstPercentage: number;
   updatedAt: string;
   updatedByAdminUserId: string | null;
 };
@@ -11,6 +12,7 @@ export type StoreOrderSettings = {
 export type StoreOrderSettingsInput = {
   minimumOrderAmount?: number;
   freeDeliveryThreshold?: number;
+  shippingGstPercentage?: number;
 };
 
 export async function fetchStoreOrderSettings(): Promise<StoreOrderSettings> {

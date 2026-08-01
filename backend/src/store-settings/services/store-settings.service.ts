@@ -18,6 +18,7 @@ export type AdminThemeSettings = PublicThemeSettings & {
 export type PublicStoreOrderSettings = {
   minimumOrderAmount: number;
   freeDeliveryThreshold: number;
+  shippingGstPercentage: number;
 };
 
 export type AdminStoreOrderSettings = PublicStoreOrderSettings & {
@@ -28,6 +29,7 @@ export type AdminStoreOrderSettings = PublicStoreOrderSettings & {
 
 const DEFAULT_MINIMUM_ORDER_AMOUNT = 800;
 const DEFAULT_FREE_DELIVERY_THRESHOLD = 2000;
+const DEFAULT_SHIPPING_GST_PERCENTAGE = 18;
 
 @Injectable()
 export class StoreSettingsService {
@@ -73,6 +75,10 @@ export class StoreSettingsService {
         row.freeDeliveryThreshold,
         DEFAULT_FREE_DELIVERY_THRESHOLD,
       ),
+      shippingGstPercentage: this.toNumber(
+        row.shippingGstPercentage,
+        DEFAULT_SHIPPING_GST_PERCENTAGE,
+      ),
     };
   }
 
@@ -95,6 +101,9 @@ export class StoreSettingsService {
         minimumOrderAmount: new Prisma.Decimal(DEFAULT_MINIMUM_ORDER_AMOUNT),
         freeDeliveryThreshold: new Prisma.Decimal(
           DEFAULT_FREE_DELIVERY_THRESHOLD,
+        ),
+        shippingGstPercentage: new Prisma.Decimal(
+          DEFAULT_SHIPPING_GST_PERCENTAGE,
         ),
       },
     });
@@ -148,10 +157,11 @@ export class StoreSettingsService {
   ): Promise<AdminStoreOrderSettings> {
     if (
       dto.minimumOrderAmount === undefined &&
-      dto.freeDeliveryThreshold === undefined
+      dto.freeDeliveryThreshold === undefined &&
+      dto.shippingGstPercentage === undefined
     ) {
       throw new BadRequestException(
-        'Provide minimumOrderAmount and/or freeDeliveryThreshold to update.',
+        'Provide minimumOrderAmount, freeDeliveryThreshold, and/or shippingGstPercentage to update.',
       );
     }
 
@@ -164,6 +174,9 @@ export class StoreSettingsService {
         }),
         ...(dto.freeDeliveryThreshold !== undefined && {
           freeDeliveryThreshold: new Prisma.Decimal(dto.freeDeliveryThreshold),
+        }),
+        ...(dto.shippingGstPercentage !== undefined && {
+          shippingGstPercentage: new Prisma.Decimal(dto.shippingGstPercentage),
         }),
         ...(adminUserId && { updatedByAdminUserId: adminUserId }),
       },

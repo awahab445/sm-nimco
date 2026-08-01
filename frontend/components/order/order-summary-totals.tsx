@@ -27,19 +27,17 @@ export function OrderSummaryTotals({
         </div>
       )}
       <div className="flex justify-between text-muted-foreground">
+        <span>GST (18%)</span>
+        <span>{formatPrice(taxTotal, currency)}</span>
+      </div>
+      <div className="flex justify-between text-muted-foreground">
         <span>Shipping</span>
         <span>
           {shippingTotal > 0
             ? formatPrice(shippingTotal, currency)
-            : 'Free'}
+            : 'FREE'}
         </span>
       </div>
-      {taxTotal > 0 && (
-        <div className="flex justify-between text-muted-foreground">
-          <span>Tax</span>
-          <span>{formatPrice(taxTotal, currency)}</span>
-        </div>
-      )}
       <div className="mt-2 border-t border-border pt-2">
         <div className="flex justify-between text-lg font-semibold text-brand-text">
           <span>Total</span>

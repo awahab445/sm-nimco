@@ -4,9 +4,8 @@ export type CourierZone = {
   id: string;
   code: string;
   name: string;
-  rateUpTo5kg: number;
-  rateUpTo10kg: number;
-  perKgOver10kg: number;
+  rateLessThan10kg: number;
+  rateGreaterOrEqual10kg: number;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -14,9 +13,8 @@ export type CourierZone = {
 
 export type UpdateCourierZoneBody = {
   name?: string;
-  rateUpTo5kg?: number;
-  rateUpTo10kg?: number;
-  perKgOver10kg?: number;
+  rateLessThan10kg?: number;
+  rateGreaterOrEqual10kg?: number;
 };
 
 export async function fetchCourierZones() {

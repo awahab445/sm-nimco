@@ -16,24 +16,26 @@ model Product {
   description      String?
   shortDescription String?                       @map("short_description")
   basePrice        Decimal                       @map("base_price") @db.Decimal(10, 2)
-  cost             Decimal?                      @db.Decimal(10, 2)
-  weight           Decimal?                      @db.Decimal(10, 2)
-  status           String                        @default("draft")
-  visibility       String                        @default("both")
-  taxClassId       String?                       @map("tax_class_id")
-  attributes       Json?                         @default("{}")
-  metaData         Json?                         @default("{}") @map("meta_data")
-  createdAt        DateTime                      @default(now()) @map("created_at")
-  updatedAt        DateTime                      @updatedAt @map("updated_at")
-  deletedAt        DateTime?                     @map("deleted_at")
-  inventoryItems   InventoryItem[]
-  categories       ProductCategory[]
-  images           ProductImage[]
-  optionValues     ProductOptionValueOnProduct[]
-  options          ProductOptionOnProduct[]
-  variants         ProductVariant[]
-  bundleDealItems  BundleDealItem[]
-  wishlistItems    WishlistItem[]
+  cost               Decimal?                      @db.Decimal(10, 2)
+  weight             Decimal?                      @db.Decimal(10, 2)
+  shippingWeight     Float                         @default(1.0) @map("shipping_weight")
+  shippingWeightUnit String                        @default("KG") @map("shipping_weight_unit")
+  status             String                        @default("draft")
+  visibility         String                        @default("both")
+  taxClassId         String?                       @map("tax_class_id")
+  attributes         Json?                         @default("{}")
+  metaData           Json?                         @default("{}") @map("meta_data")
+  createdAt          DateTime                      @default(now()) @map("created_at")
+  updatedAt          DateTime                      @updatedAt @map("updated_at")
+  deletedAt          DateTime?                     @map("deleted_at")
+  inventoryItems     InventoryItem[]
+  categories         ProductCategory[]
+  images             ProductImage[]
+  optionValues       ProductOptionValueOnProduct[]
+  options            ProductOptionOnProduct[]
+  variants           ProductVariant[]
+  bundleDealItems    BundleDealItem[]
+  wishlistItems      WishlistItem[]
 
   @@index([status, deletedAt])
   @@index([slug])
@@ -43,23 +45,25 @@ model Product {
 }
 
 model ProductVariant {
-  id             String               @id @default(uuid())
-  productId      String               @map("product_id")
-  sku            String               @unique
-  name           String
-  price          Decimal              @db.Decimal(10, 2)
-  cost           Decimal?             @db.Decimal(10, 2)
-  weight         Decimal?             @db.Decimal(10, 2)
-  attributes     Json?                @default("{}")
-  position       Int                  @default(0)
-  isActive       Boolean              @default(true) @map("is_active")
-  createdAt      DateTime             @default(now()) @map("created_at")
-  updatedAt      DateTime             @updatedAt @map("updated_at")
-  inventoryItems InventoryItem[]
-  images         ProductImage[]
-  product        Product              @relation(fields: [productId], references: [id], onDelete: Cascade)
-  optionValues   VariantOptionValue[]
-  bundleDealItems BundleDealItem[]
+  id                 String               @id @default(uuid())
+  productId          String               @map("product_id")
+  sku                String               @unique
+  name               String
+  price              Decimal              @db.Decimal(10, 2)
+  cost               Decimal?             @db.Decimal(10, 2)
+  weight             Decimal?             @db.Decimal(10, 2)
+  shippingWeight     Float                @default(1.0) @map("shipping_weight")
+  shippingWeightUnit String               @default("KG") @map("shipping_weight_unit")
+  attributes         Json?                @default("{}")
+  position           Int                  @default(0)
+  isActive           Boolean              @default(true) @map("is_active")
+  createdAt          DateTime             @default(now()) @map("created_at")
+  updatedAt          DateTime             @updatedAt @map("updated_at")
+  inventoryItems     InventoryItem[]
+  images             ProductImage[]
+  product            Product              @relation(fields: [productId], references: [id], onDelete: Cascade)
+  optionValues       VariantOptionValue[]
+  bundleDealItems    BundleDealItem[]
 
   @@index([productId])
   @@index([sku])
@@ -548,16 +552,17 @@ model ShippingRate {
 }
 
 model CourierZone {
-  id             String        @id @default(uuid())
-  code           String        @unique @db.VarChar(1)
-  name           String        @db.VarChar(50)
-  rateUpTo5kg    Decimal       @map("rate_up_to_5kg") @db.Decimal(12, 2)
-  rateUpTo10kg   Decimal       @map("rate_up_to_10kg") @db.Decimal(12, 2)
-  perKgOver10kg  Decimal       @map("per_kg_over_10kg") @db.Decimal(12, 2)
-  isActive       Boolean       @default(true) @map("is_active")
-  createdAt      DateTime      @default(now()) @map("created_at")
-  updatedAt      DateTime      @updatedAt @map("updated_at")
-  cities         CourierCity[]
+  id                        String        @id @default(uuid())
+  code                      String        @unique @db.VarChar(1)
+  name                      String        @db.VarChar(50)
+  /// Per-kg rate when total order weight is strictly under 10kg.
+  rateLessThan10kg          Decimal       @map("rate_less_than_10kg") @db.Decimal(12, 2)
+  /// Per-kg rate when total order weight is 10kg or more.
+  rateGreaterOrEqual10kg    Decimal       @map("rate_greater_or_equal_10kg") @db.Decimal(12, 2)
+  isActive                  Boolean       @default(true) @map("is_active")
+  createdAt                 DateTime      @default(now()) @map("created_at")
+  updatedAt                 DateTime      @updatedAt @map("updated_at")
+  cities                    CourierCity[]
 
   @@map("courier_zones")
 }
@@ -1050,6 +1055,8 @@ model StoreSettings {
   minimumOrderAmount     Decimal  @default(800) @map("minimum_order_amount") @db.Decimal(12, 2)
   /// Subtotal at or above this amount qualifies for free delivery (shipping total = 0).
   freeDeliveryThreshold  Decimal  @default(2000) @map("free_delivery_threshold") @db.Decimal(12, 2)
+  /// GST percentage applied on top of calculated shipping (e.g. 18 → fee × 1.18).
+  shippingGstPercentage  Decimal  @default(18) @map("shipping_gst_percentage") @db.Decimal(5, 2)
   updatedAt              DateTime @updatedAt @map("updated_at")
   updatedByAdminUserId   String?  @map("updated_by_admin_user_id")
 

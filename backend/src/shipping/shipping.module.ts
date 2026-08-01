@@ -17,12 +17,13 @@ import { ShippingEligibilityEvaluator } from './services/shipping-eligibility-ev
 import { ShippingEventHandlers } from './events/shipping.handlers';
 import { CatalogModule } from '../catalog/catalog.module';
 import { AuthModule } from '../auth/auth.module';
+import { StoreSettingsModule } from '../store-settings/store-settings.module';
 import { AdminJwtAuthGuard } from '../admin/guards/admin-jwt-auth.guard';
 import { AdminPermissionsGuard } from '../admin/guards/admin-permissions.guard';
 import { AdminRbacService } from '../admin/services/admin-rbac.service';
 
 @Module({
-  imports: [CatalogModule, AuthModule],
+  imports: [CatalogModule, AuthModule, StoreSettingsModule],
   controllers: [
     ShippingController,
     AdminShippingController,

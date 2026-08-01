@@ -405,6 +405,7 @@ export interface StorefrontSiteConfig {
 export interface StorefrontStoreSettings {
   minimumOrderAmount: number;
   freeDeliveryThreshold: number;
+  shippingGstPercentage?: number;
 }
 
 export type StorefrontSocialPlatform =
@@ -840,6 +841,9 @@ export const shippingApi = {
       currency: string;
       estimatedDays?: number;
       description?: string;
+      originalCost?: number;
+      effectivePrice?: number;
+      isFreeShipping?: boolean;
     }>>('/shipping/calculate', {
       method: 'POST',
       body: JSON.stringify(data),

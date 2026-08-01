@@ -13,6 +13,8 @@ export type ProductVariant = {
   price: string | number;
   cost?: string | number | null;
   weight?: string | number | null;
+  shippingWeight?: number | null;
+  shippingWeightUnit?: string | null;
   attributes: Record<string, unknown>;
   position: number;
   isActive: boolean;
@@ -83,6 +85,8 @@ export type ProductDetail = {
   basePrice: string | number;
   cost: string | number | null;
   weight: string | number | null;
+  shippingWeight?: number | null;
+  shippingWeightUnit?: string | null;
   status: string;
   visibility: string;
   taxClassId: string | null;
@@ -177,6 +181,8 @@ export type CreateProductBody = {
   basePrice: number;
   cost?: number | null;
   weight?: number | null;
+  shippingWeight?: number | null;
+  shippingWeightUnit?: string | null;
   status?: ProductStatus;
   visibility?: ProductVisibility;
   taxClassId?: string | null;
@@ -217,6 +223,8 @@ export type CreateVariantBody = {
   price: number;
   cost?: number;
   weight?: number;
+  shippingWeight?: number;
+  shippingWeightUnit?: string;
   attributes?: Record<string, unknown>;
   position?: number;
   isActive?: boolean;

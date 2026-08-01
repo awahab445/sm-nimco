@@ -156,6 +156,9 @@ export function OnePageCheckout() {
     currency: string;
     estimatedDays?: number;
     description?: string;
+    originalCost?: number;
+    effectivePrice?: number;
+    isFreeShipping?: boolean;
   }>>([]);
   const [selectedShippingId, setSelectedShippingId] = useState<string | null>(
     checkout?.shippingMethod?.methodId || null
@@ -422,7 +425,12 @@ export function OnePageCheckout() {
           if (!selectedShippingId && options.length > 0) {
             const zoneOpt = options.find((o) => o.methodCode === 'courier_zone_rate');
             const matrixOpt = options.find((o) => o.methodCode === 'matrix_rate');
-            setSelectedShippingId((zoneOpt ?? matrixOpt ?? options[0]).methodId);
+            const standardOpt = options.find(
+              (o) => o.methodName === 'Standard Courier Delivery',
+            );
+            setSelectedShippingId(
+              (zoneOpt ?? standardOpt ?? matrixOpt ?? options[0]).methodId,
+            );
           }
         }
       })
@@ -528,13 +536,14 @@ export function OnePageCheckout() {
     matrixShippingFee != null
       ? matrixShippingFee.rateAmount
       : selectedShipping != null
-        ? selectedShipping.cost
+        ? (selectedShipping.originalCost ?? selectedShipping.cost)
         : checkout?.shippingTotal ?? 0,
   );
   const displaySubtotal = parsedSubtotal;
   const displayDiscountTotal = parsedDiscount;
   const qualifiesForFreeDelivery =
-    freeDeliveryThreshold > 0 && displaySubtotal >= freeDeliveryThreshold;
+    (freeDeliveryThreshold > 0 && displaySubtotal >= freeDeliveryThreshold) ||
+    Boolean(selectedShipping?.isFreeShipping);
   const displayShippingTotal = qualifiesForFreeDelivery
     ? 0
     : Number.isFinite(shippingFee)
@@ -622,11 +631,11 @@ export function OnePageCheckout() {
         methodId: selectedShipping.methodId,
         methodName: selectedShipping.methodName,
         cost: Number(
-          qualifiesForFreeDelivery
-            ? 0
+          qualifiesForFreeDelivery || selectedShipping.isFreeShipping
+            ? (selectedShipping.effectivePrice ?? 0)
             : matrixShippingFee != null
               ? matrixShippingFee.rateAmount
-              : selectedShipping.cost,
+              : (selectedShipping.effectivePrice ?? selectedShipping.cost),
         ),
         currency: selectedShipping.currency,
         estimatedDays: selectedShipping.estimatedDays ?? 0,
@@ -1183,7 +1192,21 @@ export function OnePageCheckout() {
                       )}
                     </div>
                     <span className="font-medium text-foreground">
-                      {formatPrice(Number(opt.cost), opt.currency || displayCurrency)}
+                      {opt.isFreeShipping || qualifiesForFreeDelivery ? (
+                        <span className="inline-flex items-baseline gap-2">
+                          {(opt.originalCost ?? opt.cost) > 0 ? (
+                            <span className="text-sm font-normal text-muted-foreground line-through">
+                              {formatPrice(
+                                Number(opt.originalCost ?? opt.cost),
+                                opt.currency || displayCurrency,
+                              )}
+                            </span>
+                          ) : null}
+                          <span className="text-success">FREE</span>
+                        </span>
+                      ) : (
+                        formatPrice(Number(opt.effectivePrice ?? opt.cost), opt.currency || displayCurrency)
+                      )}
                     </span>
                   </label>
                 ))}
@@ -1428,7 +1451,16 @@ export function OnePageCheckout() {
                   {loadingMatrixFee || loadingShipping
                     ? 'Calculating…'
                     : qualifiesForFreeDelivery
-                      ? 'Free'
+                      ? (
+                        <span className="inline-flex items-baseline gap-2">
+                          {shippingFee > 0 ? (
+                            <span className="text-sm font-normal text-muted-foreground line-through">
+                              {formatPrice(shippingFee, displayCurrency)}
+                            </span>
+                          ) : null}
+                          <span className="text-success">FREE</span>
+                        </span>
+                      )
                       : matrixShippingFee != null || selectedShipping
                         ? formatPrice(displayShippingTotal, displayCurrency)
                         : '—'}

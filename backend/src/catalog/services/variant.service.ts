@@ -7,6 +7,7 @@ import {
 import { PrismaService } from './prisma.service';
 import { CreateVariantDto } from '../dto/create-variant.dto';
 import { UpdateVariantDto } from '../dto/update-variant.dto';
+import { normalizeShippingWeightUnit } from '../../shipping/utils/shipping-weight';
 import { ProductService } from './product.service';
 
 @Injectable()
@@ -59,6 +60,14 @@ export class VariantService {
         price: createVariantDto.price,
         cost: createVariantDto.cost,
         weight: createVariantDto.weight,
+        ...(createVariantDto.shippingWeight !== undefined && {
+          shippingWeight: createVariantDto.shippingWeight,
+        }),
+        ...(createVariantDto.shippingWeightUnit !== undefined && {
+          shippingWeightUnit: normalizeShippingWeightUnit(
+            createVariantDto.shippingWeightUnit,
+          ),
+        }),
         attributes: createVariantDto.attributes || {},
         position: createVariantDto.position || 0,
         isActive: createVariantDto.isActive ?? true,
@@ -147,6 +156,8 @@ export class VariantService {
       price: product.basePrice,
       cost: product.cost,
       weight: product.weight,
+      shippingWeight: product.shippingWeight,
+      shippingWeightUnit: product.shippingWeightUnit,
       attributes: (product.attributes as object) ?? {},
       position: 0,
       isActive: true,
@@ -177,6 +188,14 @@ export class VariantService {
         }),
         ...(updateVariantDto.weight !== undefined && {
           weight: updateVariantDto.weight,
+        }),
+        ...(updateVariantDto.shippingWeight !== undefined && {
+          shippingWeight: updateVariantDto.shippingWeight,
+        }),
+        ...(updateVariantDto.shippingWeightUnit !== undefined && {
+          shippingWeightUnit: normalizeShippingWeightUnit(
+            updateVariantDto.shippingWeightUnit,
+          ),
         }),
         ...(updateVariantDto.attributes !== undefined && {
           attributes: updateVariantDto.attributes,
@@ -239,6 +258,8 @@ export class VariantService {
         name: true,
         type: true,
         basePrice: true,
+        shippingWeight: true,
+        shippingWeightUnit: true,
       },
     });
     if (!product) {
@@ -397,6 +418,8 @@ export class VariantService {
             sku: skuCandidate,
             name,
             price: product.basePrice,
+            shippingWeight: product.shippingWeight,
+            shippingWeightUnit: product.shippingWeightUnit,
             position: existingVariants.length + created,
             isActive: true,
             attributes: {

@@ -49,6 +49,8 @@ function buildCreateBody(fields: {
   price: number;
   parsedCost?: number;
   parsedWeight?: number;
+  parsedShippingWeight?: number;
+  shippingWeightUnit: string;
   status: ProductStatus;
   visibility: ProductVisibility;
   taxClassId: string;
@@ -67,6 +69,10 @@ function buildCreateBody(fields: {
     ...(fields.shortDescription ? { shortDescription: fields.shortDescription } : {}),
     ...(fields.parsedCost !== undefined ? { cost: fields.parsedCost } : {}),
     ...(fields.parsedWeight !== undefined ? { weight: fields.parsedWeight } : {}),
+    ...(fields.parsedShippingWeight !== undefined
+      ? { shippingWeight: fields.parsedShippingWeight }
+      : {}),
+    shippingWeightUnit: fields.shippingWeightUnit,
     ...(fields.taxClassId ? { taxClassId: fields.taxClassId } : {}),
     ...(fields.attributes !== undefined ? { attributes: fields.attributes } : {}),
     ...(fields.metaData !== undefined ? { metaData: fields.metaData } : {}),
@@ -82,6 +88,8 @@ function buildUpdateBody(fields: {
   price: number;
   parsedCost?: number;
   parsedWeight?: number;
+  parsedShippingWeight?: number;
+  shippingWeightUnit: string;
   status: ProductStatus;
   visibility: ProductVisibility;
   taxClassId: string;
@@ -100,6 +108,8 @@ function buildUpdateBody(fields: {
     shortDescription: fields.shortDescription || null,
     cost: fields.parsedCost ?? null,
     weight: fields.parsedWeight ?? null,
+    shippingWeight: fields.parsedShippingWeight ?? 1,
+    shippingWeightUnit: fields.shippingWeightUnit,
     taxClassId: fields.taxClassId || null,
     attributes: fields.attributes,
     metaData: fields.metaData,
@@ -124,6 +134,8 @@ export function ProductForm({ mode, initial, productId, onCancel, onSaved }: Pro
   const [basePrice, setBasePrice] = useState('0');
   const [cost, setCost] = useState('');
   const [weight, setWeight] = useState('');
+  const [shippingWeight, setShippingWeight] = useState('1');
+  const [shippingWeightUnit, setShippingWeightUnit] = useState<'KG' | 'G'>('KG');
   const [status, setStatus] = useState<ProductStatus>('draft');
   const [visibility, setVisibility] = useState<ProductVisibility>('both');
   const [taxClassId, setTaxClassId] = useState('');
@@ -144,6 +156,12 @@ export function ProductForm({ mode, initial, productId, onCancel, onSaved }: Pro
       setBasePrice(String(moneyToNumber(initial.basePrice)));
       setCost(initial.cost != null ? String(moneyToNumber(initial.cost)) : '');
       setWeight(initial.weight != null ? String(moneyToNumber(initial.weight)) : '');
+      setShippingWeight(
+        initial.shippingWeight != null ? String(initial.shippingWeight) : '1',
+      );
+      setShippingWeightUnit(
+        String(initial.shippingWeightUnit ?? 'KG').toUpperCase() === 'G' ? 'G' : 'KG',
+      );
       setStatus(initial.status as ProductStatus);
       setVisibility(initial.visibility as ProductVisibility);
       setTaxClassId(initial.taxClassId ?? '');
@@ -172,6 +190,13 @@ export function ProductForm({ mode, initial, productId, onCancel, onSaved }: Pro
       setError('Weight must be a valid non-negative number');
       return;
     }
+    const parsedShippingWeight = shippingWeight.trim()
+      ? parseFloat(shippingWeight)
+      : 1;
+    if (!Number.isFinite(parsedShippingWeight) || parsedShippingWeight < 0) {
+      setError('Shipping weight must be a valid non-negative number');
+      return;
+    }
     let attributes: Record<string, unknown> | undefined;
     let metaData: Record<string, unknown> | undefined;
     let editAttributes: Record<string, unknown> = {};
@@ -198,6 +223,8 @@ export function ProductForm({ mode, initial, productId, onCancel, onSaved }: Pro
       price,
       parsedCost,
       parsedWeight,
+      parsedShippingWeight,
+      shippingWeightUnit,
       status,
       visibility,
       taxClassId: taxClassId.trim(),
@@ -369,7 +396,9 @@ export function ProductForm({ mode, initial, productId, onCancel, onSaved }: Pro
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">Weight</label>
+          <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+            Catalog weight (optional)
+          </label>
           <input
             type="number"
             min={0}
@@ -378,6 +407,31 @@ export function ProductForm({ mode, initial, productId, onCancel, onSaved }: Pro
             onChange={(e) => setWeight(e.target.value)}
             className="mt-1 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-50"
           />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+            Shipping weight
+          </label>
+          <div className="mt-1 flex gap-2">
+            <input
+              type="number"
+              min={0}
+              step="0.001"
+              value={shippingWeight}
+              onChange={(e) => setShippingWeight(e.target.value)}
+              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-50"
+            />
+            <select
+              value={shippingWeightUnit}
+              onChange={(e) =>
+                setShippingWeightUnit(e.target.value === 'G' ? 'G' : 'KG')
+              }
+              className="w-24 rounded-lg border border-zinc-300 bg-white px-2 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-50"
+            >
+              <option value="KG">kg</option>
+              <option value="G">g</option>
+            </select>
+          </div>
         </div>
       </div>
 

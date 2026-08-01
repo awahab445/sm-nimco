@@ -75,6 +75,15 @@ export class CreateProductDto {
   @Min(0)
   weight?: number;
 
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  shippingWeight?: number;
+
+  @IsString()
+  @IsOptional()
+  shippingWeightUnit?: string;
+
   @IsEnum(ProductStatus)
   @IsOptional()
   status?: ProductStatus;

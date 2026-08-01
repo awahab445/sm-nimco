@@ -31,6 +31,15 @@ export class CreateVariantDto {
   @Min(0)
   weight?: number;
 
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  shippingWeight?: number;
+
+  @IsString()
+  @IsOptional()
+  shippingWeightUnit?: string;
+
   @IsObject()
   @IsOptional()
   attributes?: Record<string, any>;

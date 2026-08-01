@@ -100,9 +100,17 @@ function asJson(value: unknown): Prisma.InputJsonValue {
 
 /**
  * Upserts catalog snapshot from prisma/seed-data.json (exported from local admin data).
- * Safe to re-run: uses upsert / recreate-children patterns with stable IDs.
+ * Safe to re-run only on empty catalogs — skips entirely when any products exist.
  */
 export async function seedCatalogFromSnapshot(prisma: PrismaClient): Promise<void> {
+  const existingProducts = await prisma.product.count();
+  if (existingProducts > 0) {
+    console.log(
+      `Seed catalog: skip snapshot — ${existingProducts} product(s) already exist (no overwrite).`,
+    );
+    return;
+  }
+
   const dataPath = path.join(__dirname, 'seed-data.json');
   if (!fs.existsSync(dataPath)) {
     console.log('Seed catalog: prisma/seed-data.json not found — skipping catalog snapshot.');

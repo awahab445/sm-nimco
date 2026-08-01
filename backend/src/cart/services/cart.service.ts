@@ -28,6 +28,10 @@ import {
   CartExpiredEvent,
 } from '../events/cart.events';
 import { InsufficientStockException } from '../errors/insufficient-stock.exception';
+import {
+  DEFAULT_GST_RATE_PERCENT,
+  calculateGstAmount,
+} from '../../tax/constants/gst';
 import { AddBundleToCartDto } from '../dto/add-bundle-to-cart.dto';
 import { UpdateBundleCartDto } from '../dto/update-bundle-cart.dto';
 import { BundleDealService } from '../../bundle-deals/services/bundle-deal.service';
@@ -90,6 +94,10 @@ export class CartService {
       bundles?: Array<
         CartBundleGroup & { bundleGroupId: string; imageUrl?: string }
       >;
+      subtotal: number;
+      taxTotal: number;
+      gstAmount: number;
+      taxRatePercent: number;
     }
   > {
     const cart = await this.cartRedis.getCart(cartId);
@@ -188,8 +196,21 @@ export class CartService {
       (item) => !item.isBundleComponent,
     );
     const bundles = this.buildBundlesView(cart, enrichedItems);
+    const subtotal = visibleItems.reduce(
+      (sum, item) => sum + Number(item.price) * Number(item.quantity),
+      0,
+    );
+    const gstAmount = calculateGstAmount(subtotal, DEFAULT_GST_RATE_PERCENT);
 
-    return { ...cart, items: visibleItems, bundles };
+    return {
+      ...cart,
+      items: visibleItems,
+      bundles,
+      subtotal,
+      taxTotal: gstAmount,
+      gstAmount,
+      taxRatePercent: DEFAULT_GST_RATE_PERCENT,
+    };
   }
 
   private buildBundlesView(

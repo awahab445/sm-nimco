@@ -21,6 +21,7 @@
     "prisma:push:accept-loss": "prisma db push --accept-data-loss",
     "prisma:fix-migrations": "node scripts/fix-migration-history.cjs",
     "prisma:seed": "prisma db seed",
+    "seed:cities": "node scripts/seed-cities.cjs",
     "prisma:export-seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/export-seed-data.ts",
     "admin:reset-password": "node scripts/reset-admin-password.cjs",
     "export:meta-commerce": "ts-node --compiler-options {\"module\":\"CommonJS\"} scripts/export-meta-commerce-catalog.ts",

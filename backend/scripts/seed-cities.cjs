@@ -1,15 +1,14 @@
-import { PrismaClient } from '@prisma/client';
-import { Prisma } from '@prisma/client';
-import * as path from 'path';
-import * as XLSX from 'xlsx';
+/**
+ * Dedicated cities/zones/GST seed entrypoint (CommonJS).
+ * Does not touch products, categories, or deals.
+ *
+ * Usage: npm run seed:cities
+ */
+const { PrismaClient, Prisma } = require('@prisma/client');
+const path = require('path');
+const XLSX = require('xlsx');
 
-type ZonePerKgRates = {
-  name: string;
-  rateLessThan10kg: number;
-  rateGreaterOrEqual10kg: number;
-};
-
-const VIA_TO_PROVINCE: Record<string, string> = {
+const VIA_TO_PROVINCE = {
   LAHORE: 'Punjab',
   FAISALABAD: 'Punjab',
   RAWALPINDI: 'Punjab',
@@ -126,7 +125,6 @@ const VIA_TO_PROVINCE: Record<string, string> = {
   'GILGIT-BALTISTAN': 'Gilgit-Baltistan',
 };
 
-/** City-name keywords that always map to Gilgit-Baltistan. */
 const GILGIT_BALTISTAN_NAME_MARKERS = [
   'GILGIT',
   'SKARDU',
@@ -147,8 +145,7 @@ const GILGIT_BALTISTAN_NAME_MARKERS = [
   'ISHKOMAN',
 ];
 
-/** Fallback dual per-kg rates from cities-data Rates sheet (Per Kg). */
-const DEFAULT_ZONE_RATES: Record<string, ZonePerKgRates> = {
+const DEFAULT_ZONE_RATES = {
   A: { name: 'Zone A', rateLessThan10kg: 35, rateGreaterOrEqual10kg: 35 },
   B: { name: 'Zone B', rateLessThan10kg: 45, rateGreaterOrEqual10kg: 45 },
   C: { name: 'Zone C', rateLessThan10kg: 50, rateGreaterOrEqual10kg: 50 },
@@ -158,16 +155,14 @@ const DEFAULT_ZONE_RATES: Record<string, ZonePerKgRates> = {
 
 const DEFAULT_SHIPPING_GST_PERCENTAGE = 18;
 
-function cellString(value: unknown): string {
+function cellString(value) {
   if (value == null) return '';
   if (typeof value === 'string') return value;
-  if (typeof value === 'number' || typeof value === 'boolean') {
-    return String(value);
-  }
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
   return '';
 }
 
-function resolveProvince(via: string | undefined, cityName?: string): string {
+function resolveProvince(via, cityName) {
   const nameUpper = String(cityName ?? '')
     .trim()
     .toUpperCase();
@@ -182,22 +177,11 @@ function resolveProvince(via: string | undefined, cityName?: string): string {
   return VIA_TO_PROVINCE[key] ?? 'Punjab';
 }
 
-/**
- * Parse Rates sheet: left block is Min 10Kg Charge / Per Kg by Zone A–E.
- * Dual tiers both use the sheet Per Kg value (admin can override separately).
- */
-function parseZoneRatesFromRatesSheet(
-  workbook: XLSX.WorkBook,
-): Record<string, ZonePerKgRates> {
+function parseZoneRatesFromRatesSheet(workbook) {
   const tiers = { ...DEFAULT_ZONE_RATES };
   const sheet = workbook.Sheets['Rates'];
   if (!sheet) return tiers;
-
-  const rows = XLSX.utils.sheet_to_json<unknown[]>(sheet, {
-    header: 1,
-    defval: null,
-  });
-
+  const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: null });
   for (const row of rows.slice(1)) {
     if (!Array.isArray(row)) continue;
     const zoneLabel = cellString(row[2]).trim();
@@ -212,31 +196,19 @@ function parseZoneRatesFromRatesSheet(
       rateGreaterOrEqual10kg: perKg,
     };
   }
-
   return tiers;
 }
 
-/**
- * Seed courier zones, cities (incl. Gilgit-Baltistan mapping), and GST setting.
- * Safe to re-run: upserts only shipping geography / rates — never touches products.
- */
-export async function seedCities(prisma: PrismaClient): Promise<void> {
+async function seedCities(prisma) {
   const filePath = path.resolve(__dirname, '../../cities-data.xlsb');
   const workbook = XLSX.readFile(filePath);
-
   const sheet = workbook.Sheets['Table1'];
   if (!sheet) throw new Error('Sheet "Table1" not found in cities-data.xlsb');
 
-  const rows = XLSX.utils.sheet_to_json<{
-    city_id: string | number;
-    city_name: string;
-    ole_zone: string;
-    via: string;
-  }>(sheet);
-
+  const rows = XLSX.utils.sheet_to_json(sheet);
   const zoneRates = parseZoneRatesFromRatesSheet(workbook);
+  const zoneMap = new Map();
 
-  const zoneMap = new Map<string, string>();
   for (const [code, info] of Object.entries(zoneRates)) {
     const zone = await prisma.courierZone.upsert({
       where: { code },
@@ -255,27 +227,16 @@ export async function seedCities(prisma: PrismaClient): Promise<void> {
     zoneMap.set(code, zone.id);
   }
 
-  const cityAgg = new Map<
-    string,
-    {
-      cityCode: string;
-      name: string;
-      via: string;
-      zoneCounts: Record<string, number>;
-    }
-  >();
-
+  const cityAgg = new Map();
   for (const row of rows) {
     const nameUpper = String(row.city_name ?? '')
       .trim()
       .toUpperCase();
     if (!nameUpper) continue;
-
     const zoneCode = String(row.ole_zone ?? '')
       .trim()
       .toUpperCase();
     if (!zoneCode || !zoneMap.has(zoneCode)) continue;
-
     let entry = cityAgg.get(nameUpper);
     if (!entry) {
       entry = {
@@ -292,13 +253,10 @@ export async function seedCities(prisma: PrismaClient): Promise<void> {
   let upserted = 0;
   let gilgitCount = 0;
   for (const [, city] of cityAgg) {
-    const bestZone = Object.entries(city.zoneCounts).sort(
-      (a, b) => b[1] - a[1],
-    )[0][0];
-    const zoneId = zoneMap.get(bestZone)!;
+    const bestZone = Object.entries(city.zoneCounts).sort((a, b) => b[1] - a[1])[0][0];
+    const zoneId = zoneMap.get(bestZone);
     const province = resolveProvince(city.via, city.name);
     if (province === 'Gilgit-Baltistan') gilgitCount += 1;
-
     await prisma.courierCity.upsert({
       where: { cityCode: city.cityCode },
       update: {
@@ -328,22 +286,22 @@ export async function seedCities(prisma: PrismaClient): Promise<void> {
     },
   });
 
-  // Ensure GST default exists even when store_settings row already existed
-  const settings = await prisma.storeSettings.findUnique({
-    where: { id: 'default' },
-  });
-  if (settings && settings.shippingGstPercentage == null) {
-    await prisma.storeSettings.update({
-      where: { id: 'default' },
-      data: {
-        shippingGstPercentage: new Prisma.Decimal(
-          DEFAULT_SHIPPING_GST_PERCENTAGE,
-        ),
-      },
-    });
-  }
-
   console.log(
     `Seed cities: ${zoneMap.size} zones (dual per-kg), ${upserted} cities (${gilgitCount} Gilgit-Baltistan), GST default ${DEFAULT_SHIPPING_GST_PERCENTAGE}%.`,
   );
 }
+
+async function main() {
+  const prisma = new PrismaClient();
+  try {
+    await seedCities(prisma);
+    console.log('seed:cities completed.');
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+main().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});

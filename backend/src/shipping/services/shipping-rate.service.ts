@@ -12,6 +12,7 @@ import {
   UpdateShippingRateDto,
 } from '../dto/shipping-rate.dto';
 import { parseShippingRatesImport } from '../utils/shipping-rate-import.parser';
+import { toShippingWeightKg } from '../utils/shipping-weight';
 
 export type ShippingRateRecord = {
   id: string;
@@ -96,11 +97,18 @@ export class ShippingRateService {
   }
 
   /**
-   * Resolve cart weight from payload weights and/or product/variant DB weights.
+   * Resolve cart weight from product/variant shipping weights.
+   * Hierarchy: variant.shippingWeight (>0) → product.shippingWeight (>0) → 1.0 kg.
+   * Grams normalize to kg. Each line is `resolvedWeightKg * quantity`.
    */
   async resolveTotalWeightKg(
     totalWeightKg?: number,
-    items?: Array<{ variantId: string; quantity: number; weight?: number }>,
+    items?: Array<{
+      variantId: string;
+      quantity: number;
+      weight?: number;
+      shippingWeightUnit?: string;
+    }>,
   ): Promise<number> {
     if (totalWeightKg != null && Number.isFinite(totalWeightKg)) {
       return Math.max(0, totalWeightKg);
@@ -116,24 +124,45 @@ export class ShippingRateService {
             where: { id: { in: variantIds } },
             select: {
               id: true,
-              weight: true,
-              product: { select: { weight: true } },
+              shippingWeight: true,
+              shippingWeightUnit: true,
+              product: {
+                select: {
+                  shippingWeight: true,
+                  shippingWeightUnit: true,
+                },
+              },
             },
           })
         : [];
     const weightByVariant = new Map(
-      variants.map((v) => [
-        v.id,
-        this.toNumber(v.weight ?? v.product?.weight ?? 0),
-      ]),
+      variants.map((v) => {
+        const variantWeight = Number(v.shippingWeight);
+        const productWeight = Number(v.product?.shippingWeight);
+        let unitWeight = 1;
+        let unit = 'KG';
+        if (Number.isFinite(variantWeight) && variantWeight > 0) {
+          unitWeight = variantWeight;
+          unit = v.shippingWeightUnit ?? 'KG';
+        } else if (Number.isFinite(productWeight) && productWeight > 0) {
+          unitWeight = productWeight;
+          unit = v.product?.shippingWeightUnit ?? 'KG';
+        }
+        return [v.id, toShippingWeightKg(unitWeight, unit)] as const;
+      }),
     );
 
     return items.reduce((sum, item) => {
-      const unit =
-        item.weight != null && Number.isFinite(item.weight)
-          ? item.weight
-          : (weightByVariant.get(item.variantId) ?? 0);
-      return sum + Math.max(0, unit) * Math.max(0, item.quantity);
+      let unitWeightInKg: number;
+      if (item.weight != null && Number.isFinite(item.weight) && item.weight > 0) {
+        unitWeightInKg = toShippingWeightKg(
+          item.weight,
+          item.shippingWeightUnit,
+        );
+      } else {
+        unitWeightInKg = weightByVariant.get(item.variantId) ?? 1;
+      }
+      return sum + Math.max(0, unitWeightInKg) * Math.max(0, item.quantity);
     }, 0);
   }
 

@@ -10,17 +10,12 @@ export class UpdateCourierZoneRatesDto {
   @IsOptional()
   @IsNumber()
   @Min(0)
-  rateUpTo5kg?: number;
+  rateLessThan10kg?: number;
 
   @IsOptional()
   @IsNumber()
   @Min(0)
-  rateUpTo10kg?: number;
-
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
-  perKgOver10kg?: number;
+  rateGreaterOrEqual10kg?: number;
 
   @IsOptional()
   @IsString()

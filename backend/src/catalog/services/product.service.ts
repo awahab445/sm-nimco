@@ -14,6 +14,7 @@ import {
 import { ProductQueryDto } from '../dto/product-query.dto';
 import { ProductFacetAggregate } from '../queries/product-facet-aggregate';
 import { AdminProductListQueryDto } from '../dto/admin-product-list-query.dto';
+import { normalizeShippingWeightUnit } from '../../shipping/utils/shipping-weight';
 
 @Injectable()
 export class ProductService {
@@ -85,6 +86,14 @@ export class ProductService {
         basePrice: createProductDto.basePrice,
         cost: createProductDto.cost,
         weight: createProductDto.weight,
+        ...(createProductDto.shippingWeight !== undefined && {
+          shippingWeight: createProductDto.shippingWeight,
+        }),
+        ...(createProductDto.shippingWeightUnit !== undefined && {
+          shippingWeightUnit: normalizeShippingWeightUnit(
+            createProductDto.shippingWeightUnit,
+          ),
+        }),
         status: createProductDto.status || ProductStatus.DRAFT,
         visibility: createProductDto.visibility || 'both',
         taxClassId: createProductDto.taxClassId,
@@ -276,6 +285,16 @@ export class ProductService {
 
     if (updateProductDto.weight !== undefined) {
       updateData.weight = updateProductDto.weight;
+    }
+
+    if (updateProductDto.shippingWeight !== undefined) {
+      updateData.shippingWeight = updateProductDto.shippingWeight;
+    }
+
+    if (updateProductDto.shippingWeightUnit !== undefined) {
+      updateData.shippingWeightUnit = normalizeShippingWeightUnit(
+        updateProductDto.shippingWeightUnit,
+      );
     }
 
     if (updateProductDto.status !== undefined) {

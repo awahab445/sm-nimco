@@ -389,8 +389,15 @@ async function main() {
     create: { id: 'default', isEnabled: false, currency: 'PKR' },
   });
 
-  // Catalog snapshot exported from local admin data (products, options, deals, theme)
-  await seedCatalogFromSnapshot(prisma);
+  // Catalog snapshot — only when DB has no products (never overwrite live catalog)
+  const productCount = await prisma.product.count();
+  if (productCount === 0) {
+    await seedCatalogFromSnapshot(prisma);
+  } else {
+    console.log(
+      `Seed: skip catalog snapshot (found ${productCount} existing product(s)).`,
+    );
+  }
 
   await seedCities(prisma);
   console.log('Seed: courier zones and cities from cities-data.xlsb.');

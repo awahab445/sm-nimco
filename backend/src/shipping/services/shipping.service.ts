@@ -33,6 +33,8 @@ import {
 import { ShippingEligibilityEvaluator } from './shipping-eligibility-evaluator.service';
 import { ShippingRateService } from './shipping-rate.service';
 import { CourierCityService } from './courier-city.service';
+import { StoreSettingsService } from '../../store-settings/services/store-settings.service';
+import { roundShippingFee } from '../utils/shipping-fee';
 
 @Injectable()
 export class ShippingService {
@@ -44,6 +46,7 @@ export class ShippingService {
     private readonly eligibilityEvaluator: ShippingEligibilityEvaluator,
     private readonly shippingRateService: ShippingRateService,
     private readonly courierCityService: CourierCityService,
+    private readonly storeSettingsService: StoreSettingsService,
   ) {}
 
   // ============================================================================
@@ -492,7 +495,7 @@ export class ShippingService {
       });
     }
 
-    // Weight-tier zone rate (5kg / 10kg / overage) from CourierCity → CourierZone
+    // Dual-tier per-kg zone rate + GST from CourierCity → CourierZone
     const cityId = dto.cityId?.trim();
     let zoneInfo = cityId
       ? await this.courierCityService.resolveZoneForCityId(cityId)
@@ -503,24 +506,30 @@ export class ShippingService {
       );
     }
     if (zoneInfo) {
-      const cost = this.courierCityService.calculateTierCost(totalWeight, {
-        rateUpTo5kg: zoneInfo.rateUpTo5kg,
-        rateUpTo10kg: zoneInfo.rateUpTo10kg,
-        perKgOver10kg: zoneInfo.perKgOver10kg,
-      });
-      const tierLabel =
-        totalWeight <= 5
-          ? '≤5kg'
-          : totalWeight <= 10
-            ? '≤10kg'
-            : '>10kg';
+      const baseShipping = this.courierCityService.calculateDualTierCost(
+        totalWeight,
+        {
+          rateLessThan10kg: zoneInfo.rateLessThan10kg,
+          rateGreaterOrEqual10kg: zoneInfo.rateGreaterOrEqual10kg,
+        },
+      );
+      let gstPct = 18;
+      try {
+        const settings =
+          await this.storeSettingsService.getPublicOrderSettings();
+        gstPct = settings.shippingGstPercentage ?? 18;
+      } catch {
+        /* keep default */
+      }
+      const cost = this.courierCityService.applyGst(baseShipping, gstPct);
+      const tierLabel = totalWeight < 10 ? '<10kg' : '≥10kg';
       options.push({
         methodId: zoneInfo.zoneId,
         methodCode: 'courier_zone_rate',
-        methodName: 'Courier Zone Delivery',
+        methodName: 'Standard Courier Delivery',
         cost,
         currency,
-        description: `${zoneInfo.zoneName} (${tierLabel}) for ${shippingAddress.city || 'city'}`,
+        description: `${zoneInfo.zoneName} (${tierLabel}, GST ${gstPct}%) for ${shippingAddress.city || 'city'}`,
       });
     }
 
@@ -530,7 +539,10 @@ export class ShippingService {
           `No shipping zones or matrix rates for address: ${JSON.stringify(shippingAddress)}`,
         );
       }
-      return options.sort((a, b) => a.cost - b.cost);
+      return this.applyFreeDeliveryToOptions(
+        options.sort((a, b) => a.cost - b.cost),
+        totalAmount,
+      );
     }
 
     // Get methods for each zone (higher priority zones first)
@@ -615,8 +627,52 @@ export class ShippingService {
       }
     }
 
-    // Sort by cost (ascending)
-    return options.sort((a, b) => a.cost - b.cost);
+    // Sort by cost (ascending), then apply free-delivery threshold sync
+    const sorted = options.sort((a, b) => a.cost - b.cost);
+    return this.applyFreeDeliveryToOptions(sorted, totalAmount);
+  }
+
+  /**
+   * When cart subtotal meets free delivery threshold, keep originalCost and
+   * set effectivePrice/isFreeShipping on each option.
+   */
+  private async applyFreeDeliveryToOptions(
+    options: ShippingOptionDto[],
+    subtotal: number,
+  ): Promise<ShippingOptionDto[]> {
+    let freeDeliveryThreshold = 0;
+    try {
+      const settings =
+        await this.storeSettingsService.getPublicOrderSettings();
+      freeDeliveryThreshold = settings.freeDeliveryThreshold ?? 0;
+    } catch (err) {
+      this.logger.warn(
+        `Could not load free delivery threshold: ${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
+
+    const qualifies =
+      freeDeliveryThreshold > 0 && subtotal >= freeDeliveryThreshold;
+
+    return options.map((opt) => {
+      const originalCost = roundShippingFee(opt.cost);
+      if (!qualifies) {
+        return {
+          ...opt,
+          cost: originalCost,
+          originalCost,
+          effectivePrice: originalCost,
+          isFreeShipping: false,
+        };
+      }
+      return {
+        ...opt,
+        originalCost,
+        effectivePrice: 0,
+        isFreeShipping: true,
+        cost: 0,
+      };
+    });
   }
 
   /**

@@ -5,23 +5,26 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../catalog/services/prisma.service';
 import { UpdateCourierZoneRatesDto } from '../dto/courier-zone.dto';
+import {
+  applyShippingGst,
+  calculateDualTierBaseShipping,
+  roundShippingFee,
+} from '../utils/shipping-fee';
 
 export type CourierZoneRateInfo = {
   zoneId: string;
   zoneCode: string;
   zoneName: string;
-  rateUpTo5kg: number;
-  rateUpTo10kg: number;
-  perKgOver10kg: number;
+  rateLessThan10kg: number;
+  rateGreaterOrEqual10kg: number;
 };
 
 export type CourierZoneRecord = {
   id: string;
   code: string;
   name: string;
-  rateUpTo5kg: number;
-  rateUpTo10kg: number;
-  perKgOver10kg: number;
+  rateLessThan10kg: number;
+  rateGreaterOrEqual10kg: number;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -50,24 +53,27 @@ export class CourierCityService {
   }
 
   /**
-   * Weight-tier shipping cost:
-   * - <= 5kg  → rateUpTo5kg
-   * - <= 10kg → rateUpTo10kg
-   * - > 10kg  → rateUpTo10kg + (weight - 10) * perKgOver10kg
+   * Dual-tier per-kg cost (before GST):
+   * - weight < 10  → weight × rateLessThan10kg
+   * - weight >= 10 → weight × rateGreaterOrEqual10kg
    */
-  calculateTierCost(
+  calculateDualTierCost(
     totalWeightKg: number,
     rates: {
-      rateUpTo5kg: number;
-      rateUpTo10kg: number;
-      perKgOver10kg: number;
+      rateLessThan10kg: number;
+      rateGreaterOrEqual10kg: number;
     },
   ): number {
-    const weight = Math.max(0, totalWeightKg);
-    if (weight <= 5) return Math.max(0, rates.rateUpTo5kg);
-    if (weight <= 10) return Math.max(0, rates.rateUpTo10kg);
-    const overage = (weight - 10) * rates.perKgOver10kg;
-    return Math.max(0, rates.rateUpTo10kg + overage);
+    return roundShippingFee(
+      calculateDualTierBaseShipping(totalWeightKg, rates),
+    );
+  }
+
+  /** Apply GST on top of a base shipping amount. */
+  applyGst(baseShipping: number, shippingGstPercentage: number): number {
+    return roundShippingFee(
+      applyShippingGst(baseShipping, shippingGstPercentage),
+    );
   }
 
   async getProvinces(): Promise<string[]> {
@@ -130,17 +136,15 @@ export class CourierCityService {
     id: string;
     code: string;
     name: string;
-    rateUpTo5kg: unknown;
-    rateUpTo10kg: unknown;
-    perKgOver10kg: unknown;
+    rateLessThan10kg: unknown;
+    rateGreaterOrEqual10kg: unknown;
   }): CourierZoneRateInfo {
     return {
       zoneId: zone.id,
       zoneCode: zone.code,
       zoneName: zone.name,
-      rateUpTo5kg: this.toNumber(zone.rateUpTo5kg),
-      rateUpTo10kg: this.toNumber(zone.rateUpTo10kg),
-      perKgOver10kg: this.toNumber(zone.perKgOver10kg),
+      rateLessThan10kg: this.toNumber(zone.rateLessThan10kg),
+      rateGreaterOrEqual10kg: this.toNumber(zone.rateGreaterOrEqual10kg),
     };
   }
 
@@ -152,9 +156,8 @@ export class CourierCityService {
       id: z.id,
       code: z.code,
       name: z.name,
-      rateUpTo5kg: this.toNumber(z.rateUpTo5kg),
-      rateUpTo10kg: this.toNumber(z.rateUpTo10kg),
-      perKgOver10kg: this.toNumber(z.perKgOver10kg),
+      rateLessThan10kg: this.toNumber(z.rateLessThan10kg),
+      rateGreaterOrEqual10kg: this.toNumber(z.rateGreaterOrEqual10kg),
       isActive: z.isActive,
       createdAt: z.createdAt,
       updatedAt: z.updatedAt,
@@ -173,23 +176,27 @@ export class CourierCityService {
     }
 
     if (
-      dto.rateUpTo5kg != null &&
-      dto.rateUpTo10kg != null &&
-      dto.rateUpTo10kg < dto.rateUpTo5kg
+      dto.rateLessThan10kg != null &&
+      dto.rateLessThan10kg < 0
     ) {
-      throw new BadRequestException(
-        'rateUpTo10kg should be greater than or equal to rateUpTo5kg',
-      );
+      throw new BadRequestException('rateLessThan10kg must be >= 0');
+    }
+    if (
+      dto.rateGreaterOrEqual10kg != null &&
+      dto.rateGreaterOrEqual10kg < 0
+    ) {
+      throw new BadRequestException('rateGreaterOrEqual10kg must be >= 0');
     }
 
     const updated = await this.prisma.courierZone.update({
       where: { id },
       data: {
         ...(dto.name != null ? { name: dto.name.trim() } : {}),
-        ...(dto.rateUpTo5kg != null ? { rateUpTo5kg: dto.rateUpTo5kg } : {}),
-        ...(dto.rateUpTo10kg != null ? { rateUpTo10kg: dto.rateUpTo10kg } : {}),
-        ...(dto.perKgOver10kg != null
-          ? { perKgOver10kg: dto.perKgOver10kg }
+        ...(dto.rateLessThan10kg != null
+          ? { rateLessThan10kg: dto.rateLessThan10kg }
+          : {}),
+        ...(dto.rateGreaterOrEqual10kg != null
+          ? { rateGreaterOrEqual10kg: dto.rateGreaterOrEqual10kg }
           : {}),
       },
     });
@@ -198,9 +205,8 @@ export class CourierCityService {
       id: updated.id,
       code: updated.code,
       name: updated.name,
-      rateUpTo5kg: this.toNumber(updated.rateUpTo5kg),
-      rateUpTo10kg: this.toNumber(updated.rateUpTo10kg),
-      perKgOver10kg: this.toNumber(updated.perKgOver10kg),
+      rateLessThan10kg: this.toNumber(updated.rateLessThan10kg),
+      rateGreaterOrEqual10kg: this.toNumber(updated.rateGreaterOrEqual10kg),
       isActive: updated.isActive,
       createdAt: updated.createdAt,
       updatedAt: updated.updatedAt,
