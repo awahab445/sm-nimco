@@ -1,8 +1,10 @@
 import {
   Injectable,
+  Logger,
   NotFoundException,
   BadRequestException,
 } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../catalog/services/prisma.service';
 import { AdjustStockDto, DEFAULT_WAREHOUSE_ID } from '../dto/adjust-stock.dto';
@@ -11,15 +13,113 @@ import { StockAdjustedEvent } from '../events/inventory.events';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SetProductInventoryItemDto } from '../dto/set-product-inventory.dto';
 import { parseInventoryImportFile } from '../utils/inventory-import.parser';
+import {
+  effectiveAvailableStock,
+  hasEnoughStock,
+  toStockQty,
+} from '../utils/inventory-stock';
+import { CartRedisService } from '../../cart/services/cart.redis';
 
 type TransactionClient = Prisma.TransactionClient;
 
 @Injectable()
 export class InventoryService {
+  private readonly logger = new Logger(InventoryService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly eventEmitter: EventEmitter2,
+    private readonly moduleRef: ModuleRef,
   ) {}
+
+  private async cartStillExists(cartId: string): Promise<boolean> {
+    try {
+      const cartRedis = this.moduleRef.get(CartRedisService, { strict: false });
+      if (!cartRedis?.getCart) return true;
+      const cart = await cartRedis.getCart(cartId);
+      return cart != null;
+    } catch {
+      // Cart store unavailable — do not release reservations aggressively
+      return true;
+    }
+  }
+
+  /**
+   * Drop expired (and orphaned cart) reservations, then rebuild reserved/available
+   * from remaining active rows. Fixes stock locks when Redis carts expire silently.
+   */
+  async reconcileReservationsForItem(inventoryItemId: string): Promise<void> {
+    const now = new Date();
+
+    const candidates = await this.prisma.inventoryReservation.findMany({
+      where: { inventoryItemId },
+      select: {
+        id: true,
+        referenceType: true,
+        referenceId: true,
+        expiresAt: true,
+      },
+    });
+
+    const toDeleteIds: string[] = [];
+    for (const row of candidates) {
+      if (row.expiresAt < now) {
+        toDeleteIds.push(row.id);
+        continue;
+      }
+      if (row.referenceType === 'cart') {
+        const exists = await this.cartStillExists(row.referenceId);
+        if (!exists) toDeleteIds.push(row.id);
+      }
+    }
+
+    if (toDeleteIds.length > 0) {
+      await this.prisma.inventoryReservation.deleteMany({
+        where: { id: { in: toDeleteIds } },
+      });
+      this.logger.log(
+        `Reconciled inventory ${inventoryItemId}: released ${toDeleteIds.length} stale reservation(s)`,
+      );
+    }
+
+    const active = await this.prisma.inventoryReservation.aggregate({
+      where: { inventoryItemId },
+      _sum: { quantity: true },
+    });
+    const reserved = toStockQty(active._sum.quantity);
+
+    const item = await this.prisma.inventoryItem.findUnique({
+      where: { id: inventoryItemId },
+    });
+    if (!item) return;
+
+    const onHand = toStockQty(item.quantity);
+    const available = Math.max(0, onHand - reserved);
+
+    if (
+      toStockQty(item.reservedQuantity) !== reserved ||
+      toStockQty(item.availableQuantity) !== available
+    ) {
+      await this.prisma.inventoryItem.update({
+        where: { id: inventoryItemId },
+        data: {
+          reservedQuantity: reserved,
+          availableQuantity: available,
+        },
+      });
+    }
+  }
+
+  async reconcileReservationsForVariant(
+    variantId: string,
+    warehouseId: string,
+  ): Promise<void> {
+    const inventoryItem = await this.getOrCreateInventoryItem(
+      variantId,
+      warehouseId,
+    );
+    await this.reconcileReservationsForItem(inventoryItem.id);
+  }
 
   /**
    * Resolve variant or simple product. For simple products, variantId === productId and there is no product_variants row.
@@ -155,25 +255,54 @@ export class InventoryService {
 
   /**
    * Get available quantity for a variant (configurable or simple). Inventory is enforced for both.
+   * Reconciles stale reservations first so abandoned carts do not permanently lock stock.
    */
   async getAvailableQuantity(
     variantId: string,
     warehouseId: string,
   ): Promise<number> {
+    await this.reconcileReservationsForVariant(variantId, warehouseId);
     const inventoryItem = await this.getInventoryItem(variantId, warehouseId);
-    return inventoryItem.availableQuantity;
+    return toStockQty(inventoryItem.availableQuantity);
   }
 
   /**
-   * Check if variant has sufficient stock
+   * On-hand quantity (ignores reservations).
+   */
+  async getOnHandQuantity(
+    variantId: string,
+    warehouseId: string,
+  ): Promise<number> {
+    const inventoryItem = await this.getInventoryItem(variantId, warehouseId);
+    return toStockQty(inventoryItem.quantity);
+  }
+
+  /**
+   * Sellable units for this caller: free available + optional credit for their own
+   * reservation that will be replaced in the same request.
+   */
+  async getEffectiveAvailableQuantity(
+    variantId: string,
+    warehouseId: string,
+    creditOwnReservedQuantity = 0,
+  ): Promise<number> {
+    const available = await this.getAvailableQuantity(variantId, warehouseId);
+    return effectiveAvailableStock(available, creditOwnReservedQuantity);
+  }
+
+  /**
+   * Check if variant has sufficient stock for the requested quantity.
+   * Pass `creditOwnReservedQuantity` when replacing an existing cart/order reservation
+   * so that reservation is not double-counted against availability.
    */
   async hasSufficientStock(
     variantId: string,
     quantity: number,
     warehouseId: string,
+    creditOwnReservedQuantity = 0,
   ): Promise<boolean> {
     const available = await this.getAvailableQuantity(variantId, warehouseId);
-    return available >= quantity;
+    return hasEnoughStock(available, quantity, creditOwnReservedQuantity);
   }
 
   /**

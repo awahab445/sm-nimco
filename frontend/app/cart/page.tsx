@@ -20,6 +20,11 @@ import { storefrontUi } from '@/lib/storefront-ui';
 import { useCartItemFallbackImages } from '@/lib/use-cart-item-fallback-images';
 import { cartItemToGa4Item, trackViewCart } from '@/lib/analytics';
 import { storeSettingsApi } from '@/lib/api-client';
+import {
+  getAvailableStockFromError,
+  getCartQtyStockErrorMessage,
+} from '@/lib/cart-errors';
+import { showStorefrontToast } from '@/lib/storefront-toast';
 
 const DEFAULT_MIN_ORDER_VALUE = 800;
 
@@ -157,9 +162,38 @@ export default function CartPage() {
   }, [cart?.items, cart?.bundles, customerId, customerGroupId]);
 
   const handleQtyBlur = async (variantId: string) => {
-    const q = Math.max(1, localQty[variantId] ?? 1);
-    await updateItem(variantId, q);
-    await refreshCart();
+    const previous =
+      cart?.items.find((item) => item.variantId === variantId)?.quantity ?? 1;
+    const q = Math.max(1, localQty[variantId] ?? previous);
+    if (q === previous) return;
+
+    try {
+      await updateItem(variantId, q);
+      await refreshCart();
+    } catch (err: unknown) {
+      const available = getAvailableStockFromError(err);
+
+      if (available != null && available >= 1) {
+        setLocalQty((prev) => ({ ...prev, [variantId]: available }));
+        showStorefrontToast(getCartQtyStockErrorMessage(available), 'error');
+        try {
+          await updateItem(variantId, available);
+          await refreshCart();
+        } catch {
+          setLocalQty((prev) => ({ ...prev, [variantId]: previous }));
+        }
+        return;
+      }
+
+      setLocalQty((prev) => ({ ...prev, [variantId]: previous }));
+      const message =
+        available === 0
+          ? getCartQtyStockErrorMessage(0)
+          : err instanceof Error && err.message.trim()
+            ? err.message
+            : 'Failed to update quantity.';
+      showStorefrontToast(message, 'error');
+    }
   };
 
   if (isLoading && !cart) {

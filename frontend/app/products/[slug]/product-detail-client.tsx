@@ -161,7 +161,7 @@ function QuantityStepper({
   /* Kalles qty: 120×40 pill, solid #222 border, no mid dividers */
   return (
     <div
-      className={`relative inline-flex h-10 w-[7.5rem] shrink-0 items-center justify-center border border-foreground ${className ?? ''}`}
+      className={`relative inline-flex h-10 w-[8.5rem] shrink-0 items-center justify-center border border-foreground ${className ?? ''}`}
       style={{ borderRadius: 'var(--radius-button, 3rem)' }}
     >
       <button
@@ -178,9 +178,13 @@ function QuantityStepper({
         id={id}
         type="number"
         min={1}
+        inputMode="numeric"
         value={quantity}
-        onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value, 10) || 1))}
-        className="h-full w-9 appearance-none bg-transparent text-center text-base font-semibold text-foreground focus:outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+        onChange={(e) => {
+          const parsed = parseInt(e.target.value, 10);
+          setQuantity(Number.isFinite(parsed) && parsed > 0 ? parsed : 1);
+        }}
+        className="h-full w-12 appearance-none bg-transparent text-center text-base font-semibold text-foreground focus:outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
       />
       <button
         type="button"

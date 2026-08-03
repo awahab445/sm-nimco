@@ -15,6 +15,7 @@ import {
   StockConsumedEvent,
 } from '../events/inventory.events';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { toStockQty } from '../utils/inventory-stock';
 
 @Injectable()
 export class ReservationService {
@@ -41,33 +42,22 @@ export class ReservationService {
 
     // Default warehouse - in production, this should come from config or request context
     const warehouseId = 'default-warehouse';
+    const requested = toStockQty(quantity);
+
+    // Free expired/orphaned holds before locking new stock (outside tx)
+    await this.inventoryService.reconcileReservationsForVariant(
+      variantId,
+      warehouseId,
+    );
 
     return await this.prisma.$transaction(async (tx) => {
-      // Check if sufficient stock is available
-      const hasStock = await this.inventoryService.hasSufficientStock(
-        variantId,
-        quantity,
-        warehouseId,
-      );
-
-      if (!hasStock) {
-        const available = await this.inventoryService.getAvailableQuantity(
-          variantId,
-          warehouseId,
-        );
-        throw new ConflictException(
-          `Insufficient stock. Requested: ${quantity}, Available: ${available}`,
-        );
-      }
-
-      // Get or create inventory item
+      // Check if sufficient stock is available (skip nested reconcile — just done)
       const inventoryItem =
         await this.inventoryService.getOrCreateInventoryItem(
           variantId,
           warehouseId,
         );
 
-      // Check again within transaction (double-check locking)
       const currentItem = await tx.inventoryItem.findUnique({
         where: { id: inventoryItem.id },
       });
@@ -76,12 +66,13 @@ export class ReservationService {
         throw new NotFoundException('Inventory item not found');
       }
 
-      const availableQuantity =
-        currentItem.quantity - currentItem.reservedQuantity;
+      const onHand = toStockQty(currentItem.quantity);
+      const reserved = toStockQty(currentItem.reservedQuantity);
+      const availableQuantity = onHand - reserved;
 
-      if (availableQuantity < quantity) {
+      if (availableQuantity < requested) {
         throw new ConflictException(
-          `Insufficient stock. Requested: ${quantity}, Available: ${availableQuantity}`,
+          `Insufficient stock. Requested: ${requested}, Available: ${availableQuantity}`,
         );
       }
 
@@ -95,18 +86,18 @@ export class ReservationService {
           inventoryItemId: inventoryItem.id,
           referenceType,
           referenceId,
-          quantity,
+          quantity: requested,
           expiresAt,
         },
       });
 
       // Update reserved quantity and available quantity
+      const newReserved = reserved + requested;
       const updatedItem = await tx.inventoryItem.update({
         where: { id: inventoryItem.id },
         data: {
-          reservedQuantity: currentItem.reservedQuantity + quantity,
-          availableQuantity:
-            currentItem.quantity - (currentItem.reservedQuantity + quantity),
+          reservedQuantity: newReserved,
+          availableQuantity: onHand - newReserved,
         },
       });
 
@@ -116,7 +107,7 @@ export class ReservationService {
         new StockReservedEvent(
           reservation.id,
           variantId,
-          quantity,
+          requested,
           referenceType,
           referenceId,
         ),

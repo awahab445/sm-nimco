@@ -28,6 +28,26 @@ function newDraft(platform: SocialPlatform = 'facebook'): DraftLink {
   };
 }
 
+/** Accept full wa.me URL or a phone number with country code → https://wa.me/<digits>. */
+function normalizeWhatsAppUrl(raw: string): string {
+  const trimmed = raw.trim();
+  if (!trimmed) return '';
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+
+  const digits = trimmed.replace(/\D/g, '');
+  if (digits.length < 8) {
+    throw new Error(
+      'WhatsApp: enter a phone number with country code (e.g. 923001234567) or a full https://wa.me/… URL',
+    );
+  }
+  return `https://wa.me/${digits}`;
+}
+
+function normalizeLinkUrl(platform: SocialPlatform, raw: string): string {
+  if (platform === 'whatsapp') return normalizeWhatsAppUrl(raw);
+  return raw.trim();
+}
+
 export function SocialLinksForm() {
   const [links, setLinks] = useState<DraftLink[]>([]);
   const [loading, setLoading] = useState(true);
@@ -60,7 +80,10 @@ export function SocialLinksForm() {
   }, []);
 
   useEffect(() => {
-    void load();
+    const timer = window.setTimeout(() => {
+      void load();
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [load]);
 
   useEffect(() => {
@@ -77,6 +100,8 @@ export function SocialLinksForm() {
     setLinks((prev) => prev.filter((link) => link.key !== key));
   };
 
+  const hasWhatsApp = links.some((link) => link.platform === 'whatsapp');
+
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -85,7 +110,7 @@ export function SocialLinksForm() {
       const payload: SocialLinkInput[] = links
         .map((link, index) => ({
           platform: link.platform,
-          url: link.url.trim(),
+          url: normalizeLinkUrl(link.platform, link.url),
           isActive: link.isActive,
           sortOrder: index,
         }))
@@ -135,17 +160,28 @@ export function SocialLinksForm() {
               Social media links
             </h2>
             <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-              Manage footer &quot;Follow us&quot; icons. Inactive or empty URLs are hidden on the
-              storefront.
+              Manage footer &quot;Follow us&quot; icons. WhatsApp also powers the storefront chat
+              button and Coming Soon inquiry CTA. Inactive or empty URLs are hidden.
             </p>
           </div>
-          <button
-            type="button"
-            onClick={() => setLinks((prev) => [...prev, newDraft()])}
-            className="rounded-lg border border-zinc-300 px-3 py-1.5 text-xs font-medium text-zinc-800 dark:border-zinc-600 dark:text-zinc-100"
-          >
-            Add link
-          </button>
+          <div className="flex flex-wrap gap-2">
+            {!hasWhatsApp ? (
+              <button
+                type="button"
+                onClick={() => setLinks((prev) => [...prev, newDraft('whatsapp')])}
+                className="rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200"
+              >
+                Add WhatsApp number
+              </button>
+            ) : null}
+            <button
+              type="button"
+              onClick={() => setLinks((prev) => [...prev, newDraft()])}
+              className="rounded-lg border border-zinc-300 px-3 py-1.5 text-xs font-medium text-zinc-800 dark:border-zinc-600 dark:text-zinc-100"
+            >
+              Add link
+            </button>
+          </div>
         </div>
 
         {error ? (
@@ -156,7 +192,8 @@ export function SocialLinksForm() {
 
         {links.length === 0 ? (
           <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            No social links yet. Click &quot;Add link&quot; to create one.
+            No social links yet. Click &quot;Add WhatsApp number&quot; or &quot;Add link&quot; to
+            create one.
           </p>
         ) : (
           <div className="space-y-3">
@@ -182,14 +219,27 @@ export function SocialLinksForm() {
                   </select>
                 </label>
                 <label className="block text-xs sm:col-span-1">
-                  <span className="text-zinc-600 dark:text-zinc-400">URL</span>
+                  <span className="text-zinc-600 dark:text-zinc-400">
+                    {link.platform === 'whatsapp' ? 'WhatsApp number or URL' : 'URL'}
+                  </span>
                   <input
-                    type="url"
+                    type={link.platform === 'whatsapp' ? 'text' : 'url'}
+                    inputMode={link.platform === 'whatsapp' ? 'tel' : undefined}
                     value={link.url}
                     onChange={(e) => updateLink(link.key, { url: e.target.value })}
-                    placeholder="https://…"
+                    placeholder={
+                      link.platform === 'whatsapp'
+                        ? '923001234567 or https://wa.me/923001234567'
+                        : 'https://…'
+                    }
                     className="mt-1 w-full rounded-lg border border-zinc-300 px-2 py-1.5 text-sm dark:border-zinc-600 dark:bg-zinc-900"
                   />
+                  {link.platform === 'whatsapp' ? (
+                    <span className="mt-1 block text-[11px] leading-snug text-zinc-500 dark:text-zinc-400">
+                      Use country code without + (e.g. Pakistan: 92…). Saved as a wa.me link for
+                      the storefront.
+                    </span>
+                  ) : null}
                 </label>
                 <label className="flex items-end gap-2 pb-1.5 text-xs text-zinc-700 dark:text-zinc-300">
                   <input

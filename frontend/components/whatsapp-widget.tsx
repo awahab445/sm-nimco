@@ -1,13 +1,9 @@
 'use client';
 
-/** Digits only with country code (no + or spaces). Matches store phone +92 371 1317164. */
-const WHATSAPP_PHONE = '923711317164';
+import { useStoreWhatsAppUrl } from '@/lib/whatsapp';
 
-/** Pre-filled message when the chat opens. */
 const WHATSAPP_MESSAGE =
   'Hi SM NIMCO & Sweets, I have a query regarding your products!';
-
-const WHATSAPP_URL = `https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`;
 
 function WhatsAppIcon({ className }: { className?: string }) {
   return (
@@ -22,13 +18,18 @@ function WhatsAppIcon({ className }: { className?: string }) {
   );
 }
 
+/** Floating chat button — only renders when WhatsApp is configured in admin social links. */
 export function WhatsAppWidget() {
+  const whatsappUrl = useStoreWhatsAppUrl(WHATSAPP_MESSAGE);
+
+  if (!whatsappUrl) return null;
+
   return (
     <div
       className="fixed bottom-[calc(3.4375rem+var(--mobile-mini-cart-height,0px)+4.25rem+env(safe-area-inset-bottom,0px))] right-4 z-[95] motion-safe:animate-whatsapp-bounce lg:bottom-6 lg:right-6 lg:z-[80]"
     >
       <a
-        href={WHATSAPP_URL}
+        href={whatsappUrl}
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Chat with us on WhatsApp"

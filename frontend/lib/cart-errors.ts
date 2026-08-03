@@ -63,5 +63,26 @@ export function getInlineStockAlertMessage(err: unknown): string | null {
 export function getAvailableStockFromError(err: unknown): number | null {
   if (!(err instanceof ApiError)) return null;
   const payload = extractStockPayload(err.data);
-  return payload?.availableStock ?? null;
+  if (typeof payload?.availableStock === 'number') {
+    return payload.availableStock;
+  }
+
+  const match = /Only\s+(\d+)\s+items?\s+available/i.exec(err.message);
+  if (match) {
+    const n = Number(match[1]);
+    return Number.isFinite(n) ? n : null;
+  }
+
+  if (/out of stock/i.test(err.message)) return 0;
+  return null;
+}
+
+/** User-facing message when a cart quantity update exceeds stock. */
+export function getCartQtyStockErrorMessage(availableStock: number): string {
+  if (availableStock <= 0) {
+    return 'This product is out of stock.';
+  }
+  return availableStock === 1
+    ? 'Only 1 item left in stock. Quantity updated to the maximum available.'
+    : `Only ${availableStock} items left in stock. Quantity updated to the maximum available.`;
 }

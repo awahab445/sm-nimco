@@ -22,6 +22,7 @@ export class AddToCartDto {
   @IsUUID()
   variantId: string;
 
+  @Type(() => Number)
   @IsInt()
   @Min(1)
   quantity: number;

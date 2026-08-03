@@ -103,17 +103,25 @@ export class CheckoutValidatorService {
     checkout: CheckoutSession,
   ): Promise<void> {
     for (const item of checkout.items) {
+      // Cart reservation already holds `item.quantity` — credit it so checkout
+      // does not treat the shopper's own hold as someone else's demand.
+      const creditOwnReserved = item.reservationId
+        ? Number(item.quantity) || 0
+        : 0;
       const hasStock = await this.inventoryService.hasSufficientStock(
         item.variantId,
         item.quantity,
         'default-warehouse',
+        creditOwnReserved,
       );
 
       if (!hasStock) {
-        const available = await this.inventoryService.getAvailableQuantity(
-          item.variantId,
-          'default-warehouse',
-        );
+        const available =
+          await this.inventoryService.getEffectiveAvailableQuantity(
+            item.variantId,
+            'default-warehouse',
+            creditOwnReserved,
+          );
         throw new BadRequestException(
           `Insufficient stock for variant ${item.variantId}. Requested: ${item.quantity}, Available: ${available}`,
         );

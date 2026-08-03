@@ -237,17 +237,21 @@ export class CartService {
   private async assertSufficientStock(
     variantId: string,
     requestedQuantity: number,
+    /** Units already reserved for this cart line that will be replaced. */
+    creditOwnReservedQuantity = 0,
   ): Promise<void> {
     const hasStock = await this.inventoryService.hasSufficientStock(
       variantId,
       requestedQuantity,
       'default-warehouse',
+      creditOwnReservedQuantity,
     );
     if (hasStock) return;
 
-    const available = await this.inventoryService.getAvailableQuantity(
+    const available = await this.inventoryService.getEffectiveAvailableQuantity(
       variantId,
       'default-warehouse',
+      creditOwnReservedQuantity,
     );
     throw new InsufficientStockException(available);
   }
@@ -285,7 +289,12 @@ export class CartService {
       const existingItem = cart.items[existingItemIndex];
       const newQuantity = existingItem.quantity + quantity;
 
-      await this.assertSufficientStock(variantId, newQuantity);
+      // Credit existing cart reservation so it is not double-counted against available stock
+      await this.assertSufficientStock(
+        variantId,
+        newQuantity,
+        existingItem.quantity,
+      );
       if (
         existingItem.reservationId &&
         !this.isSimpleProductReservation(existingItem.reservationId)
@@ -420,7 +429,12 @@ export class CartService {
     );
 
     if (newQuantity > 0) {
-      await this.assertSufficientStock(variantId, newQuantity);
+      // Credit current line reservation — availableQuantity already excludes it
+      await this.assertSufficientStock(
+        variantId,
+        newQuantity,
+        existingItem.quantity,
+      );
     }
     if (existingItem.reservationId) {
       await this.reservationService.releaseStock({
@@ -800,7 +814,7 @@ export class CartService {
     for (const item of bundleItems) {
       const newQty = Math.round(item.quantity * ratio);
       if (newQty > 0) {
-        await this.assertSufficientStock(item.variantId, newQty);
+        await this.assertSufficientStock(item.variantId, newQty, item.quantity);
       }
       if (item.reservationId) {
         await this.reservationService.releaseStock({

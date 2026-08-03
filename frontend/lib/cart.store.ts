@@ -144,10 +144,11 @@ export const useCartStore = create<CartState>((set, get) => ({
             phone: authUser.phone,
           }
         : null;
+      const qty = Math.max(1, Math.floor(Number(quantity)) || 1);
       const cart = await cartApi.addItem(cartId, {
         productId,
         variantId,
-        quantity,
+        quantity: qty,
         ...metaCapiClientFields(eventId, matchUser),
       });
       set({ cart, isLoading: false, error: null });
@@ -167,7 +168,8 @@ export const useCartStore = create<CartState>((set, get) => ({
     if (!cartId) return;
     set({ isLoading: true, error: null });
     try {
-      const cart = await cartApi.updateItem(cartId, variantId, { quantity });
+      const qty = Math.max(1, Math.floor(Number(quantity)) || 1);
+      const cart = await cartApi.updateItem(cartId, variantId, { quantity: qty });
       set({ cart, isLoading: false, error: null });
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to update cart';

@@ -34,7 +34,7 @@ import { ShippingEligibilityEvaluator } from './shipping-eligibility-evaluator.s
 import { ShippingRateService } from './shipping-rate.service';
 import { CourierCityService } from './courier-city.service';
 import { StoreSettingsService } from '../../store-settings/services/store-settings.service';
-import { roundShippingFee } from '../utils/shipping-fee';
+import { roundShippingFee, resolveShippingSlab } from '../utils/shipping-fee';
 
 @Injectable()
 export class ShippingService {
@@ -506,13 +506,11 @@ export class ShippingService {
       );
     }
     if (zoneInfo) {
-      const baseShipping = this.courierCityService.calculateDualTierCost(
-        totalWeight,
-        {
-          rateLessThan10kg: zoneInfo.rateLessThan10kg,
-          rateGreaterOrEqual10kg: zoneInfo.rateGreaterOrEqual10kg,
-        },
-      );
+      const slab = resolveShippingSlab(totalWeight, {
+        rateLessThan10kg: zoneInfo.rateLessThan10kg,
+        rateGreaterOrEqual10kg: zoneInfo.rateGreaterOrEqual10kg,
+      });
+      const baseShipping = roundShippingFee(slab.baseShipping);
       let gstPct = 18;
       try {
         const settings =
@@ -522,14 +520,21 @@ export class ShippingService {
         /* keep default */
       }
       const cost = this.courierCityService.applyGst(baseShipping, gstPct);
-      const tierLabel = totalWeight < 10 ? '<10kg' : '≥10kg';
+      const slabLabel =
+        slab.slab === 1
+          ? '≤3kg min'
+          : slab.slab === 2
+            ? '≤5kg flat'
+            : slab.slab === 3
+              ? '5–10kg'
+              : '≥10kg bulk';
       options.push({
         methodId: zoneInfo.zoneId,
         methodCode: 'courier_zone_rate',
         methodName: 'Standard Courier Delivery',
         cost,
         currency,
-        description: `${zoneInfo.zoneName} (${tierLabel}, GST ${gstPct}%) for ${shippingAddress.city || 'city'}`,
+        description: `${zoneInfo.zoneName} (${slabLabel}, billed ${slab.billingWeightKg}kg, GST ${gstPct}%) for ${shippingAddress.city || 'city'}`,
       });
     }
 
@@ -642,8 +647,7 @@ export class ShippingService {
   ): Promise<ShippingOptionDto[]> {
     let freeDeliveryThreshold = 0;
     try {
-      const settings =
-        await this.storeSettingsService.getPublicOrderSettings();
+      const settings = await this.storeSettingsService.getPublicOrderSettings();
       freeDeliveryThreshold = settings.freeDeliveryThreshold ?? 0;
     } catch (err) {
       this.logger.warn(

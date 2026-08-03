@@ -1,6 +1,11 @@
 import { describe, expect, it } from '@jest/globals';
 import { ApiError } from '../api-client';
-import { getAddToCartStockErrorMessage, getInlineStockAlertMessage } from '../cart-errors';
+import {
+  getAddToCartStockErrorMessage,
+  getAvailableStockFromError,
+  getCartQtyStockErrorMessage,
+  getInlineStockAlertMessage,
+} from '../cart-errors';
 
 describe('getAddToCartStockErrorMessage', () => {
   it('returns stock-specific copy when availableStock is present', () => {
@@ -54,5 +59,30 @@ describe('getInlineStockAlertMessage', () => {
       availableStock: 0,
     });
     expect(getInlineStockAlertMessage(err)).toBe('This product is out of stock.');
+  });
+});
+
+describe('getAvailableStockFromError', () => {
+  it('reads availableStock from payload', () => {
+    const err = new ApiError('Insufficient stock. Only 16 items available.', 400, {
+      message: 'Insufficient stock. Only 16 items available.',
+      availableStock: 16,
+    });
+    expect(getAvailableStockFromError(err)).toBe(16);
+  });
+
+  it('parses available count from message when payload omits it', () => {
+    const err = new ApiError('Insufficient stock. Only 16 items available.', 400, {
+      message: 'Insufficient stock. Only 16 items available.',
+    });
+    expect(getAvailableStockFromError(err)).toBe(16);
+  });
+});
+
+describe('getCartQtyStockErrorMessage', () => {
+  it('explains qty was clamped to available stock', () => {
+    expect(getCartQtyStockErrorMessage(16)).toBe(
+      'Only 16 items left in stock. Quantity updated to the maximum available.',
+    );
   });
 });

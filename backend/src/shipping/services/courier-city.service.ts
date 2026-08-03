@@ -53,9 +53,11 @@ export class CourierCityService {
   }
 
   /**
-   * Dual-tier per-kg cost (before GST):
-   * - weight < 10  → weight × rateLessThan10kg
-   * - weight >= 10 → weight × rateGreaterOrEqual10kg
+   * Four-tier per-kg cost (before GST):
+   * - ≤3kg   → bill 3kg  × rateLessThan10kg
+   * - ≤5kg   → bill 5kg  × rateLessThan10kg
+   * - <10kg  → bill actual × rateLessThan10kg
+   * - ≥10kg  → bill actual × rateGreaterOrEqual10kg
    */
   calculateDualTierCost(
     totalWeightKg: number,
@@ -175,16 +177,10 @@ export class CourierCityService {
       throw new NotFoundException(`Courier zone ${id} not found`);
     }
 
-    if (
-      dto.rateLessThan10kg != null &&
-      dto.rateLessThan10kg < 0
-    ) {
+    if (dto.rateLessThan10kg != null && dto.rateLessThan10kg < 0) {
       throw new BadRequestException('rateLessThan10kg must be >= 0');
     }
-    if (
-      dto.rateGreaterOrEqual10kg != null &&
-      dto.rateGreaterOrEqual10kg < 0
-    ) {
+    if (dto.rateGreaterOrEqual10kg != null && dto.rateGreaterOrEqual10kg < 0) {
       throw new BadRequestException('rateGreaterOrEqual10kg must be >= 0');
     }
 
