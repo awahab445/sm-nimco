@@ -46,6 +46,19 @@ interface Order {
   payments?: OrderPayment[];
 }
 
+type PaymentApiRecord = Awaited<ReturnType<typeof paymentApi.getPaymentsByOrder>>[number];
+
+function toOrderPayment(p: PaymentApiRecord): OrderPayment {
+  const amount = typeof p.amount === 'string' ? parseFloat(p.amount) : Number(p.amount);
+  return {
+    id: p.id,
+    status: p.status,
+    amount: Number.isFinite(amount) ? amount : 0,
+    currency: p.currency,
+    paymentMethod: p.paymentMethod,
+  };
+}
+
 function CheckoutSuccessContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -89,10 +102,10 @@ function CheckoutSuccessContent() {
       try {
         setLoading(true);
         let orderData: Order;
-        let payments: Awaited<ReturnType<typeof paymentApi.getPaymentsByOrder>> = [];
+        let payments: PaymentApiRecord[] = [];
         if (orderId) {
           try {
-            orderData = (await orderApi.getOrder(orderId)) as Order;
+            orderData = (await orderApi.getOrder(orderId)) as unknown as Order;
             try {
               payments = await paymentApi.getPaymentsByOrder(orderData.id);
             } catch {
@@ -100,7 +113,7 @@ function CheckoutSuccessContent() {
             }
           } catch (orderIdErr) {
             if (email && orderNumber) {
-              orderData = (await orderApi.trackOrder(orderNumber, email)) as Order;
+              orderData = (await orderApi.trackOrder(orderNumber, email)) as unknown as Order;
               try {
                 payments = await paymentApi.trackPayments(orderNumber, email);
               } catch {
@@ -111,7 +124,7 @@ function CheckoutSuccessContent() {
             }
           }
         } else if (email && orderNumber) {
-          orderData = (await orderApi.trackOrder(orderNumber, email)) as Order;
+          orderData = (await orderApi.trackOrder(orderNumber, email)) as unknown as Order;
           try {
             payments = await paymentApi.trackPayments(orderNumber, email);
           } catch {
@@ -125,14 +138,8 @@ function CheckoutSuccessContent() {
 
         setOrder({
           ...orderData,
-          payments: payments.map((p) => ({
-            id: p.id,
-            status: p.status,
-            amount: typeof p.amount === 'string' ? parseFloat(p.amount) : p.amount,
-            currency: p.currency,
-            paymentMethod: p.paymentMethod,
-          })),
-        } as Order);
+          payments: payments.map(toOrderPayment),
+        });
       } catch (err: unknown) {
         setError(err instanceof Error ? err.message : 'Failed to load order');
       } finally {
@@ -177,13 +184,7 @@ function CheckoutSuccessContent() {
     const interval = setInterval(async () => {
       try {
         const payments = await paymentApi.getPaymentsByOrder(order.id);
-        const merged: OrderPayment[] = payments.map((p) => ({
-          id: p.id,
-          status: p.status,
-          amount: typeof p.amount === 'string' ? parseFloat(p.amount) : p.amount,
-          currency: p.currency,
-          paymentMethod: p.paymentMethod,
-        }));
+        const merged = payments.map(toOrderPayment);
         setOrder((prev) => (prev ? { ...prev, payments: merged } : null));
 
         if (merged.some((p) => isTerminal(p.status))) {

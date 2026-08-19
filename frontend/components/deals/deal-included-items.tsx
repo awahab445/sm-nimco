@@ -53,7 +53,12 @@ function toQuickViewProduct(item: StorefrontBundleDealItem): Product | null {
             sku: item.variant.sku,
             name: item.variant.name,
             price: item.variant.price,
-            optionValues: item.variant.optionValues,
+            optionValues: item.variant.optionValues?.map((ov) => ({
+              optionId: ov.option.id,
+              valueId: ov.value.id,
+              option: ov.option,
+              value: ov.value,
+            })),
           },
         ]
       : undefined,
