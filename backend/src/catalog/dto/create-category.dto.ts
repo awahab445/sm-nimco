@@ -1,4 +1,11 @@
-import { IsString, IsOptional, IsNumber, IsUUID, Min } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsNumber,
+  IsUUID,
+  IsBoolean,
+  Min,
+} from 'class-validator';
 
 export class CreateCategoryDto {
   @IsString()
@@ -12,6 +19,14 @@ export class CreateCategoryDto {
   @IsOptional()
   description?: string;
 
+  @IsString()
+  @IsOptional()
+  imageUrl?: string;
+
+  @IsString()
+  @IsOptional()
+  bannerUrl?: string;
+
   @IsUUID()
   @IsOptional()
   parentId?: string;
@@ -20,4 +35,8 @@ export class CreateCategoryDto {
   @IsOptional()
   @Min(0)
   position?: number;
+
+  @IsBoolean()
+  @IsOptional()
+  isFeatured?: boolean;
 }

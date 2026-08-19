@@ -18,12 +18,15 @@ import {
 import { formatVariantAttributes } from '@/lib/format-variant-attributes';
 import { trackAddPaymentInfo, trackAddShippingInfo } from '@/lib/analytics/events';
 import { checkoutItemToGa4Item } from '@/lib/analytics/mappers';
-import {
-  PAKISTAN_PROVINCES,
-  getCitySelectOptions,
-} from '@/lib/constants/locations';
+import { PAKISTAN_PROVINCES } from '@/lib/constants/locations';
 
 type CityOption = { id: string; name: string };
+
+const KARACHI_FREE_DELIVERY_THRESHOLD = 3000;
+
+function isKarachiCity(city?: string | null): boolean {
+  return city?.trim().toLowerCase() === 'karachi';
+}
 
 function CheckoutLineThumb({
   imageUrl,
@@ -91,13 +94,14 @@ function formatAddressLine(a: AddressWithId): string {
 
 function validateAddress(addr: Address): boolean {
   const country = addr.country?.trim() || 'PK';
+  const phone = addr.phone?.trim() || '';
+  if (phone.length < 10) return false;
   return !!(
     addr.firstName?.trim() &&
     addr.lastName?.trim() &&
     addr.addressLine1?.trim() &&
     addr.city?.trim() &&
     addr.state?.trim() &&
-    addr.postalCode?.trim() &&
     country
   );
 }
@@ -122,8 +126,7 @@ export function OnePageCheckout() {
   const cartItems = useCartStore((s) => s.cart?.items ?? EMPTY_CART_ITEMS);
 
   const [apiProvinces, setApiProvinces] = useState<string[]>([]);
-  const [billingCities, setBillingCities] = useState<CityOption[]>([]);
-  const [shippingCities, setShippingCities] = useState<CityOption[]>([]);
+  const [allCities, setAllCities] = useState<CityOption[]>([]);
 
   const [localQty, setLocalQty] = useState<Record<string, number>>({});
   const [updatingVariantId, setUpdatingVariantId] = useState<string | null>(null);
@@ -165,14 +168,6 @@ export function OnePageCheckout() {
   );
   const [loadingShipping, setLoadingShipping] = useState(false);
   const [shippingError, setShippingError] = useState<string | null>(null);
-  const [matrixShippingFee, setMatrixShippingFee] = useState<{
-    rateAmount: number;
-    matchedBy: 'city' | 'province';
-    totalWeightKg: number;
-    isCodAvailable: boolean;
-  } | null>(null);
-  const [loadingMatrixFee, setLoadingMatrixFee] = useState(false);
-
   const [formError, setFormError] = useState<string | null>(null);
   const [showMinimumOrderModal, setShowMinimumOrderModal] = useState(false);
   const [minimumOrderAmount, setMinimumOrderAmount] = useState(DEFAULT_MIN_ORDER_VALUE);
@@ -196,19 +191,11 @@ export function OnePageCheckout() {
 
   useEffect(() => {
     shippingApi.getProvinces().then(setApiProvinces).catch(() => {});
+    shippingApi
+      .getCities()
+      .then((cities) => setAllCities(cities.map((city) => ({ id: city.id, name: city.name }))))
+      .catch(() => setAllCities([]));
   }, []);
-
-  useEffect(() => {
-    const province = billingAddress.state?.trim();
-    if (!province) { setBillingCities([]); return; }
-    shippingApi.getCities(province).then(cities => setBillingCities(cities.map(c => ({ id: c.id, name: c.name })))).catch(() => setBillingCities([]));
-  }, [billingAddress.state]);
-
-  useEffect(() => {
-    const province = shippingAddress.state?.trim();
-    if (!province) { setShippingCities([]); return; }
-    shippingApi.getCities(province).then(cities => setShippingCities(cities.map(c => ({ id: c.id, name: c.name })))).catch(() => setShippingCities([]));
-  }, [shippingAddress.state]);
 
   // Load saved addresses when logged in
   useEffect(() => {
@@ -396,8 +383,7 @@ export function OnePageCheckout() {
     setLoadingShipping(true);
     setShippingError(null);
 
-    const cityList = useSameAddress ? billingCities : shippingCities;
-    const matchedCity = cityList.find(
+    const matchedCity = allCities.find(
       (c) => c.name.toLowerCase() === effectiveShippingAddress.city.trim().toLowerCase(),
     );
 
@@ -422,14 +408,13 @@ export function OnePageCheckout() {
       .then((options) => {
         if (!cancelled) {
           setShippingOptions(options);
-          if (!selectedShippingId && options.length > 0) {
-            const zoneOpt = options.find((o) => o.methodCode === 'courier_zone_rate');
-            const matrixOpt = options.find((o) => o.methodCode === 'matrix_rate');
-            const standardOpt = options.find(
-              (o) => o.methodName === 'Standard Courier Delivery',
-            );
+          const stillValid = options.some((o) => o.methodId === selectedShippingId);
+          if (!stillValid && options.length > 0) {
+            const karachiOpt = options.find((o) => o.methodCode === 'karachi_standard');
+            const economyOpt = options.find((o) => o.methodCode === 'economy_shipping');
+            const overlandOpt = options.find((o) => o.methodCode === 'overland_shipping');
             setSelectedShippingId(
-              (zoneOpt ?? standardOpt ?? matrixOpt ?? options[0]).methodId,
+              (karachiOpt ?? economyOpt ?? overlandOpt ?? options[0]).methodId,
             );
           }
         }
@@ -453,74 +438,8 @@ export function OnePageCheckout() {
     checkout?.customerGroupId,
     effectiveShippingAddress,
     selectedShippingId,
-    useSameAddress,
-    billingCities,
-    shippingCities,
+    allCities,
   ]);
-
-  // Live matrix rate as soon as province, city, and cart items are resolved
-  useEffect(() => {
-    const province = effectiveShippingAddress.state?.trim();
-    const city = effectiveShippingAddress.city?.trim();
-    const items = checkout?.items;
-
-    if (!province || !city || !items?.length) {
-      setMatrixShippingFee(null);
-      return;
-    }
-
-    let cancelled = false;
-    setLoadingMatrixFee(true);
-
-    shippingApi
-      .calculateShippingFee({
-        province,
-        city,
-        items: items.map((item) => ({
-          variantId: item.variantId,
-          quantity: item.quantity,
-        })),
-      })
-      .then((res) => {
-        if (cancelled) return;
-        if (res.data) {
-          setMatrixShippingFee({
-            rateAmount: res.data.rateAmount,
-            matchedBy: res.data.matchedBy,
-            totalWeightKg: res.data.totalWeightKg,
-            isCodAvailable: res.data.isCodAvailable,
-          });
-        } else {
-          setMatrixShippingFee(null);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) setMatrixShippingFee(null);
-      })
-      .finally(() => {
-        if (!cancelled) setLoadingMatrixFee(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [
-    effectiveShippingAddress.state,
-    effectiveShippingAddress.city,
-    checkout?.items,
-  ]);
-
-  // Drop COD selection when matrix rate disallows COD for this destination
-  useEffect(() => {
-    if (
-      matrixShippingFee != null &&
-      !matrixShippingFee.isCodAvailable &&
-      selectedPaymentCode === 'cod'
-    ) {
-      const fallback = paymentMethods.find((m) => m.code !== 'cod');
-      setSelectedPaymentCode(fallback?.code ?? null);
-    }
-  }, [matrixShippingFee, selectedPaymentCode, paymentMethods]);
 
   const selectedShipping = useMemo(
     () => shippingOptions.find((o) => o.methodId === selectedShippingId),
@@ -531,18 +450,19 @@ export function OnePageCheckout() {
   const parsedSubtotal = Number(checkout?.subtotal ?? 0);
   const parsedDiscount = Number(checkout?.discountTotal ?? 0);
   const parsedTax = Number(checkout?.taxTotal ?? 0);
-  // Prefer live matrix courier rate when available; else selected method / session total
   const shippingFee = Number(
-    matrixShippingFee != null
-      ? matrixShippingFee.rateAmount
-      : selectedShipping != null
-        ? (selectedShipping.originalCost ?? selectedShipping.cost)
-        : checkout?.shippingTotal ?? 0,
+    selectedShipping != null
+      ? (selectedShipping.originalCost ?? selectedShipping.cost)
+      : checkout?.shippingTotal ?? 0,
   );
   const displaySubtotal = parsedSubtotal;
   const displayDiscountTotal = parsedDiscount;
+  const effectiveFreeDeliveryThreshold = isKarachiCity(effectiveShippingAddress.city)
+    ? KARACHI_FREE_DELIVERY_THRESHOLD
+    : freeDeliveryThreshold;
   const qualifiesForFreeDelivery =
-    (freeDeliveryThreshold > 0 && displaySubtotal >= freeDeliveryThreshold) ||
+    (effectiveFreeDeliveryThreshold > 0 &&
+      displaySubtotal >= effectiveFreeDeliveryThreshold) ||
     Boolean(selectedShipping?.isFreeShipping);
   const displayShippingTotal = qualifiesForFreeDelivery
     ? 0
@@ -555,7 +475,7 @@ export function OnePageCheckout() {
   );
   const amountRemainingForFreeDelivery = Math.max(
     0,
-    freeDeliveryThreshold - displaySubtotal,
+    effectiveFreeDeliveryThreshold - displaySubtotal,
   );
 
   const placeOrderDisabled =
@@ -628,14 +548,13 @@ export function OnePageCheckout() {
       }
 
       await updateShippingMethod({
+        methodCode: selectedShipping.methodCode,
         methodId: selectedShipping.methodId,
         methodName: selectedShipping.methodName,
         cost: Number(
           qualifiesForFreeDelivery || selectedShipping.isFreeShipping
             ? (selectedShipping.effectivePrice ?? 0)
-            : matrixShippingFee != null
-              ? matrixShippingFee.rateAmount
-              : (selectedShipping.effectivePrice ?? selectedShipping.cost),
+            : (selectedShipping.effectivePrice ?? selectedShipping.cost),
         ),
         currency: selectedShipping.currency,
         estimatedDays: selectedShipping.estimatedDays ?? 0,
@@ -681,9 +600,6 @@ export function OnePageCheckout() {
 
   const inputClass = storefrontUi.input;
   const labelClass = storefrontUi.labelMb;
-  const billingCityOptions = getCitySelectOptions(billingAddress.state, billingAddress.city);
-  const shippingCityOptions = getCitySelectOptions(shippingAddress.state, shippingAddress.city);
-
   const isEmailLocked = isAuthenticated && !!user?.email;
 
   const emailField = (
@@ -835,15 +751,12 @@ export function OnePageCheckout() {
                     <select
                       id="billing-city"
                       required
-                      disabled={!billingAddress.state}
                       value={billingAddress.city}
                       onChange={(e) => setBillingAddress({ ...billingAddress, city: e.target.value })}
-                      className={`${storefrontUi.select} disabled:cursor-not-allowed disabled:opacity-50`}
+                      className={storefrontUi.select}
                     >
-                      <option value="">
-                        {!billingAddress.state ? 'Select Province first' : 'Select city'}
-                      </option>
-                      {(billingCities.length > 0 ? billingCities : billingCityOptions.map(c => ({ id: c, name: c }))).map((city) => (
+                      <option value="">Select city</option>
+                      {allCities.map((city) => (
                         <option key={city.id} value={city.name}>
                           {city.name}
                         </option>
@@ -851,11 +764,10 @@ export function OnePageCheckout() {
                     </select>
                   </div>
                   <div>
-                    <label htmlFor="billing-postalCode" className={labelClass}>Postal code *</label>
+                    <label htmlFor="billing-postalCode" className={labelClass}>Postal code (optional)</label>
                     <input
                       id="billing-postalCode"
                       type="text"
-                      required
                       value={billingAddress.postalCode}
                       onChange={(e) =>
                         setBillingAddress({ ...billingAddress, postalCode: e.target.value })
@@ -874,15 +786,18 @@ export function OnePageCheckout() {
                     />
                   </div>
                   <div className="sm:col-span-2">
-                    <label htmlFor="billing-phone" className={labelClass}>Phone (optional)</label>
+                    <label htmlFor="billing-phone" className={labelClass}>Mobile Number *</label>
                     <input
                       id="billing-phone"
                       type="tel"
+                      required
+                      minLength={10}
                       value={billingAddress.phone || ''}
                       onChange={(e) =>
                         setBillingAddress({ ...billingAddress, phone: e.target.value })
                       }
                       className={inputClass}
+                      placeholder="03001234567"
                     />
                   </div>
                 </div>
@@ -1001,17 +916,14 @@ export function OnePageCheckout() {
                       <select
                         id="shipping-city"
                         required
-                        disabled={!shippingAddress.state}
                         value={shippingAddress.city}
                         onChange={(e) =>
                           setShippingAddress({ ...shippingAddress, city: e.target.value })
                         }
-                        className={`${storefrontUi.select} disabled:cursor-not-allowed disabled:opacity-50`}
+                        className={storefrontUi.select}
                       >
-                        <option value="">
-                          {!shippingAddress.state ? 'Select Province first' : 'Select city'}
-                        </option>
-                        {(shippingCities.length > 0 ? shippingCities : shippingCityOptions.map(c => ({ id: c, name: c }))).map((city) => (
+                        <option value="">Select city</option>
+                        {allCities.map((city) => (
                           <option key={city.id} value={city.name}>
                             {city.name}
                           </option>
@@ -1019,11 +931,10 @@ export function OnePageCheckout() {
                       </select>
                     </div>
                     <div>
-                      <label htmlFor="shipping-postalCode" className={labelClass}>Postal code *</label>
+                      <label htmlFor="shipping-postalCode" className={labelClass}>Postal code (optional)</label>
                       <input
                         id="shipping-postalCode"
                         type="text"
-                        required
                         value={shippingAddress.postalCode}
                         onChange={(e) =>
                           setShippingAddress({ ...shippingAddress, postalCode: e.target.value })
@@ -1224,12 +1135,6 @@ export function OnePageCheckout() {
             ) : (
               <div className="space-y-2">
                 {paymentMethods
-                  .filter(
-                    (m) =>
-                      m.code !== 'cod' ||
-                      matrixShippingFee == null ||
-                      matrixShippingFee.isCodAvailable,
-                  )
                   .map((m) => (
                   <label
                     key={m.code}
@@ -1250,11 +1155,6 @@ export function OnePageCheckout() {
                     <span className="font-medium text-foreground">{m.name}</span>
                   </label>
                 ))}
-                {matrixShippingFee != null && !matrixShippingFee.isCodAvailable ? (
-                  <p className="text-xs text-muted-foreground">
-                    Cash on Delivery is not available for this destination/weight.
-                  </p>
-                ) : null}
               </div>
             )}
           </section>
@@ -1448,7 +1348,7 @@ export function OnePageCheckout() {
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Shipping</span>
                 <span>
-                  {loadingMatrixFee || loadingShipping
+                  {loadingShipping
                     ? 'Calculating…'
                     : qualifiesForFreeDelivery
                       ? (
@@ -1461,26 +1361,16 @@ export function OnePageCheckout() {
                           <span className="text-success">FREE</span>
                         </span>
                       )
-                      : matrixShippingFee != null || selectedShipping
+                      : selectedShipping
                         ? formatPrice(displayShippingTotal, displayCurrency)
                         : '—'}
                 </span>
               </div>
-              {matrixShippingFee != null && !qualifiesForFreeDelivery ? (
-                <p className="text-xs text-muted-foreground">
-                  Weight-based rate
-                  {matrixShippingFee.totalWeightKg > 0
-                    ? ` · ${matrixShippingFee.totalWeightKg.toFixed(2)} kg`
-                    : ''}
-                  {matrixShippingFee.matchedBy === 'city'
-                    ? ' · city match'
-                    : ' · province default'}
-                </p>
-              ) : null}
             </div>
             {!qualifiesForFreeDelivery &&
-            freeDeliveryThreshold > 0 &&
-            displaySubtotal >= minimumOrderAmount ? (
+            effectiveFreeDeliveryThreshold > 0 &&
+            displaySubtotal >= minimumOrderAmount &&
+            displaySubtotal < effectiveFreeDeliveryThreshold ? (
               <p className="mt-3 rounded-sm bg-secondary/50 px-3 py-2 text-xs font-medium text-foreground">
                 Add {formatPrice(amountRemainingForFreeDelivery, displayCurrency)} more to get Free
                 Delivery.
@@ -1537,11 +1427,11 @@ export function OnePageCheckout() {
             <p className="mt-3 text-sm leading-6 text-muted-foreground">
               A minimum order value of {formatPrice(minimumOrderAmount, displayCurrency)} is
               required to place an order. Please add more items to your cart.
-              {freeDeliveryThreshold > 0 ? (
+              {effectiveFreeDeliveryThreshold > 0 ? (
                 <>
                   <br />
                   <span className="mt-1 inline-block font-medium text-foreground">
-                    Note: Shopping of {formatPrice(freeDeliveryThreshold, displayCurrency)} or more
+                    Note: Shopping of {formatPrice(effectiveFreeDeliveryThreshold, displayCurrency)} or more
                     qualifies for Free Delivery!
                   </span>
                 </>

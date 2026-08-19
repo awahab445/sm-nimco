@@ -15,12 +15,13 @@ export interface CheckoutAddress {
   addressLine2?: string;
   city: string;
   state: string;
-  postalCode: string;
+  postalCode?: string;
   country: string;
-  phone?: string;
+  phone: string;
 }
 
 export interface CheckoutShippingMethod {
+  methodCode: string;
   methodId: string;
   methodName: string;
   cost: number;

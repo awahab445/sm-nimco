@@ -88,9 +88,12 @@ export class CourierCityService {
     return results.map((r) => r.province);
   }
 
-  async getCitiesByProvince(province: string) {
+  async getActiveCities(province?: string) {
     return this.prisma.courierCity.findMany({
-      where: { province, isActive: true },
+      where: {
+        isActive: true,
+        ...(province?.trim() ? { province: province.trim() } : {}),
+      },
       select: {
         id: true,
         cityCode: true,

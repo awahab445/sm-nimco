@@ -65,7 +65,7 @@ export class AddressService {
         addressLine2: dto.addressLine2 ?? null,
         city: dto.city,
         state: dto.state,
-        postalCode: dto.postalCode,
+        postalCode: dto.postalCode ?? '',
         country: dto.country.toUpperCase(),
         phone: dto.phone ?? null,
         isDefaultBilling: dto.isDefaultBilling ?? false,

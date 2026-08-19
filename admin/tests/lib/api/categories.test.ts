@@ -10,7 +10,7 @@ describe('categories API', () => {
   });
 
   it('fetchAdminCategories GET and unwraps data', async () => {
-    const rows = [{ id: '1', name: 'A', slug: 'a', description: null, parentId: null, position: 0, isActive: true, productCount: 0 }];
+    const rows = [{ id: '1', name: 'A', slug: 'a', description: null, imageUrl: null, bannerUrl: null, parentId: null, position: 0, isActive: true, isFeatured: false, productCount: 0 }];
     fetchMock.mockResolvedValue(resJson({ data: rows }));
     const out = await api.fetchAdminCategories();
     expect(out).toEqual(rows);
@@ -18,7 +18,7 @@ describe('categories API', () => {
   });
 
   it('fetchAdminCategory GET by id', async () => {
-    fetchMock.mockResolvedValue(resJson({ id: '1', name: 'A', slug: 'a', description: null, parentId: null, position: 0, isActive: true, createdAt: '', updatedAt: '' }));
+    fetchMock.mockResolvedValue(resJson({ id: '1', name: 'A', slug: 'a', description: null, imageUrl: null, bannerUrl: null, parentId: null, position: 0, isActive: true, isFeatured: false, createdAt: '', updatedAt: '' }));
     await api.fetchAdminCategory('1');
     expectLastFetch(fetchMock, { path: '/admin/categories/1' });
   });

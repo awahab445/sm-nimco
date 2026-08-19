@@ -66,13 +66,14 @@ export function AddressForm({
   const cityDisabled = !formData.state;
 
   const validateAddress = (addr: Address): boolean => {
+    const phone = addr.phone?.trim() || '';
+    if (phone.length < 10) return false;
     return !!(
       addr.firstName &&
       addr.lastName &&
       addr.addressLine1 &&
       addr.city &&
       addr.state &&
-      addr.postalCode &&
       addr.country
     );
   };
@@ -225,12 +226,11 @@ export function AddressForm({
         </div>
         <div>
           <label htmlFor="postalCode" className={storefrontUi.label}>
-            Postal Code *
+            Postal Code (optional)
           </label>
           <input
             id="postalCode"
             type="text"
-            required
             value={formData.postalCode}
             onChange={(e) => updateField('postalCode', e.target.value)}
             className={`mt-1 ${fieldInput}`}
@@ -250,14 +250,17 @@ export function AddressForm({
         </div>
         <div className="md:col-span-2">
           <label htmlFor="phone" className={storefrontUi.label}>
-            Phone (optional)
+            Mobile Number *
           </label>
           <input
             id="phone"
             type="tel"
+            required
+            minLength={10}
             value={formData.phone || ''}
             onChange={(e) => updateField('phone', e.target.value)}
             className={`mt-1 ${fieldInput}`}
+            placeholder="03001234567"
           />
         </div>
       </div>

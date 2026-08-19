@@ -1330,16 +1330,18 @@ html[data-store-theme="mehfil_shereen"] .store-mega-menu-panel .mega-menu-nav-ne
 }
 
 .mega-menu-product-spotlight {
-  --mega-banner-width: 280px;
-  --mega-banner-height: min(18rem, 34vh);
+  --mega-banner-width: 240px;
+  --mega-banner-max-height: min(18rem, 30vh);
 
   box-sizing: border-box;
   width: var(--mega-banner-width);
   min-width: var(--mega-banner-width);
   max-width: var(--mega-banner-width);
-  align-self: stretch;
+  max-height: var(--mega-banner-max-height);
+  align-self: start;
   padding: 0;
   overflow: hidden;
+  border-radius: 0.75rem;
 }
 
 .mega-menu-product-spotlight__link {
@@ -1348,10 +1350,11 @@ html[data-store-theme="mehfil_shereen"] .store-mega-menu-panel .mega-menu-nav-ne
   box-sizing: border-box;
   width: 100%;
   height: 100%;
-  min-height: var(--mega-banner-height);
+  max-height: var(--mega-banner-max-height);
+  aspect-ratio: 4 / 5;
   overflow: hidden;
   text-decoration: none;
-  border-radius: 0;
+  border-radius: 0.75rem;
   border: 0;
   background: color-mix(in srgb, var(--foreground) 4%, transparent);
   transition: opacity 0.25s ease;
@@ -1378,11 +1381,10 @@ html[data-store-theme='essa_chemicals'] .store-mega-menu-panel .mega-menu-produc
   display: block;
   width: 100%;
   height: 100%;
-  min-height: var(--mega-banner-height);
   max-width: 100%;
   object-fit: cover;
-  object-position: center;
-  border-radius: 0;
+  object-position: center top;
+  border-radius: 0.75rem;
   transition: transform 0.45s ease;
 }
 

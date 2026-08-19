@@ -304,8 +304,7 @@ export function ProductForm({ mode, initial, productId, onCancel, onSaved }: Pro
           <input
             value={sku}
             onChange={(e) => setSku(e.target.value)}
-            disabled={mode === 'edit'}
-            className="mt-1 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm disabled:opacity-60 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-50"
+            className="mt-1 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-50"
           />
         </div>
         <div>

@@ -154,7 +154,11 @@ export class ShippingRateService {
 
     return items.reduce((sum, item) => {
       let unitWeightInKg: number;
-      if (item.weight != null && Number.isFinite(item.weight) && item.weight > 0) {
+      if (
+        item.weight != null &&
+        Number.isFinite(item.weight) &&
+        item.weight > 0
+      ) {
         unitWeightInKg = toShippingWeightKg(
           item.weight,
           item.shippingWeightUnit,

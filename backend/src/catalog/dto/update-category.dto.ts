@@ -21,6 +21,14 @@ export class UpdateCategoryDto {
   @IsOptional()
   description?: string;
 
+  @IsString()
+  @IsOptional()
+  imageUrl?: string | null;
+
+  @IsString()
+  @IsOptional()
+  bannerUrl?: string | null;
+
   /** Omit to leave unchanged; send `null` to clear parent */
   @IsOptional()
   @ValidateIf((_, v) => v != null)
@@ -35,4 +43,8 @@ export class UpdateCategoryDto {
   @IsBoolean()
   @IsOptional()
   isActive?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  isFeatured?: boolean;
 }

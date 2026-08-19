@@ -10,7 +10,7 @@ import { formatApiError } from '@/lib/api/error-message';
 const DEFAULT_CONFIG: Record<ShippingMethodType, string> = {
   flat_rate: JSON.stringify({ cost: 0 }, null, 2),
   weight_based: JSON.stringify(
-    { baseCost: 0, costPerKg: 0, minWeight: 0, maxWeight: 100 },
+    { baseCost: 0, costPerKg: 0, baseCostKgLimit: 0, minWeight: 0, maxWeight: 100 },
     null,
     2,
   ),

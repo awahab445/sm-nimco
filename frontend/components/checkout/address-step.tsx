@@ -3,10 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useCheckout } from '@/lib/checkout-context';
 import { Address, shippingApi } from '@/lib/api-client';
-import {
-  PAKISTAN_PROVINCES,
-  getCitySelectOptions,
-} from '@/lib/constants/locations';
+import { PAKISTAN_PROVINCES } from '@/lib/constants/locations';
 import { storefrontUi } from '@/lib/storefront-ui';
 
 type CityOption = { id: string; name: string };
@@ -43,39 +40,26 @@ export function AddressStep({ onNext }: AddressStepProps) {
   const [formError, setFormError] = useState<string | null>(null);
 
   const [apiProvinces, setApiProvinces] = useState<string[]>([]);
-  const [billingCities, setBillingCities] = useState<CityOption[]>([]);
-  const [shippingCities, setShippingCities] = useState<CityOption[]>([]);
+  const [allCities, setAllCities] = useState<CityOption[]>([]);
 
   useEffect(() => {
     shippingApi.getProvinces().then(setApiProvinces).catch(() => {});
+    shippingApi
+      .getCities()
+      .then((cities) => setAllCities(cities.map((city) => ({ id: city.id, name: city.name }))))
+      .catch(() => setAllCities([]));
   }, []);
-
-  useEffect(() => {
-    const province = billingAddress.state?.trim();
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- async fetch on dependency change
-    if (!province) { setBillingCities([]); return; }
-    shippingApi.getCities(province).then(cities => setBillingCities(cities.map(c => ({ id: c.id, name: c.name })))).catch(() => setBillingCities([]));
-  }, [billingAddress.state]);
-
-  useEffect(() => {
-    const province = shippingAddress.state?.trim();
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- async fetch on dependency change
-    if (!province) { setShippingCities([]); return; }
-    shippingApi.getCities(province).then(cities => setShippingCities(cities.map(c => ({ id: c.id, name: c.name })))).catch(() => setShippingCities([]));
-  }, [shippingAddress.state]);
-
-  const billingCityOptions = getCitySelectOptions(billingAddress.state, billingAddress.city);
-  const shippingCityOptions = getCitySelectOptions(shippingAddress.state, shippingAddress.city);
 
   const validateAddress = (addr: Address): boolean => {
     const country = addr.country?.trim() || 'PK';
+    const phone = addr.phone?.trim() || '';
+    if (phone.length < 10) return false;
     return !!(
       addr.firstName &&
       addr.lastName &&
       addr.addressLine1 &&
       addr.city &&
       addr.state &&
-      addr.postalCode &&
       country
     );
   };
@@ -91,7 +75,12 @@ export function AddressStep({ onNext }: AddressStepProps) {
     };
 
     if (!validateAddress(billingWithCountry)) {
-      setFormError('Please fill in all required billing address fields');
+      const phone = billingWithCountry.phone?.trim() || '';
+      if (phone.length < 10) {
+        setFormError('Mobile number is required (at least 10 digits)');
+      } else {
+        setFormError('Please fill in all required billing address fields');
+      }
       return;
     }
 
@@ -217,17 +206,14 @@ export function AddressStep({ onNext }: AddressStepProps) {
             <select
               id="billing-city"
               required
-              disabled={!billingAddress.state}
               value={billingAddress.city}
               onChange={(e) =>
                 setBillingAddress({ ...billingAddress, city: e.target.value })
               }
-              className={`${storefrontUi.select} disabled:cursor-not-allowed disabled:opacity-50`}
+              className={storefrontUi.select}
             >
-              <option value="">
-                {!billingAddress.state ? 'Select Province first' : 'Select city'}
-              </option>
-              {(billingCities.length > 0 ? billingCities : billingCityOptions.map(c => ({ id: c, name: c }))).map((city) => (
+              <option value="">Select city</option>
+              {allCities.map((city) => (
                 <option key={city.id} value={city.name}>
                   {city.name}
                 </option>
@@ -236,12 +222,11 @@ export function AddressStep({ onNext }: AddressStepProps) {
           </div>
           <div>
             <label htmlFor="billing-postalCode" className={storefrontUi.labelMb}>
-              Postal Code *
+              Postal Code (optional)
             </label>
             <input
               id="billing-postalCode"
               type="text"
-              required
               value={billingAddress.postalCode}
               onChange={(e) =>
                 setBillingAddress({ ...billingAddress, postalCode: e.target.value })
@@ -263,16 +248,19 @@ export function AddressStep({ onNext }: AddressStepProps) {
           </div>
           <div className="md:col-span-2">
             <label htmlFor="billing-phone" className={storefrontUi.labelMb}>
-              Phone (optional)
+              Mobile Number *
             </label>
             <input
               id="billing-phone"
               type="tel"
+              required
+              minLength={10}
               value={billingAddress.phone || ''}
               onChange={(e) =>
                 setBillingAddress({ ...billingAddress, phone: e.target.value })
               }
               className={storefrontUi.input}
+              placeholder="03001234567"
             />
           </div>
         </div>
@@ -368,17 +356,14 @@ export function AddressStep({ onNext }: AddressStepProps) {
               <select
                 id="shipping-city"
                 required
-                disabled={!shippingAddress.state}
                 value={shippingAddress.city}
                 onChange={(e) =>
                   setShippingAddress({ ...shippingAddress, city: e.target.value })
                 }
-                className={`${storefrontUi.select} disabled:cursor-not-allowed disabled:opacity-50`}
+                className={storefrontUi.select}
               >
-                <option value="">
-                  {!shippingAddress.state ? 'Select Province first' : 'Select city'}
-                </option>
-                {(shippingCities.length > 0 ? shippingCities : shippingCityOptions.map(c => ({ id: c, name: c }))).map((city) => (
+                <option value="">Select city</option>
+                {allCities.map((city) => (
                   <option key={city.id} value={city.name}>
                     {city.name}
                   </option>
@@ -387,12 +372,11 @@ export function AddressStep({ onNext }: AddressStepProps) {
             </div>
             <div>
               <label htmlFor="shipping-postalCode" className={storefrontUi.labelMb}>
-                Postal Code *
+                Postal Code (optional)
               </label>
               <input
                 id="shipping-postalCode"
                 type="text"
-                required
                 value={shippingAddress.postalCode}
                 onChange={(e) =>
                   setShippingAddress({ ...shippingAddress, postalCode: e.target.value })

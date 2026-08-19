@@ -32,20 +32,31 @@ import {
 } from '../events/shipping.events';
 import { ShippingEligibilityEvaluator } from './shipping-eligibility-evaluator.service';
 import { ShippingRateService } from './shipping-rate.service';
-import { CourierCityService } from './courier-city.service';
 import { StoreSettingsService } from '../../store-settings/services/store-settings.service';
-import { roundShippingFee, resolveShippingSlab } from '../utils/shipping-fee';
+import {
+  calculateKarachiShippingFee,
+  calculateWeightBasedShippingFee,
+  isKarachiCity,
+  KARACHI_FREE_DELIVERY_THRESHOLD,
+  KARACHI_STANDARD_METHOD_CODE,
+  KARACHI_STANDARD_METHOD_NAME,
+  qualifiesForFreeDelivery,
+  roundShippingFee,
+} from '../utils/shipping-fee';
 
 @Injectable()
 export class ShippingService {
   private readonly logger = new Logger(ShippingService.name);
+  private readonly supportedMethodCodes = new Set([
+    'economy_shipping',
+    'overland_shipping',
+  ]);
 
   constructor(
     private readonly prisma: PrismaService,
     private readonly eventEmitter: EventEmitter2,
     private readonly eligibilityEvaluator: ShippingEligibilityEvaluator,
     private readonly shippingRateService: ShippingRateService,
-    private readonly courierCityService: CourierCityService,
     private readonly storeSettingsService: StoreSettingsService,
   ) {}
 
@@ -465,78 +476,33 @@ export class ShippingService {
       subtotal ||
       items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
+    const cityName = await this.resolveShippingCityName(
+      dto.cityId,
+      shippingAddress.city,
+    );
+
+    if (isKarachiCity(cityName)) {
+      const karachiCost = calculateKarachiShippingFee(totalWeight);
+      return this.applyFreeDeliveryToOptions(
+        [
+          {
+            methodId: KARACHI_STANDARD_METHOD_CODE,
+            methodCode: KARACHI_STANDARD_METHOD_CODE,
+            methodName: KARACHI_STANDARD_METHOD_NAME,
+            cost: karachiCost,
+            currency,
+            description: 'Local Karachi delivery',
+          },
+        ],
+        totalAmount,
+        KARACHI_FREE_DELIVERY_THRESHOLD,
+      );
+    }
+
     // Find matching zones (sorted by priority)
     const zones = await this.findMatchingZones(shippingAddress);
 
     const options: ShippingOptionDto[] = [];
-
-    // Matrix courier rates (city → province fallback by weight band)
-    let matrixFee: Awaited<
-      ReturnType<ShippingRateService['calculateShippingFee']>
-    > = null;
-    if (shippingAddress.region?.trim()) {
-      matrixFee = await this.shippingRateService.calculateShippingFee(
-        shippingAddress.region,
-        shippingAddress.city,
-        totalWeight,
-      );
-    }
-    if (matrixFee) {
-      options.push({
-        methodId: matrixFee.rateId,
-        methodCode: 'matrix_rate',
-        methodName: 'Standard Delivery',
-        cost: matrixFee.rateAmount,
-        currency,
-        description:
-          matrixFee.matchedBy === 'city'
-            ? `Courier rate for ${matrixFee.city}`
-            : `Courier rate for ${matrixFee.province}`,
-      });
-    }
-
-    // Dual-tier per-kg zone rate + GST from CourierCity → CourierZone
-    const cityId = dto.cityId?.trim();
-    let zoneInfo = cityId
-      ? await this.courierCityService.resolveZoneForCityId(cityId)
-      : null;
-    if (!zoneInfo && shippingAddress.city?.trim()) {
-      zoneInfo = await this.courierCityService.resolveZoneForCity(
-        shippingAddress.city,
-      );
-    }
-    if (zoneInfo) {
-      const slab = resolveShippingSlab(totalWeight, {
-        rateLessThan10kg: zoneInfo.rateLessThan10kg,
-        rateGreaterOrEqual10kg: zoneInfo.rateGreaterOrEqual10kg,
-      });
-      const baseShipping = roundShippingFee(slab.baseShipping);
-      let gstPct = 18;
-      try {
-        const settings =
-          await this.storeSettingsService.getPublicOrderSettings();
-        gstPct = settings.shippingGstPercentage ?? 18;
-      } catch {
-        /* keep default */
-      }
-      const cost = this.courierCityService.applyGst(baseShipping, gstPct);
-      const slabLabel =
-        slab.slab === 1
-          ? '≤3kg min'
-          : slab.slab === 2
-            ? '≤5kg flat'
-            : slab.slab === 3
-              ? '5–10kg'
-              : '≥10kg bulk';
-      options.push({
-        methodId: zoneInfo.zoneId,
-        methodCode: 'courier_zone_rate',
-        methodName: 'Standard Courier Delivery',
-        cost,
-        currency,
-        description: `${zoneInfo.zoneName} (${slabLabel}, billed ${slab.billingWeightKg}kg, GST ${gstPct}%) for ${shippingAddress.city || 'city'}`,
-      });
-    }
 
     if (zones.length === 0) {
       if (options.length === 0) {
@@ -562,14 +528,17 @@ export class ShippingService {
           customerGroups: true,
         },
       });
+      const supportedMethods = methods.filter((method) =>
+        this.supportedMethodCodes.has(method.code),
+      );
 
       // Load customer groups for all methods in batch
-      const methodIds = methods.map((m) => m.id);
+      const methodIds = supportedMethods.map((m) => m.id);
       const groupsByMethod =
         await this.eligibilityEvaluator.loadCustomerGroupsForMethods(methodIds);
 
       // Attach customer groups to methods
-      const methodsWithGroups = methods.map((method) => ({
+      const methodsWithGroups = supportedMethods.map((method) => ({
         ...method,
         customerGroups: groupsByMethod.get(method.id) || [],
       }));
@@ -621,42 +590,69 @@ export class ShippingService {
           description: method.description || undefined,
         });
       }
-
-      // If we found methods in a high-priority zone, break (don't check lower priority zones)
-      // Keep any matrix option already added
-      const zoneMethodCount = options.filter(
-        (o) => o.methodCode !== 'matrix_rate',
-      ).length;
-      if (zoneMethodCount > 0 && zone.priority > 0) {
-        break;
-      }
     }
 
-    // Sort by cost (ascending), then apply free-delivery threshold sync
-    const sorted = options.sort((a, b) => a.cost - b.cost);
+    // Keep one option per method code (prefer lowest cost), then sort.
+    const deduped = Array.from(
+      options
+        .reduce((map, option) => {
+          const existing = map.get(option.methodCode);
+          if (!existing || option.cost < existing.cost) {
+            map.set(option.methodCode, option);
+          }
+          return map;
+        }, new Map<string, ShippingOptionDto>())
+        .values(),
+    );
+    const sorted = deduped.sort((a, b) => a.cost - b.cost);
     return this.applyFreeDeliveryToOptions(sorted, totalAmount);
   }
 
+  private async resolveShippingCityName(
+    cityId?: string,
+    cityName?: string,
+  ): Promise<string> {
+    const id = cityId?.trim();
+    if (id) {
+      const activeCity = await this.prisma.courierCity.findFirst({
+        where: { id, isActive: true },
+        select: { name: true },
+      });
+      if (!activeCity) {
+        throw new BadRequestException('Selected city is not available.');
+      }
+      return activeCity.name;
+    }
+    return cityName?.trim() ?? '';
+  }
+
   /**
-   * When cart subtotal meets free delivery threshold, keep originalCost and
-   * set effectivePrice/isFreeShipping on each option.
+   * When cart subtotal meets the free-delivery threshold, keep originalCost
+   * and set effectivePrice/isFreeShipping on each option (weight is ignored).
+   * Pass thresholdOverride for city-specific rules (e.g. Karachi Rs. 3,000).
    */
   private async applyFreeDeliveryToOptions(
     options: ShippingOptionDto[],
     subtotal: number,
+    thresholdOverride?: number,
   ): Promise<ShippingOptionDto[]> {
-    let freeDeliveryThreshold = 0;
-    try {
-      const settings = await this.storeSettingsService.getPublicOrderSettings();
-      freeDeliveryThreshold = settings.freeDeliveryThreshold ?? 0;
-    } catch (err) {
-      this.logger.warn(
-        `Could not load free delivery threshold: ${err instanceof Error ? err.message : String(err)}`,
-      );
+    let freeDeliveryThreshold = thresholdOverride ?? 0;
+    if (thresholdOverride == null) {
+      try {
+        const settings =
+          await this.storeSettingsService.getPublicOrderSettings();
+        freeDeliveryThreshold = settings.freeDeliveryThreshold ?? 0;
+      } catch (err) {
+        this.logger.warn(
+          `Could not load free delivery threshold: ${err instanceof Error ? err.message : String(err)}`,
+        );
+      }
     }
 
-    const qualifies =
-      freeDeliveryThreshold > 0 && subtotal >= freeDeliveryThreshold;
+    const qualifies = qualifiesForFreeDelivery({
+      subtotal,
+      freeDeliveryThreshold,
+    });
 
     return options.map((opt) => {
       const originalCost = roundShippingFee(opt.cost);
@@ -804,10 +800,11 @@ export class ShippingService {
         return this.parseShippingAmount(config.cost);
 
       case 'weight_based':
-        const baseCost = this.parseShippingAmount(config.baseCost);
-        const costPerKg = this.parseShippingAmount(config.costPerKg);
-        const weightCost = orderWeight * costPerKg;
-        return baseCost + weightCost;
+        return calculateWeightBasedShippingFee(
+          orderWeight,
+          config,
+          method.code,
+        );
 
       case 'amount_based':
         if (

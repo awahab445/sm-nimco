@@ -12,6 +12,7 @@ import { imageAlt } from '@/lib/seo';
 import { getProductImageSrcs, getProductImagesOrdered } from '@/lib/resolve-image-url';
 import { StorefrontImage } from '@/components/ui/storefront-image';
 import { getVariantForCart } from '@/lib/product-cart-variant';
+import { getProductListDisplayPrice } from '@/lib/product-display-price';
 import { ShoppingBagIcon } from '@/components/icons/shopping-bag-icon';
 import { WishlistToggleButton } from '@/components/product/wishlist-toggle-button';
 
@@ -127,7 +128,7 @@ export function ProductQuickView({ product, open, onClose, availableQuantity }: 
               {product.name}
             </h2>
             <p className="mt-2 text-base font-medium text-product-price">
-              {formatPrice(product.basePrice)}
+              {formatPrice(getProductListDisplayPrice(product))}
             </p>
             {blurb ? (
               <p className="mt-4 text-sm leading-relaxed text-muted-foreground line-clamp-4">

@@ -13,7 +13,7 @@ import {
 import { resolveImageUrl } from '@/lib/resolve-image-url';
 import { useHydrated } from '@/lib/use-hydrated';
 
-const MEGA_MENU_BANNER_COL_PX = 280;
+const MEGA_MENU_BANNER_COL_PX = 240;
 
 function sortByOrder<T extends { sortOrder?: number }>(items: T[]): T[] {
   return [...items].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
@@ -354,7 +354,7 @@ function MegaMenuNavGrid({
 
   return (
     <div
-      className="mega-menu-nav-grid grid items-start gap-x-8 gap-y-5 overflow-visible"
+      className="mega-menu-nav-grid grid items-start gap-x-8 gap-y-5 overflow-hidden"
       data-mega-col-count={colCount}
       style={{
         gridTemplateColumns: `repeat(${colCount}, minmax(0, 1fr)) ${MEGA_MENU_BANNER_COL_PX}px`,

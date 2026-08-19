@@ -86,6 +86,7 @@ export function ShippingStep({ onNext, onBack }: ShippingStepProps) {
 
     try {
       await updateShippingMethod({
+        methodCode: selectedOption.methodCode,
         methodId: selectedOption.methodId,
         methodName: selectedOption.methodName,
         cost: Number(

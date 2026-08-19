@@ -1,4 +1,10 @@
-import { Controller, Get, Param, Query, NotFoundException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Query,
+  NotFoundException,
+} from '@nestjs/common';
 import { CourierCityService } from '../services/courier-city.service';
 
 @Controller('shipping')
@@ -11,8 +17,8 @@ export class CourierCityController {
   }
 
   @Get('cities')
-  async getCities(@Query('province') province: string) {
-    return this.courierCityService.getCitiesByProvince(province);
+  async getCities(@Query('province') province?: string) {
+    return this.courierCityService.getActiveCities(province);
   }
 
   @Get('cities/:id')

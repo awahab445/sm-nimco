@@ -6,6 +6,7 @@ import { useCartStore } from '@/lib/cart.store';
 import { useAuthStore } from '@/lib/auth.store';
 import { formatPrice, APP_CURRENCY, resolveDisplayCurrency } from '@/lib/currency';
 import { CartLineItemThumb } from '@/components/cart/cart-line-item-thumb';
+import { CartShippingEstimate } from '@/components/cart/cart-shipping-estimate';
 import { CouponApplySection } from '@/components/coupon/coupon-apply-section';
 import { ShoppingBagIcon } from '@/components/icons/shopping-bag-icon';
 import {
@@ -396,7 +397,8 @@ export default function CartPage() {
           </div>
 
           <div className="mt-8 lg:mt-0">
-            <div className={`sticky top-24 ${storefrontUi.card} p-6`}>
+            <div className="sticky top-24 space-y-4">
+              <div className={`${storefrontUi.card} p-6`}>
               <h2 className="font-display border-b border-border/60 pb-3 text-lg font-semibold tracking-tight text-foreground">
                 Order summary
               </h2>
@@ -473,6 +475,13 @@ export default function CartPage() {
                   Proceed to checkout
                 </button>
               )}
+            </div>
+              <CartShippingEstimate
+                items={items}
+                subtotal={subtotal}
+                currency={displayCurrency}
+                customerGroupId={customerGroupId}
+              />
             </div>
           </div>
         </div>

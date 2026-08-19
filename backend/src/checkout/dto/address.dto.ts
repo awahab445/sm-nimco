@@ -40,16 +40,16 @@ export class AddressDto {
   state: string;
 
   @IsString()
-  @IsNotEmpty()
-  postalCode: string;
+  @IsOptional()
+  postalCode?: string;
 
   @IsString()
   @IsNotEmpty()
   country: string;
 
   @IsString()
-  @IsOptional()
-  phone?: string;
+  @IsNotEmpty()
+  phone: string;
 }
 
 export class UpdateAddressDto {

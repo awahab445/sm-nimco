@@ -1,8 +1,5 @@
 'use client';
 
-import { subscriptionApi } from '@/lib/api-client';
-import { useHydrated } from '@/lib/use-hydrated';
-import { useStoreWhatsAppUrl } from '@/lib/whatsapp';
 import {
   useCallback,
   useState,
@@ -10,12 +7,25 @@ import {
   type FormEvent,
 } from 'react';
 
-const COMING_SOON_WHATSAPP_MESSAGE =
-  'Hi SM NIMCO! I would like to inquire / place an order. Looking forward to your launch!';
-
 const COUNTDOWN_STORAGE_KEY = 'sm-nimco-coming-soon-target-ms';
 const TEN_DAYS_MS = 10 * 24 * 60 * 60 * 1000;
-const NOTIFY_STORAGE_KEY = 'sm-nimco-coming-soon-notify';
+
+/** Optional: set at build time, e.g. NEXT_PUBLIC_WHATSAPP_URL=https://wa.me/92XXXXXXXXXX */
+const WHATSAPP_URL = process.env.NEXT_PUBLIC_WHATSAPP_URL?.trim() || '';
+const WHATSAPP_MESSAGE =
+  'Hi SM NIMCO! I would like to inquire / place an order. Looking forward to your launch!';
+
+/**
+ * SheetDB / Google Apps Script webhook URL.
+ * Sheet columns expected: Email | SubmittedAt
+ */
+const SHEET_API_URL =
+  process.env.NEXT_PUBLIC_SHEET_API_URL?.trim() ||
+  'https://sheetdb.io/api/v1/YOUR_SHEET_API_ID';
+
+const SUCCESS_MESSAGE =
+  "Thank you! You've been added to our notification list.";
+const ERROR_MESSAGE = 'Something went wrong. Please try again in a moment.';
 
 const EMAIL_RE =
   /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
@@ -29,7 +39,6 @@ type TimeLeft = {
 };
 
 const ZERO_TIME: TimeLeft = { days: 0, hours: 0, minutes: 0, seconds: 0 };
-
 const emptySubscribe = () => () => undefined;
 
 function pad2(n: number): string {
@@ -38,14 +47,14 @@ function pad2(n: number): string {
 
 function calcTimeLeft(targetMs: number, nowMs: number): TimeLeft {
   const diff = Math.max(0, targetMs - nowMs);
-  const days = Math.floor(diff / (24 * 60 * 60 * 1000));
-  const hours = Math.floor((diff % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
-  const minutes = Math.floor((diff % (60 * 60 * 1000)) / (60 * 1000));
-  const seconds = Math.floor((diff % (60 * 1000)) / 1000);
-  return { days, hours, minutes, seconds };
+  return {
+    days: Math.floor(diff / (24 * 60 * 60 * 1000)),
+    hours: Math.floor((diff % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000)),
+    minutes: Math.floor((diff % (60 * 60 * 1000)) / (60 * 1000)),
+    seconds: Math.floor((diff % (60 * 1000)) / 1000),
+  };
 }
 
-/** Persist a 10-day launch target so reloads do not reset the countdown. */
 function readOrCreateTargetMs(): number {
   try {
     const raw = localStorage.getItem(COUNTDOWN_STORAGE_KEY);
@@ -62,17 +71,12 @@ function readOrCreateTargetMs(): number {
 }
 
 let cachedTargetMs: number | null = null;
-
 function getClientTargetMs(): number {
-  if (cachedTargetMs == null) {
-    cachedTargetMs = readOrCreateTargetMs();
-  }
+  if (cachedTargetMs == null) cachedTargetMs = readOrCreateTargetMs();
   return cachedTargetMs;
 }
 
-/** Stable clock snapshot — never return Date.now() directly from getSnapshot. */
 let cachedNowMs = 0;
-
 function subscribeToClock(onStoreChange: () => void): () => void {
   cachedNowMs = Date.now();
   const id = window.setInterval(() => {
@@ -81,9 +85,26 @@ function subscribeToClock(onStoreChange: () => void): () => void {
   }, 1000);
   return () => window.clearInterval(id);
 }
-
 function getNowSnapshot(): number {
   return cachedNowMs;
+}
+
+function useHydrated(): boolean {
+  return useSyncExternalStore(emptySubscribe, () => true, () => false);
+}
+
+function resolveWhatsAppHref(): string | null {
+  const raw = WHATSAPP_URL;
+  if (!raw) return null;
+  try {
+    const url = new URL(raw.startsWith('http') ? raw : `https://wa.me/${raw.replace(/\D/g, '')}`);
+    if (!url.searchParams.has('text')) {
+      url.searchParams.set('text', WHATSAPP_MESSAGE);
+    }
+    return url.toString();
+  } catch {
+    return null;
+  }
 }
 
 function WhatsAppIcon({ className }: { className?: string }) {
@@ -97,10 +118,7 @@ function WhatsAppIcon({ className }: { className?: string }) {
 function TimerUnit({ value, label }: { value: string; label: string }) {
   return (
     <div className="flex flex-col items-center gap-2">
-      <div
-        className="flex w-full min-w-0 items-center justify-center rounded-2xl border border-slate-800 bg-slate-900/80 px-2 py-4 shadow-[0_0_40px_-12px_rgba(245,158,11,0.35)] backdrop-blur-md sm:px-3 sm:py-5"
-        aria-hidden
-      >
+      <div className="flex w-full min-w-0 items-center justify-center rounded-2xl border border-slate-800 bg-slate-900/80 px-2 py-4 shadow-[0_0_40px_-12px_rgba(245,158,11,0.35)] backdrop-blur-md sm:px-3 sm:py-5">
         <span className="font-heading text-3xl font-bold tabular-nums tracking-tight text-amber-400 sm:text-4xl md:text-5xl">
           {value}
         </span>
@@ -114,19 +132,20 @@ function TimerUnit({ value, label }: { value: string; label: string }) {
 
 export function ComingSoonLanding() {
   const hydrated = useHydrated();
-  const whatsappUrl = useStoreWhatsAppUrl(COMING_SOON_WHATSAPP_MESSAGE);
+  const whatsappUrl = resolveWhatsAppHref();
   const targetMs = useSyncExternalStore(emptySubscribe, getClientTargetMs, () => 0);
   const nowMs = useSyncExternalStore(subscribeToClock, getNowSnapshot, () => 0);
+
   const [contact, setContact] = useState('');
-  const [notifyStatus, setNotifyStatus] = useState<'idle' | 'loading' | 'success' | 'error'>(
-    'idle',
-  );
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [notifyStatus, setNotifyStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [notifyMessage, setNotifyMessage] = useState<string | null>(null);
 
-  const onNotify = useCallback(
+  const handleSubmit = useCallback(
     async (e: FormEvent) => {
       e.preventDefault();
       setNotifyMessage(null);
+      setNotifyStatus('idle');
 
       const value = contact.trim();
       if (!value) {
@@ -147,51 +166,55 @@ export function ComingSoonLanding() {
         return;
       }
 
-      setNotifyStatus('loading');
-
-      try {
-        if (isEmail) {
-          const res = await subscriptionApi.subscribe({
-            email: value,
-            source: 'coming-soon',
-          });
-          setNotifyMessage(res.message || "You're on the list — we'll notify you at launch!");
-        } else {
-          try {
-            const existing = JSON.parse(localStorage.getItem(NOTIFY_STORAGE_KEY) || '[]') as string[];
-            const next = Array.isArray(existing) ? existing : [];
-            if (!next.includes(value)) {
-              next.push(value);
-              localStorage.setItem(NOTIFY_STORAGE_KEY, JSON.stringify(next));
-            }
-          } catch {
-            /* ignore storage failures */
-          }
-          setNotifyMessage("You're on the list — we'll notify you at launch!");
-        }
-        setNotifyStatus('success');
-        setContact('');
-      } catch (err: unknown) {
-        const msg =
-          err && typeof err === 'object' && 'message' in err
-            ? String((err as { message?: string }).message)
-            : 'Something went wrong. Please try again.';
+      if (
+        !SHEET_API_URL ||
+        SHEET_API_URL.includes('YOUR_SHEET_API_ID')
+      ) {
         setNotifyStatus('error');
-        setNotifyMessage(msg);
+        setNotifyMessage(
+          'Subscriptions are not configured yet. Please set NEXT_PUBLIC_SHEET_API_URL.',
+        );
+        return;
+      }
+
+      setIsSubmitting(true);
+      try {
+        const response = await fetch(SHEET_API_URL, {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            Email: value,
+            SubmittedAt: new Date().toISOString(),
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Sheet webhook failed with status ${response.status}`);
+        }
+
+        setNotifyStatus('success');
+        setNotifyMessage(SUCCESS_MESSAGE);
+        setContact('');
+      } catch {
+        setNotifyStatus('error');
+        setNotifyMessage(ERROR_MESSAGE);
+      } finally {
+        setIsSubmitting(false);
       }
     },
     [contact],
   );
 
-  const display =
-    hydrated && targetMs > 0 ? calcTimeLeft(targetMs, nowMs) : ZERO_TIME;
+  const display = hydrated && targetMs > 0 ? calcTimeLeft(targetMs, nowMs) : ZERO_TIME;
 
   return (
     <section
-      className="relative isolate min-h-[calc(100dvh-8rem)] overflow-hidden bg-[#0b0f17] text-white"
+      className="relative isolate min-h-dvh overflow-hidden bg-[#0b0f17] text-white"
       aria-labelledby="coming-soon-heading"
     >
-      {/* Amber radial glow */}
       <div
         className="pointer-events-none absolute inset-0 -z-10"
         aria-hidden
@@ -264,16 +287,15 @@ export function ComingSoonLanding() {
               href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2.5 rounded-xl bg-emerald-500 px-6 py-3.5 text-sm font-bold text-white shadow-[0_12px_32px_-8px_rgba(16,185,129,0.55)] transition-transform duration-200 hover:bg-emerald-400 hover:scale-[1.02] active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-300"
+              className="inline-flex items-center justify-center gap-2.5 rounded-xl bg-emerald-500 px-6 py-3.5 text-sm font-bold text-white shadow-[0_12px_32px_-8px_rgba(16,185,129,0.55)] transition-transform duration-200 hover:scale-[1.02] hover:bg-emerald-400 active:scale-[0.98]"
             >
               <WhatsAppIcon className="h-5 w-5 shrink-0" />
               Inquire / Order on WhatsApp
             </a>
           ) : null}
 
-          {/* Mount form after hydration to avoid extension-injected attr mismatches (e.g. fdprocessedid). */}
           {hydrated ? (
-            <form onSubmit={onNotify} className="w-full space-y-3 text-left" noValidate>
+            <form onSubmit={(e) => void handleSubmit(e)} className="w-full space-y-3 text-left" noValidate>
               <label htmlFor="coming-soon-notify" className="sr-only">
                 Phone or email for launch notification
               </label>
@@ -285,6 +307,7 @@ export function ComingSoonLanding() {
                   autoComplete="email"
                   placeholder="Phone or email"
                   value={contact}
+                  disabled={isSubmitting}
                   onChange={(e) => {
                     setContact(e.target.value);
                     if (notifyStatus !== 'idle') {
@@ -292,22 +315,36 @@ export function ComingSoonLanding() {
                       setNotifyMessage(null);
                     }
                   }}
-                  className="min-w-0 flex-1 rounded-xl border border-slate-700 bg-slate-900/70 px-4 py-3 text-sm text-white placeholder:text-slate-500 backdrop-blur-md outline-none transition-colors focus:border-amber-500/60 focus:ring-2 focus:ring-amber-500/30"
+                  className="min-w-0 flex-1 rounded-xl border border-slate-700 bg-slate-900/70 px-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none backdrop-blur-md transition-colors focus:border-amber-500/60 focus:ring-2 focus:ring-amber-500/30 disabled:opacity-60"
                 />
                 <button
                   type="submit"
-                  disabled={notifyStatus === 'loading'}
-                  className="shrink-0 rounded-xl border border-amber-500/50 bg-gradient-to-r from-amber-500 to-orange-600 px-5 py-3 text-sm font-bold text-slate-950 shadow-[0_10px_28px_-10px_rgba(245,158,11,0.65)] transition-opacity hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
+                  disabled={isSubmitting}
+                  aria-busy={isSubmitting}
+                  className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-amber-500/50 bg-gradient-to-r from-amber-500 to-orange-600 px-5 py-3 text-sm font-bold text-slate-950 shadow-[0_10px_28px_-10px_rgba(245,158,11,0.65)] transition-opacity hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {notifyStatus === 'loading' ? 'Saving…' : 'Notify Me at Launch'}
+                  {isSubmitting ? (
+                    <>
+                      <span
+                        className="h-4 w-4 animate-spin rounded-full border-2 border-slate-950/30 border-t-slate-950"
+                        aria-hidden
+                      />
+                      Submitting…
+                    </>
+                  ) : (
+                    'Notify Me at Launch'
+                  )}
                 </button>
               </div>
               {notifyMessage ? (
                 <p
-                  className={`text-sm ${
-                    notifyStatus === 'success' ? 'text-emerald-400' : 'text-orange-300'
+                  className={`rounded-lg px-3 py-2 text-sm ${
+                    notifyStatus === 'success'
+                      ? 'bg-emerald-500/10 text-emerald-400'
+                      : 'bg-orange-500/10 text-orange-300'
                   }`}
                   role="status"
+                  aria-live="polite"
                 >
                   {notifyMessage}
                 </p>

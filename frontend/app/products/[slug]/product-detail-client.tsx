@@ -14,6 +14,7 @@ import { RelatedProductsShelf } from '@/components/product/related-products-shel
 import { WishlistToggleButton } from '@/components/product/wishlist-toggle-button';
 import { PdpLowStockUrgency, PdpTrustReassurance } from '@/components/product/pdp-conversion-boosters';
 import { resolveImageUrl } from '@/lib/resolve-image-url';
+import { getVariantCompareAtPrice } from '@/lib/product-display-price';
 import { trackCustomizeProduct, trackViewItem } from '@/lib/analytics/events';
 
 type OptionDefinition = { code: string; label: string; values: string[] };
@@ -38,6 +39,8 @@ function normalizeVariant(raw: Record<string, unknown>): ProductVariant | null {
     name: (raw.name as string) ?? undefined,
     price: typeof price === 'number' ? price : typeof price === 'string' ? price : Number(price),
     attributes: (raw.attributes as Record<string, unknown>) ?? undefined,
+    optionValues: (raw.optionValues ?? raw.option_values) as ProductVariant['optionValues'],
+    compareAtPrice: (raw.compareAtPrice ?? raw.compare_at_price) as ProductVariant['compareAtPrice'],
     position: (raw.position as number) ?? undefined,
   };
 }
@@ -80,6 +83,7 @@ function normalizeProduct(raw: Record<string, unknown>): Product {
     status: (raw.status as string) ?? 'active',
     visibility: (raw.visibility as string) ?? undefined,
     variants,
+    options: (raw.options as Product['options']) ?? undefined,
     images: (raw.images as Product['images']) ?? undefined,
     categories: (raw.categories as Product['categories']) ?? undefined,
     createdAt: (raw.createdAt as string) ?? undefined,
@@ -145,6 +149,17 @@ function swatchColor(value: string): string | null {
   if (named[v]) return named[v];
   if (/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(value.trim())) return value.trim();
   return null;
+}
+
+function isWeightOption(code: string, label: string): boolean {
+  return /weight/i.test(code) || /weight/i.test(label);
+}
+
+function formatOptionBadgeLabel(code: string, label: string, value: string): string {
+  if (isWeightOption(code, label)) {
+    return `Weight: ${value}`;
+  }
+  return `${label}: ${value}`;
 }
 
 function QuantityStepper({
@@ -284,7 +299,11 @@ export function ProductDetailClient() {
     }));
   })();
 
-  const requiresOptionSelection = optionDefinitions.some((def) => def.values.length > 0);
+  const requiresOptionSelection =
+    variants.length > 1 || optionDefinitions.some((def) => def.values.length > 1);
+
+  const visibleOptionDefinitions = optionDefinitions.filter((def) => def.values.length > 0);
+  const isSingleVariantDisplay = variants.length === 1 && visibleOptionDefinitions.length > 0;
 
   /** Exact match: every selected option must equal the variant; skip unset keys. */
   const matchesSelectedOptions = (variant: ProductVariant, options: Record<string, string>) => {
@@ -399,7 +418,10 @@ export function ProductDetailClient() {
   }, [product?.id]);
 
   const handleAddToCart = async () => {
-    const v = findExactVariant(selectedOptions) ?? (!requiresOptionSelection ? variants[0] : null);
+    const v =
+      currentVariant ??
+      findExactVariant(selectedOptions) ??
+      (!requiresOptionSelection ? variants[0] ?? null : null);
     if (!product || !v || adding) return;
     setAdding(true);
     setStockAlert(null);
@@ -464,10 +486,13 @@ export function ProductDetailClient() {
       ? parseFloat(product.basePrice)
       : product.basePrice;
 
-  const baseNum =
-    typeof product.basePrice === 'string' ? parseFloat(product.basePrice) : Number(product.basePrice);
   const priceNum = typeof price === 'string' ? parseFloat(price) : Number(price);
-  const onSale = Number.isFinite(baseNum) && Number.isFinite(priceNum) && priceNum < baseNum;
+  const compareAtPrice = getVariantCompareAtPrice(currentVariant);
+  const onSale =
+    compareAtPrice != null &&
+    Number.isFinite(priceNum) &&
+    Number.isFinite(compareAtPrice) &&
+    priceNum < compareAtPrice;
   const variantFullySelected = Boolean(findExactVariant(selectedOptions));
   const atcDisabled =
     adding || !hasVariant || !currentVariant || !inStock || (requiresOptionSelection && !variantFullySelected);
@@ -534,12 +559,32 @@ export function ProductDetailClient() {
               >
                 {formatPrice(price)}
               </p>
-              {onSale ? (
+              {onSale && compareAtPrice != null ? (
                 <p className="text-[1.375rem] font-normal leading-none text-product-price/55 line-through">
-                  {formatPrice(baseNum)}
+                  {formatPrice(compareAtPrice)}
                 </p>
               ) : null}
             </div>
+
+            {isSingleVariantDisplay ? (
+              <div className="mt-3 flex flex-wrap gap-2" aria-label="Product options">
+                {visibleOptionDefinitions.map((def) => {
+                  const value =
+                    selectedOptions[def.code] ??
+                    extractVariantOptions(variants[0])[def.code] ??
+                    def.values[0];
+                  if (!value) return null;
+                  return (
+                    <span
+                      key={def.code}
+                      className="inline-flex items-center rounded-full border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] bg-muted/40 px-3 py-1 text-xs font-semibold text-foreground sm:text-sm"
+                    >
+                      {formatOptionBadgeLabel(def.code, def.label, value)}
+                    </span>
+                  );
+                })}
+              </div>
+            ) : null}
 
             {product.shortDescription?.trim() ? (
               <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
@@ -547,11 +592,9 @@ export function ProductDetailClient() {
               </p>
             ) : null}
 
-            {variants.length > 1 && (
+            {variants.length > 1 && visibleOptionDefinitions.length > 0 && (
               <div className="mt-6 space-y-5 sm:mt-8 sm:space-y-6">
-                {optionDefinitions
-                  .filter((def) => def.values.length > 0)
-                  .map((def) => {
+                {visibleOptionDefinitions.map((def) => {
                     const colorMode = isColorOption(def.code, def.label);
                     return (
                       <div key={def.code}>

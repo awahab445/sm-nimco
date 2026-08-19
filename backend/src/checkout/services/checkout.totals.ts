@@ -8,6 +8,11 @@ import { CustomerGroupService } from '../../customer-group/services/customer-gro
 import { PrismaService } from '../../catalog/services/prisma.service';
 import { StoreSettingsService } from '../../store-settings/services/store-settings.service';
 import {
+  isKarachiCity,
+  KARACHI_FREE_DELIVERY_THRESHOLD,
+  qualifiesForFreeDelivery,
+} from '../../shipping/utils/shipping-fee';
+import {
   DEFAULT_GST_RATE_PERCENT,
   calculateGstAmount,
 } from '../../tax/constants/gst';
@@ -168,8 +173,7 @@ export class CheckoutTotalsService {
     // Prefer configured tax-module rates when they resolve to a positive amount
     // (e.g. admin-managed GST class). Fall back to storefront 18% GST otherwise.
     try {
-      const taxAddress =
-        _billingAddress || _shippingAddress;
+      const taxAddress = _billingAddress || _shippingAddress;
       if (taxAddress?.country) {
         let customerGroupTaxClassId: string | null = null;
         if (_checkout.customerGroupId) {
@@ -259,10 +263,15 @@ export class CheckoutTotalsService {
       );
     const orderSettings =
       await this.storeSettingsService.getPublicOrderSettings();
-    const freeDeliveryThreshold =
+    const nationalThreshold =
       orderSettings.freeDeliveryThreshold ?? this.defaultFreeDeliveryThreshold;
-    const qualifiesForFreeDeliveryThreshold =
-      freeDeliveryThreshold > 0 && subtotal >= freeDeliveryThreshold;
+    const freeDeliveryThreshold = isKarachiCity(checkout.shippingAddress?.city)
+      ? KARACHI_FREE_DELIVERY_THRESHOLD
+      : nationalThreshold;
+    const qualifiesForFreeDeliveryThreshold = qualifiesForFreeDelivery({
+      subtotal,
+      freeDeliveryThreshold,
+    });
     const shippingTotal =
       freeShippingApplied || qualifiesForFreeDeliveryThreshold
         ? 0

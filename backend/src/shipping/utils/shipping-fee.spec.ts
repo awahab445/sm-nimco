@@ -1,8 +1,13 @@
 import {
   applyShippingGst,
   calculateDualTierBaseShipping,
+  calculateKarachiShippingFee,
+  calculateWeightBasedShippingFee,
+  isKarachiCity,
+  qualifiesForFreeDelivery,
   resolveShippingSlab,
   roundShippingFee,
+  toBillableKg,
 } from './shipping-fee';
 
 /** Zone A example rates from the shipping slab spec. */
@@ -88,5 +93,117 @@ describe('shipping-fee 4-tier slabs (Zone A)', () => {
   it('boundary: just under 10kg uses <10 rate; 10kg uses bulk rate', () => {
     expect(resolveShippingSlab(9.99, ZONE_A).ratePerKg).toBe(50);
     expect(resolveShippingSlab(10, ZONE_A).ratePerKg).toBe(35);
+  });
+});
+
+const ECONOMY_CONFIG = {
+  baseCost: 275,
+  costPerKg: 76,
+  baseCostKgLimit: 3,
+};
+
+const OVERLAND_CONFIG = {
+  baseCost: 342,
+  costPerKg: 70,
+  baseCostKgLimit: 5,
+};
+
+describe('weight-based shipping (economy / overland)', () => {
+  it('rounds weight UP to the nearest integer kilogram', () => {
+    expect(toBillableKg(3.2)).toBe(4);
+    expect(toBillableKg(5.1)).toBe(6);
+    expect(toBillableKg(3)).toBe(3);
+    expect(toBillableKg(0.1)).toBe(1);
+  });
+
+  it('economy: at or below 3kg returns baseCost 275', () => {
+    expect(
+      calculateWeightBasedShippingFee(2.4, ECONOMY_CONFIG, 'economy_shipping'),
+    ).toBe(275);
+    expect(
+      calculateWeightBasedShippingFee(3, ECONOMY_CONFIG, 'economy_shipping'),
+    ).toBe(275);
+  });
+
+  it('economy: 3.2kg bills 4kg → 275 + (4-3)*76 = 351', () => {
+    expect(
+      calculateWeightBasedShippingFee(3.2, ECONOMY_CONFIG, 'economy_shipping'),
+    ).toBe(351);
+  });
+
+  it('economy: 5.1kg bills 6kg → 275 + (6-3)*76 = 503', () => {
+    expect(
+      calculateWeightBasedShippingFee(5.1, ECONOMY_CONFIG, 'economy_shipping'),
+    ).toBe(503);
+  });
+
+  it('overland: at or below 5kg returns baseCost 342', () => {
+    expect(
+      calculateWeightBasedShippingFee(
+        3.2,
+        OVERLAND_CONFIG,
+        'overland_shipping',
+      ),
+    ).toBe(342);
+    expect(
+      calculateWeightBasedShippingFee(5, OVERLAND_CONFIG, 'overland_shipping'),
+    ).toBe(342);
+  });
+
+  it('overland: 5.1kg bills 6kg → 6*70 = 420', () => {
+    expect(
+      calculateWeightBasedShippingFee(
+        5.1,
+        OVERLAND_CONFIG,
+        'overland_shipping',
+      ),
+    ).toBe(420);
+  });
+});
+
+describe('qualifiesForFreeDelivery', () => {
+  it('grants free delivery when subtotal meets the threshold, regardless of weight', () => {
+    expect(
+      qualifiesForFreeDelivery({
+        subtotal: 4000,
+        freeDeliveryThreshold: 4000,
+      }),
+    ).toBe(true);
+    expect(
+      qualifiesForFreeDelivery({
+        subtotal: 10000,
+        freeDeliveryThreshold: 4000,
+      }),
+    ).toBe(true);
+  });
+
+  it('does not grant free delivery when subtotal is below threshold', () => {
+    expect(
+      qualifiesForFreeDelivery({
+        subtotal: 3999,
+        freeDeliveryThreshold: 4000,
+      }),
+    ).toBe(false);
+  });
+});
+
+describe('Karachi local delivery', () => {
+  it('matches Karachi case-insensitively and ignores other cities', () => {
+    expect(isKarachiCity('Karachi')).toBe(true);
+    expect(isKarachiCity('karachi')).toBe(true);
+    expect(isKarachiCity(' KARACHI ')).toBe(true);
+    expect(isKarachiCity('Lahore')).toBe(false);
+    expect(isKarachiCity('North Karachi')).toBe(false);
+  });
+
+  it('charges Rs. 250 at or below 5 billable kg', () => {
+    expect(calculateKarachiShippingFee(1)).toBe(250);
+    expect(calculateKarachiShippingFee(4.1)).toBe(250);
+    expect(calculateKarachiShippingFee(5)).toBe(250);
+  });
+
+  it('charges Rs. 300 above 5 billable kg', () => {
+    expect(calculateKarachiShippingFee(5.1)).toBe(300);
+    expect(calculateKarachiShippingFee(12)).toBe(300);
   });
 });

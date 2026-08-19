@@ -38,6 +38,11 @@ export class ShippingMethodConfigDto {
   @IsOptional()
   @IsNumber()
   @Min(0)
+  baseCostKgLimit?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
   minWeight?: number;
 
   @IsOptional()

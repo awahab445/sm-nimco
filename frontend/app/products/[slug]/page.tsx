@@ -24,7 +24,8 @@ function primaryImage(product: Awaited<ReturnType<typeof fetchProductBySlug>>) {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug } = await params;
+  const { slug: rawSlug } = await params;
+  const slug = decodeURIComponent(rawSlug).toLowerCase().trim().replace(/\s+/g, '-');
   const product = await fetchProductBySlug(slug);
   if (!product) {
     return { title: 'Product not found', robots: { index: false, follow: false } };
@@ -45,7 +46,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function ProductDetailPage({ params }: Props) {
-  const { slug } = await params;
+  const { slug: rawSlug } = await params;
+  const slug = decodeURIComponent(rawSlug).toLowerCase().trim().replace(/\s+/g, '-');
   const product = await fetchProductBySlug(slug);
   if (!product) notFound();
 

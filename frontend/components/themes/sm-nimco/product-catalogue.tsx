@@ -12,14 +12,21 @@ export function SmNimcoProductCatalogue({
   availability,
 }: SmNimcoProductCatalogueProps) {
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8">
+    <section
+      id="featured-products"
+      className="mx-auto max-w-7xl px-4 py-8 pb-16"
+      aria-labelledby="featured-products-heading"
+    >
       <div className="mb-8 flex items-center justify-between gap-4">
         <div>
           <span className="text-xs font-bold uppercase tracking-wider text-[var(--brand-gold-hover,#b89628)]">
             Handcrafted Fresh Daily
           </span>
-          <h2 className="font-heading text-2xl font-extrabold text-[var(--brand-purple-dark,#1e1035)] sm:text-4xl">
-            Our Complete Delights Menu
+          <h2
+            id="featured-products-heading"
+            className="font-heading text-2xl font-extrabold text-[var(--brand-purple-dark,#1e1035)] sm:text-4xl"
+          >
+            Featured Products
           </h2>
         </div>
         <Link
@@ -48,6 +55,6 @@ export function SmNimcoProductCatalogue({
           })}
         </div>
       )}
-    </div>
+    </section>
   );
 }

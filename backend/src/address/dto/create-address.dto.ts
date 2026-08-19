@@ -49,9 +49,9 @@ export class CreateAddressDto {
   state: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @MaxLength(50)
-  postalCode: string;
+  postalCode?: string;
 
   @IsString()
   @IsNotEmpty()
@@ -59,9 +59,9 @@ export class CreateAddressDto {
   country: string;
 
   @IsString()
-  @IsOptional()
+  @IsNotEmpty()
   @MaxLength(50)
-  phone?: string;
+  phone: string;
 
   @IsOptional()
   @IsBoolean()

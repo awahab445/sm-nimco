@@ -61,6 +61,8 @@ export interface ShippingMethodConfig {
   // For weight_based
   baseCost?: number;
   costPerKg?: number;
+  /** Included kilograms covered by baseCost (e.g. 3 for economy, 5 for overland). */
+  baseCostKgLimit?: number;
   minWeight?: number;
   maxWeight?: number;
 

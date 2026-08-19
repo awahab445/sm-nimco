@@ -3,7 +3,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams, usePathname, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { productApi, categoryApi, inventoryApi, type ProductListResponse, type Category } from '@/lib/api-client';
+import { resolveImageUrl } from '@/lib/resolve-image-url';
 import { ProductCard, getVariantForCart } from '@/components/product/product-card';
 import { CategorySidebar } from '@/components/products/category-sidebar';
 import { PlpProductGridSkeleton } from '@/components/products/plp-product-grid-skeleton';
@@ -79,6 +81,7 @@ export function CategoryPageClient() {
   const totalPages = data?.meta?.totalPages ?? 1;
   const listingClass = useMemo(() => plpListingClass(listingMode), [listingMode]);
   const isInitialLoad = loading && data === null;
+  const bannerSrc = resolveImageUrl(category?.bannerUrl);
 
   const hrefForPage = useCallback(
     (p: number) => {
@@ -101,27 +104,56 @@ export function CategoryPageClient() {
   }, [data?.meta, page, router, hrefForPage]);
 
   return (
-    <div className="mx-auto w-full max-w-7xl px-4 pb-16 pt-6 sm:px-6 sm:pt-8 lg:px-8">
-      <div className="flex w-full min-w-0 flex-col gap-8 lg:flex-row lg:items-start lg:gap-10 xl:gap-12">
-        <CategorySidebar />
-
-        <div className="min-w-0 w-full flex-1">
-          <nav className="mb-4 text-[13px] text-muted-foreground" aria-label="Breadcrumb">
-            <Link href="/products" className="transition-colors hover:text-[var(--navbar-link-hover,var(--primary-hover))]">
-              Products
-            </Link>
-            <span className="mx-2 text-border" aria-hidden>/</span>
-            <span className="text-foreground">{category?.name ?? slug}</span>
-          </nav>
-
-          <div className="mb-6 sm:mb-8">
-            <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
-              {category?.name ?? slug}
-            </h1>
-            {category?.description && (
-              <p className="mt-1.5 text-sm text-muted-foreground">{category.description}</p>
-            )}
+    <>
+      {bannerSrc ? (
+        <div className="relative w-full overflow-hidden bg-muted">
+          <div className="relative mx-auto aspect-[21/7] max-h-64 w-full max-w-[1920px] sm:max-h-80">
+            <Image
+              src={bannerSrc}
+              alt={category?.name ? `${category.name} banner` : 'Category banner'}
+              fill
+              priority
+              className="object-cover"
+              sizes="100vw"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent" />
+            <div className="absolute inset-x-0 bottom-0 mx-auto max-w-7xl px-4 pb-6 sm:px-6 lg:px-8">
+              <h1 className="font-display text-2xl font-semibold tracking-tight text-white sm:text-4xl">
+                {category?.name ?? slug}
+              </h1>
+              {category?.description ? (
+                <p className="mt-1.5 max-w-2xl text-sm text-white/90 sm:text-base">
+                  {category.description}
+                </p>
+              ) : null}
+            </div>
           </div>
+        </div>
+      ) : null}
+
+      <div className="mx-auto w-full max-w-7xl px-4 pb-16 pt-6 sm:px-6 sm:pt-8 lg:px-8">
+        <div className="flex w-full min-w-0 flex-col gap-8 lg:flex-row lg:items-start lg:gap-10 xl:gap-12">
+          <CategorySidebar />
+
+          <div className="min-w-0 w-full flex-1">
+            <nav className="mb-4 text-[13px] text-muted-foreground" aria-label="Breadcrumb">
+              <Link href="/products" className="transition-colors hover:text-[var(--navbar-link-hover,var(--primary-hover))]">
+                Products
+              </Link>
+              <span className="mx-2 text-border" aria-hidden>/</span>
+              <span className="text-foreground">{category?.name ?? slug}</span>
+            </nav>
+
+            {!bannerSrc ? (
+              <div className="mb-6 sm:mb-8">
+                <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+                  {category?.name ?? slug}
+                </h1>
+                {category?.description && (
+                  <p className="mt-1.5 text-sm text-muted-foreground">{category.description}</p>
+                )}
+              </div>
+            ) : null}
 
           {!isInitialLoad && !error ? (
             <PlpToolbar
@@ -174,5 +206,6 @@ export function CategoryPageClient() {
         </div>
       </div>
     </div>
+    </>
   );
 }

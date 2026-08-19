@@ -1,7 +1,5 @@
 /** Normalize shipping weight unit to KG or G. */
-export function normalizeShippingWeightUnit(
-  unit?: string | null,
-): 'KG' | 'G' {
+export function normalizeShippingWeightUnit(unit?: string | null): 'KG' | 'G' {
   const normalized = String(unit ?? 'KG')
     .trim()
     .toUpperCase();

@@ -35,14 +35,14 @@ export class AddressDto {
   state: string;
 
   @IsString()
-  postalCode: string;
+  @IsOptional()
+  postalCode?: string;
 
   @IsString()
   country: string;
 
   @IsString()
-  @IsOptional()
-  phone?: string;
+  phone: string;
 }
 
 /** Pre-calculated totals from checkout (shipping, discounts, tax). */

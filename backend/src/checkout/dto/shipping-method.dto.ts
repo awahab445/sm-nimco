@@ -3,6 +3,10 @@ import { IsString, IsNotEmpty, IsNumber, Min } from 'class-validator';
 export class ShippingMethodDto {
   @IsString()
   @IsNotEmpty()
+  methodCode: string;
+
+  @IsString()
+  @IsNotEmpty()
   methodId: string;
 
   @IsString()

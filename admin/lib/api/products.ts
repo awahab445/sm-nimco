@@ -140,6 +140,32 @@ export async function fetchAdminProducts(params: {
   }>(`/admin/products${q ? `?${q}` : ''}`);
 }
 
+const ADMIN_PRODUCTS_PAGE_SIZE = 100;
+
+/** Fetch all admin product rows by paging at the API max page size. */
+export async function fetchAllAdminProducts(params: {
+  search?: string;
+  status?: ProductStatus;
+  category?: string;
+} = {}): Promise<AdminProductListRow[]> {
+  const rows: AdminProductListRow[] = [];
+  let page = 1;
+  let totalPages = 1;
+
+  while (page <= totalPages) {
+    const res = await fetchAdminProducts({
+      ...params,
+      page,
+      limit: ADMIN_PRODUCTS_PAGE_SIZE,
+    });
+    rows.push(...res.data);
+    totalPages = Math.max(1, res.meta.totalPages ?? 1);
+    page += 1;
+  }
+
+  return rows;
+}
+
 export async function fetchAdminProduct(id: string): Promise<ProductDetail> {
   return fetchApi<ProductDetail>(`/admin/products/${id}`);
 }

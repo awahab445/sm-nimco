@@ -10,6 +10,11 @@ import { imageAlt } from '@/lib/seo';
 import { getProductImageSrcs, getProductImagesOrdered } from '@/lib/resolve-image-url';
 import { StorefrontImage } from '@/components/ui/storefront-image';
 import { getVariantForCart } from '@/lib/product-cart-variant';
+import {
+  getCheapestVariantChipId,
+  getProductListDisplayPrice,
+  parseProductPrice,
+} from '@/lib/product-display-price';
 import { ProductQuickView } from '@/components/product/product-quick-view';
 import { WishlistToggleButton } from '@/components/product/wishlist-toggle-button';
 
@@ -28,9 +33,7 @@ type VariantChip = {
 };
 
 function parsePrice(value: string | number | undefined | null): number {
-  if (value == null) return 0;
-  const n = typeof value === 'string' ? parseFloat(value) : Number(value);
-  return Number.isFinite(n) ? n : 0;
+  return parseProductPrice(value);
 }
 
 function variantLabel(variant: ProductVariant): string {
@@ -71,8 +74,11 @@ export function SmNimcoProductCard({
 
   const chips = getVariantChips(product);
   const defaultVariant = getVariantForCart(product);
-  const [selectedVariantId, setSelectedVariantId] = useState<string | null>(
-    () => chips[0]?.id ?? defaultVariant?.id ?? null,
+  const [selectedVariantId, setSelectedVariantId] = useState<string | null>(() =>
+    getCheapestVariantChipId(product.variants ?? []) ??
+    chips[0]?.id ??
+    defaultVariant?.id ??
+    null,
   );
 
   const selectedChip =
@@ -89,7 +95,7 @@ export function SmNimcoProductCard({
   const displayPrice =
     selectedChip?.price ??
     defaultVariant?.price ??
-    parsePrice(product.basePrice);
+    getProductListDisplayPrice(product);
 
   const orderedImages = getProductImagesOrdered(product.images);
   const image = orderedImages[0];

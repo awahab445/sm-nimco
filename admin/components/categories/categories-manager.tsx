@@ -91,8 +91,8 @@ export function CategoriesManager() {
             Categories
           </h1>
           <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-            Manage the catalog tree, visibility, and sort order. Inactive categories stay hidden on
-            the storefront product listing and filters.
+            Manage the catalog tree, images, homepage featured categories, product mapping, and sort order.
+            Inactive categories stay hidden on the storefront product listing and filters.
           </p>
           <div className="mt-3 rounded-lg border border-sky-200 bg-sky-50 px-3 py-2.5 text-sm text-sky-950 dark:border-sky-900/60 dark:bg-sky-950/40 dark:text-sky-100">
             <p className="font-medium text-sky-900 dark:text-sky-50">Price and listing filters are not set here</p>
@@ -164,6 +164,7 @@ export function CategoriesManager() {
                 <th className="px-4 py-3 font-medium text-zinc-700 dark:text-zinc-300">Slug</th>
                 <th className="px-4 py-3 font-medium text-zinc-700 dark:text-zinc-300">Parent</th>
                 <th className="px-4 py-3 font-medium text-zinc-700 dark:text-zinc-300">Position</th>
+                <th className="px-4 py-3 font-medium text-zinc-700 dark:text-zinc-300">Featured</th>
                 <th className="px-4 py-3 font-medium text-zinc-700 dark:text-zinc-300">Active</th>
                 <th className="px-4 py-3 font-medium text-zinc-700 dark:text-zinc-300">Products</th>
                 <th className="px-4 py-3 font-medium text-zinc-700 dark:text-zinc-300 text-right">
@@ -180,6 +181,17 @@ export function CategoriesManager() {
                     {row.parentId ? parentNameById.get(row.parentId) ?? row.parentId : '—'}
                   </td>
                   <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400">{row.position}</td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={
+                        row.isFeatured
+                          ? 'rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-900 dark:bg-amber-950/60 dark:text-amber-200'
+                          : 'rounded-full bg-zinc-200 px-2 py-0.5 text-xs font-medium text-zinc-700 dark:bg-zinc-700 dark:text-zinc-200'
+                      }
+                    >
+                      {row.isFeatured ? 'Yes' : 'No'}
+                    </span>
+                  </td>
                   <td className="px-4 py-3">
                     <span
                       className={

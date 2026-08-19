@@ -5,6 +5,7 @@ import { ProductService } from '../../catalog/services/product.service';
 import { TaxCalculationService } from '../../tax/services/calculation.service';
 import { CustomerGroupService } from '../../customer-group/services/customer-group.service';
 import { PrismaService } from '../../catalog/services/prisma.service';
+import { StoreSettingsService } from '../../store-settings/services/store-settings.service';
 
 describe('CheckoutTotalsService', () => {
   let service: CheckoutTotalsService;
@@ -18,6 +19,10 @@ describe('CheckoutTotalsService', () => {
         { provide: TaxCalculationService, useValue: {} },
         { provide: CustomerGroupService, useValue: {} },
         { provide: PrismaService, useValue: {} },
+        {
+          provide: StoreSettingsService,
+          useValue: { getPublicOrderSettings: async () => ({}) },
+        },
       ],
     }).compile();
 

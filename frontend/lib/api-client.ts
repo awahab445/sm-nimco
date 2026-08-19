@@ -167,6 +167,7 @@ export interface ProductVariant {
   sku: string;
   name?: string;
   price: string | number;
+  compareAtPrice?: string | number;
   attributes?: Record<string, unknown>;
   position?: number;
   optionValues?: Array<{
@@ -291,8 +292,11 @@ export interface Category {
   name: string;
   slug: string;
   description?: string | null;
+  imageUrl?: string | null;
+  bannerUrl?: string | null;
   parentId?: string | null;
   position?: number;
+  isFeatured?: boolean;
   productCount?: number;
 }
 
@@ -301,9 +305,12 @@ export interface CategoryTreeItem extends Category {
 }
 
 export const categoryApi = {
-  getCategories: (params?: { tree?: boolean }): Promise<{ data: Category[] } | CategoryTreeItem[]> => {
-    const qs = params?.tree ? '?tree=true' : '';
-    return fetchApi<{ data: Category[] } | CategoryTreeItem[]>(`/categories${qs}`);
+  getCategories: (params?: { tree?: boolean; featured?: boolean }): Promise<{ data: Category[] } | CategoryTreeItem[]> => {
+    const sp = new URLSearchParams();
+    if (params?.tree) sp.set('tree', 'true');
+    if (params?.featured) sp.set('featured', 'true');
+    const qs = sp.toString();
+    return fetchApi<{ data: Category[] } | CategoryTreeItem[]>(`/categories${qs ? `?${qs}` : ''}`);
   },
 
   getCategoryBySlug: (slug: string): Promise<Category> =>
@@ -852,14 +859,16 @@ export const shippingApi = {
   getProvinces: () =>
     fetchApi<string[]>('/shipping/provinces'),
 
-  getCities: (province: string) =>
+  getCities: (province?: string) =>
     fetchApi<Array<{
       id: string;
       cityCode: string;
       name: string;
       province: string;
       zoneId: string;
-    }>>(`/shipping/cities?province=${encodeURIComponent(province)}`),
+    }>>(
+      `/shipping/cities${province ? `?province=${encodeURIComponent(province)}` : ''}`,
+    ),
 
   calculateShippingFee: (data: {
     province: string;
@@ -1227,6 +1236,7 @@ export interface AddressWithId extends Address {
 }
 
 export interface ShippingMethod {
+  methodCode: string;
   methodId: string;
   methodName: string;
   cost: number;

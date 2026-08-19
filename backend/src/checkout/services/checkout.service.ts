@@ -529,6 +529,7 @@ export class CheckoutService {
 
     // Update shipping method
     const shippingMethod: CheckoutShippingMethod = {
+      methodCode: shippingMethodDto.methodCode,
       methodId: shippingMethodDto.methodId,
       methodName: shippingMethodDto.methodName,
       cost: Number(shippingMethodDto.cost),

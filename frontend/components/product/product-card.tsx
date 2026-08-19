@@ -10,6 +10,7 @@ import { imageAlt } from '@/lib/seo';
 import { getProductImageSrcs, getProductImagesOrdered } from '@/lib/resolve-image-url';
 import { StorefrontImage } from '@/components/ui/storefront-image';
 import { getVariantForCart } from '@/lib/product-cart-variant';
+import { getProductListDisplayPrice } from '@/lib/product-display-price';
 import { ShoppingBagIcon } from '@/components/icons/shopping-bag-icon';
 import { ProductQuickView } from '@/components/product/product-quick-view';
 import { WishlistToggleButton } from '@/components/product/wishlist-toggle-button';
@@ -57,6 +58,8 @@ export function ProductCard({
   const variant = getVariantForCart(product);
   const inStock = availableQuantity === undefined ? true : availableQuantity > 0;
   const canAddToCart = Boolean(variant && inStock);
+  const displayPrice = getProductListDisplayPrice(product);
+
   const orderedImages = getProductImagesOrdered(product.images);
   const image = orderedImages[0];
   const imageSrcs = getProductImageSrcs(product.images);
@@ -196,7 +199,7 @@ export function ProductCard({
         </h3>
       </Link>
       <p className={`text-sm ${isList ? 'mt-2' : 'mt-1.5'}`}>
-        <span className="font-medium text-product-price">{formatPrice(product.basePrice)}</span>
+        <span className="font-medium text-product-price">{formatPrice(displayPrice)}</span>
       </p>
       {isList && product.shortDescription ? (
         <p className="mt-2 hidden text-sm text-muted-foreground line-clamp-2 md:block">

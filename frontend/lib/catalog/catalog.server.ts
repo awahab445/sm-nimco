@@ -62,6 +62,12 @@ export async function fetchInventoryAvailability(
   return res?.data ?? {};
 }
 
+export async function fetchFeaturedCategories(): Promise<Category[]> {
+  const res = await fetchJson<{ data: Category[] }>('/categories?featured=true');
+  if (!res?.data) return [];
+  return [...res.data].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+}
+
 export async function fetchCategoryTree(): Promise<CategoryTreeItem[]> {
   const res = await fetchJson<CategoryTreeItem[] | { data: CategoryTreeItem[] }>(
     '/categories?tree=true',

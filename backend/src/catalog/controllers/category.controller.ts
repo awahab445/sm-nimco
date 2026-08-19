@@ -15,18 +15,21 @@ export class CategoryController {
   /**
    * List categories for storefront (nav, filters).
    * GET /categories?tree=true for nested tree; default flat list.
+   * GET /categories?featured=true for homepage featured categories.
    */
   @Get()
   @HttpCode(HttpStatus.OK)
   async findAll(
     @Query('tree') tree?: string,
     @Query('parentId') parentId?: string,
+    @Query('featured') featured?: string,
   ) {
     const parentIdVal =
       parentId === 'null' || parentId === '' ? null : parentId;
     return this.categoryService.findAll({
       tree: tree === 'true',
       parentId: parentIdVal,
+      featured: featured === 'true',
     });
   }
 

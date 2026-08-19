@@ -13,7 +13,7 @@ export const revalidate = 60;
 
 export const metadata: Metadata = buildPageMetadata({
   title: STORE_NAME,
-  description: `${STORE_NAME} — Something crispy & delicious is coming soon. Premium Nimco, traditional snacks, and doorstep delivery across Pakistan.`,
+  description: `${STORE_NAME} — Authentic & crispy Pakistani nimco and sweets. Premium quality traditional snacks delivered fresh across Pakistan.`,
   path: '/',
   absoluteTitle: true,
 });

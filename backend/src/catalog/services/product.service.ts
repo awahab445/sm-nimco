@@ -20,13 +20,19 @@ import { normalizeShippingWeightUnit } from '../../shipping/utils/shipping-weigh
 export class ProductService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async generateSlug(name: string, existingId?: string): Promise<string> {
-    const baseSlug = name
+  /** Normalize a raw slug string: lowercase, trim, replace spaces/special chars with hyphens. */
+  private normalizeSlug(raw: string): string {
+    return raw
       .toLowerCase()
       .trim()
       .replace(/[^\w\s-]/g, '')
       .replace(/\s+/g, '-')
-      .replace(/-+/g, '-');
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '');
+  }
+
+  async generateSlug(name: string, existingId?: string): Promise<string> {
+    const baseSlug = this.normalizeSlug(name);
 
     let slug = baseSlug;
     let counter = 1;
@@ -72,8 +78,9 @@ export class ProductService {
   async create(createProductDto: CreateProductDto) {
     await this.validateSkuUniqueness(createProductDto.sku);
 
-    const slug =
-      createProductDto.slug || (await this.generateSlug(createProductDto.name));
+    const slug = createProductDto.slug
+      ? this.normalizeSlug(createProductDto.slug)
+      : await this.generateSlug(createProductDto.name);
 
     const product = await this.prisma.product.create({
       data: {
@@ -205,9 +212,14 @@ export class ProductService {
   }
 
   async findOneBySlug(slug: string) {
+    const normalized = slug
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-');
     const product = await this.prisma.product.findFirst({
       where: {
-        slug,
+        slug: normalized,
         status: 'active',
         deletedAt: null,
       },
@@ -256,7 +268,7 @@ export class ProductService {
     }
 
     if (updateProductDto.slug) {
-      updateData.slug = updateProductDto.slug;
+      updateData.slug = this.normalizeSlug(updateProductDto.slug);
     }
 
     if (updateProductDto.sku) {
