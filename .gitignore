@@ -27,6 +27,7 @@ yarn-error.log*
 !**/*.env.*.example
 deploy/env/demo.env
 deploy/env/docker.env
+deploy/smnimco/.env.smnimco
 
 # Next.js (all apps)
 .next/

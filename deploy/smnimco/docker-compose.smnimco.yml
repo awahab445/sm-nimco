@@ -1,0 +1,174 @@
+# SM Nimco production stack — coexists with M. Essa (3100–3102).
+# Run from repo root (/var/www/smnimco):
+#   docker compose --env-file deploy/smnimco/.env.smnimco -f deploy/smnimco/docker-compose.smnimco.yml up -d --build
+
+name: smnimco
+
+services:
+  smnimco-postgres:
+    image: postgres:16-alpine
+    container_name: smnimco-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - smnimco_pg_data:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:${HOST_POSTGRES_PORT:-5433}:5432"
+    networks:
+      - smnimco_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  smnimco-redis:
+    image: redis:7-alpine
+    container_name: smnimco-redis
+    restart: always
+    ports:
+      - "127.0.0.1:${HOST_REDIS_PORT:-6380}:6379"
+    networks:
+      - smnimco_net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+
+  smnimco-api:
+    build:
+      context: ../..
+      dockerfile: backend/Dockerfile
+    container_name: smnimco-api
+    restart: always
+    depends_on:
+      smnimco-postgres:
+        condition: service_healthy
+      smnimco-redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@smnimco-postgres:5432/${POSTGRES_DB}?schema=public
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      BOOTSTRAP_TOKEN: ${BOOTSTRAP_TOKEN}
+      MAIL_ENCRYPTION_KEY: ${MAIL_ENCRYPTION_KEY:-${JWT_SECRET}}
+      MAIL_ENABLED: ${MAIL_ENABLED:-true}
+      META_CAPI_ACCESS_TOKEN: ${META_CAPI_ACCESS_TOKEN:-}
+      META_CAPI_TEST_EVENT_CODE: ${META_CAPI_TEST_EVENT_CODE:-}
+      CORS_ORIGIN: ${SHOP_URL},${WWW_URL},${ADMIN_URL}
+      FRONTEND_URL: ${SHOP_URL}
+      APP_URL: ${API_URL}
+      PUBLIC_BASE_URL: ${API_URL}
+      STORE_NAME: ${STORE_NAME:-SM NIMCO & Sweets}
+      STORE_LOGO_URL: ${STORE_LOGO_URL:-}
+      STORE_SOCIAL_FACEBOOK: ${STORE_SOCIAL_FACEBOOK:-}
+      STORE_SOCIAL_INSTAGRAM: ${STORE_SOCIAL_INSTAGRAM:-}
+      STORE_SOCIAL_TWITTER: ${STORE_SOCIAL_TWITTER:-}
+      STORE_SOCIAL_LINKEDIN: ${STORE_SOCIAL_LINKEDIN:-}
+      DEFAULT_CURRENCY: ${DEFAULT_CURRENCY:-PKR}
+      APP_CURRENCY: ${DEFAULT_CURRENCY:-PKR}
+      REDIS_ENABLED: "true"
+      REDIS_HOST: smnimco-redis
+      REDIS_PORT: 6379
+      COOKIE_DOMAIN: ${COOKIE_DOMAIN:-}
+      PUPPETEER_EXECUTABLE_PATH: /usr/bin/chromium-browser
+      PUPPETEER_SKIP_DOWNLOAD: "true"
+    volumes:
+      - smnimco_uploads:/app/uploads
+    ports:
+      - "127.0.0.1:${HOST_API_PORT:-3200}:3000"
+    networks:
+      - smnimco_net
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget -qO- http://127.0.0.1:3000/health >/dev/null 2>&1 || exit 1",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
+  smnimco-storefront:
+    build:
+      context: ../../frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${API_URL}
+        NEXT_PUBLIC_APP_URL: ${SHOP_URL}
+        NEXT_PUBLIC_CURRENCY: ${NEXT_PUBLIC_CURRENCY:-PKR}
+        NEXT_PUBLIC_STORE_THEME: ${NEXT_PUBLIC_STORE_THEME:-sm_nimco}
+        NEXT_PUBLIC_STOREFRONT_HOME_LAYOUT_IDENTIFIER: ${NEXT_PUBLIC_STOREFRONT_HOME_LAYOUT_IDENTIFIER:-home-page-layout}
+    container_name: smnimco-storefront
+    restart: always
+    depends_on:
+      smnimco-api:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      JWT_SECRET: ${JWT_SECRET}
+      COOKIE_SECURE: ${COOKIE_SECURE:-true}
+      REVALIDATE_SECRET: ${REVALIDATE_SECRET:-}
+    ports:
+      - "127.0.0.1:${HOST_STOREFRONT_PORT:-3201}:3001"
+    networks:
+      - smnimco_net
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget -qO- http://127.0.0.1:3001/ >/dev/null 2>&1 || exit 1",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 45s
+
+  smnimco-admin:
+    build:
+      context: ../../admin
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${API_URL}
+        NEXT_PUBLIC_ADMIN_APP_NAME: ${NEXT_PUBLIC_ADMIN_APP_NAME:-SM NIMCO Admin}
+    container_name: smnimco-admin
+    restart: always
+    depends_on:
+      smnimco-api:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      JWT_SECRET: ${JWT_SECRET}
+      COOKIE_SECURE: ${COOKIE_SECURE:-true}
+    ports:
+      - "127.0.0.1:${HOST_ADMIN_PORT:-3202}:3002"
+    networks:
+      - smnimco_net
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget -qO- http://127.0.0.1:3002/ >/dev/null 2>&1 || exit 1",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 45s
+
+volumes:
+  smnimco_pg_data:
+  smnimco_uploads:
+
+networks:
+  smnimco_net:
+    name: smnimco_net
+    driver: bridge
