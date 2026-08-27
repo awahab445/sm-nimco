@@ -82,6 +82,17 @@ export type ProductDetail = {
   type: string;
   description: string | null;
   shortDescription: string | null;
+  seoTitle: string | null;
+  metaDescription: string | null;
+  tasteProfile: string | null;
+  ingredients: string | null;
+  servingSuggestions: string | null;
+  storageInstructions: string | null;
+  dietaryHighlights: string | null;
+  spiceLevel: string | null;
+  faqs: string | null;
+  focusKeywords: string | null;
+  productTags: string | null;
   basePrice: string | number;
   cost: string | number | null;
   weight: string | number | null;
@@ -204,6 +215,17 @@ export type CreateProductBody = {
   type: ProductType;
   description?: string | null;
   shortDescription?: string | null;
+  seoTitle?: string | null;
+  metaDescription?: string | null;
+  tasteProfile?: string | null;
+  ingredients?: string | null;
+  servingSuggestions?: string | null;
+  storageInstructions?: string | null;
+  dietaryHighlights?: string | null;
+  spiceLevel?: string | null;
+  faqs?: string | null;
+  focusKeywords?: string | null;
+  productTags?: string | null;
   basePrice: number;
   cost?: number | null;
   weight?: number | null;
@@ -220,6 +242,19 @@ export async function createAdminProduct(body: CreateProductBody) {
   return fetchApi<ProductDetail>('/admin/products', {
     method: 'POST',
     body: JSON.stringify(body),
+  });
+}
+
+export type BulkCreateProductsResult = {
+  createdCount: number;
+  updatedCount: number;
+  requestedCount: number;
+};
+
+export async function bulkCreateAdminProducts(products: CreateProductBody[]) {
+  return fetchApi<BulkCreateProductsResult>('/admin/products/bulk', {
+    method: 'POST',
+    body: JSON.stringify({ products }),
   });
 }
 

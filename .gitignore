@@ -68,6 +68,9 @@ Thumbs.db
 *.db
 *.db-journal
 
+# Local media export zips (do not commit)
+backups/
+
 # Runtime uploads that may contain user data (catalog assets already tracked stay tracked)
 backend/uploads/orders/
 backend/uploads/users/

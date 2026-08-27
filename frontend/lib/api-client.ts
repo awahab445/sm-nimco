@@ -195,6 +195,17 @@ export interface Product {
   type: string;
   description?: string | null;
   shortDescription?: string | null;
+  seoTitle?: string | null;
+  metaDescription?: string | null;
+  tasteProfile?: string | null;
+  ingredients?: string | null;
+  servingSuggestions?: string | null;
+  storageInstructions?: string | null;
+  dietaryHighlights?: string | null;
+  spiceLevel?: string | null;
+  faqs?: string | null;
+  focusKeywords?: string | null;
+  productTags?: string | null;
   basePrice: string | number;
   status: string;
   visibility?: string;

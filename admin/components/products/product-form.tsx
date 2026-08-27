@@ -23,6 +23,53 @@ import {
 
 const STATUSES: ProductStatus[] = ['draft', 'active', 'disabled'];
 const VIS: ProductVisibility[] = ['catalog', 'search', 'both', 'none'];
+const SPICE_LEVELS = ['', 'Mild', 'Medium', 'Hot', 'Extra Hot'] as const;
+
+type SeoContentFields = {
+  seoTitle: string;
+  metaDescription: string;
+  tasteProfile: string;
+  ingredients: string;
+  servingSuggestions: string;
+  storageInstructions: string;
+  dietaryHighlights: string;
+  spiceLevel: string;
+  faqs: string;
+  focusKeywords: string;
+  productTags: string;
+};
+
+function omitEmptySeo(fields: SeoContentFields): Partial<CreateProductBody> {
+  return {
+    ...(fields.seoTitle ? { seoTitle: fields.seoTitle } : {}),
+    ...(fields.metaDescription ? { metaDescription: fields.metaDescription } : {}),
+    ...(fields.tasteProfile ? { tasteProfile: fields.tasteProfile } : {}),
+    ...(fields.ingredients ? { ingredients: fields.ingredients } : {}),
+    ...(fields.servingSuggestions ? { servingSuggestions: fields.servingSuggestions } : {}),
+    ...(fields.storageInstructions ? { storageInstructions: fields.storageInstructions } : {}),
+    ...(fields.dietaryHighlights ? { dietaryHighlights: fields.dietaryHighlights } : {}),
+    ...(fields.spiceLevel ? { spiceLevel: fields.spiceLevel } : {}),
+    ...(fields.faqs ? { faqs: fields.faqs } : {}),
+    ...(fields.focusKeywords ? { focusKeywords: fields.focusKeywords } : {}),
+    ...(fields.productTags ? { productTags: fields.productTags } : {}),
+  };
+}
+
+function nullableSeo(fields: SeoContentFields): Partial<UpdateProductBody> {
+  return {
+    seoTitle: fields.seoTitle || null,
+    metaDescription: fields.metaDescription || null,
+    tasteProfile: fields.tasteProfile || null,
+    ingredients: fields.ingredients || null,
+    servingSuggestions: fields.servingSuggestions || null,
+    storageInstructions: fields.storageInstructions || null,
+    dietaryHighlights: fields.dietaryHighlights || null,
+    spiceLevel: fields.spiceLevel || null,
+    faqs: fields.faqs || null,
+    focusKeywords: fields.focusKeywords || null,
+    productTags: fields.productTags || null,
+  };
+}
 
 function parseOptionalJsonObject(raw: string, label: string): Record<string, unknown> | undefined {
   const t = raw.trim();
@@ -56,7 +103,7 @@ function buildCreateBody(fields: {
   taxClassId: string;
   attributes?: Record<string, unknown>;
   metaData?: Record<string, unknown>;
-}): CreateProductBody {
+} & SeoContentFields): CreateProductBody {
   return {
     sku: fields.sku,
     name: fields.name,
@@ -67,6 +114,7 @@ function buildCreateBody(fields: {
     ...(fields.slug ? { slug: fields.slug } : {}),
     ...(fields.description ? { description: fields.description } : {}),
     ...(fields.shortDescription ? { shortDescription: fields.shortDescription } : {}),
+    ...omitEmptySeo(fields),
     ...(fields.parsedCost !== undefined ? { cost: fields.parsedCost } : {}),
     ...(fields.parsedWeight !== undefined ? { weight: fields.parsedWeight } : {}),
     ...(fields.parsedShippingWeight !== undefined
@@ -95,7 +143,7 @@ function buildUpdateBody(fields: {
   taxClassId: string;
   attributes: Record<string, unknown>;
   metaData: Record<string, unknown>;
-}): UpdateProductBody {
+} & SeoContentFields): UpdateProductBody {
   return {
     sku: fields.sku,
     name: fields.name,
@@ -106,6 +154,7 @@ function buildUpdateBody(fields: {
     slug: fields.slug,
     description: fields.description || null,
     shortDescription: fields.shortDescription || null,
+    ...nullableSeo(fields),
     cost: fields.parsedCost ?? null,
     weight: fields.parsedWeight ?? null,
     shippingWeight: fields.parsedShippingWeight ?? 1,
@@ -131,6 +180,17 @@ export function ProductForm({ mode, initial, productId, onCancel, onSaved }: Pro
   const [type, setType] = useState<ProductType>('configurable');
   const [description, setDescription] = useState('');
   const [shortDescription, setShortDescription] = useState('');
+  const [seoTitle, setSeoTitle] = useState('');
+  const [metaDescription, setMetaDescription] = useState('');
+  const [tasteProfile, setTasteProfile] = useState('');
+  const [ingredients, setIngredients] = useState('');
+  const [servingSuggestions, setServingSuggestions] = useState('');
+  const [storageInstructions, setStorageInstructions] = useState('');
+  const [dietaryHighlights, setDietaryHighlights] = useState('');
+  const [spiceLevel, setSpiceLevel] = useState('');
+  const [faqs, setFaqs] = useState('');
+  const [focusKeywords, setFocusKeywords] = useState('');
+  const [productTags, setProductTags] = useState('');
   const [basePrice, setBasePrice] = useState('0');
   const [cost, setCost] = useState('');
   const [weight, setWeight] = useState('');
@@ -153,6 +213,17 @@ export function ProductForm({ mode, initial, productId, onCancel, onSaved }: Pro
       setType('configurable');
       setDescription(initial.description ?? '');
       setShortDescription(initial.shortDescription ?? '');
+      setSeoTitle(initial.seoTitle ?? '');
+      setMetaDescription(initial.metaDescription ?? '');
+      setTasteProfile(initial.tasteProfile ?? '');
+      setIngredients(initial.ingredients ?? '');
+      setServingSuggestions(initial.servingSuggestions ?? '');
+      setStorageInstructions(initial.storageInstructions ?? '');
+      setDietaryHighlights(initial.dietaryHighlights ?? '');
+      setSpiceLevel(initial.spiceLevel ?? '');
+      setFaqs(initial.faqs ?? '');
+      setFocusKeywords(initial.focusKeywords ?? '');
+      setProductTags(initial.productTags ?? '');
       setBasePrice(String(moneyToNumber(initial.basePrice)));
       setCost(initial.cost != null ? String(moneyToNumber(initial.cost)) : '');
       setWeight(initial.weight != null ? String(moneyToNumber(initial.weight)) : '');
@@ -220,6 +291,17 @@ export function ProductForm({ mode, initial, productId, onCancel, onSaved }: Pro
       slug: slug.trim(),
       description: description.trim(),
       shortDescription: shortDescription.trim(),
+      seoTitle: seoTitle.trim(),
+      metaDescription: metaDescription.trim(),
+      tasteProfile: tasteProfile.trim(),
+      ingredients: ingredients.trim(),
+      servingSuggestions: servingSuggestions.trim(),
+      storageInstructions: storageInstructions.trim(),
+      dietaryHighlights: dietaryHighlights.trim(),
+      spiceLevel: spiceLevel.trim(),
+      faqs: faqs.trim(),
+      focusKeywords: focusKeywords.trim(),
+      productTags: productTags.trim(),
       price,
       parsedCost,
       parsedWeight,
@@ -463,6 +545,163 @@ export function ProductForm({ mode, initial, productId, onCancel, onSaved }: Pro
           className="mt-1 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-50"
         />
       </div>
+
+      <section className="rounded-xl border border-zinc-200 bg-zinc-50/80 p-4 dark:border-zinc-800 dark:bg-zinc-900/40">
+        <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+          SEO &amp; Product Details
+        </h3>
+        <p className="mt-1 text-xs text-zinc-500">
+          Nimco-focused content for search snippets and the product page accordions.
+        </p>
+
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <div>
+            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+              SEO Title
+            </label>
+            <input
+              value={seoTitle}
+              onChange={(e) => setSeoTitle(e.target.value)}
+              placeholder="Overrides the page title when set"
+              className="mt-1 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-50"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+              Meta Description
+            </label>
+            <textarea
+              value={metaDescription}
+              onChange={(e) => setMetaDescription(e.target.value)}
+              rows={2}
+              placeholder="Search result snippet"
+              className="mt-1 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-50"
+            />
+          </div>
+        </div>
+
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <div>
+            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+              Taste Profile
+            </label>
+            <textarea
+              value={tasteProfile}
+              onChange={(e) => setTasteProfile(e.target.value)}
+              rows={3}
+              placeholder="e.g. Spicy, Tangy, Crispy, Crunchy"
+              className="mt-1 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-50"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+              Ingredients
+            </label>
+            <textarea
+              value={ingredients}
+              onChange={(e) => setIngredients(e.target.value)}
+              rows={3}
+              className="mt-1 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-50"
+            />
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+            Serving Suggestions / Pairings
+          </label>
+          <textarea
+            value={servingSuggestions}
+            onChange={(e) => setServingSuggestions(e.target.value)}
+            rows={3}
+            placeholder="Chai pairings, party platters, etc."
+            className="mt-1 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-50"
+          />
+        </div>
+
+        <div className="mt-4">
+          <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+            Storage &amp; Shelf Life Instructions
+          </label>
+          <textarea
+            value={storageInstructions}
+            onChange={(e) => setStorageInstructions(e.target.value)}
+            rows={3}
+            className="mt-1 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-50"
+          />
+        </div>
+
+        <div className="mt-4">
+          <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+            Dietary &amp; Health Highlights
+          </label>
+          <textarea
+            value={dietaryHighlights}
+            onChange={(e) => setDietaryHighlights(e.target.value)}
+            rows={3}
+            placeholder="e.g. 100% Vegetarian, Zero Trans-Fat"
+            className="mt-1 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-50"
+          />
+        </div>
+
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <div>
+            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+              Spice Level
+            </label>
+            <select
+              value={spiceLevel}
+              onChange={(e) => setSpiceLevel(e.target.value)}
+              className="mt-1 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-50"
+            >
+              {SPICE_LEVELS.map((level) => (
+                <option key={level || 'none'} value={level}>
+                  {level || '— Select —'}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+              Focus Keywords
+            </label>
+            <input
+              value={focusKeywords}
+              onChange={(e) => setFocusKeywords(e.target.value)}
+              placeholder="Comma-separated keywords"
+              className="mt-1 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-50"
+            />
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+            Product Tags
+          </label>
+          <input
+            value={productTags}
+            onChange={(e) => setProductTags(e.target.value)}
+            placeholder="Comma-separated tags"
+            className="mt-1 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-50"
+          />
+        </div>
+
+        <div className="mt-4">
+          <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+            FAQs
+          </label>
+          <p className="mt-0.5 text-xs text-zinc-500">
+            One FAQ per line as <code className="rounded bg-zinc-100 px-1 dark:bg-zinc-800">Question | Answer</code>
+          </p>
+          <textarea
+            value={faqs}
+            onChange={(e) => setFaqs(e.target.value)}
+            rows={5}
+            placeholder={'Is this vegetarian? | Yes, 100% vegetarian.\nHow long does it stay fresh? | Up to 30 days sealed.'}
+            className="mt-1 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-50"
+          />
+        </div>
+      </section>
 
       <div>
         <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">

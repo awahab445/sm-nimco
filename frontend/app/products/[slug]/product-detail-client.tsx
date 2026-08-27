@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { productApi, inventoryApi, type Product, type ProductVariant } from '@/lib/api-client';
@@ -79,6 +79,21 @@ function normalizeProduct(raw: Record<string, unknown>): Product {
     type,
     description: (raw.description as string) ?? null,
     shortDescription: (raw.shortDescription as string) ?? (raw.short_description as string) ?? null,
+    seoTitle: (raw.seoTitle as string) ?? (raw.seo_title as string) ?? null,
+    metaDescription:
+      (raw.metaDescription as string) ?? (raw.meta_description as string) ?? null,
+    tasteProfile: (raw.tasteProfile as string) ?? (raw.taste_profile as string) ?? null,
+    ingredients: (raw.ingredients as string) ?? null,
+    servingSuggestions:
+      (raw.servingSuggestions as string) ?? (raw.serving_suggestions as string) ?? null,
+    storageInstructions:
+      (raw.storageInstructions as string) ?? (raw.storage_instructions as string) ?? null,
+    dietaryHighlights:
+      (raw.dietaryHighlights as string) ?? (raw.dietary_highlights as string) ?? null,
+    spiceLevel: (raw.spiceLevel as string) ?? (raw.spice_level as string) ?? null,
+    faqs: (raw.faqs as string) ?? null,
+    focusKeywords: (raw.focusKeywords as string) ?? (raw.focus_keywords as string) ?? null,
+    productTags: (raw.productTags as string) ?? (raw.product_tags as string) ?? null,
     basePrice: basePriceNum,
     status: (raw.status as string) ?? 'active',
     visibility: (raw.visibility as string) ?? undefined,
@@ -153,6 +168,127 @@ function swatchColor(value: string): string | null {
 
 function isWeightOption(code: string, label: string): boolean {
   return /weight/i.test(code) || /weight/i.test(label);
+}
+
+function parseFaqLines(raw: string | null | undefined): Array<{ question: string; answer: string }> {
+  if (!raw?.trim()) return [];
+  return raw
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const sep = line.indexOf('|');
+      if (sep <= 0) return null;
+      const question = line.slice(0, sep).trim();
+      const answer = line.slice(sep + 1).trim();
+      if (!question || !answer) return null;
+      return { question, answer };
+    })
+    .filter((item): item is { question: string; answer: string } => item != null);
+}
+
+function PdpAccordion({
+  title,
+  children,
+  defaultOpen = false,
+}: {
+  title: string;
+  children: ReactNode;
+  defaultOpen?: boolean;
+}) {
+  return (
+    <details
+      className="group border-t border-border/60 [&>summary]:list-none [&>summary::-webkit-details-marker]:hidden"
+      open={defaultOpen}
+    >
+      <summary className="flex cursor-pointer items-center justify-between gap-3 py-4 text-[15px] font-medium text-foreground transition-colors hover:text-[var(--navbar-link-hover,var(--primary-hover))]">
+        <span>{title}</span>
+        <span
+          className="text-muted-foreground transition-transform duration-200 group-open:rotate-180"
+          aria-hidden
+        >
+          <svg className="h-3.5 w-3.5" viewBox="0 0 12 12" fill="none">
+            <path
+              d="M2.5 4.5L6 8l3.5-3.5"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </span>
+      </summary>
+      <div className="pb-5 text-sm leading-relaxed text-muted-foreground whitespace-pre-wrap">
+        {children}
+      </div>
+    </details>
+  );
+}
+
+function PdpProductContentAccordions({ product }: { product: Product }) {
+  const ingredientsTaste = [product.ingredients, product.tasteProfile]
+    .map((v) => v?.trim())
+    .filter(Boolean)
+    .join('\n\n');
+  const dietary = [product.dietaryHighlights, product.spiceLevel ? `Spice level: ${product.spiceLevel}` : '']
+    .map((v) => v?.trim())
+    .filter(Boolean)
+    .join('\n\n');
+  const faqs = parseFaqLines(product.faqs);
+  const hasAny =
+    Boolean(product.description?.trim()) ||
+    Boolean(ingredientsTaste) ||
+    Boolean(product.servingSuggestions?.trim()) ||
+    Boolean(product.storageInstructions?.trim()) ||
+    Boolean(dietary) ||
+    faqs.length > 0;
+
+  if (!hasAny) return null;
+
+  return (
+    <div className="mt-8 sm:mt-10">
+      {product.description?.trim() ? (
+        <PdpAccordion title="Description" defaultOpen>
+          {product.description.trim()}
+        </PdpAccordion>
+      ) : null}
+
+      {ingredientsTaste ? (
+        <PdpAccordion title="Ingredients & Taste Profile">
+          {ingredientsTaste}
+        </PdpAccordion>
+      ) : null}
+
+      {product.servingSuggestions?.trim() ? (
+        <PdpAccordion title="Serving Suggestions & Chai Pairings">
+          {product.servingSuggestions.trim()}
+        </PdpAccordion>
+      ) : null}
+
+      {product.storageInstructions?.trim() ? (
+        <PdpAccordion title="Storage & Freshness Guide">
+          {product.storageInstructions.trim()}
+        </PdpAccordion>
+      ) : null}
+
+      {dietary ? (
+        <PdpAccordion title="Dietary Info & Highlights">{dietary}</PdpAccordion>
+      ) : null}
+
+      {faqs.length > 0 ? (
+        <PdpAccordion title="FAQs">
+          <dl className="space-y-4">
+            {faqs.map((faq) => (
+              <div key={`${faq.question}-${faq.answer.slice(0, 24)}`}>
+                <dt className="font-medium text-foreground">{faq.question}</dt>
+                <dd className="mt-1 whitespace-pre-wrap">{faq.answer}</dd>
+              </div>
+            ))}
+          </dl>
+        </PdpAccordion>
+      ) : null}
+    </div>
+  );
 }
 
 function formatOptionBadgeLabel(code: string, label: string, value: string): string {
@@ -709,21 +845,7 @@ export function ProductDetailClient() {
               ) : null}
             </div>
 
-            {product.description?.trim() ? (
-              <details className="group mt-8 border-t border-border/60 sm:mt-10 [&>summary]:list-none [&>summary::-webkit-details-marker]:hidden" open>
-                <summary className="flex cursor-pointer items-center justify-between gap-3 py-4 text-[15px] font-medium text-foreground transition-colors hover:text-[var(--navbar-link-hover,var(--primary-hover))]">
-                  <span>Description</span>
-                  <span className="text-muted-foreground transition-transform duration-200 group-open:rotate-180" aria-hidden>
-                    <svg className="h-3.5 w-3.5" viewBox="0 0 12 12" fill="none">
-                      <path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </span>
-                </summary>
-                <div className="pb-5 text-sm leading-relaxed text-muted-foreground whitespace-pre-wrap">
-                  {product.description.trim()}
-                </div>
-              </details>
-            ) : null}
+            {product ? <PdpProductContentAccordions product={product} /> : null}
           </div>
         </div>
       </div>

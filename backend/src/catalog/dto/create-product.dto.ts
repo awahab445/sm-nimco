@@ -61,6 +61,61 @@ export class CreateProductDto {
   @IsOptional()
   shortDescription?: string | null;
 
+  @Transform(emptyStringToNull)
+  @IsString()
+  @IsOptional()
+  seoTitle?: string | null;
+
+  @Transform(emptyStringToNull)
+  @IsString()
+  @IsOptional()
+  metaDescription?: string | null;
+
+  @Transform(emptyStringToNull)
+  @IsString()
+  @IsOptional()
+  tasteProfile?: string | null;
+
+  @Transform(emptyStringToNull)
+  @IsString()
+  @IsOptional()
+  ingredients?: string | null;
+
+  @Transform(emptyStringToNull)
+  @IsString()
+  @IsOptional()
+  servingSuggestions?: string | null;
+
+  @Transform(emptyStringToNull)
+  @IsString()
+  @IsOptional()
+  storageInstructions?: string | null;
+
+  @Transform(emptyStringToNull)
+  @IsString()
+  @IsOptional()
+  dietaryHighlights?: string | null;
+
+  @Transform(emptyStringToNull)
+  @IsString()
+  @IsOptional()
+  spiceLevel?: string | null;
+
+  @Transform(emptyStringToNull)
+  @IsString()
+  @IsOptional()
+  faqs?: string | null;
+
+  @Transform(emptyStringToNull)
+  @IsString()
+  @IsOptional()
+  focusKeywords?: string | null;
+
+  @Transform(emptyStringToNull)
+  @IsString()
+  @IsOptional()
+  productTags?: string | null;
+
   @IsNumber()
   @Min(0)
   basePrice: number;

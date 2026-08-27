@@ -35,6 +35,7 @@ import { AssignCategoryDto } from '../dto/assign-category.dto';
 import { ProductQueryDto } from '../dto/product-query.dto';
 import { UpsertProductOptionsDto } from '../dto/upsert-product-options.dto';
 import { BulkDeleteProductsDto } from '../dto/bulk-delete-products.dto';
+import { BulkCreateProductsDto } from '../dto/bulk-create-products.dto';
 import { AdminJwtAuthGuard } from '../../admin/guards/admin-jwt-auth.guard';
 import { AdminPermissionsGuard } from '../../admin/guards/admin-permissions.guard';
 import { CheckPermission } from '../../admin/decorators/check-permission.decorator';
@@ -95,6 +96,19 @@ export class AdminProductController {
   @HttpCode(HttpStatus.CREATED)
   async create(@Body() createProductDto: CreateProductDto) {
     return this.productService.create(createProductDto);
+  }
+
+  /**
+   * Bulk upsert products from a JSON array (typically parsed CSV on the client).
+   * Existing SKUs update SEO/content fields; new SKUs are created.
+   * POST /admin/products/bulk  body: { products: CreateProductDto[] }
+   * Registered before :id routes so "bulk" is not parsed as an id.
+   */
+  @Post('bulk')
+  @CheckPermission('products', 'create')
+  @HttpCode(HttpStatus.CREATED)
+  async bulkCreate(@Body() dto: BulkCreateProductsDto) {
+    return this.productService.createMany(dto.products);
   }
 
   /**

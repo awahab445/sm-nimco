@@ -90,6 +90,17 @@ export class ProductService {
         type: createProductDto.type,
         description: createProductDto.description,
         shortDescription: createProductDto.shortDescription,
+        seoTitle: createProductDto.seoTitle,
+        metaDescription: createProductDto.metaDescription,
+        tasteProfile: createProductDto.tasteProfile,
+        ingredients: createProductDto.ingredients,
+        servingSuggestions: createProductDto.servingSuggestions,
+        storageInstructions: createProductDto.storageInstructions,
+        dietaryHighlights: createProductDto.dietaryHighlights,
+        spiceLevel: createProductDto.spiceLevel,
+        faqs: createProductDto.faqs,
+        focusKeywords: createProductDto.focusKeywords,
+        productTags: createProductDto.productTags,
         basePrice: createProductDto.basePrice,
         cost: createProductDto.cost,
         weight: createProductDto.weight,
@@ -111,6 +122,201 @@ export class ProductService {
     });
 
     return product;
+  }
+
+  /**
+   * Bulk upsert products by SKU.
+   * Existing SKUs update SEO/content fields; new SKUs are inserted via createMany.
+   */
+  async createMany(dtos: CreateProductDto[]) {
+    if (!dtos.length) {
+      throw new BadRequestException('At least one product is required.');
+    }
+    if (dtos.length > 500) {
+      throw new BadRequestException('A maximum of 500 products can be uploaded at once.');
+    }
+
+    const normalizedSkus = dtos.map((dto) => String(dto.sku ?? '').trim());
+    if (normalizedSkus.some((sku) => !sku)) {
+      throw new BadRequestException('Every product requires a non-empty SKU.');
+    }
+
+    const skuCounts = new Map<string, number>();
+    for (const sku of normalizedSkus) {
+      const key = sku.toLowerCase();
+      skuCounts.set(key, (skuCounts.get(key) ?? 0) + 1);
+    }
+    const duplicateSkus = [...skuCounts.entries()]
+      .filter(([, count]) => count > 1)
+      .map(([sku]) => sku);
+    if (duplicateSkus.length > 0) {
+      throw new ConflictException(
+        `Duplicate SKUs in upload: ${duplicateSkus.slice(0, 10).join(', ')}${duplicateSkus.length > 10 ? '…' : ''}`,
+      );
+    }
+
+    const existingProducts = await this.prisma.product.findMany({
+      where: { sku: { in: normalizedSkus } },
+      select: { id: true, sku: true },
+    });
+    const existingBySku = new Map(
+      existingProducts.map((p) => [p.sku, p] as const),
+    );
+
+    const toCreateDtos: Array<{ dto: CreateProductDto; sku: string; index: number }> =
+      [];
+    const toUpdate: Array<{ id: string; dto: CreateProductDto }> = [];
+
+    for (let index = 0; index < dtos.length; index++) {
+      const dto = dtos[index];
+      const sku = normalizedSkus[index];
+      const existing = existingBySku.get(sku);
+      if (existing) {
+        toUpdate.push({ id: existing.id, dto });
+      } else {
+        toCreateDtos.push({ dto, sku, index });
+      }
+    }
+
+    if (toCreateDtos.length > 0) {
+      const createSkus = toCreateDtos.map((row) => row.sku);
+      const existingVariants = await this.prisma.productVariant.findMany({
+        where: { sku: { in: createSkus } },
+        select: { sku: true },
+      });
+      if (existingVariants.length > 0) {
+        throw new ConflictException(
+          `SKU already exists in variants: ${existingVariants
+            .slice(0, 10)
+            .map((v) => v.sku)
+            .join(', ')}${existingVariants.length > 10 ? '…' : ''}`,
+        );
+      }
+    }
+
+    let updatedCount = 0;
+    if (toUpdate.length > 0) {
+      await this.prisma.$transaction(
+        toUpdate.map(({ id, dto }) =>
+          this.prisma.product.update({
+            where: { id },
+            data: this.buildBulkContentUpdate(dto),
+          }),
+        ),
+      );
+      updatedCount = toUpdate.length;
+    }
+
+    let createdCount = 0;
+    if (toCreateDtos.length > 0) {
+      const reservedSlugs = new Set(
+        (
+          await this.prisma.product.findMany({
+            where: { deletedAt: null },
+            select: { slug: true },
+          })
+        ).map((p) => p.slug),
+      );
+
+      const data = toCreateDtos.map(({ dto, sku, index }) => {
+        const name = String(dto.name ?? '').trim();
+        if (!name) {
+          throw new BadRequestException(
+            `Product at row ${index + 1} requires a name.`,
+          );
+        }
+
+        let baseSlug = dto.slug?.trim()
+          ? this.normalizeSlug(dto.slug)
+          : this.normalizeSlug(name);
+        if (!baseSlug) {
+          baseSlug = `product-${index + 1}`;
+        }
+
+        let slug = baseSlug;
+        let counter = 1;
+        while (reservedSlugs.has(slug)) {
+          slug = `${baseSlug}-${counter}`;
+          counter += 1;
+        }
+        reservedSlugs.add(slug);
+
+        return {
+          sku,
+          name,
+          slug,
+          type: dto.type,
+          description: dto.description ?? null,
+          shortDescription: dto.shortDescription ?? null,
+          seoTitle: dto.seoTitle ?? null,
+          metaDescription: dto.metaDescription ?? null,
+          tasteProfile: dto.tasteProfile ?? null,
+          ingredients: dto.ingredients ?? null,
+          servingSuggestions: dto.servingSuggestions ?? null,
+          storageInstructions: dto.storageInstructions ?? null,
+          dietaryHighlights: dto.dietaryHighlights ?? null,
+          spiceLevel: dto.spiceLevel ?? null,
+          faqs: dto.faqs ?? null,
+          focusKeywords: dto.focusKeywords ?? null,
+          productTags: dto.productTags ?? null,
+          basePrice: dto.basePrice,
+          cost: dto.cost ?? null,
+          weight: dto.weight ?? null,
+          ...(dto.shippingWeight !== undefined
+            ? { shippingWeight: dto.shippingWeight }
+            : {}),
+          ...(dto.shippingWeightUnit !== undefined
+            ? {
+                shippingWeightUnit: normalizeShippingWeightUnit(
+                  dto.shippingWeightUnit,
+                ),
+              }
+            : {}),
+          status: dto.status || ProductStatus.DRAFT,
+          visibility: dto.visibility || 'both',
+          taxClassId: dto.taxClassId ?? null,
+          attributes: dto.attributes || {},
+          metaData: dto.metaData || {},
+        };
+      });
+
+      const result = await this.prisma.product.createMany({ data });
+      createdCount = result.count;
+    }
+
+    return {
+      createdCount,
+      updatedCount,
+      requestedCount: dtos.length,
+    };
+  }
+
+  /** Content/SEO fields applied when bulk-uploading an existing SKU. */
+  private buildBulkContentUpdate(dto: CreateProductDto) {
+    const data: Record<string, string | null> = {};
+    if (dto.description !== undefined) data.description = dto.description;
+    if (dto.shortDescription !== undefined) {
+      data.shortDescription = dto.shortDescription;
+    }
+    if (dto.seoTitle !== undefined) data.seoTitle = dto.seoTitle;
+    if (dto.metaDescription !== undefined) {
+      data.metaDescription = dto.metaDescription;
+    }
+    if (dto.tasteProfile !== undefined) data.tasteProfile = dto.tasteProfile;
+    if (dto.ingredients !== undefined) data.ingredients = dto.ingredients;
+    if (dto.servingSuggestions !== undefined) {
+      data.servingSuggestions = dto.servingSuggestions;
+    }
+    if (dto.storageInstructions !== undefined) {
+      data.storageInstructions = dto.storageInstructions;
+    }
+    if (dto.dietaryHighlights !== undefined) {
+      data.dietaryHighlights = dto.dietaryHighlights;
+    }
+    if (dto.spiceLevel !== undefined) data.spiceLevel = dto.spiceLevel;
+    if (dto.focusKeywords !== undefined) data.focusKeywords = dto.focusKeywords;
+    if (dto.productTags !== undefined) data.productTags = dto.productTags;
+    return data;
   }
 
   async findAll(query: ProductQueryDto) {
@@ -285,6 +491,50 @@ export class ProductService {
 
     if (updateProductDto.shortDescription !== undefined) {
       updateData.shortDescription = updateProductDto.shortDescription;
+    }
+
+    if (updateProductDto.seoTitle !== undefined) {
+      updateData.seoTitle = updateProductDto.seoTitle;
+    }
+
+    if (updateProductDto.metaDescription !== undefined) {
+      updateData.metaDescription = updateProductDto.metaDescription;
+    }
+
+    if (updateProductDto.tasteProfile !== undefined) {
+      updateData.tasteProfile = updateProductDto.tasteProfile;
+    }
+
+    if (updateProductDto.ingredients !== undefined) {
+      updateData.ingredients = updateProductDto.ingredients;
+    }
+
+    if (updateProductDto.servingSuggestions !== undefined) {
+      updateData.servingSuggestions = updateProductDto.servingSuggestions;
+    }
+
+    if (updateProductDto.storageInstructions !== undefined) {
+      updateData.storageInstructions = updateProductDto.storageInstructions;
+    }
+
+    if (updateProductDto.dietaryHighlights !== undefined) {
+      updateData.dietaryHighlights = updateProductDto.dietaryHighlights;
+    }
+
+    if (updateProductDto.spiceLevel !== undefined) {
+      updateData.spiceLevel = updateProductDto.spiceLevel;
+    }
+
+    if (updateProductDto.faqs !== undefined) {
+      updateData.faqs = updateProductDto.faqs;
+    }
+
+    if (updateProductDto.focusKeywords !== undefined) {
+      updateData.focusKeywords = updateProductDto.focusKeywords;
+    }
+
+    if (updateProductDto.productTags !== undefined) {
+      updateData.productTags = updateProductDto.productTags;
     }
 
     if (updateProductDto.basePrice !== undefined) {

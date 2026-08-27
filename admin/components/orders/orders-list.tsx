@@ -13,6 +13,7 @@ import {
 } from '@/lib/api/orders';
 import { formatApiError } from '@/lib/api/error-message';
 import { formatPrice } from '@/lib/currency';
+import { InvoiceModal } from '@/components/orders/InvoiceModal';
 
 function statusPill(label: string, tone: 'neutral' | 'success' | 'warning' | 'danger') {
   const tones = {
@@ -60,6 +61,7 @@ export function OrdersList() {
   const [labelsLoading, setLabelsLoading] = useState(false);
   const [insertsLoading, setInsertsLoading] = useState(false);
   const [labelsError, setLabelsError] = useState<string | null>(null);
+  const [invoiceOrder, setInvoiceOrder] = useState<Order | null>(null);
 
   useEffect(() => {
     setSelectedIds(new Set());
@@ -315,7 +317,7 @@ export function OrdersList() {
         ) : rows.length === 0 ? (
           <div className="p-8 text-center text-sm text-zinc-500">No orders match.</div>
         ) : (
-          <table className="w-full min-w-[900px] text-left text-sm">
+          <table className="w-full min-w-[980px] text-left text-sm">
             <thead className="border-b border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900/50">
               <tr>
                 <th className="w-10 px-4 py-3">
@@ -339,8 +341,8 @@ export function OrdersList() {
                 <th className="px-4 py-3 font-medium text-zinc-700 dark:text-zinc-300 text-right">
                   Total
                 </th>
-                <th className="px-4 py-3 font-medium text-zinc-700 dark:text-zinc-300 text-right">
-                  {' '}
+                <th className="min-w-[200px] px-4 py-3 font-medium text-zinc-700 dark:text-zinc-300 text-right">
+                  Actions
                 </th>
               </tr>
             </thead>
@@ -383,12 +385,35 @@ export function OrdersList() {
                     {formatPrice(o.grandTotal, o.currency)}
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <Link
-                      href={`/orders/${o.id}`}
-                      className="font-medium text-zinc-900 underline dark:text-zinc-100"
-                    >
-                      Open
-                    </Link>
+                    <div className="flex flex-nowrap items-center justify-end gap-x-3 whitespace-nowrap">
+                      <button
+                        type="button"
+                        disabled={bulkBusy}
+                        onClick={() => {
+                          setLabelsError(null);
+                          setLabelsLoading(true);
+                          void downloadBulkShippingLabels([o.id])
+                            .catch((e) => setLabelsError(formatApiError(e)))
+                            .finally(() => setLabelsLoading(false));
+                        }}
+                        className="text-sm font-medium text-zinc-900 underline disabled:opacity-40 dark:text-zinc-100"
+                      >
+                        Label
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setInvoiceOrder(o)}
+                        className="text-sm font-medium text-indigo-600 underline hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
+                      >
+                        Invoice
+                      </button>
+                      <Link
+                        href={`/orders/${o.id}`}
+                        className="text-sm font-medium text-zinc-900 underline dark:text-zinc-100"
+                      >
+                        Open
+                      </Link>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -422,6 +447,11 @@ export function OrdersList() {
           </div>
         </div>
       ) : null}
+
+      <InvoiceModal
+        order={invoiceOrder}
+        onClose={() => setInvoiceOrder(null)}
+      />
     </div>
   );
 }

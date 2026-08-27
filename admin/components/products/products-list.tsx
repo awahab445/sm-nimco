@@ -1,19 +1,24 @@
 'use client';
 
 import { adminUi } from '@/lib/admin-ui';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import Papa from 'papaparse';
 import {
   fetchAdminCategories,
   type AdminCategoryListItem,
 } from '@/lib/api/categories';
 import {
+  bulkCreateAdminProducts,
   bulkDeleteAdminProducts,
   deleteAdminProduct,
   fetchAdminProducts,
   moneyToNumber,
   type AdminProductListRow,
+  type CreateProductBody,
   type ProductStatus,
+  type ProductType,
+  type ProductVisibility,
 } from '@/lib/api/products';
 import { formatApiError } from '@/lib/api/error-message';
 import {
@@ -30,6 +35,111 @@ const STATUS_OPTIONS: { value: '' | ProductStatus; label: string }[] = [
   { value: 'disabled', label: 'Disabled' },
 ];
 
+const PRODUCT_CSV_TEMPLATE = [
+  'sku,name,type,basePrice,slug,description,shortDescription,status,visibility,cost,weight,seoTitle,metaDescription,tasteProfile,ingredients,servingSuggestions,storageInstructions,dietaryHighlights,spiceLevel,faqs,focusKeywords,productTags',
+  'NIMCO-MIX-250,Karachi Nimco Mix,configurable,850,karachi-nimco-mix,Crispy classic mix,Party favourite,active,both,,0.25,Buy Karachi Nimco Mix online,Fresh roasted nimco mix,Spicy & crunchy,"Gram flour, spices",Best with chai,Store sealed in a cool dry place,100% Vegetarian,Medium,Is it vegetarian? | Yes.,nimco mix karachi,nimco,snacks',
+].join('\n');
+
+function cell(row: Record<string, unknown>, ...keys: string[]): string {
+  for (const key of keys) {
+    const direct = row[key];
+    if (direct != null && String(direct).trim()) return String(direct).trim();
+    const lower = key.toLowerCase();
+    for (const [k, v] of Object.entries(row)) {
+      if (k.toLowerCase().replace(/[\s_-]+/g, '') === lower.replace(/[\s_-]+/g, '')) {
+        if (v != null && String(v).trim()) return String(v).trim();
+      }
+    }
+  }
+  return '';
+}
+
+function parseOptionalNumber(raw: string): number | undefined {
+  if (!raw.trim()) return undefined;
+  const n = Number(raw);
+  return Number.isFinite(n) ? n : undefined;
+}
+
+function mapCsvRowToProduct(row: Record<string, unknown>, index: number): CreateProductBody {
+  const sku = cell(row, 'sku');
+  const name = cell(row, 'name');
+  const typeRaw = cell(row, 'type') || 'configurable';
+  const basePriceRaw = cell(row, 'basePrice', 'base_price', 'price');
+  const basePrice = Number(basePriceRaw);
+
+  if (!sku) throw new Error(`Row ${index + 1}: sku is required`);
+  if (!name) throw new Error(`Row ${index + 1}: name is required`);
+  if (!Number.isFinite(basePrice) || basePrice < 0) {
+    throw new Error(`Row ${index + 1}: basePrice must be a non-negative number`);
+  }
+
+  const allowedTypes: ProductType[] = ['simple', 'configurable', 'bundle', 'virtual'];
+  const type = (allowedTypes.includes(typeRaw as ProductType)
+    ? typeRaw
+    : 'configurable') as ProductType;
+
+  const statusRaw = cell(row, 'status');
+  const visibilityRaw = cell(row, 'visibility');
+  const status = (['draft', 'active', 'disabled'].includes(statusRaw)
+    ? statusRaw
+    : undefined) as ProductStatus | undefined;
+  const visibility = (['catalog', 'search', 'both', 'none'].includes(visibilityRaw)
+    ? visibilityRaw
+    : undefined) as ProductVisibility | undefined;
+
+  const cost = parseOptionalNumber(cell(row, 'cost'));
+  const weight = parseOptionalNumber(cell(row, 'weight'));
+  const shippingWeight = parseOptionalNumber(cell(row, 'shippingWeight', 'shipping_weight'));
+
+  return {
+    sku,
+    name,
+    type,
+    basePrice,
+    ...(cell(row, 'slug') ? { slug: cell(row, 'slug') } : {}),
+    ...(cell(row, 'description') ? { description: cell(row, 'description') } : {}),
+    ...(cell(row, 'shortDescription', 'short_description')
+      ? { shortDescription: cell(row, 'shortDescription', 'short_description') }
+      : {}),
+    ...(status ? { status } : {}),
+    ...(visibility ? { visibility } : {}),
+    ...(cost !== undefined ? { cost } : {}),
+    ...(weight !== undefined ? { weight } : {}),
+    ...(shippingWeight !== undefined ? { shippingWeight } : {}),
+    ...(cell(row, 'shippingWeightUnit', 'shipping_weight_unit')
+      ? { shippingWeightUnit: cell(row, 'shippingWeightUnit', 'shipping_weight_unit') }
+      : {}),
+    ...(cell(row, 'seoTitle', 'seo_title')
+      ? { seoTitle: cell(row, 'seoTitle', 'seo_title') }
+      : {}),
+    ...(cell(row, 'metaDescription', 'meta_description')
+      ? { metaDescription: cell(row, 'metaDescription', 'meta_description') }
+      : {}),
+    ...(cell(row, 'tasteProfile', 'taste_profile')
+      ? { tasteProfile: cell(row, 'tasteProfile', 'taste_profile') }
+      : {}),
+    ...(cell(row, 'ingredients') ? { ingredients: cell(row, 'ingredients') } : {}),
+    ...(cell(row, 'servingSuggestions', 'serving_suggestions')
+      ? { servingSuggestions: cell(row, 'servingSuggestions', 'serving_suggestions') }
+      : {}),
+    ...(cell(row, 'storageInstructions', 'storage_instructions')
+      ? { storageInstructions: cell(row, 'storageInstructions', 'storage_instructions') }
+      : {}),
+    ...(cell(row, 'dietaryHighlights', 'dietary_highlights')
+      ? { dietaryHighlights: cell(row, 'dietaryHighlights', 'dietary_highlights') }
+      : {}),
+    ...(cell(row, 'spiceLevel', 'spice_level')
+      ? { spiceLevel: cell(row, 'spiceLevel', 'spice_level') }
+      : {}),
+    ...(cell(row, 'faqs') ? { faqs: cell(row, 'faqs') } : {}),
+    ...(cell(row, 'focusKeywords', 'focus_keywords')
+      ? { focusKeywords: cell(row, 'focusKeywords', 'focus_keywords') }
+      : {}),
+    ...(cell(row, 'productTags', 'product_tags')
+      ? { productTags: cell(row, 'productTags', 'product_tags') }
+      : {}),
+  };
+}
 export function ProductsList() {
   const [rows, setRows] = useState<AdminProductListRow[]>([]);
   const [meta, setMeta] = useState({ total: 0, page: 1, limit: 20, totalPages: 1 });
@@ -44,6 +154,8 @@ export function ProductsList() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [csvUploading, setCsvUploading] = useState(false);
+  const csvInputRef = useRef<HTMLInputElement>(null);
   const [toast, setToast] = useState<{ kind: 'success' | 'error'; message: string } | null>(
     null,
   );
@@ -176,7 +288,80 @@ export function ProductsList() {
     }
   };
 
-  const busy = deletingId !== null || bulkDeleting;
+  const downloadCsvTemplate = () => {
+    const blob = new Blob([PRODUCT_CSV_TEMPLATE], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = 'products-bulk-upload-template.csv';
+    anchor.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const onCsvSelected = (file: File | null) => {
+    if (!file) return;
+    if (!/\.csv$/i.test(file.name) && file.type !== 'text/csv') {
+      setToast({ kind: 'error', message: 'Please select a .csv file.' });
+      if (csvInputRef.current) csvInputRef.current.value = '';
+      return;
+    }
+
+    setCsvUploading(true);
+    Papa.parse<Record<string, unknown>>(file, {
+      header: true,
+      skipEmptyLines: true,
+      complete: (result) => {
+        void (async () => {
+          try {
+            if (result.errors.length > 0) {
+              const first = result.errors[0];
+              throw new Error(first.message || 'Failed to parse CSV');
+            }
+            const rawRows = (result.data ?? []).filter((row) =>
+              Object.values(row).some((v) => String(v ?? '').trim()),
+            );
+            if (rawRows.length === 0) {
+              throw new Error('CSV has no data rows.');
+            }
+            const products = rawRows.map((row, index) => mapCsvRowToProduct(row, index));
+            const res = await bulkCreateAdminProducts(products);
+            const parts: string[] = [];
+            if (res.createdCount > 0) {
+              parts.push(
+                `${res.createdCount} created`,
+              );
+            }
+            if ((res.updatedCount ?? 0) > 0) {
+              parts.push(`${res.updatedCount} updated`);
+            }
+            setToast({
+              kind: 'success',
+              message:
+                parts.length > 0
+                  ? `Bulk upload complete: ${parts.join(', ')} (${res.requestedCount} row${res.requestedCount === 1 ? '' : 's'}).`
+                  : `Processed ${res.requestedCount} row${res.requestedCount === 1 ? '' : 's'} with no changes.`,
+            });
+            await load();
+          } catch (e) {
+            setToast({
+              kind: 'error',
+              message: e instanceof Error ? e.message : formatApiError(e),
+            });
+          } finally {
+            setCsvUploading(false);
+            if (csvInputRef.current) csvInputRef.current.value = '';
+          }
+        })();
+      },
+      error: (err) => {
+        setCsvUploading(false);
+        if (csvInputRef.current) csvInputRef.current.value = '';
+        setToast({ kind: 'error', message: err.message || 'Failed to read CSV file.' });
+      },
+    });
+  };
+
+  const busy = deletingId !== null || bulkDeleting || csvUploading;
 
   return (
     <div className="mx-auto max-w-6xl">
@@ -203,9 +388,33 @@ export function ProductsList() {
           </p>
         </div>
         <PermissionGate anyOf={['products.create']}>
-          <Link href="/products/new" className={`shrink-0 ${adminUi.btnPrimary}`}>
-            New product
-          </Link>
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <button
+              type="button"
+              onClick={downloadCsvTemplate}
+              className={`shrink-0 ${adminUi.btnSecondary}`}
+            >
+              CSV template
+            </button>
+            <input
+              ref={csvInputRef}
+              type="file"
+              accept=".csv,text/csv"
+              className="hidden"
+              onChange={(e) => onCsvSelected(e.target.files?.[0] ?? null)}
+            />
+            <button
+              type="button"
+              disabled={csvUploading}
+              onClick={() => csvInputRef.current?.click()}
+              className={`shrink-0 ${adminUi.btnSecondary}`}
+            >
+              {csvUploading ? 'Uploading…' : 'Upload CSV'}
+            </button>
+            <Link href="/products/new" className={`shrink-0 ${adminUi.btnPrimary}`}>
+              New product
+            </Link>
+          </div>
         </PermissionGate>
       </div>
 

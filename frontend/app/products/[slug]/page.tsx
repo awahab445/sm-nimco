@@ -35,8 +35,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const imagePath = resolveImageUrl(image?.url);
 
   return buildPageMetadata({
-    title: product.name,
+    title: product.seoTitle?.trim() || product.name,
     description:
+      plainText(product.metaDescription) ||
       plainText(product.shortDescription) ||
       plainText(product.description) ||
       `Buy ${product.name} online.`,
@@ -55,7 +56,9 @@ export default async function ProductDetailPage({ params }: Props) {
   const imagePath = resolveImageUrl(image?.url);
   const price = Number(product.basePrice);
   const description =
-    plainText(product.shortDescription) || plainText(product.description);
+    plainText(product.metaDescription) ||
+    plainText(product.shortDescription) ||
+    plainText(product.description);
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -109,10 +112,45 @@ export default async function ProductDetailPage({ params }: Props) {
     ],
   };
 
+  const faqEntries = parseProductFaqs(product.faqs);
+  const faqLd =
+    faqEntries.length > 0
+      ? {
+          '@context': 'https://schema.org',
+          '@type': 'FAQPage',
+          mainEntity: faqEntries.map((faq) => ({
+            '@type': 'Question',
+            name: faq.question,
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: faq.answer,
+            },
+          })),
+        }
+      : null;
+
   return (
     <>
-      <JsonLd data={[jsonLd, breadcrumbLd]} />
+      <JsonLd data={faqLd ? [jsonLd, breadcrumbLd, faqLd] : [jsonLd, breadcrumbLd]} />
       <ProductDetailClient />
     </>
   );
+}
+
+/** Parse "Question | Answer" lines from product FAQs field. */
+function parseProductFaqs(raw: string | null | undefined): Array<{ question: string; answer: string }> {
+  if (!raw?.trim()) return [];
+  return raw
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const sep = line.indexOf('|');
+      if (sep <= 0) return null;
+      const question = line.slice(0, sep).trim();
+      const answer = line.slice(sep + 1).trim();
+      if (!question || !answer) return null;
+      return { question, answer };
+    })
+    .filter((item): item is { question: string; answer: string } => item != null);
 }

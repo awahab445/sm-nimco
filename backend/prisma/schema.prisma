@@ -15,6 +15,17 @@ model Product {
   type             String
   description      String?
   shortDescription String?                       @map("short_description")
+  seoTitle           String?                       @map("seo_title")
+  metaDescription    String?                       @map("meta_description")
+  tasteProfile       String?                       @map("taste_profile")
+  ingredients        String?
+  servingSuggestions String?                       @map("serving_suggestions")
+  storageInstructions String?                      @map("storage_instructions")
+  dietaryHighlights  String?                       @map("dietary_highlights")
+  spiceLevel         String?                       @map("spice_level")
+  faqs               String?
+  focusKeywords      String?                       @map("focus_keywords")
+  productTags        String?                       @map("product_tags")
   basePrice        Decimal                       @map("base_price") @db.Decimal(10, 2)
   cost               Decimal?                      @db.Decimal(10, 2)
   weight             Decimal?                      @db.Decimal(10, 2)
