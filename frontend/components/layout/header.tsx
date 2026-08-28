@@ -390,20 +390,24 @@ export function Header({ theme = 'default' }: { theme?: StoreThemeCode }) {
   const smNimcoBrandLogo = (
     <Link
       href="/"
-      className="site-header__logo inline-flex max-w-full items-center gap-3 bg-transparent outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+      className="site-header__logo group inline-flex max-w-full items-center gap-2 bg-transparent outline-none focus-visible:ring-2 focus-visible:ring-ring/40 sm:gap-2.5"
       aria-label={`${STORE_NAME} home`}
     >
-      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-2 border-[var(--brand-gold-primary,#d4af37)] bg-[var(--brand-purple-dark,#1e1035)] shadow-md">
-        <span className="font-heading text-xl font-extrabold text-[var(--brand-gold-primary,#d4af37)]">
-          SM
-        </span>
-      </div>
-      <div className="min-w-0 text-left leading-tight">
-        <span className="site-header__store-name block font-heading text-xl font-extrabold text-[var(--brand-purple-dark,#1e1035)]">
+      <Image
+        alt=""
+        className="h-9 w-auto shrink-0 object-contain sm:h-10"
+        height={42}
+        priority
+        src={logoSrc}
+        unoptimized={logoSrc.startsWith('http')}
+        width={42}
+      />
+      <div className="flex min-w-0 flex-col justify-center text-left leading-none">
+        <span className="truncate font-heading text-xs font-bold uppercase tracking-wider text-[var(--brand-gold-primary,#d4af37)] sm:text-sm">
           SM NIMCO
         </span>
-        <span className="block text-[10px] font-bold uppercase tracking-widest text-[var(--brand-gold-hover,#b89628)]">
-          &amp; Sweets House
+        <span className="mt-0.5 truncate text-[9px] font-medium uppercase tracking-widest text-[color-mix(in_srgb,var(--navbar-foreground,#1e1035)_60%,transparent)] sm:text-[10px]">
+          &amp; SWEETS
         </span>
       </div>
     </Link>
@@ -655,7 +659,11 @@ export function Header({ theme = 'default' }: { theme?: StoreThemeCode }) {
         <div className="relative flex min-h-[3.25rem] w-full items-center justify-between px-2.5 py-2 sm:px-4">
           <div className="z-10 flex w-11 shrink-0 items-center justify-start">{mobileMenuButton}</div>
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-14 sm:px-16">
-            <div className="pointer-events-auto max-w-[min(100%,14.5rem)]">{brandLogo}</div>
+            <div
+              className={`pointer-events-auto ${isSmNimco ? 'max-w-[min(100%,17.5rem)]' : 'max-w-[min(100%,14.5rem)]'}`}
+            >
+              {brandLogo}
+            </div>
           </div>
           <div className="z-10 flex shrink-0 items-center justify-end gap-4 pr-0.5">
             <SearchBar />

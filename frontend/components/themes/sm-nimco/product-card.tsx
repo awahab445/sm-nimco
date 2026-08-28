@@ -139,10 +139,10 @@ export function SmNimcoProductCard({
     <>
       <div className="sm-nimco-product-card group flex flex-col justify-between overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all">
         <div>
-          <div className="relative mb-3 flex aspect-square w-full items-center justify-center overflow-hidden rounded-t-xl bg-[#f8f6f0] p-2">
+          <div className="relative mb-3 aspect-square w-full overflow-hidden rounded-t-xl bg-[#f8f6f0]">
             {badge ? (
               <span
-                className={`absolute left-3 top-3 z-10 rounded px-2 py-0.5 text-[10px] font-bold uppercase ${
+                className={`pointer-events-none absolute left-3 top-3 z-10 rounded px-2 py-0.5 text-[10px] font-bold uppercase ${
                   badge === 'HOT'
                     ? 'bg-red-600 text-white'
                     : 'bg-[var(--brand-gold-primary,#d4af37)] text-[var(--brand-purple-dark,#1e1035)]'
@@ -155,31 +155,44 @@ export function SmNimcoProductCard({
               productId={product.id}
               variant="icon"
               stopPropagation
-              className="absolute right-3 top-3 z-10 inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--brand-purple-dark,#1e1035)]/10 bg-white/95 text-[var(--brand-purple-dark,#1e1035)] shadow-sm transition-colors hover:border-[var(--brand-gold-primary,#d4af37)] hover:text-[var(--brand-gold-hover,#b89628)]"
+              className="absolute right-3 top-3 z-20 inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--brand-purple-dark,#1e1035)]/10 bg-white/95 text-[var(--brand-purple-dark,#1e1035)] shadow-sm transition-colors hover:border-[var(--brand-gold-primary,#d4af37)] hover:text-[var(--brand-gold-hover,#b89628)]"
               iconClassName="h-[18px] w-[18px]"
             />
-            {imageUrl ? (
-              <div className="relative h-full w-full">
-                <StorefrontImage
-                  src={imageUrl}
-                  fallbackSrcs={imageSrcs.slice(1)}
-                  alt={imageAlt(image, product.name)}
-                  fill
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                  className="object-contain object-center transition-transform duration-300 group-hover:scale-105"
-                  loading="lazy"
-                  quality={70}
-                />
-              </div>
-            ) : (
-              <span className="flex h-full w-full items-center justify-center font-heading text-3xl font-bold text-[var(--brand-purple-dark,#1e1035)]">
-                {product.name.slice(0, 1)}
-              </span>
-            )}
+            <Link
+              href={`/products/${product.slug}`}
+              className="relative z-0 flex h-full w-full cursor-pointer items-center justify-center p-2"
+              aria-label={`View ${product.name}`}
+            >
+              {imageUrl ? (
+                <div className="relative h-full w-full overflow-hidden">
+                  <StorefrontImage
+                    src={imageUrl}
+                    fallbackSrcs={imageSrcs.slice(1)}
+                    alt={imageAlt(image, product.name)}
+                    fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                    className="object-contain object-center transition-transform duration-300 group-hover:scale-105"
+                    loading="lazy"
+                    quality={70}
+                  />
+                </div>
+              ) : (
+                <span className="flex h-full w-full items-center justify-center font-heading text-3xl font-bold text-[var(--brand-purple-dark,#1e1035)]">
+                  {product.name.slice(0, 1)}
+                </span>
+              )}
+            </Link>
           </div>
           <div className="px-4">
-          <h3 className="line-clamp-2 font-bold text-[var(--brand-purple-dark,#1e1035)]">{product.name}</h3>
-          <p className="mt-1 line-clamp-2 text-xs text-gray-500">{description}</p>
+            <Link
+              href={`/products/${product.slug}`}
+              className="cursor-pointer transition-colors hover:text-[var(--brand-gold-hover,#b89628)]"
+            >
+              <h3 className="line-clamp-2 font-bold text-[var(--brand-purple-dark,#1e1035)]">
+                {product.name}
+              </h3>
+            </Link>
+            <p className="mt-1 line-clamp-2 text-xs text-gray-500">{description}</p>
           {showVariantSelector ? (
             <div
               className="my-3 flex flex-wrap gap-1"
@@ -212,7 +225,7 @@ export function SmNimcoProductCard({
           </div>
         </div>
 
-        <div className="flex flex-col gap-3 border-t px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
+        <div className="relative z-10 flex flex-col gap-3 border-t px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
           <span className="shrink-0 text-base font-bold text-[var(--brand-purple-dark,#1e1035)]">
             {formatPrice(displayPrice)}
           </span>
@@ -238,10 +251,6 @@ export function SmNimcoProductCard({
             ) : null}
           </div>
         </div>
-
-        <Link href={`/products/${product.slug}`} className="sr-only">
-          View {product.name}
-        </Link>
       </div>
 
       <ProductQuickView

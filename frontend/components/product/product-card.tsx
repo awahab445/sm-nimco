@@ -144,7 +144,7 @@ export function ProductCard({
           : 'aspect-[3/4]'
       }`}
     >
-      <Link href={`/products/${product.slug}`} className="absolute inset-0 block">
+      <Link href={`/products/${product.slug}`} className="absolute inset-0 block cursor-pointer">
         {imageUrl ? (
           <StorefrontImage
             src={imageUrl}
@@ -156,7 +156,7 @@ export function ProductCard({
                 ? '(min-width: 768px) 12rem, 100vw'
                 : '(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 50vw'
             }
-            className="h-full w-full object-contain object-center transition-transform duration-500 ease-out group-hover:scale-105"
+            className="h-full w-full object-contain object-center transition-transform duration-300 ease-out group-hover:scale-105"
             loading="lazy"
             quality={70}
           />
@@ -187,7 +187,7 @@ export function ProductCard({
           : 'px-0.5 pt-3 pb-1'
       }`}
     >
-      <Link href={`/products/${product.slug}`}>
+      <Link href={`/products/${product.slug}`} className="cursor-pointer">
         <h3
           className={`font-display font-medium leading-snug text-foreground transition-colors group-hover:text-[var(--navbar-link-hover,var(--primary-hover))] ${
             isList

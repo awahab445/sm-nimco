@@ -5,6 +5,7 @@ import { StorefrontSiteConfigController } from './controllers/storefront-site-co
 import { AdminSocialLinksController } from './controllers/admin-social-links.controller';
 import { StorefrontSocialLinksController } from './controllers/storefront-social-links.controller';
 import { SiteConfigService } from './services/site-config.service';
+import { SiteConfigLogoImageService } from './services/site-config-logo-image.service';
 import { SocialLinksService } from './services/social-links.service';
 import { AdminRbacService } from '../admin/services/admin-rbac.service';
 import { AdminJwtAuthGuard } from '../admin/guards/admin-jwt-auth.guard';
@@ -20,6 +21,7 @@ import { AdminPermissionsGuard } from '../admin/guards/admin-permissions.guard';
   ],
   providers: [
     SiteConfigService,
+    SiteConfigLogoImageService,
     SocialLinksService,
     AdminRbacService,
     AdminJwtAuthGuard,

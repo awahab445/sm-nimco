@@ -133,7 +133,9 @@ export class ProductService {
       throw new BadRequestException('At least one product is required.');
     }
     if (dtos.length > 500) {
-      throw new BadRequestException('A maximum of 500 products can be uploaded at once.');
+      throw new BadRequestException(
+        'A maximum of 500 products can be uploaded at once.',
+      );
     }
 
     const normalizedSkus = dtos.map((dto) => String(dto.sku ?? '').trim());
@@ -163,8 +165,11 @@ export class ProductService {
       existingProducts.map((p) => [p.sku, p] as const),
     );
 
-    const toCreateDtos: Array<{ dto: CreateProductDto; sku: string; index: number }> =
-      [];
+    const toCreateDtos: Array<{
+      dto: CreateProductDto;
+      sku: string;
+      index: number;
+    }> = [];
     const toUpdate: Array<{ id: string; dto: CreateProductDto }> = [];
 
     for (let index = 0; index < dtos.length; index++) {

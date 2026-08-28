@@ -25,6 +25,7 @@
     "prisma:export-seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/export-seed-data.ts",
     "admin:reset-password": "node scripts/reset-admin-password.cjs",
     "export:meta-commerce": "ts-node --compiler-options {\"module\":\"CommonJS\"} scripts/export-meta-commerce-catalog.ts",
+    "logo:process": "node scripts/process-site-logo.cjs",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
     "test:watch": "jest --watch",
