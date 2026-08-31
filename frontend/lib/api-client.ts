@@ -418,6 +418,8 @@ export interface StorefrontSiteConfig {
   logoHeight: number;
   announcementText: string;
   showAnnouncement: boolean;
+  /** Optional digits-only WhatsApp order number (E.164 without +). */
+  whatsappNumber?: string | null;
 }
 
 export interface StorefrontStoreSettings {

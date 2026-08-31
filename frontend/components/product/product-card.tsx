@@ -14,6 +14,7 @@ import { getProductListDisplayPrice } from '@/lib/product-display-price';
 import { ShoppingBagIcon } from '@/components/icons/shopping-bag-icon';
 import { ProductQuickView } from '@/components/product/product-quick-view';
 import { WishlistToggleButton } from '@/components/product/wishlist-toggle-button';
+import { OrderOnWhatsAppButton } from '@/components/product/order-on-whatsapp-button';
 
 export { getVariantForCart } from '@/lib/product-cart-variant';
 
@@ -201,14 +202,38 @@ export function ProductCard({
       <p className={`text-sm ${isList ? 'mt-2' : 'mt-1.5'}`}>
         <span className="font-medium text-product-price">{formatPrice(displayPrice)}</span>
       </p>
+      <div
+        className={`flex flex-col gap-2 ${isList ? 'mt-3 md:mt-4' : 'mt-2.5'}`}
+        onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => e.stopPropagation()}
+      >
+        {inStock ? (
+          <button
+            type="button"
+            onClick={handleAddToCart}
+            disabled={!canAddToCart || adding}
+            className="btn-pdp-atc flex h-10 w-full items-center justify-center rounded-full text-xs font-bold uppercase tracking-wider disabled:cursor-not-allowed disabled:opacity-50 sm:text-sm"
+          >
+            {added ? 'Added to cart' : adding ? 'Adding…' : 'Add to cart'}
+          </button>
+        ) : (
+          <button
+            type="button"
+            disabled
+            className="btn-pdp-atc flex h-10 w-full cursor-not-allowed items-center justify-center rounded-full text-xs font-bold uppercase tracking-wider opacity-50 sm:text-sm"
+          >
+            Out of stock
+          </button>
+        )}
+        <OrderOnWhatsAppButton
+          productName={product.name}
+          price={displayPrice}
+          quantity={1}
+        />
+      </div>
       {isList && product.shortDescription ? (
         <p className="mt-2 hidden text-sm text-muted-foreground line-clamp-2 md:block">
           {product.shortDescription}
-        </p>
-      ) : null}
-      {added ? (
-        <p className="mt-2 text-[11px] font-medium uppercase tracking-wider text-[var(--navbar-link-hover,var(--primary-hover))]">
-          Added to cart
         </p>
       ) : null}
     </div>

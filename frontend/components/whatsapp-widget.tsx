@@ -3,7 +3,7 @@
 import { useStoreWhatsAppUrl } from '@/lib/whatsapp';
 
 const WHATSAPP_MESSAGE =
-  'Hi SM NIMCO & Sweets, I have a query regarding your products!';
+  'Hi SM Nimco & Sweets, I have a query regarding your products!';
 
 function WhatsAppIcon({ className }: { className?: string }) {
   return (

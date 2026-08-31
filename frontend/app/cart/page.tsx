@@ -6,7 +6,7 @@ import { useCartStore } from '@/lib/cart.store';
 import { useAuthStore } from '@/lib/auth.store';
 import { formatPrice, APP_CURRENCY, resolveDisplayCurrency } from '@/lib/currency';
 import { CartLineItemThumb } from '@/components/cart/cart-line-item-thumb';
-import { CartShippingEstimate } from '@/components/cart/cart-shipping-estimate';
+import { CartShippingEstimator } from '@/components/cart/cart-shipping-estimator';
 import { CouponApplySection } from '@/components/coupon/coupon-apply-section';
 import { ShoppingBagIcon } from '@/components/icons/shopping-bag-icon';
 import {
@@ -459,6 +459,13 @@ export default function CartPage() {
                   }}
                 />
               </div>
+              <CartShippingEstimator
+                items={items}
+                subtotal={subtotal}
+                currency={displayCurrency}
+                customerGroupId={customerGroupId}
+                defaultOpen
+              />
               {meetsMinimumOrder ? (
                 <Link
                   href={cartId ? `/checkout?cartId=${cartId}` : '/cart'}
@@ -476,12 +483,6 @@ export default function CartPage() {
                 </button>
               )}
             </div>
-              <CartShippingEstimate
-                items={items}
-                subtotal={subtotal}
-                currency={displayCurrency}
-                customerGroupId={customerGroupId}
-              />
             </div>
           </div>
         </div>

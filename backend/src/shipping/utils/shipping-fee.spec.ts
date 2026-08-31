@@ -196,14 +196,14 @@ describe('Karachi local delivery', () => {
     expect(isKarachiCity('North Karachi')).toBe(false);
   });
 
-  it('charges Rs. 250 at or below 5 billable kg', () => {
-    expect(calculateKarachiShippingFee(1)).toBe(250);
-    expect(calculateKarachiShippingFee(4.1)).toBe(250);
-    expect(calculateKarachiShippingFee(5)).toBe(250);
+  it('charges Rs. 200 at or below 7 billable kg', () => {
+    expect(calculateKarachiShippingFee(1)).toBe(200);
+    expect(calculateKarachiShippingFee(6.1)).toBe(200);
+    expect(calculateKarachiShippingFee(7)).toBe(200);
   });
 
-  it('charges Rs. 300 above 5 billable kg', () => {
-    expect(calculateKarachiShippingFee(5.1)).toBe(300);
-    expect(calculateKarachiShippingFee(12)).toBe(300);
+  it('charges Rs. 250 above 7 billable kg', () => {
+    expect(calculateKarachiShippingFee(7.1)).toBe(250);
+    expect(calculateKarachiShippingFee(12)).toBe(250);
   });
 });

@@ -102,21 +102,21 @@ export function toBillableKg(weightInKg: number): number {
   return Math.ceil(weight);
 }
 
-export const KARACHI_STANDARD_METHOD_CODE = 'karachi_standard';
-export const KARACHI_STANDARD_METHOD_NAME = 'Standard Karachi Delivery';
-export const KARACHI_FREE_DELIVERY_THRESHOLD = 3000;
-export const KARACHI_FLAT_RATE_UP_TO_5KG = 250;
-export const KARACHI_FLAT_RATE_OVER_5KG = 300;
+export const KARACHI_STANDARD_METHOD_CODE = 'standard_karachi';
+export const KARACHI_STANDARD_METHOD_NAME = 'Standard Delivery';
+export const KARACHI_FREE_DELIVERY_THRESHOLD = 2000;
+export const KARACHI_FLAT_RATE_UP_TO_7KG = 200;
+export const KARACHI_FLAT_RATE_OVER_7KG = 250;
 
 export function isKarachiCity(city?: string | null): boolean {
   return city?.trim().toLowerCase() === 'karachi';
 }
 
-/** Karachi local delivery: ≤5 billable kg → Rs. 250; above 5 kg → Rs. 300. */
+/** Karachi local delivery: ≤7 billable kg → Rs. 200; above 7 kg → Rs. 250. */
 export function calculateKarachiShippingFee(weightInKg: number): number {
   const billableKg = toBillableKg(weightInKg);
   return roundShippingFee(
-    billableKg <= 5 ? KARACHI_FLAT_RATE_UP_TO_5KG : KARACHI_FLAT_RATE_OVER_5KG,
+    billableKg <= 7 ? KARACHI_FLAT_RATE_UP_TO_7KG : KARACHI_FLAT_RATE_OVER_7KG,
   );
 }
 

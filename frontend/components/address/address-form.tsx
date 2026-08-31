@@ -66,15 +66,14 @@ export function AddressForm({
   const cityDisabled = !formData.state;
 
   const validateAddress = (addr: Address): boolean => {
-    const phone = addr.phone?.trim() || '';
-    if (phone.length < 10) return false;
     return !!(
-      addr.firstName &&
-      addr.lastName &&
-      addr.addressLine1 &&
-      addr.city &&
-      addr.state &&
-      addr.country
+      addr.firstName?.trim() &&
+      addr.lastName?.trim() &&
+      addr.addressLine1?.trim() &&
+      addr.city?.trim() &&
+      addr.state?.trim() &&
+      addr.country?.trim() &&
+      addr.phone?.trim()
     );
   };
 

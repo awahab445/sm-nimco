@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { productApi, inventoryApi, type Product } from '@/lib/api-client';
-import { ProductCard, getVariantForCart } from '@/components/product/product-card';
+import { StorefrontProductCard, getVariantForCart } from '@/components/product/storefront-product-card';
 
 type Props = {
   productId: string;
@@ -55,11 +55,11 @@ export function RelatedProductsShelf({ productId, categoryId }: Props) {
         {items.map((product) => {
           const variant = getVariantForCart(product);
           return (
-            <ProductCard
+            <StorefrontProductCard
               key={product.id}
               product={product}
-              showViewOnly
               availableQuantity={variant ? availability[variant.id] : undefined}
+              availabilityByVariant={availability}
             />
           );
         })}

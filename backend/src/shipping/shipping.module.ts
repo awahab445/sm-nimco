@@ -21,6 +21,8 @@ import { StoreSettingsModule } from '../store-settings/store-settings.module';
 import { AdminJwtAuthGuard } from '../admin/guards/admin-jwt-auth.guard';
 import { AdminPermissionsGuard } from '../admin/guards/admin-permissions.guard';
 import { AdminRbacService } from '../admin/services/admin-rbac.service';
+import { ZoneConfigService } from './services/zone-config.service';
+import { AdminZoneConfigController } from './controllers/admin-zone-config.controller';
 
 @Module({
   imports: [CatalogModule, AuthModule, StoreSettingsModule],
@@ -31,12 +33,14 @@ import { AdminRbacService } from '../admin/services/admin-rbac.service';
     AdminShippingRatesController,
     CourierCityController,
     AdminCourierZoneController,
+    AdminZoneConfigController,
   ],
   providers: [
     ShippingService,
     ShippingRateService,
     CourierService,
     CourierCityService,
+    ZoneConfigService,
     ShippingEligibilityEvaluator,
     ShippingEventHandlers,
     AdminRbacService,
@@ -48,6 +52,7 @@ import { AdminRbacService } from '../admin/services/admin-rbac.service';
     ShippingRateService,
     CourierService,
     CourierCityService,
+    ZoneConfigService,
     ShippingEligibilityEvaluator,
   ],
 })

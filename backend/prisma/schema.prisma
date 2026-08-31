@@ -1072,6 +1072,8 @@ model StoreSettings {
   freeDeliveryThreshold  Decimal  @default(2000) @map("free_delivery_threshold") @db.Decimal(12, 2)
   /// GST percentage applied on top of calculated shipping (e.g. 18 → fee × 1.18).
   shippingGstPercentage  Decimal  @default(18) @map("shipping_gst_percentage") @db.Decimal(5, 2)
+  /// Nationwide Economy & Overland weight-tier config (JSON).
+  shippingZoneConfig     Json?    @map("shipping_zone_config")
   updatedAt              DateTime @updatedAt @map("updated_at")
   updatedByAdminUserId   String?  @map("updated_by_admin_user_id")
 

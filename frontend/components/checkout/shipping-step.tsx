@@ -1,8 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useCheckout } from '@/lib/checkout-context';
-import { shippingApi } from '@/lib/api-client';
+import { shippingApi, storeSettingsApi } from '@/lib/api-client';
+import { pickDefaultShippingMethodId } from '@/lib/hooks/use-pakistan-address-options';
+import { getShippingEstimatePreference } from '@/lib/shipping-estimate-preference';
+import { shippingDeliveryLabel } from '@/lib/shipping-delivery-label';
 import { formatPrice } from '@/lib/currency';
 import { storefrontUi } from '@/lib/storefront-ui';
 
@@ -11,25 +14,47 @@ interface ShippingStepProps {
   onBack: () => void;
 }
 
+type ShippingOptionRow = {
+  methodId: string;
+  methodCode: string;
+  methodName: string;
+  cost: number;
+  currency: string;
+  estimatedDays?: number;
+  description?: string;
+  originalCost?: number;
+  effectivePrice?: number;
+  isFreeShipping?: boolean;
+};
+
 export function ShippingStep({ onNext, onBack }: ShippingStepProps) {
   const { checkout, updateShippingMethod, isLoading, error } = useCheckout();
-  const [shippingOptions, setShippingOptions] = useState<Array<{
-    methodId: string;
-    methodCode: string;
-    methodName: string;
-    cost: number;
-    currency: string;
-    estimatedDays?: number;
-    description?: string;
-    originalCost?: number;
-    effectivePrice?: number;
-    isFreeShipping?: boolean;
-  }>>([]);
+  const [shippingOptions, setShippingOptions] = useState<ShippingOptionRow[]>([]);
   const [selectedMethodId, setSelectedMethodId] = useState<string | null>(
     checkout?.shippingMethod?.methodId || null,
   );
   const [loadingOptions, setLoadingOptions] = useState(false);
   const [optionsError, setOptionsError] = useState<string | null>(null);
+  const [freeDeliveryThreshold, setFreeDeliveryThreshold] = useState(2000);
+
+  useEffect(() => {
+    let cancelled = false;
+    storeSettingsApi
+      .getStoreSettings()
+      .then((res) => {
+        if (cancelled) return;
+        const freeDelivery = Number(res.data.freeDeliveryThreshold);
+        if (Number.isFinite(freeDelivery) && freeDelivery >= 0) {
+          setFreeDeliveryThreshold(freeDelivery);
+        }
+      })
+      .catch(() => {
+        /* keep default */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     const loadShippingOptions = async () => {
@@ -58,20 +83,41 @@ export function ShippingStep({ onNext, onBack }: ShippingStepProps) {
           customerGroupId: checkout.customerGroupId,
         });
         setShippingOptions(options);
-        
-        // Auto-select first option if none selected
+
         if (!selectedMethodId && options.length > 0) {
-          setSelectedMethodId(options[0].methodId);
+          const preferredCode = getShippingEstimatePreference()?.methodCode;
+          const preferred = preferredCode
+            ? options.find((o) => o.methodCode === preferredCode)
+            : undefined;
+          setSelectedMethodId(
+            preferred?.methodId ?? pickDefaultShippingMethodId(options),
+          );
         }
       } catch (err: unknown) {
-        setOptionsError(err instanceof Error ? err.message : 'Failed to load shipping options');
+        setOptionsError(
+          err instanceof Error ? err.message : 'Failed to load shipping options',
+        );
       } finally {
         setLoadingOptions(false);
       }
     };
 
     void loadShippingOptions();
-  }, [checkout?.shippingAddress, checkout?.items, checkout?.subtotal, checkout?.currency, checkout?.customerGroupId, selectedMethodId]);
+  }, [
+    checkout?.shippingAddress,
+    checkout?.items,
+    checkout?.subtotal,
+    checkout?.currency,
+    checkout?.customerGroupId,
+  ]);
+
+  const qualifiesForFreeDelivery = useMemo(() => {
+    const subtotal = Number(checkout?.subtotal ?? 0);
+    return (
+      (freeDeliveryThreshold > 0 && subtotal >= freeDeliveryThreshold) ||
+      shippingOptions.some((o) => o.isFreeShipping === true)
+    );
+  }, [checkout?.subtotal, freeDeliveryThreshold, shippingOptions]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,19 +127,22 @@ export function ShippingStep({ onNext, onBack }: ShippingStepProps) {
       return;
     }
 
-    const selectedOption = shippingOptions.find((opt) => opt.methodId === selectedMethodId);
+    const selectedOption = shippingOptions.find(
+      (opt) => opt.methodId === selectedMethodId,
+    );
     if (!selectedOption) return;
+
+    const effectiveCost =
+      qualifiesForFreeDelivery || selectedOption.isFreeShipping
+        ? 0
+        : Number(selectedOption.effectivePrice ?? selectedOption.cost);
 
     try {
       await updateShippingMethod({
         methodCode: selectedOption.methodCode,
         methodId: selectedOption.methodId,
         methodName: selectedOption.methodName,
-        cost: Number(
-          selectedOption.isFreeShipping
-            ? (selectedOption.effectivePrice ?? 0)
-            : (selectedOption.effectivePrice ?? selectedOption.cost),
-        ),
+        cost: effectiveCost,
         currency: selectedOption.currency,
         estimatedDays: selectedOption.estimatedDays || 0,
       });
@@ -106,7 +155,9 @@ export function ShippingStep({ onNext, onBack }: ShippingStepProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
-        <h2 className="font-display mb-4 text-2xl font-semibold tracking-tight text-foreground">Shipping Method</h2>
+        <h2 className="font-display mb-4 text-2xl font-semibold tracking-tight text-foreground">
+          Shipping Method
+        </h2>
 
         {loadingOptions ? (
           <div className="py-8 text-center">
@@ -123,63 +174,82 @@ export function ShippingStep({ onNext, onBack }: ShippingStepProps) {
           </div>
         ) : (
           <div className="space-y-3">
-            {shippingOptions.map((option) => (
-              <label
-                key={option.methodId}
-                className={`block cursor-pointer rounded-sm border p-4 transition-colors ${
-                  selectedMethodId === option.methodId
-                    ? `${storefrontUi.optionSelected} ring-1 ring-ring`
-                    : storefrontUi.optionIdle
-                }`}
-              >
-                <div className="flex items-start">
-                  <input
-                    type="radio"
-                    name="shipping-method"
-                    value={option.methodId}
-                    checked={selectedMethodId === option.methodId}
-                    onChange={(e) => setSelectedMethodId(e.target.value)}
-                    className="mt-1 h-4 w-4 text-primary focus:ring-ring/30"
-                  />
-                  <div className="ml-3 flex-1">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <div className="font-medium text-foreground">{option.methodName}</div>
-                        {option.description && (
-                          <div className="mt-1 text-sm text-muted-foreground">{option.description}</div>
-                        )}
-                        {option.estimatedDays && (
-                          <div className="mt-1 text-sm text-muted-foreground">
-                            Estimated delivery: {option.estimatedDays} day
-                            {option.estimatedDays !== 1 ? 's' : ''}
+            {shippingOptions.map((option) => {
+              const optionIsFree =
+                qualifiesForFreeDelivery ||
+                option.isFreeShipping === true ||
+                Number(option.effectivePrice ?? option.cost) === 0;
+              const original = Number(
+                option.originalCost ??
+                  (optionIsFree && Number(option.cost) > 0 ? option.cost : 0),
+              );
+              const showStrike = optionIsFree && original > 0;
+              return (
+                <label
+                  key={option.methodId}
+                  className={`block cursor-pointer rounded-sm border p-4 transition-colors ${
+                    selectedMethodId === option.methodId
+                      ? `${storefrontUi.optionSelected} ring-1 ring-ring`
+                      : storefrontUi.optionIdle
+                  }`}
+                >
+                  <div className="flex items-start">
+                    <input
+                      type="radio"
+                      name="shipping-method"
+                      value={option.methodId}
+                      checked={selectedMethodId === option.methodId}
+                      onChange={(e) => setSelectedMethodId(e.target.value)}
+                      className="mt-1 h-4 w-4 text-primary focus:ring-ring/30"
+                    />
+                    <div className="ml-3 flex-1">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <div className="font-medium text-foreground">
+                            {option.methodName}
                           </div>
-                        )}
-                      </div>
-                      <div className="ml-4 text-lg font-semibold text-foreground">
-                        {option.isFreeShipping ? (
-                          <span className="inline-flex items-baseline gap-2">
-                            {(option.originalCost ?? 0) > 0 ? (
+                          {option.description && (
+                            <div className="mt-1 text-sm text-muted-foreground">
+                              {option.description}
+                            </div>
+                          )}
+                          {(option.methodCode === 'economy_shipping' ||
+                            option.methodCode === 'overland_shipping' ||
+                            option.estimatedDays) && (
+                            <div className="mt-1 text-sm text-muted-foreground">
+                              Estimated delivery:{' '}
+                              {shippingDeliveryLabel(option.methodCode) ??
+                                `${option.estimatedDays} day${option.estimatedDays !== 1 ? 's' : ''}`}
+                            </div>
+                          )}
+                        </div>
+                        <div className="ml-4 flex items-center gap-2 text-lg font-semibold text-foreground">
+                          {showStrike ? (
+                            <>
                               <span className="text-sm font-normal text-muted-foreground line-through">
-                                {formatPrice(
-                                  Number(option.originalCost),
-                                  option.currency,
-                                )}
+                                {formatPrice(original, option.currency)}
                               </span>
-                            ) : null}
-                            <span className="text-success">FREE</span>
-                          </span>
-                        ) : (
-                          formatPrice(
-                            Number(option.effectivePrice ?? option.cost),
-                            option.currency,
-                          )
-                        )}
+                              <span className="text-emerald-700 dark:text-emerald-400">
+                                FREE
+                              </span>
+                            </>
+                          ) : optionIsFree ? (
+                            <span className="text-emerald-700 dark:text-emerald-400">
+                              FREE
+                            </span>
+                          ) : (
+                            formatPrice(
+                              Number(option.effectivePrice ?? option.cost),
+                              option.currency,
+                            )
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              </label>
-            ))}
+                </label>
+              );
+            })}
           </div>
         )}
       </div>
@@ -209,4 +279,3 @@ export function ShippingStep({ onNext, onBack }: ShippingStepProps) {
     </form>
   );
 }
-

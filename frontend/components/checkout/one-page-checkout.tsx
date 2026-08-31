@@ -19,14 +19,10 @@ import { formatVariantAttributes } from '@/lib/format-variant-attributes';
 import { trackAddPaymentInfo, trackAddShippingInfo } from '@/lib/analytics/events';
 import { checkoutItemToGa4Item } from '@/lib/analytics/mappers';
 import { PAKISTAN_PROVINCES } from '@/lib/constants/locations';
+import { pickDefaultShippingMethodId } from '@/lib/hooks/use-pakistan-address-options';
+import { getShippingEstimatePreference } from '@/lib/shipping-estimate-preference';
 
 type CityOption = { id: string; name: string };
-
-const KARACHI_FREE_DELIVERY_THRESHOLD = 3000;
-
-function isKarachiCity(city?: string | null): boolean {
-  return city?.trim().toLowerCase() === 'karachi';
-}
 
 function CheckoutLineThumb({
   imageUrl,
@@ -68,6 +64,7 @@ const emptyAddress: Address = {
   state: '',
   postalCode: '',
   country: 'PK',
+  phone: '',
   label: '',
 };
 
@@ -94,16 +91,70 @@ function formatAddressLine(a: AddressWithId): string {
 
 function validateAddress(addr: Address): boolean {
   const country = addr.country?.trim() || 'PK';
-  const phone = addr.phone?.trim() || '';
-  if (phone.length < 10) return false;
   return !!(
     addr.firstName?.trim() &&
     addr.lastName?.trim() &&
     addr.addressLine1?.trim() &&
     addr.city?.trim() &&
     addr.state?.trim() &&
-    country
+    country &&
+    addr.phone?.trim()
   );
+}
+
+type CheckoutValidationIssue = {
+  fieldId: string;
+  message: string;
+};
+
+function getAddressFieldIssues(
+  prefix: 'billing' | 'shipping',
+  addr: Address,
+): CheckoutValidationIssue[] {
+  const issues: CheckoutValidationIssue[] = [];
+  const push = (field: string, message: string, missing: boolean) => {
+    if (missing) issues.push({ fieldId: `${prefix}-${field}`, message });
+  };
+
+  push('firstName', 'First name is required.', !addr.firstName?.trim());
+  push('lastName', 'Last name is required.', !addr.lastName?.trim());
+  push('addressLine1', 'Address line 1 is required.', !addr.addressLine1?.trim());
+  push('state', 'Please select a province.', !addr.state?.trim());
+  push('city', 'Please select a city.', !addr.city?.trim());
+  push('phone', 'Phone number is required.', !addr.phone?.trim());
+  return issues;
+}
+
+function focusCheckoutField(fieldId: string) {
+  requestAnimationFrame(() => {
+    window.setTimeout(() => {
+      const el = document.getElementById(fieldId);
+      if (!el) return;
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (
+        el instanceof HTMLInputElement ||
+        el instanceof HTMLSelectElement ||
+        el instanceof HTMLTextAreaElement
+      ) {
+        el.focus({ preventScroll: true });
+      }
+    }, 150);
+  });
+}
+
+function focusCheckoutSection(sectionId: string, inputName?: string) {
+  requestAnimationFrame(() => {
+    window.setTimeout(() => {
+      const section = document.getElementById(sectionId);
+      section?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (inputName) {
+        const input = section?.querySelector<HTMLInputElement>(
+          `input[name="${inputName}"]`,
+        );
+        input?.focus({ preventScroll: true });
+      }
+    }, 150);
+  });
 }
 
 export function OnePageCheckout() {
@@ -169,6 +220,8 @@ export function OnePageCheckout() {
   const [loadingShipping, setLoadingShipping] = useState(false);
   const [shippingError, setShippingError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
+  const [validationIssue, setValidationIssue] =
+    useState<CheckoutValidationIssue | null>(null);
   const [showMinimumOrderModal, setShowMinimumOrderModal] = useState(false);
   const [minimumOrderAmount, setMinimumOrderAmount] = useState(DEFAULT_MIN_ORDER_VALUE);
   const [freeDeliveryThreshold, setFreeDeliveryThreshold] = useState(
@@ -188,6 +241,20 @@ export function OnePageCheckout() {
 
   const hasSavedAddresses = savedAddresses.length > 0;
   const showAddressForm = !isAuthenticated || !hasSavedAddresses || useSavedAddressForm;
+
+  // Prefill province/city from cart shipping estimator when address is empty
+  useEffect(() => {
+    const preferred = getShippingEstimatePreference();
+    if (!preferred?.province || !preferred?.city) return;
+    setBillingAddress((prev) => {
+      if (prev.state?.trim() || prev.city?.trim()) return prev;
+      return { ...prev, state: preferred.province!, city: preferred.city! };
+    });
+    setShippingAddress((prev) => {
+      if (prev.state?.trim() || prev.city?.trim()) return prev;
+      return { ...prev, state: preferred.province!, city: preferred.city! };
+    });
+  }, []);
 
   useEffect(() => {
     shippingApi.getProvinces().then(setApiProvinces).catch(() => {});
@@ -210,11 +277,19 @@ export function OnePageCheckout() {
       .getAddresses()
       .then((list) => {
         if (cancelled) return;
-        setSavedAddresses(list);
-        if (list.length > 0) {
+        // Legacy addresses may not have a phone — exclude them from checkout.
+        const contactableAddresses = list.filter((address) =>
+          validateAddress(address),
+        );
+        setSavedAddresses(contactableAddresses);
+        if (contactableAddresses.length > 0) {
           setUseSavedAddressForm(false);
-          const defaultBilling = list.find((a) => a.isDefaultBilling) ?? list[0];
-          const defaultShipping = list.find((a) => a.isDefaultShipping) ?? list[0];
+          const defaultBilling =
+            contactableAddresses.find((a) => a.isDefaultBilling) ??
+            contactableAddresses[0];
+          const defaultShipping =
+            contactableAddresses.find((a) => a.isDefaultShipping) ??
+            contactableAddresses[0];
           setSelectedBillingAddressId(defaultBilling.id);
           setSelectedShippingAddressId(defaultShipping.id);
           setBillingAddress(addressWithIdToAddress(defaultBilling));
@@ -410,11 +485,20 @@ export function OnePageCheckout() {
           setShippingOptions(options);
           const stillValid = options.some((o) => o.methodId === selectedShippingId);
           if (!stillValid && options.length > 0) {
-            const karachiOpt = options.find((o) => o.methodCode === 'karachi_standard');
-            const economyOpt = options.find((o) => o.methodCode === 'economy_shipping');
-            const overlandOpt = options.find((o) => o.methodCode === 'overland_shipping');
+            const preferredCode = getShippingEstimatePreference()?.methodCode;
+            const preferred = preferredCode
+              ? options.find((o) => o.methodCode === preferredCode)
+              : undefined;
+            const karachiOpt = options.find(
+              (o) =>
+                o.methodCode === 'standard_karachi' ||
+                o.methodCode === 'karachi_standard',
+            );
             setSelectedShippingId(
-              (karachiOpt ?? economyOpt ?? overlandOpt ?? options[0]).methodId,
+              preferred?.methodId ??
+                karachiOpt?.methodId ??
+                pickDefaultShippingMethodId(options) ??
+                options[0].methodId,
             );
           }
         }
@@ -457,12 +541,9 @@ export function OnePageCheckout() {
   );
   const displaySubtotal = parsedSubtotal;
   const displayDiscountTotal = parsedDiscount;
-  const effectiveFreeDeliveryThreshold = isKarachiCity(effectiveShippingAddress.city)
-    ? KARACHI_FREE_DELIVERY_THRESHOLD
-    : freeDeliveryThreshold;
   const qualifiesForFreeDelivery =
-    (effectiveFreeDeliveryThreshold > 0 &&
-      displaySubtotal >= effectiveFreeDeliveryThreshold) ||
+    (freeDeliveryThreshold > 0 &&
+      displaySubtotal >= freeDeliveryThreshold) ||
     Boolean(selectedShipping?.isFreeShipping);
   const displayShippingTotal = qualifiesForFreeDelivery
     ? 0
@@ -475,43 +556,75 @@ export function OnePageCheckout() {
   );
   const amountRemainingForFreeDelivery = Math.max(
     0,
-    effectiveFreeDeliveryThreshold - displaySubtotal,
+    freeDeliveryThreshold - displaySubtotal,
   );
-
-  const placeOrderDisabled =
-    isLoading ||
-    loadingShipping ||
-    !selectedShippingId ||
-    !selectedPaymentCode ||
-    !validateAddress(billingAddress) ||
-    !validateAddress(effectiveShippingAddress) ||
-    !isEmailValid(customerEmail);
 
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isLoading) return;
     setFormError(null);
+    setValidationIssue(null);
     clearError();
 
-    if (!validateAddress(billingAddress)) {
-      setFormError('Please fill in all required billing address fields.');
+    const issue = (() => {
+      if (!isEmailValid(customerEmail)) {
+        return {
+          fieldId: 'customer-email',
+          message: 'Please enter a valid email address.',
+        } satisfies CheckoutValidationIssue;
+      }
+      if (!showAddressForm) {
+        if (!validateAddress(billingAddress)) {
+          return {
+            fieldId: 'saved-billing',
+            message: 'Please choose a complete billing address with phone.',
+          } satisfies CheckoutValidationIssue;
+        }
+        if (!validateAddress(effectiveShippingAddress)) {
+          return {
+            fieldId: useSameAddress ? 'saved-billing' : 'saved-shipping',
+            message: useSameAddress
+              ? 'Please choose a complete billing address with phone.'
+              : 'Please choose a complete shipping address with phone.',
+          } satisfies CheckoutValidationIssue;
+        }
+      } else {
+        const billingIssues = getAddressFieldIssues('billing', billingAddress);
+        if (billingIssues.length > 0) return billingIssues[0];
+        if (!useSameAddress) {
+          const shippingIssues = getAddressFieldIssues('shipping', shippingAddress);
+          if (shippingIssues.length > 0) return shippingIssues[0];
+        }
+      }
+      if (!selectedShippingId || !selectedShipping) {
+        return {
+          fieldId: 'checkout-shipping-method',
+          message: 'Please select a shipping method.',
+        } satisfies CheckoutValidationIssue;
+      }
+      if (!selectedPaymentCode) {
+        return {
+          fieldId: 'checkout-payment',
+          message: 'Please select a payment method.',
+        } satisfies CheckoutValidationIssue;
+      }
+      return null;
+    })();
+
+    if (issue) {
+      setValidationIssue(issue);
+      setFormError(issue.message);
+      if (issue.fieldId.startsWith('checkout-')) {
+        focusCheckoutSection(
+          issue.fieldId,
+          issue.fieldId === 'checkout-shipping-method' ? 'shipping' : 'payment',
+        );
+      } else {
+        focusCheckoutField(issue.fieldId);
+      }
       return;
     }
-    if (!validateAddress(effectiveShippingAddress)) {
-      setFormError('Please fill in all required shipping address fields.');
-      return;
-    }
-    if (!selectedShippingId || !selectedShipping) {
-      setFormError('Please select a shipping method.');
-      return;
-    }
-    if (!selectedPaymentCode) {
-      setFormError('Please select a payment method.');
-      return;
-    }
-    if (!isEmailValid(customerEmail)) {
-      setFormError('Please enter a valid email address.');
-      return;
-    }
+
     if (displaySubtotal < minimumOrderAmount) {
       setShowMinimumOrderModal(true);
       return;
@@ -602,6 +715,29 @@ export function OnePageCheckout() {
   const labelClass = storefrontUi.labelMb;
   const isEmailLocked = isAuthenticated && !!user?.email;
 
+  const clearValidationIf = (fieldId: string) => {
+    setValidationIssue((current) =>
+      current?.fieldId === fieldId ? null : current,
+    );
+  };
+
+  const inputClassFor = (fieldId: string) =>
+    validationIssue?.fieldId === fieldId
+      ? `${inputClass} border-destructive ring-1 ring-destructive/40`
+      : inputClass;
+
+  const selectClassFor = (fieldId: string) =>
+    validationIssue?.fieldId === fieldId
+      ? `${storefrontUi.select} border-destructive ring-1 ring-destructive/40`
+      : storefrontUi.select;
+
+  const renderFieldError = (fieldId: string) =>
+    validationIssue?.fieldId === fieldId ? (
+      <p className="mt-1 text-xs text-destructive" role="alert">
+        {validationIssue.message}
+      </p>
+    ) : null;
+
   const emailField = (
     <div className="sm:col-span-2">
       <label htmlFor="customer-email" className={labelClass}>Email *</label>
@@ -611,12 +747,21 @@ export function OnePageCheckout() {
         required
         autoComplete="email"
         value={customerEmail}
-        onChange={(e) => setCustomerEmail(e.target.value)}
+        onChange={(e) => {
+          clearValidationIf('customer-email');
+          setCustomerEmail(e.target.value);
+        }}
         readOnly={isEmailLocked}
-        className={isEmailLocked ? `${inputClass} bg-muted cursor-not-allowed` : inputClass}
+        aria-invalid={validationIssue?.fieldId === 'customer-email'}
+        className={
+          isEmailLocked
+            ? `${inputClass} bg-muted cursor-not-allowed`
+            : inputClassFor('customer-email')
+        }
         placeholder="you@example.com"
         aria-readonly={isEmailLocked || undefined}
       />
+      {renderFieldError('customer-email')}
       {isEmailLocked && (
         <p className="mt-1 text-xs text-muted-foreground">
           Using the email on your account.
@@ -687,9 +832,14 @@ export function OnePageCheckout() {
                       type="text"
                       required
                       value={billingAddress.firstName}
-                      onChange={(e) => setBillingAddress({ ...billingAddress, firstName: e.target.value })}
-                      className={inputClass}
+                      onChange={(e) => {
+                        clearValidationIf('billing-firstName');
+                        setBillingAddress({ ...billingAddress, firstName: e.target.value });
+                      }}
+                      aria-invalid={validationIssue?.fieldId === 'billing-firstName'}
+                      className={inputClassFor('billing-firstName')}
                     />
+                    {renderFieldError('billing-firstName')}
                   </div>
                   <div>
                     <label htmlFor="billing-lastName" className={labelClass}>Last name *</label>
@@ -698,9 +848,14 @@ export function OnePageCheckout() {
                       type="text"
                       required
                       value={billingAddress.lastName}
-                      onChange={(e) => setBillingAddress({ ...billingAddress, lastName: e.target.value })}
-                      className={inputClass}
+                      onChange={(e) => {
+                        clearValidationIf('billing-lastName');
+                        setBillingAddress({ ...billingAddress, lastName: e.target.value });
+                      }}
+                      aria-invalid={validationIssue?.fieldId === 'billing-lastName'}
+                      className={inputClassFor('billing-lastName')}
                     />
+                    {renderFieldError('billing-lastName')}
                   </div>
                   <div className="sm:col-span-2">
                     <label htmlFor="billing-addressLine1" className={labelClass}>Address line 1 *</label>
@@ -709,11 +864,14 @@ export function OnePageCheckout() {
                       type="text"
                       required
                       value={billingAddress.addressLine1}
-                      onChange={(e) =>
-                        setBillingAddress({ ...billingAddress, addressLine1: e.target.value })
-                      }
-                      className={inputClass}
+                      onChange={(e) => {
+                        clearValidationIf('billing-addressLine1');
+                        setBillingAddress({ ...billingAddress, addressLine1: e.target.value });
+                      }}
+                      aria-invalid={validationIssue?.fieldId === 'billing-addressLine1'}
+                      className={inputClassFor('billing-addressLine1')}
                     />
+                    {renderFieldError('billing-addressLine1')}
                   </div>
                   <div className="sm:col-span-2">
                     <label htmlFor="billing-addressLine2" className={labelClass}>Address line 2 (optional)</label>
@@ -733,10 +891,12 @@ export function OnePageCheckout() {
                       id="billing-state"
                       required
                       value={billingAddress.state}
-                      onChange={(e) =>
-                        setBillingAddress({ ...billingAddress, state: e.target.value, city: '' })
-                      }
-                      className={storefrontUi.select}
+                      onChange={(e) => {
+                        clearValidationIf('billing-state');
+                        setBillingAddress({ ...billingAddress, state: e.target.value, city: '' });
+                      }}
+                      aria-invalid={validationIssue?.fieldId === 'billing-state'}
+                      className={selectClassFor('billing-state')}
                     >
                       <option value="">Select province</option>
                       {(apiProvinces.length > 0 ? apiProvinces : PAKISTAN_PROVINCES).map((province) => (
@@ -745,6 +905,7 @@ export function OnePageCheckout() {
                         </option>
                       ))}
                     </select>
+                    {renderFieldError('billing-state')}
                   </div>
                   <div>
                     <label htmlFor="billing-city" className={labelClass}>City *</label>
@@ -752,8 +913,12 @@ export function OnePageCheckout() {
                       id="billing-city"
                       required
                       value={billingAddress.city}
-                      onChange={(e) => setBillingAddress({ ...billingAddress, city: e.target.value })}
-                      className={storefrontUi.select}
+                      onChange={(e) => {
+                        clearValidationIf('billing-city');
+                        setBillingAddress({ ...billingAddress, city: e.target.value });
+                      }}
+                      aria-invalid={validationIssue?.fieldId === 'billing-city'}
+                      className={selectClassFor('billing-city')}
                     >
                       <option value="">Select city</option>
                       {allCities.map((city) => (
@@ -762,6 +927,7 @@ export function OnePageCheckout() {
                         </option>
                       ))}
                     </select>
+                    {renderFieldError('billing-city')}
                   </div>
                   <div>
                     <label htmlFor="billing-postalCode" className={labelClass}>Postal code (optional)</label>
@@ -793,12 +959,15 @@ export function OnePageCheckout() {
                       required
                       minLength={10}
                       value={billingAddress.phone || ''}
-                      onChange={(e) =>
-                        setBillingAddress({ ...billingAddress, phone: e.target.value })
-                      }
-                      className={inputClass}
+                      onChange={(e) => {
+                        clearValidationIf('billing-phone');
+                        setBillingAddress({ ...billingAddress, phone: e.target.value });
+                      }}
+                      aria-invalid={validationIssue?.fieldId === 'billing-phone'}
+                      className={inputClassFor('billing-phone')}
                       placeholder="03001234567"
                     />
+                    {renderFieldError('billing-phone')}
                   </div>
                 </div>
               </section>
@@ -860,11 +1029,14 @@ export function OnePageCheckout() {
                         type="text"
                         required
                         value={shippingAddress.firstName}
-                        onChange={(e) =>
-                          setShippingAddress({ ...shippingAddress, firstName: e.target.value })
-                        }
-                        className={inputClass}
+                        onChange={(e) => {
+                          clearValidationIf('shipping-firstName');
+                          setShippingAddress({ ...shippingAddress, firstName: e.target.value });
+                        }}
+                        aria-invalid={validationIssue?.fieldId === 'shipping-firstName'}
+                        className={inputClassFor('shipping-firstName')}
                       />
+                      {renderFieldError('shipping-firstName')}
                     </div>
                     <div>
                       <label htmlFor="shipping-lastName" className={labelClass}>Last name *</label>
@@ -873,11 +1045,14 @@ export function OnePageCheckout() {
                         type="text"
                         required
                         value={shippingAddress.lastName}
-                        onChange={(e) =>
-                          setShippingAddress({ ...shippingAddress, lastName: e.target.value })
-                        }
-                        className={inputClass}
+                        onChange={(e) => {
+                          clearValidationIf('shipping-lastName');
+                          setShippingAddress({ ...shippingAddress, lastName: e.target.value });
+                        }}
+                        aria-invalid={validationIssue?.fieldId === 'shipping-lastName'}
+                        className={inputClassFor('shipping-lastName')}
                       />
+                      {renderFieldError('shipping-lastName')}
                     </div>
                     <div className="sm:col-span-2">
                       <label htmlFor="shipping-addressLine1" className={labelClass}>Address line 1 *</label>
@@ -886,11 +1061,14 @@ export function OnePageCheckout() {
                         type="text"
                         required
                         value={shippingAddress.addressLine1}
-                        onChange={(e) =>
-                          setShippingAddress({ ...shippingAddress, addressLine1: e.target.value })
-                        }
-                        className={inputClass}
+                        onChange={(e) => {
+                          clearValidationIf('shipping-addressLine1');
+                          setShippingAddress({ ...shippingAddress, addressLine1: e.target.value });
+                        }}
+                        aria-invalid={validationIssue?.fieldId === 'shipping-addressLine1'}
+                        className={inputClassFor('shipping-addressLine1')}
                       />
+                      {renderFieldError('shipping-addressLine1')}
                     </div>
                     <div>
                       <label htmlFor="shipping-state" className={labelClass}>State / Province *</label>
@@ -898,10 +1076,12 @@ export function OnePageCheckout() {
                         id="shipping-state"
                         required
                         value={shippingAddress.state}
-                        onChange={(e) =>
-                          setShippingAddress({ ...shippingAddress, state: e.target.value, city: '' })
-                        }
-                        className={storefrontUi.select}
+                        onChange={(e) => {
+                          clearValidationIf('shipping-state');
+                          setShippingAddress({ ...shippingAddress, state: e.target.value, city: '' });
+                        }}
+                        aria-invalid={validationIssue?.fieldId === 'shipping-state'}
+                        className={selectClassFor('shipping-state')}
                       >
                         <option value="">Select province</option>
                         {(apiProvinces.length > 0 ? apiProvinces : PAKISTAN_PROVINCES).map((province) => (
@@ -910,6 +1090,7 @@ export function OnePageCheckout() {
                           </option>
                         ))}
                       </select>
+                      {renderFieldError('shipping-state')}
                     </div>
                     <div>
                       <label htmlFor="shipping-city" className={labelClass}>City *</label>
@@ -917,10 +1098,12 @@ export function OnePageCheckout() {
                         id="shipping-city"
                         required
                         value={shippingAddress.city}
-                        onChange={(e) =>
-                          setShippingAddress({ ...shippingAddress, city: e.target.value })
-                        }
-                        className={storefrontUi.select}
+                        onChange={(e) => {
+                          clearValidationIf('shipping-city');
+                          setShippingAddress({ ...shippingAddress, city: e.target.value });
+                        }}
+                        aria-invalid={validationIssue?.fieldId === 'shipping-city'}
+                        className={selectClassFor('shipping-city')}
                       >
                         <option value="">Select city</option>
                         {allCities.map((city) => (
@@ -929,6 +1112,7 @@ export function OnePageCheckout() {
                           </option>
                         ))}
                       </select>
+                      {renderFieldError('shipping-city')}
                     </div>
                     <div>
                       <label htmlFor="shipping-postalCode" className={labelClass}>Postal code (optional)</label>
@@ -952,6 +1136,24 @@ export function OnePageCheckout() {
                         className={`${inputClass} bg-muted cursor-not-allowed`}
                       />
                     </div>
+                    <div className="sm:col-span-2">
+                      <label htmlFor="shipping-phone" className={labelClass}>Mobile Number *</label>
+                      <input
+                        id="shipping-phone"
+                        type="tel"
+                        required
+                        minLength={10}
+                        value={shippingAddress.phone || ''}
+                        onChange={(e) => {
+                          clearValidationIf('shipping-phone');
+                          setShippingAddress({ ...shippingAddress, phone: e.target.value });
+                        }}
+                        aria-invalid={validationIssue?.fieldId === 'shipping-phone'}
+                        className={inputClassFor('shipping-phone')}
+                        placeholder="03001234567"
+                      />
+                      {renderFieldError('shipping-phone')}
+                    </div>
                   </div>
                 </section>
               )}
@@ -971,6 +1173,7 @@ export function OnePageCheckout() {
                   id="saved-billing"
                   value={selectedBillingAddressId ?? ''}
                   onChange={(e) => {
+                    clearValidationIf('saved-billing');
                     const id = e.target.value || null;
                     setSelectedBillingAddressId(id);
                     if (id) {
@@ -978,7 +1181,8 @@ export function OnePageCheckout() {
                       if (a) setBillingAddress(addressWithIdToAddress(a));
                     }
                   }}
-                  className={storefrontUi.select}
+                  aria-invalid={validationIssue?.fieldId === 'saved-billing'}
+                  className={selectClassFor('saved-billing')}
                 >
                   {savedAddresses.map((a) => (
                     <option key={a.id} value={a.id}>
@@ -987,6 +1191,7 @@ export function OnePageCheckout() {
                     </option>
                   ))}
                 </select>
+                {renderFieldError('saved-billing')}
               </section>
 
               <div className="flex items-center">
@@ -1018,6 +1223,7 @@ export function OnePageCheckout() {
                     id="saved-shipping"
                     value={selectedShippingAddressId ?? ''}
                     onChange={(e) => {
+                      clearValidationIf('saved-shipping');
                       const id = e.target.value || null;
                       setSelectedShippingAddressId(id);
                       if (id) {
@@ -1025,7 +1231,8 @@ export function OnePageCheckout() {
                         if (a) setShippingAddress(addressWithIdToAddress(a));
                       }
                     }}
-                    className={storefrontUi.select}
+                    aria-invalid={validationIssue?.fieldId === 'saved-shipping'}
+                    className={selectClassFor('saved-shipping')}
                   >
                     {savedAddresses.map((a) => (
                       <option key={a.id} value={a.id}>
@@ -1034,6 +1241,7 @@ export function OnePageCheckout() {
                       </option>
                     ))}
                   </select>
+                  {renderFieldError('saved-shipping')}
                 </section>
               )}
 
@@ -1054,7 +1262,7 @@ export function OnePageCheckout() {
           )}
 
           {/* Shipping Method */}
-          <section>
+          <section id="checkout-shipping-method">
             <h2 className="font-display mb-4 text-xl font-semibold tracking-tight text-foreground">
               Shipping method
             </h2>
@@ -1089,7 +1297,10 @@ export function OnePageCheckout() {
                       name="shipping"
                       value={opt.methodId}
                       checked={selectedShippingId === opt.methodId}
-                      onChange={() => setSelectedShippingId(opt.methodId)}
+                      onChange={() => {
+                        clearValidationIf('checkout-shipping-method');
+                        setSelectedShippingId(opt.methodId);
+                      }}
                       className="h-4 w-4 text-primary focus:ring-ring/30"
                     />
                     <div className="flex-1">
@@ -1123,10 +1334,11 @@ export function OnePageCheckout() {
                 ))}
               </div>
             )}
+            {renderFieldError('checkout-shipping-method')}
           </section>
 
           {/* Payment */}
-          <section>
+          <section id="checkout-payment">
             <h2 className="font-display mb-4 text-xl font-semibold tracking-tight text-foreground">
               Payment
             </h2>
@@ -1149,7 +1361,10 @@ export function OnePageCheckout() {
                       name="payment"
                       value={m.code}
                       checked={selectedPaymentCode === m.code}
-                      onChange={() => setSelectedPaymentCode(m.code)}
+                      onChange={() => {
+                        clearValidationIf('checkout-payment');
+                        setSelectedPaymentCode(m.code);
+                      }}
                       className="h-4 w-4 text-primary focus:ring-ring/30"
                     />
                     <span className="font-medium text-foreground">{m.name}</span>
@@ -1157,6 +1372,7 @@ export function OnePageCheckout() {
                 ))}
               </div>
             )}
+            {renderFieldError('checkout-payment')}
           </section>
         </div>
 
@@ -1368,9 +1584,9 @@ export function OnePageCheckout() {
               </div>
             </div>
             {!qualifiesForFreeDelivery &&
-            effectiveFreeDeliveryThreshold > 0 &&
+            freeDeliveryThreshold > 0 &&
             displaySubtotal >= minimumOrderAmount &&
-            displaySubtotal < effectiveFreeDeliveryThreshold ? (
+            displaySubtotal < freeDeliveryThreshold ? (
               <p className="mt-3 rounded-sm bg-secondary/50 px-3 py-2 text-xs font-medium text-foreground">
                 Add {formatPrice(amountRemainingForFreeDelivery, displayCurrency)} more to get Free
                 Delivery.
@@ -1387,7 +1603,7 @@ export function OnePageCheckout() {
             </div>
             <button
               type="submit"
-              disabled={placeOrderDisabled}
+              disabled={isLoading}
               className={`${storefrontUi.btnPrimaryCheckout} hidden lg:block`}
             >
               {isLoading ? 'Processing…' : 'Place order'}
@@ -1410,7 +1626,7 @@ export function OnePageCheckout() {
           </div>
           <button
             type="submit"
-            disabled={placeOrderDisabled}
+            disabled={isLoading}
             className={`${storefrontUi.btnPrimaryCheckout} mt-0 min-w-[9.5rem] flex-none px-5 py-2.5`}
           >
             {isLoading ? 'Processing…' : 'Place order'}
@@ -1427,11 +1643,11 @@ export function OnePageCheckout() {
             <p className="mt-3 text-sm leading-6 text-muted-foreground">
               A minimum order value of {formatPrice(minimumOrderAmount, displayCurrency)} is
               required to place an order. Please add more items to your cart.
-              {effectiveFreeDeliveryThreshold > 0 ? (
+              {freeDeliveryThreshold > 0 ? (
                 <>
                   <br />
                   <span className="mt-1 inline-block font-medium text-foreground">
-                    Note: Shopping of {formatPrice(effectiveFreeDeliveryThreshold, displayCurrency)} or more
+                    Note: Shopping of {formatPrice(freeDeliveryThreshold, displayCurrency)} or more
                     qualifies for Free Delivery!
                   </span>
                 </>

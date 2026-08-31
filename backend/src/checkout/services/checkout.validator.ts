@@ -59,6 +59,14 @@ export class CheckoutValidatorService {
       throw new BadRequestException('Shipping address is required');
     }
 
+    if (!checkout.billingAddress.phone?.trim()) {
+      throw new BadRequestException('Billing phone number is required');
+    }
+
+    if (!checkout.shippingAddress.phone?.trim()) {
+      throw new BadRequestException('Shipping phone number is required');
+    }
+
     // Validate shipping method
     if (!checkout.shippingMethod) {
       throw new BadRequestException('Shipping method is required');

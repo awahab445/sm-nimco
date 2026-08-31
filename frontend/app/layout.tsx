@@ -14,6 +14,7 @@ import { AnnouncementBar } from "@/components/layout/announcement-bar";
 import { Footer } from "@/components/layout/footer";
 import { DeferredChrome } from "@/components/layout/deferred-chrome";
 import { GoogleTagManager } from "@/components/analytics/google-tag-manager";
+import { StoreThemeProvider } from "@/lib/store-theme-context";
 import { rootMetadata } from "@/lib/seo";
 
 const geistSans = Geist({
@@ -85,6 +86,7 @@ export default async function RootLayout({
       >
         <GoogleTagManager gtmId={analyticsConfig.gtmId} />
         <AnalyticsProvider config={analyticsConfig}>
+          <StoreThemeProvider theme={storeTheme}>
           <AuthProvider>
             <CartProvider>
               <WishlistProvider>
@@ -105,6 +107,7 @@ export default async function RootLayout({
               </WishlistProvider>
             </CartProvider>
           </AuthProvider>
+          </StoreThemeProvider>
         </AnalyticsProvider>
         <DeferredChrome />
       </body>

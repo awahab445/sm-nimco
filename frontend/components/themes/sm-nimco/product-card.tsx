@@ -17,6 +17,7 @@ import {
 } from '@/lib/product-display-price';
 import { ProductQuickView } from '@/components/product/product-quick-view';
 import { WishlistToggleButton } from '@/components/product/wishlist-toggle-button';
+import { OrderOnWhatsAppButton } from '@/components/product/order-on-whatsapp-button';
 
 interface SmNimcoProductCardProps {
   product: Product;
@@ -31,6 +32,12 @@ type VariantChip = {
   label: string;
   price: number;
 };
+
+const SM_NIMCO_ATC_BUTTON_CLASSES =
+  'mb-2 flex h-10 w-full items-center justify-center rounded-full bg-[var(--brand-purple-dark,#1e1035)] text-xs font-bold uppercase tracking-wider text-[var(--brand-gold-primary,#C5A059)] shadow-sm transition-all duration-200 hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50 sm:text-sm';
+
+const SM_NIMCO_ATC_DISABLED_CLASSES =
+  'mb-2 flex h-10 w-full cursor-not-allowed items-center justify-center rounded-full bg-[var(--brand-purple-dark,#1e1035)] text-xs font-bold uppercase tracking-wider text-[var(--brand-gold-primary,#C5A059)] opacity-50 shadow-sm sm:text-sm';
 
 function parsePrice(value: string | number | undefined | null): number {
   return parseProductPrice(value);
@@ -225,30 +232,51 @@ export function SmNimcoProductCard({
           </div>
         </div>
 
-        <div className="relative z-10 flex flex-col gap-3 border-t px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
-          <span className="shrink-0 text-base font-bold text-[var(--brand-purple-dark,#1e1035)]">
-            {formatPrice(displayPrice)}
-          </span>
-          <div className="flex min-w-0 flex-wrap gap-2 sm:justify-end">
+        <div className="relative z-10 space-y-3 border-t px-4 py-3">
+          <div className="flex items-center justify-between gap-2">
+            <span className="shrink-0 text-base font-bold text-[var(--brand-purple-dark,#1e1035)]">
+              {formatPrice(displayPrice)}
+            </span>
             <button
               type="button"
               onClick={openDetails}
               suppressHydrationWarning
-              className="min-w-0 flex-1 rounded-lg bg-[var(--brand-purple-dark,#1e1035)] px-3 py-2 text-xs font-bold text-[var(--brand-gold-primary,#d4af37)] transition-colors hover:bg-[var(--brand-purple-deep,#2e1a47)] hover:text-[var(--brand-gold-primary,#d4af37)] sm:flex-none"
+              className="shrink-0 rounded-lg bg-[var(--brand-purple-dark,#1e1035)] px-3 py-2 text-xs font-bold text-[var(--brand-gold-primary,#d4af37)] transition-colors hover:bg-[var(--brand-purple-deep,#2e1a47)] hover:text-[var(--brand-gold-primary,#d4af37)]"
             >
               View Details
             </button>
-            {canAddToCart ? (
+          </div>
+          <div
+            className="flex min-w-0 w-full flex-col"
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
+          >
+            {inStock ? (
               <button
                 type="button"
                 onClick={handleAddToCart}
-                disabled={adding}
+                disabled={!canAddToCart || adding}
                 suppressHydrationWarning
-                className="min-w-0 flex-1 rounded-lg bg-[var(--brand-gold-primary,#d4af37)] px-3 py-2 text-xs font-bold text-[var(--brand-purple-dark,#1e1035)] transition-colors hover:bg-[var(--brand-gold-hover,#b89628)] hover:text-[var(--brand-purple-dark,#1e1035)] disabled:opacity-60 sm:flex-none"
+                className={SM_NIMCO_ATC_BUTTON_CLASSES}
               >
-                {adding ? '…' : 'Add'}
+                {adding ? 'Adding…' : 'Add to cart'}
               </button>
-            ) : null}
+            ) : (
+              <button
+                type="button"
+                disabled
+                suppressHydrationWarning
+                className={SM_NIMCO_ATC_DISABLED_CLASSES}
+              >
+                Out of stock
+              </button>
+            )}
+            <OrderOnWhatsAppButton
+              productName={product.name}
+              price={displayPrice}
+              quantity={1}
+              stopPropagation
+            />
           </div>
         </div>
       </div>

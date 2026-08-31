@@ -7,11 +7,7 @@ import { TaxCalculationItem } from '../../tax/dto/calculate-tax.dto';
 import { CustomerGroupService } from '../../customer-group/services/customer-group.service';
 import { PrismaService } from '../../catalog/services/prisma.service';
 import { StoreSettingsService } from '../../store-settings/services/store-settings.service';
-import {
-  isKarachiCity,
-  KARACHI_FREE_DELIVERY_THRESHOLD,
-  qualifiesForFreeDelivery,
-} from '../../shipping/utils/shipping-fee';
+import { qualifiesForFreeDelivery } from '../../shipping/utils/shipping-fee';
 import {
   DEFAULT_GST_RATE_PERCENT,
   calculateGstAmount,
@@ -263,11 +259,8 @@ export class CheckoutTotalsService {
       );
     const orderSettings =
       await this.storeSettingsService.getPublicOrderSettings();
-    const nationalThreshold =
+    const freeDeliveryThreshold =
       orderSettings.freeDeliveryThreshold ?? this.defaultFreeDeliveryThreshold;
-    const freeDeliveryThreshold = isKarachiCity(checkout.shippingAddress?.city)
-      ? KARACHI_FREE_DELIVERY_THRESHOLD
-      : nationalThreshold;
     const qualifiesForFreeDeliveryThreshold = qualifiesForFreeDelivery({
       subtotal,
       freeDeliveryThreshold,

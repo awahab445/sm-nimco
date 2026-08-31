@@ -12,6 +12,7 @@ import { ProductImageGallery } from '@/components/product/product-image-gallery'
 import { ProductStockAlert } from '@/components/product/product-stock-alert';
 import { RelatedProductsShelf } from '@/components/product/related-products-shelf';
 import { WishlistToggleButton } from '@/components/product/wishlist-toggle-button';
+import { OrderOnWhatsAppButton } from '@/components/product/order-on-whatsapp-button';
 import { PdpLowStockUrgency, PdpTrustReassurance } from '@/components/product/pdp-conversion-boosters';
 import { resolveImageUrl } from '@/lib/resolve-image-url';
 import { getVariantCompareAtPrice } from '@/lib/product-display-price';
@@ -819,6 +820,13 @@ export function ProductDetailClient() {
               >
                 {atcLabel}
               </button>
+
+              <OrderOnWhatsAppButton
+                productName={product.name}
+                price={priceNum}
+                quantity={quantity}
+                stopPropagation={false}
+              />
 
               <PdpLowStockUrgency availableQty={availableQty} />
 

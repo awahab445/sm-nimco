@@ -121,6 +121,13 @@ export const adminNavGroups: NavGroup[] = [
         requirePermission: ['shipping.manage'],
       },
       {
+        href: '/shipping/rates',
+        label: 'Shipping Rates',
+        description: 'Nationwide Economy & Overland shipping tiers',
+        phase: 'J',
+        requirePermission: ['shipping.manage'],
+      },
+      {
         href: '/tax',
         label: 'Tax',
         description: 'Tax classes and rates',

@@ -16,6 +16,7 @@ import {
 } from '@/lib/use-cart-item-fallback-images';
 import { storeSettingsApi, type CartBundleRow, type CartItem } from '@/lib/api-client';
 import { CartThresholdProgress } from '@/components/cart/cart-threshold-progress';
+import { CartShippingEstimator } from '@/components/cart/cart-shipping-estimator';
 import { CartQuickUpsells } from '@/components/cart/cart-quick-upsells';
 
 const PREVIEW_ITEM_LIMIT = 8;
@@ -348,6 +349,14 @@ export function CartPreviewDropdown({
                   freeDeliveryThreshold={freeDeliveryThreshold}
                 />
               </div>
+              <CartShippingEstimator
+                items={items}
+                subtotal={subtotal}
+                currency={displayCurrency}
+                customerGroupId={undefined}
+                compact
+                defaultOpen={false}
+              />
               <div className="mt-4 flex flex-col gap-2">
                 <Link
                   href={href}

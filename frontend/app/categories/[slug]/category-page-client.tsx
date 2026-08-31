@@ -6,7 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { productApi, categoryApi, inventoryApi, type ProductListResponse, type Category } from '@/lib/api-client';
 import { resolveImageUrl } from '@/lib/resolve-image-url';
-import { ProductCard, getVariantForCart } from '@/components/product/product-card';
+import { StorefrontProductCard, getVariantForCart } from '@/components/product/storefront-product-card';
 import { CategorySidebar } from '@/components/products/category-sidebar';
 import { PlpProductGridSkeleton } from '@/components/products/plp-product-grid-skeleton';
 import {
@@ -189,11 +189,12 @@ export function CategoryPageClient() {
               {displayProducts.map((product) => {
                 const variant = getVariantForCart(product);
                 return (
-                  <ProductCard
+                  <StorefrontProductCard
                     key={product.id}
                     product={product}
                     layout={listingMode === 'list' ? 'list' : 'grid'}
                     availableQuantity={variant ? availability[variant.id] : undefined}
+                    availabilityByVariant={availability}
                   />
                 );
               })}

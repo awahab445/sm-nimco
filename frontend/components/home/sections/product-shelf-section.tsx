@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ProductCard } from '@/components/product/product-card';
+import { StorefrontProductCard } from '@/components/product/storefront-product-card';
 import type { ProductShelfSource } from '@/lib/cms/home-page-types';
 import {
   fetchInventoryAvailability,
@@ -68,10 +68,11 @@ export async function ProductShelfSection({
           {products.map((product) => {
             const variant = getVariantForCart(product);
             return (
-              <ProductCard
+              <StorefrontProductCard
                 key={product.id}
                 product={product}
                 availableQuantity={variant ? availability[variant.id] : undefined}
+                availabilityByVariant={availability}
               />
             );
           })}

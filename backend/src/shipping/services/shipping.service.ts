@@ -33,16 +33,12 @@ import {
 import { ShippingEligibilityEvaluator } from './shipping-eligibility-evaluator.service';
 import { ShippingRateService } from './shipping-rate.service';
 import { StoreSettingsService } from '../../store-settings/services/store-settings.service';
+import { ZoneConfigService } from './zone-config.service';
+import { isKarachiCity, qualifiesForFreeDelivery, roundShippingFee, calculateWeightBasedShippingFee } from '../utils/shipping-fee';
 import {
-  calculateKarachiShippingFee,
-  calculateWeightBasedShippingFee,
-  isKarachiCity,
-  KARACHI_FREE_DELIVERY_THRESHOLD,
-  KARACHI_STANDARD_METHOD_CODE,
-  KARACHI_STANDARD_METHOD_NAME,
-  qualifiesForFreeDelivery,
-  roundShippingFee,
-} from '../utils/shipping-fee';
+  buildKarachiShippingOption,
+  buildNationwideShippingOptions,
+} from '../utils/nationwide-shipping.util';
 
 @Injectable()
 export class ShippingService {
@@ -58,6 +54,7 @@ export class ShippingService {
     private readonly eligibilityEvaluator: ShippingEligibilityEvaluator,
     private readonly shippingRateService: ShippingRateService,
     private readonly storeSettingsService: StoreSettingsService,
+    private readonly zoneConfigService: ZoneConfigService,
   ) {}
 
   // ============================================================================
@@ -451,8 +448,9 @@ export class ShippingService {
   // ============================================================================
 
   /**
-   * Calculate eligible shipping methods and costs for a cart
-   * Now supports customer group-based restrictions and pricing
+   * Calculate shipping options for a cart.
+   * Karachi → Standard Delivery (≤7kg 200 PKR, else 250). Other cities → Economy & Overland.
+   * Free delivery when subtotal meets storeSettings.freeDeliveryThreshold (default 2000).
    */
   async calculateShipping(
     dto: CalculateShippingDto,
@@ -462,16 +460,13 @@ export class ShippingService {
       items,
       subtotal = 0,
       currency = APP_CURRENCY,
-      customerGroupId,
     } = dto;
 
-    // Prefer explicit item weights; fill gaps from product/variant catalog weights
     const totalWeight = await this.shippingRateService.resolveTotalWeightKg(
       undefined,
       items,
     );
 
-    // Calculate total amount if not provided
     const totalAmount =
       subtotal ||
       items.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -482,130 +477,17 @@ export class ShippingService {
     );
 
     if (isKarachiCity(cityName)) {
-      const karachiCost = calculateKarachiShippingFee(totalWeight);
-      return this.applyFreeDeliveryToOptions(
-        [
-          {
-            methodId: KARACHI_STANDARD_METHOD_CODE,
-            methodCode: KARACHI_STANDARD_METHOD_CODE,
-            methodName: KARACHI_STANDARD_METHOD_NAME,
-            cost: karachiCost,
-            currency,
-            description: 'Local Karachi delivery',
-          },
-        ],
-        totalAmount,
-        KARACHI_FREE_DELIVERY_THRESHOLD,
-      );
+      const karachiOption = buildKarachiShippingOption(totalWeight, currency);
+      return this.applyFreeDeliveryToOptions([karachiOption], totalAmount);
     }
 
-    // Find matching zones (sorted by priority)
-    const zones = await this.findMatchingZones(shippingAddress);
-
-    const options: ShippingOptionDto[] = [];
-
-    if (zones.length === 0) {
-      if (options.length === 0) {
-        this.logger.warn(
-          `No shipping zones or matrix rates for address: ${JSON.stringify(shippingAddress)}`,
-        );
-      }
-      return this.applyFreeDeliveryToOptions(
-        options.sort((a, b) => a.cost - b.cost),
-        totalAmount,
-      );
-    }
-
-    // Get methods for each zone (higher priority zones first)
-    for (const zone of zones) {
-      const methods = await this.prisma.shippingMethod.findMany({
-        where: {
-          zoneId: zone.id,
-          isActive: true,
-        },
-        orderBy: [{ priority: 'desc' }, { createdAt: 'desc' }],
-        include: {
-          customerGroups: true,
-        },
-      });
-      const supportedMethods = methods.filter((method) =>
-        this.supportedMethodCodes.has(method.code),
-      );
-
-      // Load customer groups for all methods in batch
-      const methodIds = supportedMethods.map((m) => m.id);
-      const groupsByMethod =
-        await this.eligibilityEvaluator.loadCustomerGroupsForMethods(methodIds);
-
-      // Attach customer groups to methods
-      const methodsWithGroups = supportedMethods.map((method) => ({
-        ...method,
-        customerGroups: groupsByMethod.get(method.id) || [],
-      }));
-
-      for (const method of methodsWithGroups) {
-        // Evaluate eligibility including customer group restrictions
-        const eligibility = await this.eligibilityEvaluator.evaluateEligibility(
-          method as ShippingMethod & { customerGroups?: any[] },
-          {
-            customerGroupId,
-            orderAmount: totalAmount,
-            orderWeight: totalWeight,
-          },
-        );
-
-        if (!eligibility.eligible) {
-          continue;
-        }
-
-        // Calculate base shipping cost
-        let cost = this.calculateCost(method, totalAmount, totalWeight, items);
-
-        // Apply group-specific pricing if available
-        if (eligibility.groupPricing) {
-          if (eligibility.groupPricing.fixedCost !== null) {
-            // Fixed cost override
-            cost = this.parseShippingAmount(eligibility.groupPricing.fixedCost);
-          } else if (eligibility.groupPricing.discountPercent !== null) {
-            // Apply percentage discount
-            const discount =
-              (cost *
-                this.parseShippingAmount(
-                  eligibility.groupPricing.discountPercent,
-                )) /
-              100;
-            cost = cost - discount;
-            this.logger.debug(
-              `Applied ${eligibility.groupPricing.discountPercent}% discount to method ${method.id} for group ${customerGroupId}`,
-            );
-          }
-        }
-
-        options.push({
-          methodId: method.id,
-          methodCode: method.code,
-          methodName: method.name,
-          cost: Math.max(0, cost), // Ensure non-negative
-          currency,
-          description: method.description || undefined,
-        });
-      }
-    }
-
-    // Keep one option per method code (prefer lowest cost), then sort.
-    const deduped = Array.from(
-      options
-        .reduce((map, option) => {
-          const existing = map.get(option.methodCode);
-          if (!existing || option.cost < existing.cost) {
-            map.set(option.methodCode, option);
-          }
-          return map;
-        }, new Map<string, ShippingOptionDto>())
-        .values(),
+    const zoneConfig = await this.zoneConfigService.getZoneConfig();
+    const options = buildNationwideShippingOptions(
+      totalWeight,
+      zoneConfig,
+      currency,
     );
-    const sorted = deduped.sort((a, b) => a.cost - b.cost);
-    return this.applyFreeDeliveryToOptions(sorted, totalAmount);
+    return this.applyFreeDeliveryToOptions(options, totalAmount);
   }
 
   private async resolveShippingCityName(
