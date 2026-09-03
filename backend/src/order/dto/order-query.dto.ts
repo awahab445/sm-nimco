@@ -8,6 +8,7 @@ import {
   IsUUID,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { ORDER_STATUS_VALUES } from '../enums/order-status.enum';
 
 export class OrderQueryDto {
   @IsOptional()
@@ -17,7 +18,7 @@ export class OrderQueryDto {
 
   @IsOptional()
   @IsString()
-  @IsIn(['pending', 'processing', 'ready_for_pickup', 'completed', 'cancelled'])
+  @IsIn(ORDER_STATUS_VALUES)
   status?: string;
 
   @IsOptional()

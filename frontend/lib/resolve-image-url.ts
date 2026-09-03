@@ -15,7 +15,9 @@ function toUploadsPath(pathname: string): string | undefined {
  *
  * Upload assets are always returned as same-origin `/uploads/...` paths so
  * SSR and the client hydrate with identical `src` values. Next.js rewrites
- * those paths to the API. Absolute non-upload URLs are left unchanged.
+ * those paths to `NEXT_PUBLIC_API_URL` (default http://localhost:3000). Absolute
+ * non-upload URLs are left unchanged. Legacy absolute upload URLs that point at
+ * an old API port (e.g. :5000) are normalized to `/uploads/...`.
  *
  * For Open Graph / JSON-LD absolute URLs, pass the result through `absoluteUrl()`.
  */
@@ -28,6 +30,7 @@ export function resolveImageUrl(imagePath?: string | null): string | undefined {
     try {
       const parsed = new URL(trimmed);
       const uploadsPath = toUploadsPath(parsed.pathname);
+      // Strip host/port so Next rewrites `/uploads` to the current API origin.
       if (uploadsPath) return uploadsPath;
     } catch {
       return trimmed;
@@ -42,6 +45,19 @@ export function resolveImageUrl(imagePath?: string | null): string | undefined {
     return trimmed;
   }
   return `/${trimmed}`;
+}
+
+/** Absolute backend URL for an upload path (useful outside Next rewrites). */
+export function absoluteUploadUrl(imagePath?: string | null): string | undefined {
+  const resolved = resolveImageUrl(imagePath);
+  if (!resolved) return undefined;
+  if (resolved.startsWith('http://') || resolved.startsWith('https://')) {
+    return resolved;
+  }
+  if (resolved.startsWith('/uploads/')) {
+    return `${SERVER_API_BASE_URL}${resolved}`;
+  }
+  return resolved;
 }
 
 /** Alias matching the storefront helper naming used in product cards. */
@@ -79,8 +95,8 @@ export function getProductImagesOrdered(
 /** Resolved absolute/relative srcs for a product, deduped, primary first. */
 export function getProductImageSrcs(images?: ProductImage[] | null): string[] {
   const srcs: string[] = [];
-  for (const img of getProductImagesOrdered(images)) {
-    const resolved = resolveImageUrl(img.url);
+  for (const img of getProductImagesOrdered(images ?? [])) {
+    const resolved = resolveImageUrl(img?.url);
     if (resolved && !srcs.includes(resolved)) {
       srcs.push(resolved);
     }

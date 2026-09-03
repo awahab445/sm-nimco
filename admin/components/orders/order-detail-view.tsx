@@ -268,6 +268,7 @@ export function OrderDetailView({ orderId }: { orderId: string }) {
               >
                 <option value="pending">Pending</option>
                 <option value="processing">Processing</option>
+                <option value="ready_for_pickup">Ready for Pickup</option>
                 <option value="completed">Completed</option>
                 <option value="cancelled">Cancelled</option>
               </select>

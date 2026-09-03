@@ -8,10 +8,23 @@ const brandComplete =
 const warning = 'bg-warning/12 text-warning ring-1 ring-inset ring-warning/20';
 const destructive = 'bg-destructive/10 text-destructive ring-1 ring-inset ring-destructive/20';
 
+const ORDER_STATUS_LABELS: Record<string, string> = {
+  pending: 'Pending',
+  processing: 'Processing',
+  ready_for_pickup: 'Ready for Pickup',
+  completed: 'Completed',
+  cancelled: 'Cancelled',
+};
+
+export function formatOrderStatusLabel(status: string): string {
+  return ORDER_STATUS_LABELS[status] ?? status;
+}
+
 export function orderStatusBadgeClass(status: string): string {
   const map: Record<string, string> = {
     pending: warning,
     processing: brandProgress,
+    ready_for_pickup: brandProgress,
     completed: brandComplete,
     cancelled: destructive,
   };

@@ -7,6 +7,7 @@ import {
 describe('order-status-badges', () => {
   it('returns theme token classes for known statuses', () => {
     expect(orderStatusBadgeClass('pending')).toContain('warning');
+    expect(orderStatusBadgeClass('ready_for_pickup')).toContain('brand-secondary');
     expect(orderStatusBadgeClass('completed')).toContain('brand-secondary');
     expect(paymentStatusBadgeClass('paid')).toContain('brand-secondary');
     expect(fulfillmentStatusBadgeClass('shipped')).toContain('brand-secondary');

@@ -1,8 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../../catalog/services/prisma.service';
-import { OrderService } from '../../order/services/order.service';
+import { OrderStatus } from '../../order/enums/order-status.enum';
 import {
   dbStatusToVendor,
+  vendorFulfillmentStatusFor,
   vendorStatusToDb,
   type VendorOrderStatus,
 } from '../utils/vendor-order-status.util';
@@ -27,10 +32,7 @@ export interface VendorOrderDto {
 
 @Injectable()
 export class VendorOrderService {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly orderService: OrderService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async findActiveByStatus(
     status: VendorOrderStatus,
@@ -52,12 +54,30 @@ export class VendorOrderService {
     orderId: string,
     status: VendorOrderStatus,
   ): Promise<VendorOrderDto> {
-    const updated = await this.orderService.updateOrderStatus(orderId, {
-      status: vendorStatusToDb(status),
+    const existing = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      select: { id: true, status: true },
     });
 
-    const order = await this.prisma.order.findUniqueOrThrow({
-      where: { id: updated.id },
+    if (!existing) {
+      throw new NotFoundException(`Order ${orderId} not found`);
+    }
+
+    if (existing.status === OrderStatus.CANCELLED) {
+      throw new BadRequestException('Cannot update a cancelled order');
+    }
+
+    // Persist mapped DB status directly so Mark as Ready cannot be coerced
+    // back to `processing` by shared admin transition rules.
+    const dbStatus = vendorStatusToDb(status);
+    const fulfillmentStatus = vendorFulfillmentStatusFor(status);
+
+    const order = await this.prisma.order.update({
+      where: { id: orderId },
+      data: {
+        status: dbStatus,
+        ...(fulfillmentStatus ? { fulfillmentStatus } : {}),
+      },
       include: {
         items: true,
         customer: { select: { phone: true } },
@@ -84,10 +104,16 @@ export class VendorOrderService {
     customer?: { phone: string | null } | null;
   }): VendorOrderDto {
     const vendorStatus = dbStatusToVendor(order.status);
+    if (!vendorStatus) {
+      throw new BadRequestException(
+        `Order status "${order.status}" is not exposed to the store app`,
+      );
+    }
+
     return {
       id: order.id,
       orderNumber: order.orderNumber,
-      status: vendorStatus ?? 'PROCESSING',
+      status: vendorStatus,
       customer: {
         name: order.customerName || order.customerEmail,
         phone: this.resolveCustomerPhone(order),

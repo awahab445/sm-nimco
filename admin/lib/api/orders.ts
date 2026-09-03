@@ -1,7 +1,12 @@
 import { fetchApi, ApiError } from '../api-client';
 import { getToken } from '../auth-token';
 
-export type OrderStatus = 'pending' | 'processing' | 'completed' | 'cancelled';
+export type OrderStatus =
+  | 'pending'
+  | 'processing'
+  | 'ready_for_pickup'
+  | 'completed'
+  | 'cancelled';
 export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded';
 export type FulfillmentStatus =
   | 'unfulfilled'
@@ -9,6 +14,18 @@ export type FulfillmentStatus =
   | 'fulfilled'
   | 'shipped'
   | 'delivered';
+
+export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
+  pending: 'Pending',
+  processing: 'Processing',
+  ready_for_pickup: 'Ready for Pickup',
+  completed: 'Completed',
+  cancelled: 'Cancelled',
+};
+
+export function orderStatusLabel(status: string): string {
+  return ORDER_STATUS_LABELS[status as OrderStatus] ?? status;
+}
 
 export type OrderAddressSnapshot = {
   firstName?: string;

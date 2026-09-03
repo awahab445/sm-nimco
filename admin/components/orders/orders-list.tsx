@@ -7,6 +7,7 @@ import {
   fetchAdminOrders,
   downloadBulkShippingLabels,
   downloadBulkPackageInserts,
+  orderStatusLabel,
   type Order,
   type OrderStatus,
   type PaymentStatus,
@@ -32,7 +33,7 @@ function statusPill(label: string, tone: 'neutral' | 'success' | 'warning' | 'da
 function orderStatusTone(s: string): 'neutral' | 'success' | 'warning' | 'danger' {
   if (s === 'completed') return 'success';
   if (s === 'cancelled') return 'danger';
-  if (s === 'processing') return 'warning';
+  if (s === 'processing' || s === 'ready_for_pickup') return 'warning';
   return 'neutral';
 }
 
@@ -213,6 +214,7 @@ export function OrdersList() {
             <option value="">All</option>
             <option value="pending">Pending</option>
             <option value="processing">Processing</option>
+            <option value="ready_for_pickup">Ready for Pickup</option>
             <option value="completed">Completed</option>
             <option value="cancelled">Cancelled</option>
           </select>
@@ -373,7 +375,7 @@ export function OrdersList() {
                     ) : null}
                   </td>
                   <td className="px-4 py-3">
-                    {statusPill(o.status, orderStatusTone(o.status))}
+                    {statusPill(orderStatusLabel(o.status), orderStatusTone(o.status))}
                   </td>
                   <td className="px-4 py-3">
                     {statusPill(

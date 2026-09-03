@@ -1,9 +1,12 @@
 import { IsString, IsIn, IsOptional } from 'class-validator';
+import { ORDER_STATUS_VALUES } from '../enums/order-status.enum';
 
 export class UpdateOrderStatusDto {
+  /** Optional so fulfillment-only updates (e.g. mark ready) cannot force orderStatus. */
   @IsString()
-  @IsIn(['pending', 'processing', 'ready_for_pickup', 'completed', 'cancelled'])
-  status: string;
+  @IsOptional()
+  @IsIn(ORDER_STATUS_VALUES)
+  status?: string;
 
   @IsString()
   @IsOptional()

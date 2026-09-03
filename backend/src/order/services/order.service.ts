@@ -13,6 +13,7 @@ import { OrderFactory } from './order.factory';
 import { CreateOrderDto } from '../dto/create-order.dto';
 import { UpdateOrderStatusDto } from '../dto/update-order-status.dto';
 import { OrderQueryDto } from '../dto/order-query.dto';
+import { OrderStatus } from '../enums/order-status.enum';
 import {
   OrderCreatedEvent,
   OrderPaidEvent,
@@ -342,7 +343,12 @@ export class OrderService {
   }
 
   /**
-   * Update order status (admin only)
+   * Update order status / payment / fulfillment.
+   *
+   * Rules:
+   * - Setting fulfillmentStatus to `fulfilled` (mark as ready) must NOT escalate
+   *   order status to `completed`. Prefer `ready_for_pickup` / keep `processing`.
+   * - `completed` is allowed only when payment is settled and delivery is finalized.
    */
   async updateOrderStatus(orderId: string, updateDto: UpdateOrderStatusDto) {
     const order = await this.prisma.order.findUnique({
@@ -353,30 +359,95 @@ export class OrderService {
       throw new NotFoundException(`Order ${orderId} not found`);
     }
 
+    if (
+      updateDto.status === undefined &&
+      updateDto.paymentStatus === undefined &&
+      updateDto.fulfillmentStatus === undefined
+    ) {
+      throw new BadRequestException(
+        'At least one of status, paymentStatus, or fulfillmentStatus is required',
+      );
+    }
+
+    const nextPaymentStatus = updateDto.paymentStatus ?? order.paymentStatus;
+    const nextFulfillmentStatus =
+      updateDto.fulfillmentStatus ?? order.fulfillmentStatus;
+    let nextStatus = updateDto.status ?? order.status;
+
+    // Explicit ready_for_pickup must never be demoted (e.g. back to processing).
+    if (updateDto.status === OrderStatus.READY_FOR_PICKUP) {
+      nextStatus = OrderStatus.READY_FOR_PICKUP;
+    } else if (updateDto.fulfillmentStatus === 'fulfilled') {
+      // Mark-as-ready / fulfilled must never escalate to completed, and must not
+      // leave the order stuck on processing when fulfillment becomes fulfilled.
+      if (
+        nextStatus === OrderStatus.COMPLETED ||
+        updateDto.status === undefined
+      ) {
+        if (order.status !== OrderStatus.CANCELLED) {
+          nextStatus = OrderStatus.READY_FOR_PICKUP;
+        }
+      }
+    }
+
     // Validate status transitions
-    if (updateDto.status === 'cancelled' && order.status === 'completed') {
+    if (
+      nextStatus === OrderStatus.CANCELLED &&
+      order.status === OrderStatus.COMPLETED
+    ) {
       throw new BadRequestException('Cannot cancel a completed order');
     }
 
-    const updateData: any = {
-      status: updateDto.status,
-    };
+    if (
+      nextStatus === OrderStatus.COMPLETED &&
+      order.status !== OrderStatus.COMPLETED
+    ) {
+      const paymentSettled = nextPaymentStatus === 'paid';
+      const deliveryFinalized = nextFulfillmentStatus === 'delivered';
+      if (!paymentSettled || !deliveryFinalized) {
+        throw new BadRequestException(
+          'Order can only be marked completed when payment is settled and delivery is fully finalized',
+        );
+      }
+    }
 
-    if (updateDto.paymentStatus) {
+    const updateData: Record<string, unknown> = {};
+
+    if (nextStatus !== order.status) {
+      updateData.status = nextStatus;
+    }
+
+    if (
+      updateDto.paymentStatus !== undefined &&
+      updateDto.paymentStatus !== order.paymentStatus
+    ) {
       updateData.paymentStatus = updateDto.paymentStatus;
     }
 
-    if (updateDto.fulfillmentStatus) {
+    if (
+      updateDto.fulfillmentStatus !== undefined &&
+      updateDto.fulfillmentStatus !== order.fulfillmentStatus
+    ) {
       updateData.fulfillmentStatus = updateDto.fulfillmentStatus;
     }
 
     // Set cancelled_at or completed_at timestamps
-    if (updateDto.status === 'cancelled' && order.status !== 'cancelled') {
+    if (
+      nextStatus === OrderStatus.CANCELLED &&
+      order.status !== OrderStatus.CANCELLED
+    ) {
       updateData.cancelledAt = new Date();
     }
 
-    if (updateDto.status === 'completed' && order.status !== 'completed') {
+    if (
+      nextStatus === OrderStatus.COMPLETED &&
+      order.status !== OrderStatus.COMPLETED
+    ) {
       updateData.completedAt = new Date();
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      return order;
     }
 
     const updatedOrder = await this.prisma.order.update({
@@ -388,7 +459,10 @@ export class OrderService {
     });
 
     // Emit events based on status changes
-    if (updateDto.status === 'cancelled' && order.status !== 'cancelled') {
+    if (
+      nextStatus === OrderStatus.CANCELLED &&
+      order.status !== OrderStatus.CANCELLED
+    ) {
       this.eventEmitter.emit(
         'order.cancelled',
         new OrderCancelledEvent(updatedOrder.id, updatedOrder.orderNumber),
@@ -407,7 +481,10 @@ export class OrderService {
     }
 
     this.logger.log(
-      `Order ${updatedOrder.orderNumber} status updated to ${updateDto.status}`,
+      `Order ${updatedOrder.orderNumber} status updated to ${updatedOrder.status}` +
+        (updateDto.fulfillmentStatus
+          ? ` (fulfillment: ${updateDto.fulfillmentStatus})`
+          : ''),
     );
 
     return updatedOrder;

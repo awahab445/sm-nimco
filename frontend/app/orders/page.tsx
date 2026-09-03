@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { orderApi } from '@/lib/api-client';
 import { useCartStore } from '@/lib/cart.store';
 import {
+  formatOrderStatusLabel,
   fulfillmentStatusBadgeClass,
   orderStatusBadgeClass,
   paymentStatusBadgeClass,
@@ -167,7 +168,7 @@ export default function OrdersPage() {
                           )}`}
                           title="Order Status"
                         >
-                          {order.status}
+                          {formatOrderStatusLabel(order.status)}
                         </span>
                         <span
                           className={`rounded px-2 py-1 text-xs font-medium ${paymentStatusBadgeClass(
