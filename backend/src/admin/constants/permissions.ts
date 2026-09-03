@@ -111,6 +111,7 @@ export const ADMIN_PERMISSION_SEED: { key: string; description: string }[] = [
 export const SUPER_ADMIN_ROLE_SLUG = 'super-admin';
 export const MANAGER_ROLE_SLUG = 'manager';
 export const SUPPORT_ROLE_SLUG = 'support';
+export const STORE_OPERATOR_ROLE_SLUG = 'store-operator';
 
 /**
  * Operational manager: full commerce ops on products/orders/customers, but no
@@ -156,6 +157,12 @@ export const MANAGER_PERMISSION_KEYS: string[] = [
   'settings.manage',
   'mail.manage',
   'analytics.manage',
+];
+
+/** Store operator mobile app: view and update active pickup orders only. */
+export const STORE_OPERATOR_PERMISSION_KEYS: string[] = [
+  'orders.read',
+  'orders.update',
 ];
 
 /** Read-only support: orders, customers, products. */

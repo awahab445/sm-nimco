@@ -9,6 +9,8 @@ import {
   CUSTOMER_AUTH_COOKIE,
 } from '../../common/auth-cookies';
 
+import { STORE_OPERATOR_ROLE_SLUG } from '../../admin/constants/permissions';
+
 export type JwtValidatePayload =
   | {
       typ: 'customer';
@@ -21,7 +23,16 @@ export type JwtValidatePayload =
       adminUserId: string;
       email: string;
       sub: string;
+    }
+  | {
+      typ: 'vendor';
+      vendorUserId: string;
+      email: string;
+      sub: string;
     };
+
+/** Use on routes protected by vendor JWT (store operator mobile app). */
+export type VendorJwtPayload = Extract<JwtValidatePayload, { typ: 'vendor' }>;
 
 /** Use on routes protected by {@link CustomerJwtAuthGuard}. */
 export type CustomerJwtPayload = Extract<
@@ -67,6 +78,32 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       return {
         typ: 'admin',
         adminUserId: admin.id,
+        email: admin.email,
+        sub: admin.id,
+      };
+    }
+
+    if (typ === 'vendor') {
+      const admin = await this.prisma.adminUser.findUnique({
+        where: { id: payload.sub },
+        include: {
+          roles: { include: { role: { select: { slug: true } } } },
+        },
+      });
+      if (!admin || !admin.isActive) {
+        throw new UnauthorizedException(
+          'Store operator is inactive or no longer exists',
+        );
+      }
+      const isStoreOperator = admin.roles.some(
+        (entry) => entry.role.slug === STORE_OPERATOR_ROLE_SLUG,
+      );
+      if (!isStoreOperator) {
+        throw new UnauthorizedException('Store operator access required');
+      }
+      return {
+        typ: 'vendor',
+        vendorUserId: admin.id,
         email: admin.email,
         sub: admin.id,
       };

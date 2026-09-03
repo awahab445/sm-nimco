@@ -34,7 +34,12 @@ import { ShippingEligibilityEvaluator } from './shipping-eligibility-evaluator.s
 import { ShippingRateService } from './shipping-rate.service';
 import { StoreSettingsService } from '../../store-settings/services/store-settings.service';
 import { ZoneConfigService } from './zone-config.service';
-import { isKarachiCity, qualifiesForFreeDelivery, roundShippingFee, calculateWeightBasedShippingFee } from '../utils/shipping-fee';
+import {
+  isKarachiCity,
+  qualifiesForFreeDelivery,
+  roundShippingFee,
+  calculateWeightBasedShippingFee,
+} from '../utils/shipping-fee';
 import {
   buildKarachiShippingOption,
   buildNationwideShippingOptions,

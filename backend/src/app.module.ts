@@ -27,6 +27,7 @@ import { StoreSettingsModule } from './store-settings/store-settings.module';
 import { BundleDealsModule } from './bundle-deals/bundle-deals.module';
 import { FeedsModule } from './feeds/feeds.module';
 import { WishlistModule } from './wishlist/wishlist.module';
+import { VendorModule } from './vendor/vendor.module';
 
 @Module({
   imports: [
@@ -60,6 +61,7 @@ import { WishlistModule } from './wishlist/wishlist.module';
     SiteConfigModule,
     StoreSettingsModule,
     BundleDealsModule,
+    VendorModule,
   ],
   controllers: [AppController],
   providers: [

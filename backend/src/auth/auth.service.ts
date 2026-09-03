@@ -14,7 +14,7 @@ import { EmailService } from '../mail/email.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 
-export type JwtPrincipalType = 'customer' | 'admin';
+export type JwtPrincipalType = 'customer' | 'admin' | 'vendor';
 
 /** JWT claims. Omit `typ` for legacy customer tokens (treated as customer). */
 export interface JwtPayload {

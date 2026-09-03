@@ -17,7 +17,7 @@ export class OrderQueryDto {
 
   @IsOptional()
   @IsString()
-  @IsIn(['pending', 'processing', 'completed', 'cancelled'])
+  @IsIn(['pending', 'processing', 'ready_for_pickup', 'completed', 'cancelled'])
   status?: string;
 
   @IsOptional()

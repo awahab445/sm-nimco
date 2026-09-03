@@ -23,6 +23,7 @@ import {
 import { randomUUID } from 'crypto';
 import { CreateAdminPaymentMethodDto } from '../dto/create-admin-payment-method.dto';
 import { UpdateAdminPaymentMethodDto } from '../dto/update-admin-payment-method.dto';
+import type { JwtValidatePayload } from '../../auth/strategies/jwt.strategy';
 
 @Injectable()
 export class PaymentService {
@@ -42,11 +43,7 @@ export class PaymentService {
     paymentMethodCode: string,
     returnUrl?: string,
     cancelUrl?: string,
-    actor?: {
-      typ: 'admin' | 'customer';
-      customerId?: string;
-      adminUserId?: string;
-    } | null,
+    actor?: JwtValidatePayload | null,
     guestEmail?: string,
   ): Promise<PaymentIntentResult> {
     const order = await this.prisma.order.findUnique({
@@ -63,6 +60,8 @@ export class PaymentService {
       if (order.customerId && order.customerId !== actor.customerId) {
         throw new ForbiddenException('You do not have access to this order');
       }
+    } else if (actor?.typ === 'vendor') {
+      throw new ForbiddenException('You do not have access to this order');
     } else {
       const normalizedGuest = (guestEmail || '').trim().toLowerCase();
       const orderEmail = (order.customerEmail || '').trim().toLowerCase();
@@ -332,16 +331,16 @@ export class PaymentService {
     return payment;
   }
 
-  async getPaymentAuthorized(
-    paymentId: string,
-    actor?: { typ: 'admin' | 'customer'; customerId?: string },
-  ) {
+  async getPaymentAuthorized(paymentId: string, actor?: JwtValidatePayload) {
     const payment = await this.getPayment(paymentId);
     if (!actor) {
       throw new ForbiddenException('Authentication required');
     }
     if (actor.typ === 'admin') {
       return payment;
+    }
+    if (actor.typ === 'vendor') {
+      throw new ForbiddenException('You do not have access to this payment');
     }
     const order = await this.prisma.order.findUnique({
       where: { id: payment.orderId },
@@ -368,13 +367,16 @@ export class PaymentService {
 
   async getPaymentsByOrderAuthorized(
     orderId: string,
-    actor?: { typ: 'admin' | 'customer'; customerId?: string },
+    actor?: JwtValidatePayload,
   ) {
     if (!actor) {
       throw new ForbiddenException('Authentication required');
     }
     if (actor.typ === 'admin') {
       return this.getPaymentsByOrder(orderId);
+    }
+    if (actor.typ === 'vendor') {
+      throw new ForbiddenException('You do not have access to these payments');
     }
     const order = await this.prisma.order.findUnique({
       where: { id: orderId },
