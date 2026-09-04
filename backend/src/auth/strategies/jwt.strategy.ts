@@ -23,12 +23,16 @@ export type JwtValidatePayload =
       adminUserId: string;
       email: string;
       sub: string;
+      role?: string;
+      storeId?: string;
     }
   | {
       typ: 'vendor';
       vendorUserId: string;
       email: string;
       sub: string;
+      role?: string;
+      storeId?: string;
     };
 
 /** Use on routes protected by vendor JWT (store operator mobile app). */
@@ -80,6 +84,8 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
         adminUserId: admin.id,
         email: admin.email,
         sub: admin.id,
+        ...(payload.role ? { role: payload.role } : {}),
+        ...(payload.storeId ? { storeId: payload.storeId } : {}),
       };
     }
 
@@ -106,6 +112,8 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
         vendorUserId: admin.id,
         email: admin.email,
         sub: admin.id,
+        ...(payload.role ? { role: payload.role } : {}),
+        ...(payload.storeId ? { storeId: payload.storeId } : {}),
       };
     }
 

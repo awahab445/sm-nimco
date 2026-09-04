@@ -21,6 +21,10 @@ export interface JwtPayload {
   sub: string;
   email: string;
   typ?: JwtPrincipalType;
+  /** Staff claim for Flutter JwtService (`SUPER_ADMIN` | `STORE_OPERATOR` | …). */
+  role?: string;
+  /** Optional store scope when multi-store / configured via env. */
+  storeId?: string;
 }
 
 export interface AuthResponse {

@@ -310,6 +310,7 @@ model OrderItem {
   rowTotal          Decimal  @map("row_total") @db.Decimal(12, 2)
   quantityFulfilled Int      @default(0) @map("quantity_fulfilled")
   quantityRefunded  Int      @default(0) @map("quantity_refunded")
+  outOfStock        Boolean  @default(false) @map("out_of_stock")
   metadata          Json     @default("{}")
   createdAt         DateTime @default(now()) @map("created_at")
   order             Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)

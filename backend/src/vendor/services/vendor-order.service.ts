@@ -13,9 +13,12 @@ import {
 } from '../utils/vendor-order-status.util';
 
 export interface VendorOrderItemDto {
+  id: string;
   name: string;
   quantity: number;
   price: number;
+  unitPrice: number;
+  outOfStock: boolean;
 }
 
 export interface VendorOrderDto {
@@ -28,6 +31,7 @@ export interface VendorOrderDto {
   };
   items: VendorOrderItemDto[];
   totalAmount: number;
+  createdAt?: string;
 }
 
 @Injectable()
@@ -50,6 +54,32 @@ export class VendorOrderService {
     return orders.map((order) => this.toVendorOrderDto(order));
   }
 
+  async findByOrderNumber(orderNumber: string): Promise<VendorOrderDto> {
+    const normalized = orderNumber.trim();
+    if (!normalized) {
+      throw new BadRequestException('orderNumber is required');
+    }
+
+    const order = await this.prisma.order.findFirst({
+      where: {
+        orderNumber: {
+          equals: normalized,
+          mode: 'insensitive',
+        },
+      },
+      include: {
+        items: true,
+        customer: { select: { phone: true } },
+      },
+    });
+
+    if (!order) {
+      throw new NotFoundException(`Order ${normalized} not found`);
+    }
+
+    return this.toVendorOrderDto(order, { allowLookupStatuses: true });
+  }
+
   async updateStatus(
     orderId: string,
     status: VendorOrderStatus,
@@ -67,8 +97,6 @@ export class VendorOrderService {
       throw new BadRequestException('Cannot update a cancelled order');
     }
 
-    // Persist mapped DB status directly so Mark as Ready cannot be coerced
-    // back to `processing` by shared admin transition rules.
     const dbStatus = vendorStatusToDb(status);
     const fulfillmentStatus = vendorFulfillmentStatusFor(status);
 
@@ -87,23 +115,78 @@ export class VendorOrderService {
     return this.toVendorOrderDto(order);
   }
 
-  private toVendorOrderDto(order: {
-    id: string;
-    orderNumber: string;
-    status: string;
-    customerName: string | null;
-    customerEmail: string;
-    grandTotal: { toString(): string };
-    shippingAddress: unknown;
-    billingAddress: unknown;
-    items: Array<{
-      name: string;
-      quantity: number;
-      unitPrice: { toString(): string };
-    }>;
-    customer?: { phone: string | null } | null;
-  }): VendorOrderDto {
-    const vendorStatus = dbStatusToVendor(order.status);
+  async updateItemOutOfStock(
+    orderId: string,
+    itemId: string,
+    outOfStock: boolean,
+  ): Promise<VendorOrderDto> {
+    const item = await this.prisma.orderItem.findFirst({
+      where: { id: itemId, orderId },
+      select: { id: true },
+    });
+
+    if (!item) {
+      throw new NotFoundException(
+        `Order item ${itemId} not found on order ${orderId}`,
+      );
+    }
+
+    await this.prisma.orderItem.update({
+      where: { id: itemId },
+      data: { outOfStock },
+    });
+
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        items: true,
+        customer: { select: { phone: true } },
+      },
+    });
+
+    if (!order) {
+      throw new NotFoundException(`Order ${orderId} not found`);
+    }
+
+    return this.toVendorOrderDto(order);
+  }
+
+  private toVendorOrderDto(
+    order: {
+      id: string;
+      orderNumber: string;
+      status: string;
+      customerName: string | null;
+      customerEmail: string;
+      grandTotal: { toString(): string };
+      shippingAddress: unknown;
+      billingAddress: unknown;
+      createdAt?: Date;
+      items: Array<{
+        id: string;
+        name: string;
+        quantity: number;
+        unitPrice: { toString(): string };
+        outOfStock?: boolean;
+      }>;
+      customer?: { phone: string | null } | null;
+    },
+    options?: { allowLookupStatuses?: boolean },
+  ): VendorOrderDto {
+    let vendorStatus = dbStatusToVendor(order.status);
+    if (!vendorStatus && options?.allowLookupStatuses) {
+      // Scanner may look up orders outside the active vendor queue.
+      const lowered = order.status.toLowerCase();
+      if (lowered === 'pending' || lowered === 'processing') {
+        vendorStatus = 'PROCESSING';
+      } else if (
+        lowered === 'completed' ||
+        lowered === 'ready_for_pickup' ||
+        lowered === 'fulfilled'
+      ) {
+        vendorStatus = 'READY_FOR_PICKUP';
+      }
+    }
     if (!vendorStatus) {
       throw new BadRequestException(
         `Order status "${order.status}" is not exposed to the store app`,
@@ -118,12 +201,19 @@ export class VendorOrderService {
         name: order.customerName || order.customerEmail,
         phone: this.resolveCustomerPhone(order),
       },
-      items: order.items.map((item) => ({
-        name: item.name,
-        quantity: item.quantity,
-        price: Number(item.unitPrice),
-      })),
+      items: order.items.map((item) => {
+        const price = Number(item.unitPrice);
+        return {
+          id: item.id,
+          name: item.name,
+          quantity: item.quantity,
+          price,
+          unitPrice: price,
+          outOfStock: Boolean(item.outOfStock),
+        };
+      }),
       totalAmount: Number(order.grandTotal),
+      createdAt: order.createdAt?.toISOString(),
     };
   }
 

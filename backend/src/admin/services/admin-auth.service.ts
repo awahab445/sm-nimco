@@ -4,6 +4,11 @@ import type { JwtPayload } from '../../auth/auth.service';
 import { AdminUserService } from './admin-user.service';
 import { AdminRbacService } from './admin-rbac.service';
 import { LoginDto } from '../../auth/dto/login.dto';
+import { PrismaService } from '../../catalog/services/prisma.service';
+import {
+  resolveJwtStaffRole,
+  resolveJwtStoreId,
+} from '../../auth/utils/jwt-staff-claims.util';
 
 export interface AdminAuthResponse {
   access_token: string;
@@ -25,6 +30,7 @@ export class AdminAuthService {
     private readonly adminUserService: AdminUserService,
     private readonly rbac: AdminRbacService,
     private readonly jwtService: JwtService,
+    private readonly prisma: PrismaService,
   ) {}
 
   async login(dto: LoginDto): Promise<AdminAuthResponse> {
@@ -36,10 +42,22 @@ export class AdminAuthService {
       throw new UnauthorizedException('Invalid email or password');
     }
 
+    const roleSlugs = user.roles.map((entry) => entry.role.slug);
+    const role = resolveJwtStaffRole(roleSlugs);
+
+    const storeSettings = await this.prisma.storeSettings.findUnique({
+      where: { id: 'default' },
+      select: { id: true },
+    });
+
+    const storeId = resolveJwtStoreId(storeSettings?.id);
+
     const payload: JwtPayload = {
       sub: user.id,
       email: user.email,
       typ: 'admin',
+      ...(role ? { role } : {}),
+      ...(storeId ? { storeId } : {}),
     };
     const access_token = this.jwtService.sign(payload);
     const permissions = await this.rbac.getEffectivePermissionKeys(user.id);
