@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import type { JwtPayload } from '../../auth/auth.service';
 import { LoginDto } from '../../auth/dto/login.dto';
@@ -9,6 +9,7 @@ import {
   JwtStaffRole,
   resolveJwtStoreId,
 } from '../../auth/utils/jwt-staff-claims.util';
+import { USER_BLOCKED_MESSAGE } from '../../sessions/session.service';
 
 export interface StoreLoginResponse {
   accessToken: string;
@@ -30,6 +31,10 @@ export class StoreAuthService {
 
     if (!user) {
       throw new UnauthorizedException('Invalid email or password');
+    }
+
+    if (user.isBlocked) {
+      throw new ForbiddenException({ message: USER_BLOCKED_MESSAGE });
     }
 
     const isStoreOperator = user.roles.some(

@@ -805,14 +805,37 @@ model AdminUser {
   firstName    String?         @map("first_name") @db.VarChar(255)
   lastName     String?         @map("last_name") @db.VarChar(255)
   isActive     Boolean         @default(true) @map("is_active")
+  /// When true, store-operator (vendor) JWTs are rejected with USER_BLOCKED.
+  isBlocked    Boolean         @default(false) @map("is_blocked")
+  lastIp       String?         @map("last_ip") @db.VarChar(64)
   lastLoginAt  DateTime?       @map("last_login_at") @db.Timestamptz(6)
   createdAt    DateTime        @default(now()) @map("created_at")
   updatedAt    DateTime        @updatedAt @map("updated_at")
   roles        AdminUserRole[]
+  sessions     SessionLog[]
 
   @@index([email])
   @@index([isActive])
+  @@index([isBlocked])
   @@map("admin_users")
+}
+
+/// Active / recent app sessions for store-operator device monitoring.
+model SessionLog {
+  id           String    @id @default(uuid()) @db.Uuid
+  userId       String    @map("user_id") @db.Uuid
+  ipAddress    String?   @map("ip_address") @db.VarChar(64)
+  deviceInfo   String?   @map("device_info") @db.VarChar(512)
+  lastActiveAt DateTime  @default(now()) @map("last_active_at") @db.Timestamptz(6)
+  isBlocked    Boolean   @default(false) @map("is_blocked")
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  user         AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId])
+  @@index([lastActiveAt(sort: Desc)])
+  @@index([isBlocked])
+  @@map("session_logs")
 }
 
 model AdminUserRole {

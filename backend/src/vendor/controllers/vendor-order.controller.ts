@@ -19,9 +19,10 @@ import { VendorOrderQueryDto } from '../dto/vendor-order-query.dto';
 import { VendorUpdateOrderStatusDto } from '../dto/vendor-update-order-status.dto';
 import { VendorUpdateItemOutOfStockDto } from '../dto/vendor-update-item-oos.dto';
 import { VendorOrderService } from '../services/vendor-order.service';
+import { VendorBlockedGuard } from '../guards/vendor-blocked.guard';
 
 @Controller('vendor/orders')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, VendorBlockedGuard)
 export class VendorOrderController {
   constructor(private readonly vendorOrderService: VendorOrderService) {}
 

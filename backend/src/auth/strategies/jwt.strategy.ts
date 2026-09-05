@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import type { Request } from 'express';
@@ -10,6 +10,7 @@ import {
 } from '../../common/auth-cookies';
 
 import { STORE_OPERATOR_ROLE_SLUG } from '../../admin/constants/permissions';
+import { USER_BLOCKED_MESSAGE } from '../../sessions/session.service';
 
 export type JwtValidatePayload =
   | {
@@ -100,6 +101,9 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
         throw new UnauthorizedException(
           'Store operator is inactive or no longer exists',
         );
+      }
+      if (admin.isBlocked) {
+        throw new ForbiddenException({ message: USER_BLOCKED_MESSAGE });
       }
       const isStoreOperator = admin.roles.some(
         (entry) => entry.role.slug === STORE_OPERATOR_ROLE_SLUG,

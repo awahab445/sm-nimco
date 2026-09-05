@@ -230,6 +230,13 @@ export const adminNavGroups: NavGroup[] = [
         phase: 'A',
         requirePermission: ['admin.roles.read', 'admin.roles.manage'],
       },
+      {
+        href: '/sessions',
+        label: 'Connected Users & Device Security',
+        description: 'Monitor store-operator sessions and revoke access',
+        phase: 'A',
+        requirePermission: ['admin.users.read', 'admin.users.update'],
+      },
     ],
   },
 ];
