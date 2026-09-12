@@ -95,6 +95,13 @@ export const adminNavGroups: NavGroup[] = [
         requirePermission: ['orders.read', 'orders.manage'],
       },
       {
+        href: '/reports',
+        label: 'Reports',
+        description: 'Order summary and item breakdown CSV',
+        phase: 'H',
+        requirePermission: ['reports.read'],
+      },
+      {
         href: '/promotions',
         label: 'Promotions',
         description: 'Coupons and campaigns',

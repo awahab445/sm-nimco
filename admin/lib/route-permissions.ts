@@ -91,6 +91,9 @@ const RULES: RouteRule[] = [
     requirePermission: ['orders.read', 'orders.update', 'orders.manage'],
   },
 
+  // ---- Reports ---------------------------------------------------------
+  { test: prefix('/reports'), requirePermission: ['reports.read'] },
+
   // ---- Promotions ------------------------------------------------------
   { test: prefix('/promotions'), requirePermission: ['promotions.manage'] },
 
