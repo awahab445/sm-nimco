@@ -2,10 +2,7 @@
 
 import { Suspense, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-
-const FBC_COOKIE = '_fbc';
-/** 90 days — Meta's recommended retention for click IDs. */
-const FBC_MAX_AGE_SECONDS = 7_776_000;
+import { ensureMetaFbcFromUrl } from '@/lib/analytics/meta-capi-client';
 
 /**
  * Captures `fbclid` from the landing URL and stores `_fbc` for Meta Pixel / CAPI.
@@ -16,11 +13,7 @@ function MetaFbcCaptureInner() {
   const fbclid = searchParams.get('fbclid');
 
   useEffect(() => {
-    if (!fbclid?.trim()) return;
-    if (typeof document === 'undefined') return;
-
-    const value = `fb.1.${Date.now()}.${fbclid.trim()}`;
-    document.cookie = `${FBC_COOKIE}=${encodeURIComponent(value)}; path=/; max-age=${FBC_MAX_AGE_SECONDS}; SameSite=Lax`;
+    ensureMetaFbcFromUrl(fbclid);
   }, [fbclid]);
 
   return null;
