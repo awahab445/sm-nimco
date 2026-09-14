@@ -4,3 +4,4 @@ library;
 
 export 'session_heartbeat.dart';
 export 'user_blocked_interceptor.dart';
+export 'fcm_token_registration.dart';

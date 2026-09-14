@@ -107,6 +107,83 @@ export class SessionService {
     return { status: 'active', isBlocked: false };
   }
 
+  /**
+   * Persist the store-operator app's FCM device token on the user's SessionLog.
+   * Creates a session row if ping has not run yet.
+   */
+  async saveFcmToken(
+    userId: string,
+    fcmToken: string,
+    req?: Request,
+  ): Promise<{ ok: true; fcmTokenSaved: true }> {
+    const user = await this.prisma.adminUser.findUnique({
+      where: { id: userId },
+      select: { id: true, isBlocked: true, isActive: true },
+    });
+    if (!user || !user.isActive) {
+      throw new NotFoundException('User not found');
+    }
+
+    this.assertNotBlocked(user.isBlocked);
+
+    const token = fcmToken.trim();
+    const now = new Date();
+    const ipAddress = req ? this.resolveClientIp(req) : null;
+    const deviceInfo = req ? this.resolveDeviceInfo(req) : null;
+
+    // Clear this token from any other session so one device maps to one user.
+    await this.prisma.sessionLog.updateMany({
+      where: {
+        fcmToken: token,
+        userId: { not: userId },
+      },
+      data: { fcmToken: null },
+    });
+
+    await this.prisma.sessionLog.upsert({
+      where: { userId },
+      create: {
+        userId,
+        fcmToken: token,
+        ipAddress,
+        deviceInfo,
+        lastActiveAt: now,
+        isBlocked: false,
+      },
+      update: {
+        fcmToken: token,
+        lastActiveAt: now,
+        ...(ipAddress ? { ipAddress } : {}),
+        ...(deviceInfo ? { deviceInfo } : {}),
+        isBlocked: false,
+      },
+    });
+
+    return { ok: true, fcmTokenSaved: true };
+  }
+
+  /** Active, non-blocked operator FCM tokens for push fan-out. */
+  async listActiveOperatorFcmTokens(): Promise<string[]> {
+    const rows = await this.prisma.sessionLog.findMany({
+      where: {
+        fcmToken: { not: null },
+        isBlocked: false,
+        user: {
+          isActive: true,
+          isBlocked: false,
+        },
+      },
+      select: { fcmToken: true },
+    });
+    return [
+      ...new Set(
+        rows
+          .map((r) => r.fcmToken?.trim())
+          .filter((t): t is string => Boolean(t)),
+      ),
+    ];
+  }
+
   async listSessions(): Promise<SessionListItem[]> {
     const rows = await this.prisma.sessionLog.findMany({
       orderBy: { lastActiveAt: 'desc' },

@@ -28,6 +28,7 @@ import { BundleDealsModule } from './bundle-deals/bundle-deals.module';
 import { FeedsModule } from './feeds/feeds.module';
 import { WishlistModule } from './wishlist/wishlist.module';
 import { VendorModule } from './vendor/vendor.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -62,6 +63,7 @@ import { VendorModule } from './vendor/vendor.module';
     StoreSettingsModule,
     BundleDealsModule,
     VendorModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [
