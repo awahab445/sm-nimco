@@ -9,6 +9,7 @@ import {
   dbStatusToVendor,
   vendorFulfillmentStatusFor,
   vendorStatusToDb,
+  vendorStatusToDbFilter,
   type VendorOrderStatus,
 } from '../utils/vendor-order-status.util';
 
@@ -41,14 +42,14 @@ export class VendorOrderService {
   async findActiveByStatus(
     status: VendorOrderStatus,
   ): Promise<VendorOrderDto[]> {
-    const dbStatus = vendorStatusToDb(status);
+    const dbStatuses = vendorStatusToDbFilter(status);
     const orders = await this.prisma.order.findMany({
-      where: { status: dbStatus },
+      where: { status: { in: dbStatuses } },
       include: {
         items: true,
         customer: { select: { phone: true } },
       },
-      orderBy: { createdAt: 'asc' },
+      orderBy: { createdAt: 'desc' },
     });
 
     return orders.map((order) => this.toVendorOrderDto(order));
@@ -177,9 +178,7 @@ export class VendorOrderService {
     if (!vendorStatus && options?.allowLookupStatuses) {
       // Scanner may look up orders outside the active vendor queue.
       const lowered = order.status.toLowerCase();
-      if (lowered === 'pending' || lowered === 'processing') {
-        vendorStatus = 'PROCESSING';
-      } else if (
+      if (
         lowered === 'completed' ||
         lowered === 'ready_for_pickup' ||
         lowered === 'fulfilled'

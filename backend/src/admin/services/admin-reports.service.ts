@@ -145,8 +145,7 @@ export class AdminReportsService {
       return '—';
     }
     const a = address as Record<string, unknown>;
-    const get = (k: string) =>
-      typeof a[k] === 'string' ? (a[k] as string).trim() : '';
+    const get = (k: string) => (typeof a[k] === 'string' ? a[k].trim() : '');
     const lines = [
       [get('firstName'), get('lastName')].filter(Boolean).join(' '),
       get('company'),

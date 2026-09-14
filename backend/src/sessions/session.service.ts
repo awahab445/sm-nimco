@@ -187,7 +187,9 @@ export class SessionService {
     return item;
   }
 
-  private async listSessionsForUser(userId: string): Promise<SessionListItem[]> {
+  private async listSessionsForUser(
+    userId: string,
+  ): Promise<SessionListItem[]> {
     const all = await this.listSessions();
     return all.filter((s) => s.userId === userId);
   }

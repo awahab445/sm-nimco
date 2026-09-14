@@ -25,10 +25,7 @@ export class VendorSessionController {
    */
   @Post('ping')
   @HttpCode(HttpStatus.OK)
-  async ping(
-    @CurrentUser() user: JwtValidatePayload,
-    @Req() req: Request,
-  ) {
+  async ping(@CurrentUser() user: JwtValidatePayload, @Req() req: Request) {
     assertVendorUser(user);
     return this.sessionService.ping(user.vendorUserId, req);
   }

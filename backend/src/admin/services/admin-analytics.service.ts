@@ -17,7 +17,10 @@ export interface AdminAnalyticsSummaryDto {
 export class AdminAnalyticsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getSummary(from?: string, to?: string): Promise<AdminAnalyticsSummaryDto> {
+  async getSummary(
+    from?: string,
+    to?: string,
+  ): Promise<AdminAnalyticsSummaryDto> {
     const createdAt = this.buildCreatedAtFilter(from, to);
 
     const where: Prisma.OrderWhereInput = {
