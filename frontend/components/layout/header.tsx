@@ -387,74 +387,70 @@ export function Header({ theme = 'default' }: { theme?: StoreThemeCode }) {
   const { lead: brandLead, trail: brandTrail } = splitStoreName(STORE_NAME);
   const logoIntrinsic = Math.max(logoWidth, logoHeight, LOGO_DISPLAY_MIN);
 
-  const smNimcoBrandLogo = (
-    <Link
-      href="/"
-      className="site-header__logo group inline-flex max-w-full items-center gap-2 bg-transparent outline-none focus-visible:ring-2 focus-visible:ring-ring/40 sm:gap-2.5"
-      aria-label={`${STORE_NAME} home`}
-    >
-      <Image
-        alt=""
-        className="h-9 w-auto shrink-0 object-contain sm:h-10"
-        height={42}
-        priority
-        src={logoSrc}
-        unoptimized={logoSrc.startsWith('http')}
-        width={42}
-      />
-      <div className="flex min-w-0 flex-col justify-center text-left leading-none">
-        <span className="truncate font-heading text-xs font-bold uppercase tracking-wider text-[var(--brand-gold-primary,#d4af37)] sm:text-sm">
-          SM NIMCO
-        </span>
-        <span className="mt-0.5 truncate text-[9px] font-medium uppercase tracking-widest text-[color-mix(in_srgb,var(--navbar-foreground,#1e1035)_60%,transparent)] sm:text-[10px]">
-          &amp; SWEETS
-        </span>
-      </div>
-    </Link>
-  );
-
-  const brandLogo = isSmNimco ? (
-    smNimcoBrandLogo
-  ) : (
-    <Link
-      href="/"
-      className="site-header__logo inline-flex max-w-full items-center gap-2 bg-transparent outline-none focus-visible:ring-2 focus-visible:ring-ring/40 sm:gap-2.5"
-      aria-label={`${STORE_NAME} home`}
-    >
-      <Image
-        src={logoSrc}
-        alt=""
-        width={logoIntrinsic}
-        height={logoIntrinsic}
-        className="h-10 w-10 shrink-0 object-contain lg:h-12 lg:w-12"
-        priority
-        unoptimized={logoSrc.startsWith('http')}
-      />
-      <span className="min-w-0 text-left leading-none" aria-hidden="true">
-        {/* Mobile: stacked wordmark — e.g. "SM NIMCO &" / "Sweets" */}
-        <span className="flex flex-col gap-0.5 lg:hidden">
-          <span className="site-header__store-name text-[13px] font-bold tracking-[0.04em] text-foreground sm:text-sm">
-            {brandLead}
-          </span>
-          {brandTrail ? (
-            <span className="site-header__wordmark-accent text-[12px] font-medium tracking-[0.06em] sm:text-[13px]">
-              {brandTrail}
+  /** Both variants stay in the DOM; visibility follows `html[data-store-theme]` via CSS (SSR-safe). */
+  const brandLogo = (
+    <>
+      <Link
+        href="/"
+        className="site-header__logo site-header__logo--default inline-flex max-w-full items-center gap-2 bg-transparent outline-none focus-visible:ring-2 focus-visible:ring-ring/40 sm:gap-2.5"
+        aria-label={`${STORE_NAME} home`}
+      >
+        <Image
+          src={logoSrc}
+          alt=""
+          width={logoIntrinsic}
+          height={logoIntrinsic}
+          className="h-10 w-10 shrink-0 object-contain lg:h-12 lg:w-12"
+          priority
+          unoptimized={logoSrc.startsWith('http')}
+        />
+        <span className="min-w-0 text-left leading-none" aria-hidden="true">
+          <span className="flex flex-col gap-0.5 lg:hidden">
+            <span className="site-header__store-name text-[13px] font-bold tracking-[0.04em] text-foreground sm:text-sm">
+              {brandLead}
             </span>
-          ) : null}
-        </span>
-        {/* Desktop: single-line wordmark beside icon */}
-        <span className="hidden whitespace-nowrap lg:inline-flex lg:items-baseline lg:gap-1.5">
-          <span className="site-header__store-name text-base font-bold tracking-[0.04em] text-foreground xl:text-lg">
-            {brandLead}
+            {brandTrail ? (
+              <span className="site-header__wordmark-accent text-[12px] font-medium tracking-[0.06em] sm:text-[13px]">
+                {brandTrail}
+              </span>
+            ) : null}
           </span>
-          {brandTrail ? (
-            <span className="site-header__wordmark-accent text-base font-semibold tracking-[0.04em] xl:text-lg">
-              {brandTrail}
+          <span className="hidden whitespace-nowrap lg:inline-flex lg:items-baseline lg:gap-1.5">
+            <span className="site-header__store-name text-base font-bold tracking-[0.04em] text-foreground xl:text-lg">
+              {brandLead}
             </span>
-          ) : null}
+            {brandTrail ? (
+              <span className="site-header__wordmark-accent text-base font-semibold tracking-[0.04em] xl:text-lg">
+                {brandTrail}
+              </span>
+            ) : null}
+          </span>
         </span>
-      </span>
-    </Link>
+      </Link>
+      <Link
+        href="/"
+        className="site-header__logo site-header__logo--sm-nimco group inline-flex max-w-full items-center gap-2 bg-transparent outline-none focus-visible:ring-2 focus-visible:ring-ring/40 sm:gap-2.5"
+        aria-label={`${STORE_NAME} home`}
+      >
+        <Image
+          alt=""
+          className="h-9 w-auto shrink-0 object-contain sm:h-10"
+          height={42}
+          priority
+          src={logoSrc}
+          unoptimized={logoSrc.startsWith('http')}
+          width={42}
+        />
+        <div className="flex min-w-0 flex-col justify-center text-left leading-none">
+          <span className="truncate font-heading text-xs font-bold uppercase tracking-wider text-[var(--brand-gold-primary,#d4af37)] sm:text-sm">
+            SM NIMCO
+          </span>
+          <span className="mt-0.5 truncate text-[9px] font-medium uppercase tracking-widest text-[color-mix(in_srgb,var(--navbar-foreground,#1e1035)_60%,transparent)] sm:text-[10px]">
+            &amp; SWEETS
+          </span>
+        </div>
+      </Link>
+    </>
   );
 
   /** Wishlist — badge from guest localStorage or authenticated server list. */
@@ -659,9 +655,7 @@ export function Header({ theme = 'default' }: { theme?: StoreThemeCode }) {
         <div className="relative flex min-h-[3.25rem] w-full items-center justify-between px-2.5 py-2 sm:px-4">
           <div className="z-10 flex w-11 shrink-0 items-center justify-start">{mobileMenuButton}</div>
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-14 sm:px-16">
-            <div
-              className={`pointer-events-auto ${isSmNimco ? 'max-w-[min(100%,17.5rem)]' : 'max-w-[min(100%,14.5rem)]'}`}
-            >
+            <div className="site-header__mobile-logo-slot pointer-events-auto max-w-[min(100%,14.5rem)]">
               {brandLogo}
             </div>
           </div>

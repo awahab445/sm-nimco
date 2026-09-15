@@ -1,5 +1,9 @@
 import { stripPiiFromUrlString } from './sanitize-meta-url';
 
+const FBC_COOKIE = '_fbc';
+/** 90 days — Meta's recommended retention for click IDs. */
+const FBC_MAX_AGE_SECONDS = 7_776_000;
+
 /** Read Meta Pixel cookies for Conversions API matching. */
 
 function readCookie(name: string): string | null {
@@ -22,6 +26,21 @@ export function getMetaFbp(): string | null {
 
 export function getMetaFbc(): string | null {
   return readCookie('_fbc');
+}
+
+/**
+ * Persist Meta click ID (`_fbc`) from a landing URL `fbclid` query param.
+ * Safe no-op on the server; does not overwrite an existing cookie.
+ */
+export function ensureMetaFbcFromUrl(fbclid: string | null | undefined): void {
+  if (typeof document === 'undefined') return;
+
+  const trimmed = fbclid?.trim();
+  if (!trimmed) return;
+  if (getMetaFbc()) return;
+
+  const value = `fb.1.${Date.now()}.${trimmed}`;
+  document.cookie = `${FBC_COOKIE}=${encodeURIComponent(value)}; path=/; max-age=${FBC_MAX_AGE_SECONDS}; SameSite=Lax`;
 }
 
 /** Optional known customer fields for Meta match quality (never invent). */

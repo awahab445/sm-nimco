@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import * as express from 'express';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
@@ -63,7 +64,11 @@ function validateProductionEnv(): void {
 async function bootstrap() {
   validateProductionEnv();
 
-  const app = await NestFactory.create(AppModule, { rawBody: true });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    rawBody: true,
+  });
+  // Needed so req.ip reflects X-Forwarded-For behind reverse proxies.
+  app.set('trust proxy', 1);
 
   // Create directories asynchronously (Non-blocking)
   const uploadsRoot = join(process.cwd(), 'uploads');

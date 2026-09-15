@@ -819,6 +819,27 @@ model AdminUser {
   @@map("admin_users")
 }
 
+/// Active / recent app sessions for store-operator device monitoring.
+model SessionLog {
+  id           String    @id @default(uuid()) @db.Uuid
+  userId       String    @map("user_id") @db.Uuid
+  ipAddress    String?   @map("ip_address") @db.VarChar(64)
+  deviceInfo   String?   @map("device_info") @db.VarChar(512)
+  /// Firebase Cloud Messaging device token for the store-operator app.
+  fcmToken     String?   @map("fcm_token") @db.VarChar(512)
+  lastActiveAt DateTime  @default(now()) @map("last_active_at") @db.Timestamptz(6)
+  isBlocked    Boolean   @default(false) @map("is_blocked")
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  user         AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId])
+  @@index([lastActiveAt(sort: Desc)])
+  @@index([isBlocked])
+  @@index([fcmToken])
+  @@map("session_logs")
+}
+
 model AdminUserRole {
   userId String    @map("user_id") @db.Uuid
   roleId String    @map("role_id") @db.Uuid

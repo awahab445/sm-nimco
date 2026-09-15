@@ -61,9 +61,9 @@ export class PackageInsertService {
 
     const storeName = process.env.STORE_NAME?.trim() || 'SM NIMCO & Sweets';
     const supportPhone =
-      process.env.STORE_SUPPORT_PHONE?.trim() || '021-32345678';
+      process.env.STORE_SUPPORT_PHONE?.trim() || '+92 371 1317164';
     const storeUrl =
-      process.env.PUBLIC_BASE_URL?.trim() || 'www.messachemicals.com';
+      process.env.PUBLIC_BASE_URL?.trim() || 'www.smnimco.com';
 
     const orderById = new Map(orders.map((order) => [order.id, order]));
     const inserts: PackageInsertViewModel[] = [];

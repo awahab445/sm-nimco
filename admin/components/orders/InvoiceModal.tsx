@@ -4,11 +4,13 @@ import { useEffect } from 'react';
 import type { Order, OrderAddressSnapshot } from '@/lib/api/orders';
 import { formatPrice } from '@/lib/currency';
 
-const COMPANY_NAME = 'M. ESSA CHEMICALS';
+const COMPANY_NAME = 'SM NIMCO & SWEETS';
 const WAREHOUSE_ADDRESS_LINES = [
-  'Warehouse / Dispatch',
   'Commercial Area',
   'Karachi, Pakistan',
+  'orders@smnimco.com',
+  '+92 371 1317164',
+  'www.smnimco.com',
 ];
 
 type InvoiceModalProps = {

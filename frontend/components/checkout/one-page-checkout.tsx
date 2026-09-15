@@ -660,6 +660,13 @@ export function OnePageCheckout() {
         }
       }
 
+      if (!selectedShipping) {
+        return;
+      }
+      if (!selectedPaymentCode) {
+        return;
+      }
+
       await updateShippingMethod({
         methodCode: selectedShipping.methodCode,
         methodId: selectedShipping.methodId,

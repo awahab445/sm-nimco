@@ -1089,6 +1089,19 @@ html[data-store-theme='ember'][data-immersive-hero] .site-header.is-scrolled {
   transition: color 0.15s ease;
 }
 
+/* SSR-safe theme logos: both variants render; CSS picks the active preset. */
+html[data-store-theme='sm_nimco'] .site-header__logo--default {
+  display: none;
+}
+
+html:not([data-store-theme='sm_nimco']) .site-header__logo--sm-nimco {
+  display: none;
+}
+
+html[data-store-theme='sm_nimco'] .site-header__mobile-logo-slot {
+  max-width: min(100%, 17.5rem);
+}
+
 .site-header nav a:hover,
 .site-header nav .header-nav-trigger:hover,
 .site-header nav .header-nav-trigger[aria-expanded='true'],

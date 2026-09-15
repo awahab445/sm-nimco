@@ -95,6 +95,13 @@ export const adminNavGroups: NavGroup[] = [
         requirePermission: ['orders.read', 'orders.manage'],
       },
       {
+        href: '/reports',
+        label: 'Reports',
+        description: 'Order summary and item breakdown CSV',
+        phase: 'H',
+        requirePermission: ['reports.read'],
+      },
+      {
         href: '/promotions',
         label: 'Promotions',
         description: 'Coupons and campaigns',
@@ -229,6 +236,13 @@ export const adminNavGroups: NavGroup[] = [
         description: 'View roles and their permission keys',
         phase: 'A',
         requirePermission: ['admin.roles.read', 'admin.roles.manage'],
+      },
+      {
+        href: '/sessions',
+        label: 'Connected Users & Device Security',
+        description: 'Monitor store-operator sessions and revoke access',
+        phase: 'A',
+        requirePermission: ['admin.users.read', 'admin.users.update'],
       },
     ],
   },

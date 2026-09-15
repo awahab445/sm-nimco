@@ -39,6 +39,10 @@ const RULES: RouteRule[] = [
     test: prefix('/staff/roles'),
     requirePermission: ['admin.roles.read', 'admin.roles.manage'],
   },
+  {
+    test: prefix('/sessions'),
+    requirePermission: ['admin.users.read', 'admin.users.update'],
+  },
 
   // ---- Products (covers products, categories, product-options) ---------
   // The `<entity>.manage` wildcard in hasPermission() means a role holding
@@ -86,6 +90,9 @@ const RULES: RouteRule[] = [
     test: prefix('/orders'),
     requirePermission: ['orders.read', 'orders.update', 'orders.manage'],
   },
+
+  // ---- Reports ---------------------------------------------------------
+  { test: prefix('/reports'), requirePermission: ['reports.read'] },
 
   // ---- Promotions ------------------------------------------------------
   { test: prefix('/promotions'), requirePermission: ['promotions.manage'] },
