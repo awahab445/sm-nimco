@@ -1,6 +1,13 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import * as admin from 'firebase-admin';
 import { readFileSync, existsSync } from 'fs';
+import {
+  applicationDefault,
+  cert,
+  getApps,
+  initializeApp,
+  type ServiceAccount,
+} from 'firebase-admin/app';
+import { getMessaging } from 'firebase-admin/messaging';
 import { STORE_OPERATOR_ROLE_SLUG } from '../../admin/constants/permissions';
 import { PrismaService } from '../../catalog/services/prisma.service';
 
@@ -34,30 +41,40 @@ export class FcmService implements OnModuleInit {
   }
 
   private initializeFirebase(): boolean {
-    if (admin.apps.length > 0) {
+    if (getApps().length > 0) {
       return true;
     }
 
     try {
-      const jsonInline = process.env.FIREBASE_SERVICE_ACCOUNT_JSON?.trim();
+      const jsonInline =
+        process.env.FIREBASE_SERVICE_ACCOUNT_JSON?.trim() ||
+        process.env.FIREBASE_CREDENTIALS_JSON?.trim();
       const jsonPath = process.env.FIREBASE_SERVICE_ACCOUNT_PATH?.trim();
       const projectId = process.env.FIREBASE_PROJECT_ID?.trim();
+      const clientEmail = process.env.FIREBASE_CLIENT_EMAIL?.trim();
+      const privateKeyRaw = process.env.FIREBASE_PRIVATE_KEY?.trim();
 
-      let credential: admin.credential.Credential | undefined;
+      let credential: ReturnType<typeof cert> | undefined;
       let inferredProjectId = projectId;
 
       if (jsonInline) {
         const parsed = JSON.parse(jsonInline) as ServiceAccountJson;
-        credential = admin.credential.cert(parsed as admin.ServiceAccount);
+        credential = cert(parsed as ServiceAccount);
         inferredProjectId = inferredProjectId || parsed.project_id;
       } else if (jsonPath && existsSync(jsonPath)) {
         const parsed = JSON.parse(
           readFileSync(jsonPath, 'utf8'),
         ) as ServiceAccountJson;
-        credential = admin.credential.cert(parsed as admin.ServiceAccount);
+        credential = cert(parsed as ServiceAccount);
         inferredProjectId = inferredProjectId || parsed.project_id;
+      } else if (projectId && clientEmail && privateKeyRaw) {
+        credential = cert({
+          projectId,
+          clientEmail,
+          privateKey: privateKeyRaw.replace(/\\n/g, '\n'),
+        });
       } else if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-        credential = admin.credential.applicationDefault();
+        credential = applicationDefault();
       }
 
       if (!credential) {
@@ -67,7 +84,7 @@ export class FcmService implements OnModuleInit {
         return false;
       }
 
-      admin.initializeApp({
+      initializeApp({
         credential,
         ...(inferredProjectId ? { projectId: inferredProjectId } : {}),
       });
@@ -151,7 +168,7 @@ export class FcmService implements OnModuleInit {
     const title = payload.title ?? 'New Order Received!';
     const body = payload.body ?? `Order #${payload.orderNumber} is waiting.`;
 
-    const response = await admin.messaging().sendEachForMulticast({
+    const response = await getMessaging().sendEachForMulticast({
       tokens,
       notification: { title, body },
       data: {
