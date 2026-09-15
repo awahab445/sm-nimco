@@ -8,45 +8,45 @@ datasource db {
 }
 
 model Product {
-  id               String                        @id @default(uuid())
-  sku              String                        @unique
-  name             String
-  slug             String                        @unique
-  type             String
-  description      String?
-  shortDescription String?                       @map("short_description")
-  seoTitle           String?                       @map("seo_title")
-  metaDescription    String?                       @map("meta_description")
-  tasteProfile       String?                       @map("taste_profile")
-  ingredients        String?
-  servingSuggestions String?                       @map("serving_suggestions")
-  storageInstructions String?                      @map("storage_instructions")
-  dietaryHighlights  String?                       @map("dietary_highlights")
-  spiceLevel         String?                       @map("spice_level")
-  faqs               String?
-  focusKeywords      String?                       @map("focus_keywords")
-  productTags        String?                       @map("product_tags")
-  basePrice        Decimal                       @map("base_price") @db.Decimal(10, 2)
-  cost               Decimal?                      @db.Decimal(10, 2)
-  weight             Decimal?                      @db.Decimal(10, 2)
-  shippingWeight     Float                         @default(1.0) @map("shipping_weight")
-  shippingWeightUnit String                        @default("KG") @map("shipping_weight_unit")
-  status             String                        @default("draft")
-  visibility         String                        @default("both")
-  taxClassId         String?                       @map("tax_class_id")
-  attributes         Json?                         @default("{}")
-  metaData           Json?                         @default("{}") @map("meta_data")
-  createdAt          DateTime                      @default(now()) @map("created_at")
-  updatedAt          DateTime                      @updatedAt @map("updated_at")
-  deletedAt          DateTime?                     @map("deleted_at")
-  inventoryItems     InventoryItem[]
-  categories         ProductCategory[]
-  images             ProductImage[]
-  optionValues       ProductOptionValueOnProduct[]
-  options            ProductOptionOnProduct[]
-  variants           ProductVariant[]
-  bundleDealItems    BundleDealItem[]
-  wishlistItems      WishlistItem[]
+  id                  String                        @id @default(uuid())
+  sku                 String                        @unique
+  name                String
+  slug                String                        @unique
+  type                String
+  description         String?
+  shortDescription    String?                       @map("short_description")
+  seoTitle            String?                       @map("seo_title")
+  metaDescription     String?                       @map("meta_description")
+  tasteProfile        String?                       @map("taste_profile")
+  ingredients         String?
+  servingSuggestions  String?                       @map("serving_suggestions")
+  storageInstructions String?                       @map("storage_instructions")
+  dietaryHighlights   String?                       @map("dietary_highlights")
+  spiceLevel          String?                       @map("spice_level")
+  faqs                String?
+  focusKeywords       String?                       @map("focus_keywords")
+  productTags         String?                       @map("product_tags")
+  basePrice           Decimal                       @map("base_price") @db.Decimal(10, 2)
+  cost                Decimal?                      @db.Decimal(10, 2)
+  weight              Decimal?                      @db.Decimal(10, 2)
+  shippingWeight      Float                         @default(1.0) @map("shipping_weight")
+  shippingWeightUnit  String                        @default("KG") @map("shipping_weight_unit")
+  status              String                        @default("draft")
+  visibility          String                        @default("both")
+  taxClassId          String?                       @map("tax_class_id")
+  attributes          Json?                         @default("{}")
+  metaData            Json?                         @default("{}") @map("meta_data")
+  createdAt           DateTime                      @default(now()) @map("created_at")
+  updatedAt           DateTime                      @updatedAt @map("updated_at")
+  deletedAt           DateTime?                     @map("deleted_at")
+  inventoryItems      InventoryItem[]
+  categories          ProductCategory[]
+  images              ProductImage[]
+  optionValues        ProductOptionValueOnProduct[]
+  options             ProductOptionOnProduct[]
+  variants            ProductVariant[]
+  bundleDealItems     BundleDealItem[]
+  wishlistItems       WishlistItem[]
 
   @@index([status, deletedAt])
   @@index([slug])
@@ -568,17 +568,17 @@ model ShippingRate {
 }
 
 model CourierZone {
-  id                        String        @id @default(uuid())
-  code                      String        @unique @db.VarChar(1)
-  name                      String        @db.VarChar(50)
+  id                     String        @id @default(uuid())
+  code                   String        @unique @db.VarChar(1)
+  name                   String        @db.VarChar(50)
   /// Per-kg rate when total order weight is strictly under 10kg.
-  rateLessThan10kg          Decimal       @map("rate_less_than_10kg") @db.Decimal(12, 2)
+  rateLessThan10kg       Decimal       @map("rate_less_than_10kg") @db.Decimal(12, 2)
   /// Per-kg rate when total order weight is 10kg or more.
-  rateGreaterOrEqual10kg    Decimal       @map("rate_greater_or_equal_10kg") @db.Decimal(12, 2)
-  isActive                  Boolean       @default(true) @map("is_active")
-  createdAt                 DateTime      @default(now()) @map("created_at")
-  updatedAt                 DateTime      @updatedAt @map("updated_at")
-  cities                    CourierCity[]
+  rateGreaterOrEqual10kg Decimal       @map("rate_greater_or_equal_10kg") @db.Decimal(12, 2)
+  isActive               Boolean       @default(true) @map("is_active")
+  createdAt              DateTime      @default(now()) @map("created_at")
+  updatedAt              DateTime      @updatedAt @map("updated_at")
+  cities                 CourierCity[]
 
   @@map("courier_zones")
 }
@@ -907,29 +907,29 @@ model CmsBannerSlider {
 }
 
 model CmsBannerSlide {
-  id           String          @id @default(uuid())
-  sliderId     String          @map("slider_id")
-  title        String          @db.VarChar(255)
-  subtitle     String?
+  id             String          @id @default(uuid())
+  sliderId       String          @map("slider_id")
+  title          String          @db.VarChar(255)
+  subtitle       String?
   /// Primary / desktop banner image (required).
-  imageUrl     String          @map("image_url")
+  imageUrl       String          @map("image_url")
   /// Optional mobile art-direction image, or auto-generated mobile WebP from upload.
-  mobileImageUrl String?       @map("mobile_image_url")
+  mobileImageUrl String?         @map("mobile_image_url")
   /// Auto-generated tablet WebP variant from desktop upload.
-  imageUrlTablet String?       @map("image_url_tablet")
-  ctaLabel     String?         @map("cta_label") @db.VarChar(120)
-  ctaHref      String?         @map("cta_href") @db.VarChar(500)
+  imageUrlTablet String?         @map("image_url_tablet")
+  ctaLabel       String?         @map("cta_label") @db.VarChar(120)
+  ctaHref        String?         @map("cta_href") @db.VarChar(500)
   /// Horizontal text overlay alignment relative to the banner.
-  textAlign    String          @default("left") @map("text_align") @db.VarChar(16)
+  textAlign      String          @default("left") @map("text_align") @db.VarChar(16)
   /// Vertical text overlay position: top | middle | bottom.
-  textPosition String          @default("middle") @map("text_position") @db.VarChar(16)
+  textPosition   String          @default("middle") @map("text_position") @db.VarChar(16)
   /// Overlay contrast: light (white text) | dark (charcoal text).
-  textColor    String          @default("light") @map("text_color") @db.VarChar(16)
-  sortOrder    Int             @default(0) @map("sort_order")
-  isActive     Boolean         @default(true) @map("is_active")
-  createdAt    DateTime        @default(now()) @map("created_at")
-  updatedAt    DateTime        @updatedAt @map("updated_at")
-  slider       CmsBannerSlider @relation(fields: [sliderId], references: [id], onDelete: Cascade)
+  textColor      String          @default("light") @map("text_color") @db.VarChar(16)
+  sortOrder      Int             @default(0) @map("sort_order")
+  isActive       Boolean         @default(true) @map("is_active")
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
+  slider         CmsBannerSlider @relation(fields: [sliderId], references: [id], onDelete: Cascade)
 
   @@index([sliderId, sortOrder])
   @@index([sliderId, isActive])
@@ -1059,9 +1059,9 @@ model MailMailbox {
 model AnalyticsGa4Settings {
   id                   String   @id @default("default")
   measurementId        String?  @map("measurement_id") @db.VarChar(32)
-  gtmId                  String?  @map("gtm_id") @db.VarChar(32)
-  metaPixelId            String?  @map("meta_pixel_id") @db.VarChar(32)
-  metaPixelEnabled       Boolean  @default(false) @map("meta_pixel_enabled")
+  gtmId                String?  @map("gtm_id") @db.VarChar(32)
+  metaPixelId          String?  @map("meta_pixel_id") @db.VarChar(32)
+  metaPixelEnabled     Boolean  @default(false) @map("meta_pixel_enabled")
   isEnabled            Boolean  @default(false) @map("is_enabled")
   debugMode            Boolean  @default(false) @map("debug_mode")
   trackPageViews       Boolean  @default(true) @map("track_page_views")
@@ -1094,18 +1094,18 @@ model SiteConfig {
 
 /// Singleton storefront theme + commerce threshold settings (id is always "default").
 model StoreSettings {
-  id                     String   @id @default("default")
-  currentTheme           String   @default("tailwind") @map("current_theme") @db.VarChar(32)
+  id                    String   @id @default("default")
+  currentTheme          String   @default("tailwind") @map("current_theme") @db.VarChar(32)
   /// Cart/checkout subtotal must be at least this amount to place an order.
-  minimumOrderAmount     Decimal  @default(800) @map("minimum_order_amount") @db.Decimal(12, 2)
+  minimumOrderAmount    Decimal  @default(800) @map("minimum_order_amount") @db.Decimal(12, 2)
   /// Subtotal at or above this amount qualifies for free delivery (shipping total = 0).
-  freeDeliveryThreshold  Decimal  @default(2000) @map("free_delivery_threshold") @db.Decimal(12, 2)
+  freeDeliveryThreshold Decimal  @default(2000) @map("free_delivery_threshold") @db.Decimal(12, 2)
   /// GST percentage applied on top of calculated shipping (e.g. 18 → fee × 1.18).
-  shippingGstPercentage  Decimal  @default(18) @map("shipping_gst_percentage") @db.Decimal(5, 2)
+  shippingGstPercentage Decimal  @default(18) @map("shipping_gst_percentage") @db.Decimal(5, 2)
   /// Nationwide Economy & Overland weight-tier config (JSON).
-  shippingZoneConfig     Json?    @map("shipping_zone_config")
-  updatedAt              DateTime @updatedAt @map("updated_at")
-  updatedByAdminUserId   String?  @map("updated_by_admin_user_id")
+  shippingZoneConfig    Json?    @map("shipping_zone_config")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+  updatedByAdminUserId  String?  @map("updated_by_admin_user_id")
 
   @@map("store_settings")
 }
