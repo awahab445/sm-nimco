@@ -1,13 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { existsSync, readFileSync } from 'fs';
-import { isAbsolute, resolve } from 'path';
-import {
-  cert,
-  getApps,
-  initializeApp,
-  type ServiceAccount,
-} from 'firebase-admin/app';
 import { getMessaging } from 'firebase-admin/messaging';
+import { ensureFirebaseAdmin } from './firebase-admin.init';
 
 export type NewOrderPushPayload = {
   title: string;
@@ -22,7 +15,7 @@ export class FcmService implements OnModuleInit {
   private ready = false;
 
   onModuleInit(): void {
-    this.initFirebase();
+    this.ready = ensureFirebaseAdmin();
   }
 
   isEnabled(): boolean {
@@ -108,80 +101,5 @@ export class FcmService implements OnModuleInit {
     }
 
     return { successCount, invalidTokens };
-  }
-
-  private initFirebase(): void {
-    if (getApps().length > 0) {
-      this.ready = true;
-      return;
-    }
-
-    const enabled = process.env.FCM_ENABLED?.trim().toLowerCase();
-    if (enabled === 'false' || enabled === '0') {
-      this.logger.log('FCM disabled via FCM_ENABLED=false');
-      return;
-    }
-
-    try {
-      const projectId = process.env.FIREBASE_PROJECT_ID?.trim();
-      const clientEmail = process.env.FIREBASE_CLIENT_EMAIL?.trim();
-      const privateKeyRaw = process.env.FIREBASE_PRIVATE_KEY?.trim();
-      const credentialsJson = process.env.FIREBASE_CREDENTIALS_JSON?.trim();
-      const credentialsPath = process.env.FIREBASE_SERVICE_ACCOUNT_PATH?.trim();
-
-      if (credentialsJson) {
-        const parsed = JSON.parse(credentialsJson) as ServiceAccount;
-        initializeApp({
-          credential: cert(parsed),
-        });
-        this.ready = true;
-        this.logger.log(
-          'Firebase Admin initialized from FIREBASE_CREDENTIALS_JSON',
-        );
-        return;
-      }
-
-      if (credentialsPath) {
-        const absolutePath = isAbsolute(credentialsPath)
-          ? credentialsPath
-          : resolve(process.cwd(), credentialsPath);
-        if (!existsSync(absolutePath)) {
-          throw new Error(
-            `FIREBASE_SERVICE_ACCOUNT_PATH not found: ${absolutePath}`,
-          );
-        }
-        const parsed = JSON.parse(
-          readFileSync(absolutePath, 'utf8'),
-        ) as ServiceAccount;
-        initializeApp({
-          credential: cert(parsed),
-        });
-        this.ready = true;
-        this.logger.log(`Firebase Admin initialized from path ${absolutePath}`);
-        return;
-      }
-
-      if (projectId && clientEmail && privateKeyRaw) {
-        const privateKey = privateKeyRaw.replace(/\\n/g, '\n');
-        initializeApp({
-          credential: cert({
-            projectId,
-            clientEmail,
-            privateKey,
-          }),
-        });
-        this.ready = true;
-        this.logger.log('Firebase Admin initialized from FIREBASE_* env vars');
-        return;
-      }
-
-      this.logger.warn(
-        'Firebase Admin not configured (set FIREBASE_PROJECT_ID/CLIENT_EMAIL/PRIVATE_KEY or FIREBASE_CREDENTIALS_JSON). New-order FCM pushes are disabled.',
-      );
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      this.logger.error(`Firebase Admin init failed: ${message}`);
-      this.ready = false;
-    }
   }
 }

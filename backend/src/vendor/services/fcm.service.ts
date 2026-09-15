@@ -1,28 +1,14 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { readFileSync, existsSync } from 'fs';
-import {
-  applicationDefault,
-  cert,
-  getApps,
-  initializeApp,
-  type ServiceAccount,
-} from 'firebase-admin/app';
 import { getMessaging } from 'firebase-admin/messaging';
 import { STORE_OPERATOR_ROLE_SLUG } from '../../admin/constants/permissions';
 import { PrismaService } from '../../catalog/services/prisma.service';
+import { ensureFirebaseAdmin } from '../../notifications/firebase-admin.init';
 
 export type NewOrderPushPayload = {
   orderId: string;
   orderNumber: string;
   title?: string;
   body?: string;
-};
-
-type ServiceAccountJson = {
-  project_id?: string;
-  client_email?: string;
-  private_key?: string;
-  [key: string]: unknown;
 };
 
 @Injectable()
@@ -33,68 +19,11 @@ export class FcmService implements OnModuleInit {
   constructor(private readonly prisma: PrismaService) {}
 
   onModuleInit(): void {
-    this.ready = this.initializeFirebase();
+    this.ready = ensureFirebaseAdmin();
   }
 
   get isReady(): boolean {
     return this.ready;
-  }
-
-  private initializeFirebase(): boolean {
-    if (getApps().length > 0) {
-      return true;
-    }
-
-    try {
-      const jsonInline =
-        process.env.FIREBASE_SERVICE_ACCOUNT_JSON?.trim() ||
-        process.env.FIREBASE_CREDENTIALS_JSON?.trim();
-      const jsonPath = process.env.FIREBASE_SERVICE_ACCOUNT_PATH?.trim();
-      const projectId = process.env.FIREBASE_PROJECT_ID?.trim();
-      const clientEmail = process.env.FIREBASE_CLIENT_EMAIL?.trim();
-      const privateKeyRaw = process.env.FIREBASE_PRIVATE_KEY?.trim();
-
-      let credential: ReturnType<typeof cert> | undefined;
-      let inferredProjectId = projectId;
-
-      if (jsonInline) {
-        const parsed = JSON.parse(jsonInline) as ServiceAccountJson;
-        credential = cert(parsed as ServiceAccount);
-        inferredProjectId = inferredProjectId || parsed.project_id;
-      } else if (jsonPath && existsSync(jsonPath)) {
-        const parsed = JSON.parse(
-          readFileSync(jsonPath, 'utf8'),
-        ) as ServiceAccountJson;
-        credential = cert(parsed as ServiceAccount);
-        inferredProjectId = inferredProjectId || parsed.project_id;
-      } else if (projectId && clientEmail && privateKeyRaw) {
-        credential = cert({
-          projectId,
-          clientEmail,
-          privateKey: privateKeyRaw.replace(/\\n/g, '\n'),
-        });
-      } else if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-        credential = applicationDefault();
-      }
-
-      if (!credential) {
-        this.logger.warn(
-          'Firebase Admin not configured (set FIREBASE_SERVICE_ACCOUNT_JSON or FIREBASE_SERVICE_ACCOUNT_PATH). Push notifications disabled.',
-        );
-        return false;
-      }
-
-      initializeApp({
-        credential,
-        ...(inferredProjectId ? { projectId: inferredProjectId } : {}),
-      });
-      this.logger.log('Firebase Admin initialized for FCM');
-      return true;
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      this.logger.error(`Firebase Admin init failed: ${message}`);
-      return false;
-    }
   }
 
   async saveOperatorToken(
