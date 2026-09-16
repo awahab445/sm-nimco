@@ -1,12 +1,14 @@
 import {
   SUPER_ADMIN_ROLE_SLUG,
   STORE_OPERATOR_ROLE_SLUG,
+  STORE_OWNER_ROLE_SLUG,
 } from '../../admin/constants/permissions';
 
 /** Flutter / mobile JWT `role` claim values (SCREAMING_SNAKE). */
 export const JwtStaffRole = {
   SUPER_ADMIN: 'SUPER_ADMIN',
   STORE_OPERATOR: 'STORE_OPERATOR',
+  STORE_OWNER: 'STORE_OWNER',
   MANAGER: 'MANAGER',
   SUPPORT: 'SUPPORT',
 } as const;
@@ -17,13 +19,22 @@ export type JwtStaffRoleClaim =
 const SLUG_TO_JWT_ROLE: Record<string, JwtStaffRoleClaim> = {
   [SUPER_ADMIN_ROLE_SLUG]: JwtStaffRole.SUPER_ADMIN,
   [STORE_OPERATOR_ROLE_SLUG]: JwtStaffRole.STORE_OPERATOR,
+  [STORE_OWNER_ROLE_SLUG]: JwtStaffRole.STORE_OWNER,
   manager: JwtStaffRole.MANAGER,
   support: JwtStaffRole.SUPPORT,
 };
 
+/** Roles allowed to use the store-operator mobile app (vendor JWT). */
+export function canUseStoreOperatorApp(roleSlugs: string[]): boolean {
+  return (
+    roleSlugs.includes(STORE_OPERATOR_ROLE_SLUG) ||
+    roleSlugs.includes(STORE_OWNER_ROLE_SLUG)
+  );
+}
+
 /**
  * Pick the primary JWT `role` claim from assigned admin role slugs.
- * Prefer SUPER_ADMIN, then STORE_OPERATOR, then first mapped role.
+ * Prefer SUPER_ADMIN, then STORE_OPERATOR, then STORE_OWNER, then first mapped role.
  */
 export function resolveJwtStaffRole(
   roleSlugs: string[],
@@ -33,6 +44,9 @@ export function resolveJwtStaffRole(
   }
   if (roleSlugs.includes(STORE_OPERATOR_ROLE_SLUG)) {
     return JwtStaffRole.STORE_OPERATOR;
+  }
+  if (roleSlugs.includes(STORE_OWNER_ROLE_SLUG)) {
+    return JwtStaffRole.STORE_OWNER;
   }
   for (const slug of roleSlugs) {
     const mapped = SLUG_TO_JWT_ROLE[slug];

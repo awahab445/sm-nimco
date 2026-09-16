@@ -7,10 +7,11 @@ import { JwtService } from '@nestjs/jwt';
 import type { JwtPayload } from '../../auth/auth.service';
 import { LoginDto } from '../../auth/dto/login.dto';
 import { AdminUserService } from '../../admin/services/admin-user.service';
-import { STORE_OPERATOR_ROLE_SLUG } from '../../admin/constants/permissions';
 import { PrismaService } from '../../catalog/services/prisma.service';
 import {
   JwtStaffRole,
+  canUseStoreOperatorApp,
+  resolveJwtStaffRole,
   resolveJwtStoreId,
 } from '../../auth/utils/jwt-staff-claims.util';
 import { USER_BLOCKED_MESSAGE } from '../../sessions/session.service';
@@ -41,10 +42,8 @@ export class StoreAuthService {
       throw new ForbiddenException({ message: USER_BLOCKED_MESSAGE });
     }
 
-    const isStoreOperator = user.roles.some(
-      (entry) => entry.role.slug === STORE_OPERATOR_ROLE_SLUG,
-    );
-    if (!isStoreOperator) {
+    const roleSlugs = user.roles.map((entry) => entry.role.slug);
+    if (!canUseStoreOperatorApp(roleSlugs)) {
       throw new UnauthorizedException('Invalid email or password');
     }
 
@@ -54,12 +53,14 @@ export class StoreAuthService {
     });
 
     const storeId = resolveJwtStoreId(storeSettings?.id);
+    const role =
+      resolveJwtStaffRole(roleSlugs) ?? JwtStaffRole.STORE_OPERATOR;
 
     const payload: JwtPayload = {
       sub: user.id,
       email: user.email,
       typ: 'vendor',
-      role: JwtStaffRole.STORE_OPERATOR,
+      role,
       ...(storeId ? { storeId } : {}),
     };
 

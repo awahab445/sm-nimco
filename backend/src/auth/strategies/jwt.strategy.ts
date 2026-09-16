@@ -13,7 +13,7 @@ import {
   CUSTOMER_AUTH_COOKIE,
 } from '../../common/auth-cookies';
 
-import { STORE_OPERATOR_ROLE_SLUG } from '../../admin/constants/permissions';
+import { canUseStoreOperatorApp } from '../utils/jwt-staff-claims.util';
 import { USER_BLOCKED_MESSAGE } from '../../sessions/session.service';
 
 export type JwtValidatePayload =
@@ -109,10 +109,8 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       if (admin.isBlocked) {
         throw new ForbiddenException({ message: USER_BLOCKED_MESSAGE });
       }
-      const isStoreOperator = admin.roles.some(
-        (entry) => entry.role.slug === STORE_OPERATOR_ROLE_SLUG,
-      );
-      if (!isStoreOperator) {
+      const roleSlugs = admin.roles.map((entry) => entry.role.slug);
+      if (!canUseStoreOperatorApp(roleSlugs)) {
         throw new UnauthorizedException('Store operator access required');
       }
       return {

@@ -5,8 +5,10 @@ import { CatalogModule } from '../catalog/catalog.module';
 import { VendorAuthController } from './controllers/vendor-auth.controller';
 import { VendorOrderController } from './controllers/vendor-order.controller';
 import { VendorSessionController } from './controllers/vendor-session.controller';
+import { VendorAnalyticsController } from './controllers/vendor-analytics.controller';
 import { StoreAuthService } from './services/store-auth.service';
 import { VendorOrderService } from './services/vendor-order.service';
+import { VendorAnalyticsService } from './services/vendor-analytics.service';
 import { FcmService } from './services/fcm.service';
 import { VendorNotificationHandlers } from './events/vendor-notification.handlers';
 
@@ -16,10 +18,12 @@ import { VendorNotificationHandlers } from './events/vendor-notification.handler
     VendorAuthController,
     VendorOrderController,
     VendorSessionController,
+    VendorAnalyticsController,
   ],
   providers: [
     StoreAuthService,
     VendorOrderService,
+    VendorAnalyticsService,
     FcmService,
     VendorNotificationHandlers,
   ],
