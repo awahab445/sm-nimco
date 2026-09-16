@@ -66,7 +66,9 @@ async function main() {
   });
 
   await ensureAdminRbacSeeded(prisma);
-  console.log('Seed: admin RBAC (permissions + super-admin, manager, support roles).');
+  console.log(
+    'Seed: admin RBAC (permissions + super-admin, manager, support, store-operator, store-owner roles).',
+  );
 
   // 3b. Storefront PLP filter slots (admin can rename, reorder, toggle, add options)
   const defaultStoreFilters = [

@@ -112,6 +112,7 @@ export const SUPER_ADMIN_ROLE_SLUG = 'super-admin';
 export const MANAGER_ROLE_SLUG = 'manager';
 export const SUPPORT_ROLE_SLUG = 'support';
 export const STORE_OPERATOR_ROLE_SLUG = 'store-operator';
+export const STORE_OWNER_ROLE_SLUG = 'store-owner';
 
 /**
  * Operational manager: full commerce ops on products/orders/customers, but no
@@ -163,6 +164,18 @@ export const MANAGER_PERMISSION_KEYS: string[] = [
 export const STORE_OPERATOR_PERMISSION_KEYS: string[] = [
   'orders.read',
   'orders.update',
+];
+
+/** Store owner: commerce reporting + order/inventory operations. */
+export const STORE_OWNER_PERMISSION_KEYS: string[] = [
+  'analytics.manage',
+  'reports.read',
+  'orders.read',
+  'orders.update',
+  'orders.manage',
+  'inventory.read',
+  'inventory.manage',
+  'products.read',
 ];
 
 /** Read-only support: orders, customers, products. */

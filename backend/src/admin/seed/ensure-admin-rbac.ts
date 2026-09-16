@@ -5,9 +5,11 @@ import {
   MANAGER_ROLE_SLUG,
   SUPPORT_ROLE_SLUG,
   STORE_OPERATOR_ROLE_SLUG,
+  STORE_OWNER_ROLE_SLUG,
   MANAGER_PERMISSION_KEYS,
   SUPPORT_PERMISSION_KEYS,
   STORE_OPERATOR_PERMISSION_KEYS,
+  STORE_OWNER_PERMISSION_KEYS,
 } from '../constants/permissions';
 
 /**
@@ -94,6 +96,20 @@ export async function ensureAdminRbacSeeded(
     },
   });
 
+  const storeOwnerRole = await prisma.adminRole.upsert({
+    where: { slug: STORE_OWNER_ROLE_SLUG },
+    update: {
+      name: 'Store Owner',
+      description: 'Store-level ownership access without staff or settings control.',
+    },
+    create: {
+      slug: STORE_OWNER_ROLE_SLUG,
+      name: 'Store Owner',
+      description: 'Store-level ownership access without staff or settings control.',
+      isSystem: true,
+    },
+  });
+
   const allPermIds = await prisma.adminPermission.findMany({
     select: { id: true },
   });
@@ -121,6 +137,7 @@ export async function ensureAdminRbacSeeded(
   await assignKeysToRole(managerRole.id, MANAGER_PERMISSION_KEYS);
   await assignKeysToRole(supportRole.id, SUPPORT_PERMISSION_KEYS);
   await assignKeysToRole(storeOperatorRole.id, STORE_OPERATOR_PERMISSION_KEYS);
+  await assignKeysToRole(storeOwnerRole.id, STORE_OWNER_PERMISSION_KEYS);
 }
 
 /**
