@@ -100,12 +100,14 @@ export async function ensureAdminRbacSeeded(
     where: { slug: STORE_OWNER_ROLE_SLUG },
     update: {
       name: 'Store Owner',
-      description: 'Store-level ownership access without staff or settings control.',
+      description:
+        'Store-level ownership access without staff or settings control.',
     },
     create: {
       slug: STORE_OWNER_ROLE_SLUG,
       name: 'Store Owner',
-      description: 'Store-level ownership access without staff or settings control.',
+      description:
+        'Store-level ownership access without staff or settings control.',
       isSystem: true,
     },
   });

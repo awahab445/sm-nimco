@@ -53,8 +53,7 @@ export class StoreAuthService {
     });
 
     const storeId = resolveJwtStoreId(storeSettings?.id);
-    const role =
-      resolveJwtStaffRole(roleSlugs) ?? JwtStaffRole.STORE_OPERATOR;
+    const role = resolveJwtStaffRole(roleSlugs) ?? JwtStaffRole.STORE_OPERATOR;
 
     const payload: JwtPayload = {
       sub: user.id,

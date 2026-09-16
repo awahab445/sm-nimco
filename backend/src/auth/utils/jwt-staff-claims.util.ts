@@ -34,7 +34,7 @@ export function canUseStoreOperatorApp(roleSlugs: string[]): boolean {
 
 /**
  * Pick the primary JWT `role` claim from assigned admin role slugs.
- * Prefer SUPER_ADMIN, then STORE_OPERATOR, then STORE_OWNER, then first mapped role.
+ * Prefer SUPER_ADMIN, then STORE_OWNER (store app shell), then STORE_OPERATOR.
  */
 export function resolveJwtStaffRole(
   roleSlugs: string[],
@@ -42,11 +42,11 @@ export function resolveJwtStaffRole(
   if (roleSlugs.includes(SUPER_ADMIN_ROLE_SLUG)) {
     return JwtStaffRole.SUPER_ADMIN;
   }
-  if (roleSlugs.includes(STORE_OPERATOR_ROLE_SLUG)) {
-    return JwtStaffRole.STORE_OPERATOR;
-  }
   if (roleSlugs.includes(STORE_OWNER_ROLE_SLUG)) {
     return JwtStaffRole.STORE_OWNER;
+  }
+  if (roleSlugs.includes(STORE_OPERATOR_ROLE_SLUG)) {
+    return JwtStaffRole.STORE_OPERATOR;
   }
   for (const slug of roleSlugs) {
     const mapped = SLUG_TO_JWT_ROLE[slug];
