@@ -3,9 +3,11 @@
 import { adminUi } from '@/lib/admin-ui';
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   fetchAdminOrder,
   updateAdminOrderStatus,
+  deleteAdminOrder,
   type FulfillmentStatus,
   type Order,
   type OrderStatus,
@@ -14,6 +16,7 @@ import {
 import { formatApiError } from '@/lib/api/error-message';
 import { OrderPaymentsSection } from '@/components/payments/order-payments-section';
 import { formatPrice } from '@/lib/currency';
+import { PermissionGate } from '@/components/permission-gate';
 
 function formatAddress(a: Record<string, unknown> | null | undefined): string {
   if (!a || typeof a !== 'object') return '—';
@@ -37,11 +40,17 @@ function formatAddress(a: Record<string, unknown> | null | undefined): string {
 }
 
 export function OrderDetailView({ orderId }: { orderId: string }) {
+  const router = useRouter();
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [toast, setToast] = useState<{ kind: 'success' | 'error'; message: string } | null>(
+    null,
+  );
 
   const [status, setStatus] = useState<OrderStatus>('pending');
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>('pending');
@@ -68,6 +77,12 @@ export function OrderDetailView({ orderId }: { orderId: string }) {
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    if (!toast) return;
+    const timer = window.setTimeout(() => setToast(null), 4000);
+    return () => window.clearTimeout(timer);
+  }, [toast]);
 
   async function handleStatusSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -112,6 +127,25 @@ export function OrderDetailView({ orderId }: { orderId: string }) {
     }
   }
 
+  async function handleDeleteConfirm() {
+    if (!order) return;
+    setDeleting(true);
+    try {
+      await deleteAdminOrder(orderId);
+      setConfirmDelete(false);
+      setToast({
+        kind: 'success',
+        message: `Order ${order.orderNumber} deleted successfully.`,
+      });
+      router.push('/orders');
+    } catch (err) {
+      setToast({ kind: 'error', message: formatApiError(err) });
+      setConfirmDelete(false);
+    } finally {
+      setDeleting(false);
+    }
+  }
+
   if (loading) {
     return <p className="text-sm text-zinc-500">Loading order…</p>;
   }
@@ -129,6 +163,59 @@ export function OrderDetailView({ orderId }: { orderId: string }) {
 
   return (
     <div className="mx-auto max-w-4xl">
+      {toast ? (
+        <div
+          className={`fixed right-4 top-4 z-50 max-w-sm rounded-lg border px-3 py-2 text-sm shadow-lg ${
+            toast.kind === 'success'
+              ? 'border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-200'
+              : 'border-red-200 bg-red-50 text-red-800 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-200'
+          }`}
+          role="status"
+        >
+          {toast.message}
+        </div>
+      ) : null}
+
+      {confirmDelete ? (
+        <div
+          className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="delete-order-detail-title"
+        >
+          <div className="w-full max-w-md rounded-xl border border-zinc-200 bg-white p-5 shadow-xl dark:border-zinc-700 dark:bg-zinc-950">
+            <h2
+              id="delete-order-detail-title"
+              className="text-lg font-semibold text-zinc-900 dark:text-zinc-50"
+            >
+              Delete order
+            </h2>
+            <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+              Are you sure you want to permanently delete order #{order.orderNumber}? This cannot
+              be undone.
+            </p>
+            <div className="mt-5 flex flex-wrap justify-end gap-2">
+              <button
+                type="button"
+                disabled={deleting}
+                onClick={() => setConfirmDelete(false)}
+                className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium dark:border-zinc-600 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={deleting}
+                onClick={() => void handleDeleteConfirm()}
+                className="rounded-lg bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-800 disabled:opacity-50"
+              >
+                {deleting ? 'Deleting…' : 'Delete permanently'}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <Link
@@ -144,14 +231,26 @@ export function OrderDetailView({ orderId }: { orderId: string }) {
             Placed {new Date(order.createdAt).toLocaleString()} · {order.currency}
           </p>
         </div>
-        {order.customerId ? (
-          <Link
-            href={`/customers/${order.customerId}`}
-            className="shrink-0 rounded-lg border border-zinc-300 px-4 py-2 text-center text-sm font-medium dark:border-zinc-600"
-          >
-            View customer
-          </Link>
-        ) : null}
+        <div className="flex shrink-0 flex-wrap gap-2">
+          {order.customerId ? (
+            <Link
+              href={`/customers/${order.customerId}`}
+              className="rounded-lg border border-zinc-300 px-4 py-2 text-center text-sm font-medium dark:border-zinc-600"
+            >
+              View customer
+            </Link>
+          ) : null}
+          <PermissionGate anyOf={['orders.delete', 'orders.manage']}>
+            <button
+              type="button"
+              disabled={saving || deleting}
+              onClick={() => setConfirmDelete(true)}
+              className="rounded-lg border border-red-300 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-50 disabled:opacity-50 dark:border-red-900/60 dark:text-red-400 dark:hover:bg-red-950/40"
+            >
+              Delete order
+            </button>
+          </PermissionGate>
+        </div>
       </div>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
@@ -311,7 +410,7 @@ export function OrderDetailView({ orderId }: { orderId: string }) {
           <div className="flex flex-wrap gap-2">
             <button
               type="submit"
-              disabled={saving}
+              disabled={saving || deleting}
               className={adminUi.btnPrimary}
             >
               {saving ? 'Saving…' : 'Save status'}
@@ -319,7 +418,7 @@ export function OrderDetailView({ orderId }: { orderId: string }) {
             <button
               type="button"
               onClick={() => void load()}
-              disabled={saving}
+              disabled={saving || deleting}
               className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium dark:border-zinc-600"
             >
               Reload

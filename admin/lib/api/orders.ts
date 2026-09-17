@@ -141,6 +141,17 @@ export async function updateAdminOrderStatus(id: string, body: UpdateOrderStatus
   });
 }
 
+export type DeleteAdminOrderResult = {
+  success: boolean;
+  message: string;
+};
+
+export async function deleteAdminOrder(id: string) {
+  return fetchApi<DeleteAdminOrderResult>(`/admin/orders/${id}`, {
+    method: 'DELETE',
+  });
+}
+
 export async function downloadBulkPackageInserts(orderIds: string[]) {
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
   const token = getToken();

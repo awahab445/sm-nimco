@@ -80,4 +80,15 @@ describe('orders API', () => {
       body,
     });
   });
+
+  it('deleteAdminOrder DELETE', async () => {
+    fetchMock.mockResolvedValue(
+      resJson({ success: true, message: 'Order deleted successfully' }),
+    );
+    await api.deleteAdminOrder('o1');
+    expectLastFetch(fetchMock, {
+      path: '/admin/orders/o1',
+      method: 'DELETE',
+    });
+  });
 });

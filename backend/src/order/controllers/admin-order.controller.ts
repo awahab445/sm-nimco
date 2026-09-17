@@ -3,6 +3,7 @@ import {
   Get,
   Put,
   Post,
+  Delete,
   Param,
   Body,
   Query,
@@ -97,5 +98,16 @@ export class AdminOrderController {
     @Body() updateDto: UpdateOrderStatusDto,
   ) {
     return this.orderService.updateOrderStatus(id, updateDto);
+  }
+
+  /**
+   * Permanently delete an order (admin)
+   * DELETE /admin/orders/:id
+   */
+  @Delete(':id')
+  @CheckPermission('orders', 'delete')
+  @HttpCode(HttpStatus.OK)
+  async deleteOrder(@Param('id') id: string) {
+    return this.orderService.deleteOrder(id);
   }
 }

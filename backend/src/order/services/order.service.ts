@@ -562,4 +562,35 @@ export class OrderService {
 
     return updatedOrder;
   }
+
+  /**
+   * Permanently delete an order and non-cascading related records.
+   * OrderItem / OrderShipping / OrderTax cascade via Prisma relations.
+   */
+  async deleteOrder(id: string) {
+    const order = await this.prisma.order.findUnique({
+      where: { id },
+      select: { id: true, orderNumber: true },
+    });
+
+    if (!order) {
+      throw new NotFoundException(`Order ${id} not found`);
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.payment.deleteMany({ where: { orderId: id } });
+      await tx.promotionLog.deleteMany({ where: { orderId: id } });
+      await tx.inventoryReservation.deleteMany({
+        where: { referenceType: 'order', referenceId: id },
+      });
+      await tx.order.delete({ where: { id } });
+    });
+
+    this.logger.log(`Order ${order.orderNumber} permanently deleted`);
+
+    return {
+      success: true,
+      message: 'Order deleted successfully',
+    };
+  }
 }

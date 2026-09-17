@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import {
   fetchAdminOrders,
+  deleteAdminOrder,
   downloadBulkShippingLabels,
   downloadBulkPackageInserts,
   orderStatusLabel,
@@ -15,6 +16,29 @@ import {
 import { formatApiError } from '@/lib/api/error-message';
 import { formatPrice } from '@/lib/currency';
 import { InvoiceModal } from '@/components/orders/InvoiceModal';
+import { PermissionGate } from '@/components/permission-gate';
+
+function TrashIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M3 6h18" />
+      <path d="M8 6V4h8v2" />
+      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+      <path d="M10 11v6" />
+      <path d="M14 11v6" />
+    </svg>
+  );
+}
 
 function statusPill(label: string, tone: 'neutral' | 'success' | 'warning' | 'danger') {
   const tones = {
@@ -63,6 +87,11 @@ export function OrdersList() {
   const [insertsLoading, setInsertsLoading] = useState(false);
   const [labelsError, setLabelsError] = useState<string | null>(null);
   const [invoiceOrder, setInvoiceOrder] = useState<Order | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Order | null>(null);
+  const [toast, setToast] = useState<{ kind: 'success' | 'error'; message: string } | null>(
+    null,
+  );
 
   useEffect(() => {
     setSelectedIds(new Set());
@@ -71,6 +100,12 @@ export function OrdersList() {
   useEffect(() => {
     setPage(1);
   }, [customerIdFromUrl, statusFilter, paymentFilter, sortBy, sortOrder]);
+
+  useEffect(() => {
+    if (!toast) return;
+    const timer = window.setTimeout(() => setToast(null), 4000);
+    return () => window.clearTimeout(timer);
+  }, [toast]);
 
   const load = useCallback(async () => {
     setError(null);
@@ -166,10 +201,88 @@ export function OrdersList() {
     }
   };
 
+  const confirmDeleteOrder = async () => {
+    if (!deleteTarget) return;
+    const target = deleteTarget;
+    setDeletingId(target.id);
+    try {
+      await deleteAdminOrder(target.id);
+      setSelectedIds((current) => {
+        const next = new Set(current);
+        next.delete(target.id);
+        return next;
+      });
+      setDeleteTarget(null);
+      setToast({
+        kind: 'success',
+        message: `Order ${target.orderNumber} deleted successfully.`,
+      });
+      await load();
+    } catch (e) {
+      setToast({ kind: 'error', message: formatApiError(e) });
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   const bulkBusy = labelsLoading || insertsLoading;
+  const deleteBusy = deletingId !== null;
 
   return (
     <div className="mx-auto max-w-6xl">
+      {toast ? (
+        <div
+          className={`fixed right-4 top-4 z-50 max-w-sm rounded-lg border px-3 py-2 text-sm shadow-lg ${
+            toast.kind === 'success'
+              ? 'border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-200'
+              : 'border-red-200 bg-red-50 text-red-800 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-200'
+          }`}
+          role="status"
+        >
+          {toast.message}
+        </div>
+      ) : null}
+
+      {deleteTarget ? (
+        <div
+          className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="delete-order-title"
+        >
+          <div className="w-full max-w-md rounded-xl border border-zinc-200 bg-white p-5 shadow-xl dark:border-zinc-700 dark:bg-zinc-950">
+            <h2
+              id="delete-order-title"
+              className="text-lg font-semibold text-zinc-900 dark:text-zinc-50"
+            >
+              Delete order
+            </h2>
+            <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+              Are you sure you want to permanently delete order #{deleteTarget.orderNumber}? This
+              cannot be undone.
+            </p>
+            <div className="mt-5 flex flex-wrap justify-end gap-2">
+              <button
+                type="button"
+                disabled={deleteBusy}
+                onClick={() => setDeleteTarget(null)}
+                className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium dark:border-zinc-600 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={deleteBusy}
+                onClick={() => void confirmDeleteOrder()}
+                className="rounded-lg bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-800 disabled:opacity-50"
+              >
+                {deletingId === deleteTarget.id ? 'Deleting…' : 'Delete permanently'}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
       <div>
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
           Orders
@@ -276,7 +389,7 @@ export function OrdersList() {
           </span>
           <button
             type="button"
-            disabled={bulkBusy}
+            disabled={bulkBusy || deleteBusy}
             onClick={() => void handleDownloadLabels()}
             className="rounded-lg bg-zinc-900 px-3 py-1.5 font-medium text-white disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
           >
@@ -284,7 +397,7 @@ export function OrdersList() {
           </button>
           <button
             type="button"
-            disabled={bulkBusy}
+            disabled={bulkBusy || deleteBusy}
             onClick={() => void handleDownloadInserts()}
             className="rounded-lg bg-blue-700 px-3 py-1.5 font-medium text-white disabled:opacity-50"
           >
@@ -292,7 +405,7 @@ export function OrdersList() {
           </button>
           <button
             type="button"
-            disabled={bulkBusy}
+            disabled={bulkBusy || deleteBusy}
             onClick={() => setSelectedIds(new Set())}
             className="font-medium text-zinc-700 underline disabled:opacity-50 dark:text-zinc-300"
           >
@@ -390,7 +503,7 @@ export function OrdersList() {
                     <div className="flex flex-nowrap items-center justify-end gap-x-3 whitespace-nowrap">
                       <button
                         type="button"
-                        disabled={bulkBusy}
+                        disabled={bulkBusy || deleteBusy}
                         onClick={() => {
                           setLabelsError(null);
                           setLabelsLoading(true);
@@ -415,6 +528,18 @@ export function OrdersList() {
                       >
                         Open
                       </Link>
+                      <PermissionGate anyOf={['orders.delete', 'orders.manage']}>
+                        <button
+                          type="button"
+                          disabled={bulkBusy || deleteBusy}
+                          onClick={() => setDeleteTarget(o)}
+                          className="inline-flex items-center justify-center rounded-md p-1 text-red-700 hover:bg-red-50 disabled:opacity-50 dark:text-red-400 dark:hover:bg-red-950/40"
+                          title={`Delete order ${o.orderNumber}`}
+                          aria-label={`Delete order ${o.orderNumber}`}
+                        >
+                          <TrashIcon className="h-4 w-4" />
+                        </button>
+                      </PermissionGate>
                     </div>
                   </td>
                 </tr>
@@ -432,7 +557,7 @@ export function OrdersList() {
           <div className="flex gap-2">
             <button
               type="button"
-              disabled={page <= 1 || loading}
+              disabled={page <= 1 || loading || deleteBusy}
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               className="rounded-lg border border-zinc-300 px-3 py-1 disabled:opacity-40 dark:border-zinc-600"
             >
@@ -440,7 +565,7 @@ export function OrdersList() {
             </button>
             <button
               type="button"
-              disabled={page >= meta.totalPages || loading}
+              disabled={page >= meta.totalPages || loading || deleteBusy}
               onClick={() => setPage((p) => p + 1)}
               className="rounded-lg border border-zinc-300 px-3 py-1 disabled:opacity-40 dark:border-zinc-600"
             >
