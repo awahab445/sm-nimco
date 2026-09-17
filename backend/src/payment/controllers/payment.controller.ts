@@ -9,16 +9,24 @@ import {
   HttpStatus,
   Req,
   UseGuards,
+  ForbiddenException,
 } from '@nestjs/common';
 import type { Request } from 'express';
 import { PaymentService } from '../services/payment.service';
 import { CreatePaymentIntentDto } from '../dto/create-payment-intent.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { OptionalJwtAuthGuard } from '../../auth/guards/optional-jwt-auth.guard';
-import { AdminJwtAuthGuard } from '../../admin/guards/admin-jwt-auth.guard';
-import { AdminPermissionsGuard } from '../../admin/guards/admin-permissions.guard';
-import { RequirePermissions } from '../../admin/decorators/require-permissions.decorator';
 import type { JwtValidatePayload } from '../../auth/strategies/jwt.strategy';
+
+/** Admin panel (typ=admin) or store vendor app (typ=vendor: owner/operator). */
+function assertStaffActor(
+  user?: JwtValidatePayload | null,
+): JwtValidatePayload {
+  if (!user || (user.typ !== 'admin' && user.typ !== 'vendor')) {
+    throw new ForbiddenException('Staff session required');
+  }
+  return user;
+}
 
 @Controller('payments')
 export class PaymentController {
@@ -82,7 +90,7 @@ export class PaymentController {
   @UseGuards(JwtAuthGuard)
   async getPaymentsByOrder(
     @Param('orderId') orderId: string,
-    @Req() request: any,
+    @Req() request: { user?: JwtValidatePayload },
   ) {
     return this.paymentService.getPaymentsByOrderAuthorized(
       orderId,
@@ -90,18 +98,29 @@ export class PaymentController {
     );
   }
 
+  /**
+   * Pending COD queue — Super Admin (admin JWT) and Store Owner/Operator (vendor JWT).
+   * GET /payments/cod/pending
+   */
   @Get('cod/pending')
-  @UseGuards(AdminJwtAuthGuard, AdminPermissionsGuard)
-  @RequirePermissions('payments.manage')
-  async getPendingCODPayments() {
+  @UseGuards(JwtAuthGuard)
+  async getPendingCODPayments(@Req() request: { user?: JwtValidatePayload }) {
+    assertStaffActor(request.user);
     return this.paymentService.getPendingCODPayments();
   }
 
+  /**
+   * Mark COD collected — Super Admin / Store Owner / Store Operator.
+   * POST /payments/cod/:paymentId/collect
+   */
   @Post('cod/:paymentId/collect')
-  @UseGuards(AdminJwtAuthGuard, AdminPermissionsGuard)
-  @RequirePermissions('payments.manage')
+  @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
-  async markCODAsCollected(@Param('paymentId') paymentId: string) {
+  async markCODAsCollected(
+    @Param('paymentId') paymentId: string,
+    @Req() request: { user?: JwtValidatePayload },
+  ) {
+    assertStaffActor(request.user);
     await this.paymentService.markCODAsCollected(paymentId);
     return {
       success: true,
@@ -109,14 +128,19 @@ export class PaymentController {
     };
   }
 
+  /**
+   * Mark COD failed — Super Admin / Store Owner / Store Operator.
+   * POST /payments/cod/:paymentId/fail
+   */
   @Post('cod/:paymentId/fail')
-  @UseGuards(AdminJwtAuthGuard, AdminPermissionsGuard)
-  @RequirePermissions('payments.manage')
+  @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   async markCODAsFailed(
     @Param('paymentId') paymentId: string,
     @Body() body: { reason?: string },
+    @Req() request: { user?: JwtValidatePayload },
   ) {
+    assertStaffActor(request.user);
     await this.paymentService.markCODAsFailed(paymentId, body.reason);
     return {
       success: true,
@@ -126,7 +150,10 @@ export class PaymentController {
 
   @Get(':id')
   @UseGuards(JwtAuthGuard)
-  async getPayment(@Param('id') id: string, @Req() request: any) {
+  async getPayment(
+    @Param('id') id: string,
+    @Req() request: { user?: JwtValidatePayload },
+  ) {
     return this.paymentService.getPaymentAuthorized(id, request.user);
   }
 }

@@ -8,6 +8,7 @@ import { AdminUsersController } from './controllers/admin-users.controller';
 import { AdminRolesController } from './controllers/admin-roles.controller';
 import { AdminAnalyticsController } from './controllers/admin-analytics.controller';
 import { AdminSessionsController } from './controllers/admin-sessions.controller';
+import { AdminActivityLogsController } from './controllers/admin-activity-logs.controller';
 import { AdminReportsController } from './controllers/admin-reports.controller';
 import { AdminDashboardController } from './controllers/admin-dashboard.controller';
 import { AdminAuthService } from './services/admin-auth.service';
@@ -30,6 +31,7 @@ import { AdminPermissionsGuard } from './guards/admin-permissions.guard';
     AdminRolesController,
     AdminAnalyticsController,
     AdminSessionsController,
+    AdminActivityLogsController,
     AdminReportsController,
     AdminDashboardController,
   ],

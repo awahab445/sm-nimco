@@ -336,11 +336,8 @@ export class PaymentService {
     if (!actor) {
       throw new ForbiddenException('Authentication required');
     }
-    if (actor.typ === 'admin') {
+    if (actor.typ === 'admin' || actor.typ === 'vendor') {
       return payment;
-    }
-    if (actor.typ === 'vendor') {
-      throw new ForbiddenException('You do not have access to this payment');
     }
     const order = await this.prisma.order.findUnique({
       where: { id: payment.orderId },
@@ -372,11 +369,8 @@ export class PaymentService {
     if (!actor) {
       throw new ForbiddenException('Authentication required');
     }
-    if (actor.typ === 'admin') {
+    if (actor.typ === 'admin' || actor.typ === 'vendor') {
       return this.getPaymentsByOrder(orderId);
-    }
-    if (actor.typ === 'vendor') {
-      throw new ForbiddenException('You do not have access to these payments');
     }
     const order = await this.prisma.order.findUnique({
       where: { id: orderId },
