@@ -1,12 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import type { Product } from '@/lib/api-client';
 import { useCartStore } from '@/lib/cart.store';
-import { lockBodyScroll } from '@/lib/body-scroll-lock';
-import { notifyAddToCartError } from '@/lib/notify-add-to-cart';
+import {
+  notifyAddToCartError,
+  notifyAddToCartSuccess,
+} from '@/lib/notify-add-to-cart';
+import { useOverlayA11y } from '@/lib/use-overlay-a11y';
 import { formatPrice } from '@/lib/currency';
 import { imageAlt } from '@/lib/seo';
 import { getProductImageSrcs, getProductImagesOrdered } from '@/lib/resolve-image-url';
@@ -27,6 +30,7 @@ export function ProductQuickView({ product, open, onClose, availableQuantity }: 
   const [mounted, setMounted] = useState(false);
   const [adding, setAdding] = useState(false);
   const [added, setAdded] = useState(false);
+  const panelRef = useRef<HTMLDivElement>(null);
   const addToCart = useCartStore((s) => s.addToCart);
 
   const variant = getVariantForCart(product);
@@ -46,18 +50,11 @@ export function ProductQuickView({ product, open, onClose, availableQuantity }: 
     setMounted(true);
   }, []);
 
-  useEffect(() => {
-    if (!open) return;
-    const unlock = lockBodyScroll();
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    document.addEventListener('keydown', onKey);
-    return () => {
-      unlock();
-      document.removeEventListener('keydown', onKey);
-    };
-  }, [open, onClose]);
+  useOverlayA11y({
+    open,
+    onClose,
+    containerRef: panelRef,
+  });
 
   const handleAdd = async () => {
     if (!variant || adding) return;
@@ -65,6 +62,7 @@ export function ProductQuickView({ product, open, onClose, availableQuantity }: 
     try {
       await addToCart(product.id, variant.id, 1);
       setAdded(true);
+      notifyAddToCartSuccess(product.name);
       setTimeout(() => setAdded(false), 2000);
     } catch (err) {
       notifyAddToCartError(err);
@@ -87,9 +85,11 @@ export function ProductQuickView({ product, open, onClose, availableQuantity }: 
         onClick={onClose}
       />
       <div
+        ref={panelRef}
         role="dialog"
         aria-modal="true"
         aria-label={`Quick view: ${product.name}`}
+        tabIndex={-1}
         className="product-quick-view__panel relative z-10 flex max-h-[min(94dvh,44rem)] w-full max-w-3xl flex-col overflow-hidden bg-background shadow-[0_16px_48px_color-mix(in_srgb,var(--foreground)_18%,transparent)] animate-plp-sheet-enter sm:max-h-[min(90vh,34rem)] sm:flex-row sm:animate-none"
       >
         <button

@@ -6,7 +6,7 @@ import { createPortal } from 'react-dom';
 import { ShoppingBagIcon } from '@/components/icons/shopping-bag-icon';
 import { useCartStore } from '@/lib/cart.store';
 import { useHydrated } from '@/lib/use-hydrated';
-import { lockBodyScroll } from '@/lib/body-scroll-lock';
+import { useOverlayA11y } from '@/lib/use-overlay-a11y';
 import { CartLineItemThumb } from '@/components/cart/cart-line-item-thumb';
 import { formatPrice, APP_CURRENCY, resolveDisplayCurrency } from '@/lib/currency';
 import { formatVariantAttributes } from '@/lib/format-variant-attributes';
@@ -149,12 +149,21 @@ export function CartPreviewDropdown({
     bundles.reduce((sum, b) => sum + (b.dealUnitPrice ?? 0) * (b.quantity ?? 0), 0);
 
   const [open, setOpen] = useState(false);
+  const drawerPanelRef = useRef<HTMLElement>(null);
   const prevCountRef = useRef(0);
   const baselineReadyRef = useRef(false);
   const sawLoadingRef = useRef(false);
   const [badgePulse, setBadgePulse] = useState(false);
   const [minimumOrderAmount, setMinimumOrderAmount] = useState(DEFAULT_MIN_ORDER_VALUE);
   const [freeDeliveryThreshold, setFreeDeliveryThreshold] = useState(DEFAULT_FREE_DELIVERY);
+
+  const closeDrawer = useCallback(() => setOpen(false), [setOpen]);
+
+  useOverlayA11y({
+    open,
+    onClose: closeDrawer,
+    containerRef: drawerPanelRef,
+  });
 
   useEffect(() => {
     let cancelled = false;
@@ -179,8 +188,7 @@ export function CartPreviewDropdown({
     };
   }, []);
 
-  // Auto-open on real add-to-cart count increases, but never on initial hydrate
-  // (refresh loads cart 0 → N and must not slide the tray open).
+  // Badge pulse only when cart quantity increases (hydrate-safe). Does NOT open the drawer.
   useEffect(() => {
     if (isLoading) {
       sawLoadingRef.current = true;
@@ -189,7 +197,7 @@ export function CartPreviewDropdown({
 
     if (!baselineReadyRef.current) {
       const cartId = useCartStore.getState().getCartId();
-      // Stored cart exists but fetch has not started/finished yet — keep waiting.
+      // Stored cart exists but fetch has not finished yet — keep waiting.
       if (cartId && cart === null && !sawLoadingRef.current) {
         return;
       }
@@ -205,28 +213,16 @@ export function CartPreviewDropdown({
     prevCountRef.current = cartItemCount;
     const startPulse = window.setTimeout(() => {
       setBadgePulse(true);
-      setOpen(true);
       window.setTimeout(() => setBadgePulse(false), 500);
     }, 0);
     return () => window.clearTimeout(startPulse);
   }, [cartItemCount, isLoading, cart]);
 
-  const closeDrawer = useCallback(() => setOpen(false), [setOpen]);
-
   useEffect(() => {
     if (open) {
       void refreshCart();
-      const onKey = (e: KeyboardEvent) => {
-        if (e.key === 'Escape') closeDrawer();
-      };
-      document.addEventListener('keydown', onKey);
-      const unlock = lockBodyScroll();
-      return () => {
-        document.removeEventListener('keydown', onKey);
-        unlock();
-      };
     }
-  }, [open, refreshCart, closeDrawer]);
+  }, [open, refreshCart]);
 
   const previewRows = [
     ...bundles.map((bundle) => ({
@@ -260,9 +256,11 @@ export function CartPreviewDropdown({
           onClick={closeDrawer}
         />
         <aside
+          ref={drawerPanelRef}
           role="dialog"
           aria-modal="true"
           aria-labelledby={titleId}
+          tabIndex={-1}
           className="header-cart-preview relative flex h-full w-full max-w-md flex-col bg-card text-foreground shadow-product-card animate-cart-drawer-enter"
         >
           <div className="flex items-center justify-between border-b border-border px-5 py-4">

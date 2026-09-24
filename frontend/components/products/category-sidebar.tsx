@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useId, useMemo, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { createPortal } from 'react-dom';
 import { categoryApi, type Category } from '@/lib/api-client';
-import { lockBodyScroll } from '@/lib/body-scroll-lock';
 import { useHydrated } from '@/lib/use-hydrated';
+import { useOverlayA11y } from '@/lib/use-overlay-a11y';
 
 function flattenCategories(cats: { data?: Category[] } | Category[]): Category[] {
   if (Array.isArray(cats)) return cats;
@@ -31,6 +31,15 @@ export function CategorySidebar({ filterCategoryId = null }: CategorySidebarProp
   const mounted = useHydrated();
   const sheetTitleId = useId();
   const sheetId = useId();
+  const sheetPanelRef = useRef<HTMLDivElement>(null);
+
+  const closeSheet = useCallback(() => setSheetOpen(false), []);
+
+  useOverlayA11y({
+    open: sheetOpen,
+    onClose: closeSheet,
+    containerRef: sheetPanelRef,
+  });
 
   useEffect(() => {
     let cancelled = false;
@@ -49,19 +58,6 @@ export function CategorySidebar({ filterCategoryId = null }: CategorySidebarProp
       cancelled = true;
     };
   }, []);
-
-  useEffect(() => {
-    if (!sheetOpen) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setSheetOpen(false);
-    };
-    document.addEventListener('keydown', onKey);
-    const unlock = lockBodyScroll();
-    return () => {
-      document.removeEventListener('keydown', onKey);
-      unlock();
-    };
-  }, [sheetOpen]);
 
   const slug = categorySlugFromPath(pathname);
 
@@ -92,8 +88,6 @@ export function CategorySidebar({ filterCategoryId = null }: CategorySidebarProp
         : 'text-muted-foreground hover:text-[var(--navbar-link-hover,var(--primary-hover))]'
     }`;
 
-  const closeSheet = () => setSheetOpen(false);
-
   const sheet =
     sheetOpen && mounted ? (
       <div
@@ -111,6 +105,8 @@ export function CategorySidebar({ filterCategoryId = null }: CategorySidebarProp
           onClick={closeSheet}
         />
         <div
+          ref={sheetPanelRef}
+          tabIndex={-1}
           className="absolute inset-x-0 bottom-0 z-10 flex max-h-[min(88dvh,560px)] min-h-[12rem] flex-col rounded-t-2xl border-t border-border/60 bg-background text-foreground shadow-[0_-4px_24px_color-mix(in_srgb,var(--foreground)_8%,transparent)]"
           style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom, 0px))' }}
         >

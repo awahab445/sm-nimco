@@ -15,3 +15,12 @@ export function notifyAddToCartError(err: unknown) {
       : 'Failed to add item to cart. Please try again.';
   showStorefrontToast(fallback, 'error');
 }
+
+/** Lightweight success toast after add-to-cart (does not open the cart drawer). */
+export function notifyAddToCartSuccess(productName?: string | null) {
+  const name = productName?.trim();
+  showStorefrontToast(
+    name ? `Added ${name} to cart!` : 'Added to cart!',
+    'success',
+  );
+}

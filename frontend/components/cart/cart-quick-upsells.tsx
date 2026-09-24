@@ -7,8 +7,7 @@ import { useCartStore } from '@/lib/cart.store';
 import { getVariantForCart } from '@/lib/product-cart-variant';
 import { formatPrice } from '@/lib/currency';
 import { resolveImageUrl } from '@/lib/resolve-image-url';
-import { notifyAddToCartError } from '@/lib/notify-add-to-cart';
-import { showStorefrontToast } from '@/lib/storefront-toast';
+import { notifyAddToCartError, notifyAddToCartSuccess } from '@/lib/notify-add-to-cart';
 
 const UPSELL_LIMIT = 2;
 const PRICE_CAP = 800;
@@ -64,7 +63,7 @@ export function CartQuickUpsells({ cartProductIds, currency }: Props) {
     setAddingId(product.id);
     try {
       await addToCart(product.id, variant.id, 1);
-      showStorefrontToast('Added to cart', 'success');
+      notifyAddToCartSuccess(product.name);
     } catch (err) {
       notifyAddToCartError(err);
     } finally {

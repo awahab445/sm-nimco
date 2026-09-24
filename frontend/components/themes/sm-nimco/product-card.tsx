@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useState, type MouseEvent } from 'react';
 import type { Product, ProductVariant } from '@/lib/api-client';
 import { useCartStore } from '@/lib/cart.store';
-import { notifyAddToCartError } from '@/lib/notify-add-to-cart';
+import { notifyAddToCartError, notifyAddToCartSuccess } from '@/lib/notify-add-to-cart';
 import { formatPrice } from '@/lib/currency';
 import { imageAlt } from '@/lib/seo';
 import { getProductImageSrcs, getProductImagesOrdered } from '@/lib/resolve-image-url';
@@ -129,6 +129,7 @@ export function SmNimcoProductCard({
     setAdding(true);
     try {
       await addToCart(product.id, activeVariantId, 1);
+      notifyAddToCartSuccess(product.name);
     } catch (err) {
       notifyAddToCartError(err);
     } finally {

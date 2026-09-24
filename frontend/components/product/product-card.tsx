@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useState, type MouseEvent } from 'react';
 import type { Product } from '@/lib/api-client';
 import { useCartStore } from '@/lib/cart.store';
-import { notifyAddToCartError } from '@/lib/notify-add-to-cart';
+import { notifyAddToCartError, notifyAddToCartSuccess } from '@/lib/notify-add-to-cart';
 import { formatPrice } from '@/lib/currency';
 import { imageAlt } from '@/lib/seo';
 import { getProductImageSrcs, getProductImagesOrdered } from '@/lib/resolve-image-url';
@@ -84,6 +84,7 @@ export function ProductCard({
     try {
       await addToCart(product.id, variant.id, 1);
       setAdded(true);
+      notifyAddToCartSuccess(product.name);
       setTimeout(() => setAdded(false), 2000);
     } catch (err) {
       notifyAddToCartError(err);

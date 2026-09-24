@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCheckout } from '@/lib/checkout-context';
 import { useAuthStore } from '@/lib/auth.store';
 import { useCartStore } from '@/lib/cart.store';
 import { formatPrice, APP_CURRENCY, resolveDisplayCurrency } from '@/lib/currency';
 import { storefrontUi } from '@/lib/storefront-ui';
+import { useOverlayA11y } from '@/lib/use-overlay-a11y';
 import { Address, AddressWithId, addressApi, shippingApi, paymentApi, productApi, storeSettingsApi, type CartItem } from '@/lib/api-client';
 import { resolveImageUrl } from '@/lib/resolve-image-url';
 import { CouponApplySection } from '@/components/coupon/coupon-apply-section';
@@ -227,6 +228,14 @@ export function OnePageCheckout() {
   const [freeDeliveryThreshold, setFreeDeliveryThreshold] = useState(
     DEFAULT_FREE_DELIVERY_THRESHOLD,
   );
+  const minimumOrderModalRef = useRef<HTMLDivElement>(null);
+  const closeMinimumOrderModal = useCallback(() => setShowMinimumOrderModal(false), []);
+
+  useOverlayA11y({
+    open: showMinimumOrderModal,
+    onClose: closeMinimumOrderModal,
+    containerRef: minimumOrderModalRef,
+  });
 
   const { isAuthenticated, user } = useAuthStore();
   const [savedAddresses, setSavedAddresses] = useState<AddressWithId[]>([]);
@@ -1643,8 +1652,18 @@ export function OnePageCheckout() {
 
       {showMinimumOrderModal ? (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-foreground/55 px-4 backdrop-blur-[1px]">
-          <div className={`w-full max-w-md ${storefrontUi.card} border border-border p-6 shadow-product-card`}>
-            <h3 className="font-display text-lg font-semibold tracking-tight text-foreground">
+          <div
+            ref={minimumOrderModalRef}
+            tabIndex={-1}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="minimum-order-title"
+            className={`w-full max-w-md ${storefrontUi.card} border border-border p-6 shadow-product-card`}
+          >
+            <h3
+              id="minimum-order-title"
+              className="font-display text-lg font-semibold tracking-tight text-foreground"
+            >
               Minimum order required
             </h3>
             <p className="mt-3 text-sm leading-6 text-muted-foreground">
@@ -1663,7 +1682,7 @@ export function OnePageCheckout() {
             <div className="mt-5 flex justify-end gap-2">
               <button
                 type="button"
-                onClick={() => setShowMinimumOrderModal(false)}
+                onClick={closeMinimumOrderModal}
                 className={storefrontUi.btnPrimary}
               >
                 Back to cart

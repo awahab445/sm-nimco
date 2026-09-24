@@ -34,8 +34,8 @@ import {
 import { PlpPagination } from '@/components/products/plp-pagination';
 import { plpBrowseApi, type PlpBrowseTreeNode } from '@/lib/api-client';
 import { findBrowseNodeLabel } from '@/lib/plp-browse-tree';
-import { lockBodyScroll } from '@/lib/body-scroll-lock';
 import { useHydrated } from '@/lib/use-hydrated';
+import { useOverlayA11y } from '@/lib/use-overlay-a11y';
 import { trackSearch, trackViewItemList } from '@/lib/analytics/events';
 
 function flattenCategories(res: { data?: Category[] } | CategoryTreeLike[]): Category[] {
@@ -108,6 +108,19 @@ function ProductsContent() {
   const [browseTree, setBrowseTree] = useState<PlpBrowseTreeNode[]>([]);
   const [sortBy, setSortBy] = useState<PlpSortOption>('featured');
   const [listingMode, setListingMode] = useState<PlpListingMode>('grid-4');
+  const filterDrawerRef = useRef<HTMLDivElement>(null);
+
+  const closeFilterDrawer = useCallback(() => {
+    setPreviewFacets(null);
+    setPreviewLoading(false);
+    setDrawerOpen(false);
+  }, []);
+
+  useOverlayA11y({
+    open: drawerOpen,
+    onClose: closeFilterDrawer,
+    containerRef: filterDrawerRef,
+  });
 
   const selectedCategoryId = applied.categoryIds[0] ?? null;
 
@@ -163,14 +176,6 @@ function ProductsContent() {
       cancelled = true;
     };
   }, []);
-
-  useEffect(() => {
-    if (!drawerOpen) return;
-    const unlock = lockBodyScroll();
-    return () => {
-      unlock();
-    };
-  }, [drawerOpen]);
 
   useEffect(() => {
     let cancelled = false;
@@ -328,11 +333,7 @@ function ProductsContent() {
     setDrawerOpen(false);
   };
 
-  const closeDrawer = () => {
-    setPreviewFacets(null);
-    setPreviewLoading(false);
-    setDrawerOpen(false);
-  };
+  const closeDrawer = closeFilterDrawer;
 
   const openFiltersDrawer = () => {
     setDraft(clonePlpFilters(applied));
@@ -351,6 +352,8 @@ function ProductsContent() {
           onClick={closeDrawer}
         />
         <div
+          ref={filterDrawerRef}
+          tabIndex={-1}
           className="fixed inset-y-0 left-0 z-[261] flex w-[min(22rem,88vw)] animate-plp-drawer-enter flex-col border-r border-border/60 bg-background shadow-[4px_0_28px_color-mix(in_srgb,var(--foreground)_10%,transparent)] lg:hidden"
           id="plp-mobile-filters"
           role="dialog"

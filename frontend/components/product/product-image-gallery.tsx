@@ -5,7 +5,7 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import type { Swiper as SwiperClass } from 'swiper';
 import { FreeMode, Navigation } from 'swiper/modules';
 import { resolveImageUrl } from '@/lib/resolve-image-url';
-import { lockBodyScroll } from '@/lib/body-scroll-lock';
+import { useOverlayA11y } from '@/lib/use-overlay-a11y';
 import { imageAlt } from '@/lib/seo';
 import type { ProductImage } from '@/lib/api-client';
 import { StorefrontImage } from '@/components/ui/storefront-image';
@@ -164,6 +164,14 @@ export function ProductImageGallery({ images, productName, selectedId, onSelect 
   const imageUrl = resolveImageUrl(active?.url) ?? null;
 
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const lightboxRef = useRef<HTMLDivElement>(null);
+  const closeLightbox = useCallback(() => setLightboxOpen(false), []);
+
+  useOverlayA11y({
+    open: lightboxOpen,
+    onClose: closeLightbox,
+    containerRef: lightboxRef,
+  });
 
   useEffect(() => {
     const idx = images.findIndex((i) => i.id === selectedId);
@@ -172,19 +180,6 @@ export function ProductImageGallery({ images, productName, selectedId, onSelect 
       s.slideTo(idx, 280);
     }
   }, [selectedId, images]);
-
-  useEffect(() => {
-    if (!lightboxOpen) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setLightboxOpen(false);
-    };
-    window.addEventListener('keydown', onKey);
-    const unlock = lockBodyScroll();
-    return () => {
-      window.removeEventListener('keydown', onKey);
-      unlock();
-    };
-  }, [lightboxOpen]);
 
   if (images.length === 0) {
     return (
@@ -268,11 +263,13 @@ export function ProductImageGallery({ images, productName, selectedId, onSelect 
 
       {lightboxOpen && imageUrl ? (
         <div
+          ref={lightboxRef}
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/88 p-4 backdrop-blur-[2px]"
           role="dialog"
           aria-modal="true"
           aria-label="Product image preview"
-          onClick={() => setLightboxOpen(false)}
+          tabIndex={-1}
+          onClick={closeLightbox}
         >
           <button
             type="button"
@@ -280,7 +277,7 @@ export function ProductImageGallery({ images, productName, selectedId, onSelect 
             aria-label="Close preview"
             onClick={(e) => {
               e.stopPropagation();
-              setLightboxOpen(false);
+              closeLightbox();
             }}
           >
             <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>

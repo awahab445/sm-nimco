@@ -7,13 +7,16 @@ import { createPortal } from 'react-dom';
 import { productApi } from '@/lib/api-client';
 import { formatPrice } from '@/lib/currency';
 import { useHydrated } from '@/lib/use-hydrated';
-import { lockBodyScroll } from '@/lib/body-scroll-lock';
+import { useOverlayA11y } from '@/lib/use-overlay-a11y';
 import { storefrontUi } from '@/lib/storefront-ui';
 import { trackSearch } from '@/lib/analytics/events';
 import { STOREFRONT_OPEN_SEARCH_EVENT } from '@/lib/storefront-events';
 import { useCartStore } from '@/lib/cart.store';
 import { getVariantForCart } from '@/lib/product-cart-variant';
-import { notifyAddToCartError } from '@/lib/notify-add-to-cart';
+import {
+  notifyAddToCartError,
+  notifyAddToCartSuccess,
+} from '@/lib/notify-add-to-cart';
 import { showStorefrontToast } from '@/lib/storefront-toast';
 import { ShoppingBagIcon } from '@/components/icons/shopping-bag-icon';
 
@@ -78,6 +81,7 @@ export function SearchBar() {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const drawerPanelRef = useRef<HTMLElement>(null);
 
   const closeDrawer = useCallback(() => {
     setDrawerOpen(false);
@@ -86,6 +90,13 @@ export function SearchBar() {
   const openDrawer = useCallback(() => {
     setDrawerOpen(true);
   }, []);
+
+  useOverlayA11y({
+    open: drawerOpen,
+    onClose: closeDrawer,
+    containerRef: drawerPanelRef,
+    initialFocusRef: inputRef,
+  });
 
   const fetchSuggestions = useCallback((q: string) => {
     if (abortRef.current) abortRef.current.abort();
@@ -114,21 +125,6 @@ export function SearchBar() {
     window.addEventListener(STOREFRONT_OPEN_SEARCH_EVENT, onOpenSearch);
     return () => window.removeEventListener(STOREFRONT_OPEN_SEARCH_EVENT, onOpenSearch);
   }, [openDrawer]);
-
-  useEffect(() => {
-    if (!drawerOpen) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') closeDrawer();
-    };
-    document.addEventListener('keydown', onKey);
-    const unlock = lockBodyScroll();
-    const focusTimer = window.setTimeout(() => inputRef.current?.focus(), 50);
-    return () => {
-      document.removeEventListener('keydown', onKey);
-      unlock();
-      window.clearTimeout(focusTimer);
-    };
-  }, [drawerOpen, closeDrawer]);
 
   useEffect(() => {
     if (!drawerOpen) return;
@@ -178,7 +174,7 @@ export function SearchBar() {
         return;
       }
       await addToCart(product.id, variant.id, 1);
-      showStorefrontToast('Added to cart', 'success');
+      notifyAddToCartSuccess(product.name);
     } catch (err) {
       notifyAddToCartError(err);
     } finally {
@@ -246,8 +242,10 @@ export function SearchBar() {
           onClick={closeDrawer}
         />
         <aside
+          ref={drawerPanelRef}
           className="search-drawer__panel flex h-[100dvh] max-h-[100dvh] w-full max-w-[100vw] shrink-0 flex-col border-l border-border bg-card shadow-product-card sm:w-[min(100vw,34rem)] sm:max-w-[min(100vw,34rem)]"
           style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+          tabIndex={-1}
         >
           <div className="flex min-h-[50px] shrink-0 items-center justify-between gap-3 border-b border-border pl-5 pr-1 pt-[max(0px,env(safe-area-inset-top))]">
             <p

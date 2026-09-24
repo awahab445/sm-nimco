@@ -3,14 +3,15 @@
  * Colors resolve from <html data-theme> / data-store-theme CSS variables.
  * Visual variants (pill, uppercase, orange ATC) are theme-scoped in globals.css.
  */
-const btnPrimary =
-  'rounded-md bg-primary text-sm font-semibold text-primary-foreground transition-all duration-200 hover:bg-btn-hover active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100';
-
 export const storefrontUi = {
   input:
     'w-full rounded-md border border-input bg-card px-3 py-2 text-foreground placeholder:text-muted-foreground shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/25 sm:text-sm',
   inputMt:
     'mt-1 block w-full rounded-md border border-input bg-card px-3 py-2 text-foreground placeholder:text-muted-foreground shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/25 sm:text-sm',
+  inputSm:
+    'min-w-0 flex-1 rounded-md border border-input bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/25',
+  inputCompact:
+    'w-16 rounded-md border border-input bg-card px-2 py-1.5 text-center text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/25',
   label: 'block text-sm font-medium text-foreground',
   labelMb: 'mb-1 block text-sm font-medium text-foreground',
   select:
@@ -25,11 +26,13 @@ export const storefrontUi = {
   btnPrimaryLg:
     'btn-brand-primary mt-6 w-full py-3 text-base font-medium disabled:cursor-not-allowed disabled:opacity-50',
   btnPrimaryCheckout:
-    'mt-6 w-full rounded-md bg-primary px-8 py-3 text-base font-semibold tracking-wide text-primary-foreground shadow-md transition-all duration-200 hover:bg-btn-hover hover:shadow-lg active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70',
+    'btn-brand-primary mt-6 w-full px-8 py-3 text-base font-semibold tracking-wide focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2 focus:ring-offset-background disabled:cursor-not-allowed disabled:opacity-70',
   btnPrimarySubmit:
-    'rounded-md bg-primary px-8 py-3 text-base font-semibold tracking-wide text-primary-foreground shadow-md transition-all duration-200 hover:bg-btn-hover hover:shadow-lg active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70',
-  btnPrimaryBlock: `${btnPrimary} w-full py-2.5`,
-  btnPrimaryInline: `${btnPrimary} px-6 py-2`,
+    'btn-brand-primary px-8 py-3 text-base font-semibold tracking-wide focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2 focus:ring-offset-background disabled:cursor-not-allowed disabled:opacity-70',
+  btnPrimaryBlock:
+    'btn-brand-primary w-full py-2.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2 focus:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50',
+  btnPrimaryInline:
+    'btn-brand-primary px-6 py-2 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2 focus:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50',
   link: 'font-medium text-primary transition-colors hover:text-primary-hover',
   btnSecondary:
     'btn-brand-secondary px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2 focus:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50',

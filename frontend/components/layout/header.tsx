@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
 import { createPortal } from 'react-dom';
 import {
@@ -20,8 +20,8 @@ import {
 } from 'lucide-react';
 import { useAuthStore } from '@/lib/auth.store';
 import { useCartStore } from '@/lib/cart.store';
-import { lockBodyScroll } from '@/lib/body-scroll-lock';
 import { useHydrated } from '@/lib/use-hydrated';
+import { useOverlayA11y } from '@/lib/use-overlay-a11y';
 import { getStoreLogoSrc, splitStoreName, STORE_NAME } from '@/lib/config';
 import {
   siteConfigApi,
@@ -149,8 +149,20 @@ export function Header({ theme = 'default' }: { theme?: StoreThemeCode }) {
   const lastScrollY = useRef(0);
   const rafScrollRef = useRef(0);
   const headerRef = useRef<HTMLElement | null>(null);
+  const mobileNavRef = useRef<HTMLDivElement>(null);
   const hydrated = useHydrated();
   const mobileNavTitleId = useId();
+
+  const closeMobileNav = useCallback(() => {
+    setMobileNavOpen(false);
+    setMobileNavTab('menu');
+  }, []);
+
+  useOverlayA11y({
+    open: mobileNavOpen,
+    onClose: closeMobileNav,
+    containerRef: mobileNavRef,
+  });
 
   /** Expose header height for immersive hero pull-up under the menu. */
   useEffect(() => {
@@ -249,19 +261,6 @@ export function Header({ theme = 'default' }: { theme?: StoreThemeCode }) {
   }, [defaultLogoSrc]);
 
   useEffect(() => {
-    if (!mobileNavOpen) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setMobileNavOpen(false);
-    };
-    document.addEventListener('keydown', onKey);
-    const unlock = lockBodyScroll();
-    return () => {
-      document.removeEventListener('keydown', onKey);
-      unlock();
-    };
-  }, [mobileNavOpen]);
-
-  useEffect(() => {
     const closeIfDesktop = () => {
       if (typeof window !== 'undefined' && window.innerWidth >= DESKTOP_NAV_MIN_WIDTH) {
         setMobileNavOpen(false);
@@ -270,11 +269,6 @@ export function Header({ theme = 'default' }: { theme?: StoreThemeCode }) {
     window.addEventListener('resize', closeIfDesktop);
     return () => window.removeEventListener('resize', closeIfDesktop);
   }, []);
-
-  const closeMobileNav = () => {
-    setMobileNavOpen(false);
-    setMobileNavTab('menu');
-  };
 
   const cartNavItem = mainNav.find((item) => isCartHref(item.href));
   const desktopNavLinks = mainNav.filter((item) => !isCartHref(item.href));
@@ -495,11 +489,13 @@ export function Header({ theme = 'default' }: { theme?: StoreThemeCode }) {
   const mobileMenu =
     mobileNavOpen && hydrated ? (
       <div
+        ref={mobileNavRef}
         className="mobile-nav-drawer fixed inset-0 z-[200] flex min-h-[100dvh] lg:hidden"
         id="mobile-main-nav"
         role="dialog"
         aria-modal="true"
         aria-labelledby={mobileNavTitleId}
+        tabIndex={-1}
       >
         <div
           className={`mobile-nav-drawer__panel relative flex h-[100dvh] max-h-[100dvh] w-[min(100vw-50px,21.25rem)] max-w-[min(100vw-50px,21.25rem)] shrink-0 flex-col bg-card shadow-2xl animate-plp-drawer-enter ${

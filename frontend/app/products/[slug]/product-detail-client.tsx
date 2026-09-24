@@ -1,11 +1,12 @@
 'use client';
 
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { productApi, inventoryApi, type Product, type ProductVariant } from '@/lib/api-client';
 import { useCartStore } from '@/lib/cart.store';
 import { getInlineStockAlertMessage } from '@/lib/cart-errors';
+import { notifyAddToCartSuccess } from '@/lib/notify-add-to-cart';
 import { formatPrice } from '@/lib/currency';
 import { storefrontUi } from '@/lib/storefront-ui';
 import { ProductImageGallery } from '@/components/product/product-image-gallery';
@@ -353,7 +354,6 @@ function QuantityStepper({
 }
 
 export function ProductDetailClient() {
-  const router = useRouter();
   const params = useParams();
   const slug = typeof params.slug === 'string' ? params.slug : '';
   const [product, setProduct] = useState<Product | null>(null);
@@ -565,8 +565,8 @@ export function ProductDetailClient() {
     try {
       await addToCart(product.id, v.id, quantity);
       setAdded(true);
+      notifyAddToCartSuccess(product.name);
       setTimeout(() => setAdded(false), 2500);
-      router.push('/cart');
     } catch (err) {
       const stockMessage = getInlineStockAlertMessage(err);
       setStockAlert(

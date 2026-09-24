@@ -1,11 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { formatPrice } from '@/lib/currency';
 import { storefrontUi } from '@/lib/storefront-ui';
 import { useCartStore } from '@/lib/cart.store';
 import { trackAddBundleToCart } from '@/lib/analytics/events';
+import { notifyAddToCartError, notifyAddToCartSuccess } from '@/lib/notify-add-to-cart';
 import type { StorefrontBundleDeal } from '@/lib/deals/deals.server';
 
 type Props = {
@@ -13,7 +13,6 @@ type Props = {
 };
 
 export function DealPricingPanel({ deal }: Props) {
-  const router = useRouter();
   const addBundleToCart = useCartStore((s) => s.addBundleToCart);
   const [mounted, setMounted] = useState(false);
   const [quantity, setQuantity] = useState(1);
@@ -30,8 +29,9 @@ export function DealPricingPanel({ deal }: Props) {
     try {
       await addBundleToCart(deal.id, quantity);
       trackAddBundleToCart(deal, quantity);
-      router.push('/cart');
+      notifyAddToCartSuccess(deal.title);
     } catch (e) {
+      notifyAddToCartError(e);
       setError(e instanceof Error ? e.message : 'Could not add bundle to cart');
     } finally {
       setLoading(false);

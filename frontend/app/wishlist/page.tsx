@@ -11,7 +11,7 @@ import { resolveImageUrl } from '@/lib/resolve-image-url';
 import { imageAlt } from '@/lib/seo';
 import { StorefrontImage } from '@/components/ui/storefront-image';
 import { getVariantForCart } from '@/lib/product-cart-variant';
-import { notifyAddToCartError } from '@/lib/notify-add-to-cart';
+import { notifyAddToCartError, notifyAddToCartSuccess } from '@/lib/notify-add-to-cart';
 import { showStorefrontToast } from '@/lib/storefront-toast';
 import { storefrontUi } from '@/lib/storefront-ui';
 import { ShoppingBagIcon } from '@/components/icons/shopping-bag-icon';
@@ -75,7 +75,7 @@ export default function WishlistPage() {
     setAddingId(product.id);
     try {
       await addToCart(product.id, variant.id, 1);
-      showStorefrontToast('Added to cart', 'success');
+      notifyAddToCartSuccess(product.name);
     } catch (err) {
       notifyAddToCartError(err);
     } finally {
