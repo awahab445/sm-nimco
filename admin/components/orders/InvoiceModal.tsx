@@ -9,7 +9,7 @@ const WAREHOUSE_ADDRESS_LINES = [
   'Commercial Area',
   'Karachi, Pakistan',
   'orders@smnimco.com',
-  '+92 371 1317164',
+  '+92 344 2394143',
   'www.smnimco.com',
 ];
 

@@ -16,7 +16,7 @@ Optional WhatsApp CTA at build time:
 
 ```bash
 # Windows PowerShell
-$env:NEXT_PUBLIC_WHATSAPP_URL="https://wa.me/923001234567"
+$env:NEXT_PUBLIC_WHATSAPP_URL="https://wa.me/923442394143"
 $env:NEXT_PUBLIC_SHEET_API_URL="https://sheetdb.io/api/v1/YOUR_SHEET_API_ID"
 npm run build
 ```

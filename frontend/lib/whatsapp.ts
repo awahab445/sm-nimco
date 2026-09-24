@@ -1,6 +1,7 @@
 'use client';
 
 import { siteConfigApi } from '@/lib/api-client';
+import { DEFAULT_WHATSAPP_PHONE } from '@/lib/whatsapp-order';
 import { useEffect, useState } from 'react';
 
 /**
@@ -36,7 +37,7 @@ export function normalizeWhatsAppUrl(
 
 /**
  * Resolves the store WhatsApp chat URL from admin social links (platform=whatsapp),
- * falling back to NEXT_PUBLIC_STORE_SOCIAL_WHATSAPP. null when not configured.
+ * falling back to NEXT_PUBLIC_STORE_SOCIAL_WHATSAPP, then the official store number.
  */
 export function useStoreWhatsAppUrl(prefillMessage?: string): string | null {
   const [url, setUrl] = useState<string | null>(null);
@@ -53,12 +54,12 @@ export function useStoreWhatsAppUrl(prefillMessage?: string): string | null {
         );
         resolved = normalizeWhatsAppUrl(link?.url, prefillMessage);
       } catch {
-        /* use env fallback below */
+        /* use env / hardcoded fallback below */
       }
 
       if (!resolved) {
         resolved = normalizeWhatsAppUrl(
-          process.env.NEXT_PUBLIC_STORE_SOCIAL_WHATSAPP,
+          process.env.NEXT_PUBLIC_STORE_SOCIAL_WHATSAPP || DEFAULT_WHATSAPP_PHONE,
           prefillMessage,
         );
       }

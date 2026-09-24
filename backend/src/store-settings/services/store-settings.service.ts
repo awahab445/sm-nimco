@@ -29,7 +29,7 @@ export type AdminStoreOrderSettings = PublicStoreOrderSettings & {
 
 const DEFAULT_MINIMUM_ORDER_AMOUNT = 800;
 const DEFAULT_FREE_DELIVERY_THRESHOLD = 2000;
-const DEFAULT_SHIPPING_GST_PERCENTAGE = 18;
+const DEFAULT_SHIPPING_GST_PERCENTAGE = 0;
 
 @Injectable()
 export class StoreSettingsService {

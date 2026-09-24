@@ -26,10 +26,12 @@ export function OrderSummaryTotals({
           <span>−{formatPrice(discountTotal, currency)}</span>
         </div>
       )}
-      <div className="flex justify-between text-muted-foreground">
-        <span>GST (18%)</span>
-        <span>{formatPrice(taxTotal, currency)}</span>
-      </div>
+      {taxTotal > 0 && (
+        <div className="flex justify-between text-muted-foreground">
+          <span>Tax</span>
+          <span>{formatPrice(taxTotal, currency)}</span>
+        </div>
+      )}
       <div className="flex justify-between text-muted-foreground">
         <span>Shipping</span>
         <span>

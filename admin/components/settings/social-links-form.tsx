@@ -37,7 +37,7 @@ function normalizeWhatsAppUrl(raw: string): string {
   const digits = trimmed.replace(/\D/g, '');
   if (digits.length < 8) {
     throw new Error(
-      'WhatsApp: enter a phone number with country code (e.g. 923001234567) or a full https://wa.me/… URL',
+      'WhatsApp: enter a phone number with country code (e.g. 923442394143) or a full https://wa.me/… URL',
     );
   }
   return `https://wa.me/${digits}`;
@@ -229,7 +229,7 @@ export function SocialLinksForm() {
                     onChange={(e) => updateLink(link.key, { url: e.target.value })}
                     placeholder={
                       link.platform === 'whatsapp'
-                        ? '923001234567 or https://wa.me/923001234567'
+                        ? '923442394143 or https://wa.me/923442394143'
                         : 'https://…'
                     }
                     className="mt-1 w-full rounded-lg border border-zinc-300 px-2 py-1.5 text-sm dark:border-zinc-600 dark:bg-zinc-900"

@@ -156,7 +156,7 @@ const DEFAULT_ZONE_RATES: Record<string, ZonePerKgRates> = {
   E: { name: 'Zone E', rateLessThan10kg: 110, rateGreaterOrEqual10kg: 110 },
 };
 
-const DEFAULT_SHIPPING_GST_PERCENTAGE = 18;
+const DEFAULT_SHIPPING_GST_PERCENTAGE = 0;
 
 function cellString(value: unknown): string {
   if (value == null) return '';

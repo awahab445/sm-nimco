@@ -1,6 +1,12 @@
 import { formatPrice } from '@/lib/currency';
 
-/** Digits-only E.164 without leading + (e.g. 923001234567) for wa.me links. */
+/** Official store WhatsApp number (digits only, no +) for wa.me links. */
+export const DEFAULT_WHATSAPP_PHONE = '923442394143';
+
+/** Display format for support/contact chrome. */
+export const DEFAULT_WHATSAPP_DISPLAY = '+92 344 2394143';
+
+/** Digits-only E.164 without leading + (e.g. 923442394143) for wa.me links. */
 export function normalizeWhatsappNumber(value: string | null | undefined): string | null {
   if (!value) return null;
   const digits = value.replace(/\D/g, '');
@@ -10,11 +16,11 @@ export function normalizeWhatsappNumber(value: string | null | undefined): strin
 const ENV_WHATSAPP_PHONE =
   process.env.NEXT_PUBLIC_WHATSAPP_PHONE?.trim() ||
   process.env.NEXT_PUBLIC_WHATSAPP_NUMBER?.trim() ||
-  '923711317164';
+  DEFAULT_WHATSAPP_PHONE;
 
 /** Store WhatsApp number from env with a safe fallback. */
 export function getDefaultWhatsappPhone(): string {
-  return normalizeWhatsappNumber(ENV_WHATSAPP_PHONE) ?? '923711317164';
+  return normalizeWhatsappNumber(ENV_WHATSAPP_PHONE) ?? DEFAULT_WHATSAPP_PHONE;
 }
 
 export function buildProductOrderWhatsappUrl(params: {

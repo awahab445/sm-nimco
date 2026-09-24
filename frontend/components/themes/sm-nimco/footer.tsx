@@ -254,7 +254,7 @@ function ContactRow({ icon, children }: { icon: ReactNode; children: ReactNode }
 export function SmNimcoFooter() {
   const socialLinks = useFooterSocialLinks();
   const categoryLinks = useCategoryLinks();
-  const phone = process.env.NEXT_PUBLIC_STORE_PHONE?.trim() || '+92 371 1317164';
+  const phone = process.env.NEXT_PUBLIC_STORE_PHONE?.trim() || '+92 344 2394143';
   const email = process.env.NEXT_PUBLIC_STORE_EMAIL?.trim() || 'orders@smnimco.com';
   const address =
     process.env.NEXT_PUBLIC_STORE_ADDRESS?.trim() || 'Commercial Area, Karachi, Pakistan';

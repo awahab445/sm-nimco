@@ -1,5 +1,5 @@
-/** Pakistan sales tax / GST applied on storefront order subtotals. */
-export const DEFAULT_GST_RATE_PERCENT = 18;
+/** Pakistan sales tax / GST applied on storefront order subtotals. Set to 0 to disable automatic tax. */
+export const DEFAULT_GST_RATE_PERCENT = 0;
 
 /** Round money to 2 decimal places (PKR style). */
 export function roundMoney(amount: number): number {
