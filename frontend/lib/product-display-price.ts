@@ -8,7 +8,7 @@ export function parseProductPrice(value: string | number | undefined | null): nu
 
 /** Lowest variant price for PLP cards; falls back to base price when no variants. */
 export function getProductListDisplayPrice(product: Product): number {
-  const variants = product.variants ?? [];
+  const variants = Array.isArray(product.variants) ? product.variants : [];
   if (variants.length > 0) {
     const prices = variants
       .map((v) => parseProductPrice(v.price))
@@ -44,7 +44,7 @@ export function getVariantCompareAtPrice(
 export function getCheapestVariantChipId(
   variants: Array<{ id: string; price: string | number }>,
 ): string | null {
-  if (!variants.length) return null;
+  if (!Array.isArray(variants) || !variants.length) return null;
   let bestId: string | null = null;
   let bestPrice = Infinity;
   for (const v of variants) {

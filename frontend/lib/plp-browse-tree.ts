@@ -28,6 +28,7 @@ export function resolveBrowseNodeCategoryId(
 }
 
 export function sortBrowseNodes<T extends { sortOrder?: number }>(items: T[]): T[] {
+  if (!Array.isArray(items)) return [];
   return [...items].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
 }
 
@@ -37,12 +38,13 @@ export function findBrowsePathByCategoryId(
   categoryId: string | null | undefined,
   categoryIdBySlug?: Map<string, string>,
 ): PlpBrowseTreeNode[] {
-  if (!categoryId) return [];
+  if (!categoryId || !Array.isArray(tree)) return [];
   const walk = (nodes: PlpBrowseTreeNode[], trail: PlpBrowseTreeNode[]): PlpBrowseTreeNode[] | null => {
+    if (!Array.isArray(nodes)) return null;
     for (const node of sortBrowseNodes(nodes)) {
       const next = [...trail, node];
       if (resolveBrowseNodeCategoryId(node, categoryIdBySlug) === categoryId) return next;
-      if (node.children?.length) {
+      if (Array.isArray(node.children) && node.children.length) {
         const found = walk(node.children, next);
         if (found) return found;
       }

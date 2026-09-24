@@ -83,7 +83,7 @@ export function isBackendAssetUrl(src: string): boolean {
 export function getProductImagesOrdered(
   images?: ProductImage[] | null,
 ): ProductImage[] {
-  if (!images?.length) return [];
+  if (!Array.isArray(images) || images.length === 0) return [];
   return [...images].sort((a, b) => {
     if (Boolean(a.isPrimary) !== Boolean(b.isPrimary)) {
       return a.isPrimary ? -1 : 1;

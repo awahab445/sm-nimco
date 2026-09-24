@@ -53,7 +53,9 @@ export function PlpFilterAccordions({
   onFiltersChange,
   hideCategoryPanels = false,
 }: Props) {
-  const panels = (facets?.filterPanels ?? []).filter((p) => !(hideCategoryPanels && p.kind === 'category'));
+  const panels = (
+    Array.isArray(facets?.filterPanels) ? facets.filterPanels : []
+  ).filter((p) => !(hideCategoryPanels && p.kind === 'category'));
 
   return (
     <div className="plp-filter-accordions">
@@ -104,7 +106,7 @@ function CategoryPanel({
   onFiltersChange: (next: PlpFilterState) => void;
   defaultOpen: boolean;
 }) {
-  const categories = panel.categories?.length
+  const categories = Array.isArray(panel.categories) && panel.categories.length > 0
     ? panel.categories
     : Array.from(categoryNameById.entries()).map(([id, name]) => ({
         id,
@@ -198,15 +200,16 @@ function AttributePanel({
   onFiltersChange: (next: PlpFilterState) => void;
 }) {
   const code = panel.code;
-  const selected = filters.facetAttr[code] ?? [];
+  const selected = Array.isArray(filters.facetAttr[code]) ? filters.facetAttr[code]! : [];
+  const options = Array.isArray(panel.options) ? panel.options : [];
 
   return (
     <AccordionSection title={panel.name}>
       <ul className="max-h-48 space-y-2.5 overflow-y-auto overscroll-contain pr-1">
-        {panel.options.length === 0 ? (
+        {options.length === 0 ? (
           <p className="text-xs text-muted-foreground">No options available.</p>
         ) : (
-          panel.options.map((opt) => {
+          options.map((opt) => {
             const checked = selected.includes(opt.value);
             return (
               <li key={opt.value}>

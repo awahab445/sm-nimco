@@ -67,7 +67,7 @@ function BrowseNode({
   categoryIdBySlug: Map<string, string>;
   hydrated: boolean;
 }) {
-  const children = sortBrowseNodes(node.children ?? []);
+  const children = sortBrowseNodes(Array.isArray(node.children) ? node.children : []);
   const filterCategoryId = resolveNodeCategoryId(node, categoryIdBySlug);
   const isActive = filterCategoryId != null && filterCategoryId === selectedCategoryId;
 
@@ -163,7 +163,7 @@ export function PlpBrowseTree({
   categoryIdBySlug = new Map(),
 }: Props) {
   const hydrated = useHydrated();
-  const roots = sortBrowseNodes(tree);
+  const roots = sortBrowseNodes(Array.isArray(tree) ? tree : []);
   const allActive = selectedCategoryId == null;
 
   return (

@@ -69,7 +69,8 @@ export function trackViewItemList(
   products: Product[],
 ): void {
   if (!canTrack('trackCartEvents')) return;
-  const items = products.slice(0, 30).map((p) => productToGa4Item(p));
+  const list = Array.isArray(products) ? products : [];
+  const items = list.slice(0, 30).map((p) => productToGa4Item(p));
   runWhenIdle(() => {
     sendGAEvent('view_item_list', {
       item_list_id: listId,

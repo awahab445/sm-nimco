@@ -44,8 +44,9 @@ function parsePrice(value: string | number | undefined | null): number {
 }
 
 function variantLabel(variant: ProductVariant): string {
-  const fromOption = variant.optionValues
-    ?.map((ov) => ov.value?.value?.trim())
+  const optionValues = Array.isArray(variant.optionValues) ? variant.optionValues : [];
+  const fromOption = optionValues
+    .map((ov) => ov.value?.value?.trim())
     .filter(Boolean)
     .join(' / ');
   if (fromOption) return fromOption;
@@ -59,9 +60,8 @@ function variantLabel(variant: ProductVariant): string {
 
 /** Chips from this product's variants only (not the global option catalog). */
 function getVariantChips(product: Product): VariantChip[] {
-  const variants = [...(product.variants ?? [])].sort(
-    (a, b) => (a.position ?? 0) - (b.position ?? 0),
-  );
+  const raw = Array.isArray(product.variants) ? product.variants : [];
+  const variants = [...raw].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
   return variants.map((variant) => ({
     id: variant.id,
     label: variantLabel(variant),
@@ -81,8 +81,9 @@ export function SmNimcoProductCard({
 
   const chips = getVariantChips(product);
   const defaultVariant = getVariantForCart(product);
+  const variantList = Array.isArray(product.variants) ? product.variants : [];
   const [selectedVariantId, setSelectedVariantId] = useState<string | null>(() =>
-    getCheapestVariantChipId(product.variants ?? []) ??
+    getCheapestVariantChipId(variantList) ??
     chips[0]?.id ??
     defaultVariant?.id ??
     null,

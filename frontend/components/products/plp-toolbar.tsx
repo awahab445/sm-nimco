@@ -23,6 +23,7 @@ export function sortProducts<T extends { name: string; basePrice?: number | stri
   items: T[],
   sort: PlpSortOption,
 ): T[] {
+  if (!Array.isArray(items) || items.length === 0) return [];
   if (sort === 'featured') return items;
   const copy = [...items];
   const priceOf = (p: T) => {

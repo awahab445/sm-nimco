@@ -4,8 +4,8 @@ import type { Product } from '@/lib/api-client';
 export function getVariantForCart(
   product: Product,
 ): { id: string; productId: string; price: number } | null {
-  const variants = product.variants;
-  if (variants?.length) {
+  const variants = Array.isArray(product.variants) ? product.variants : [];
+  if (variants.length) {
     const v = variants[0];
     const price = typeof v.price === 'string' ? parseFloat(v.price) : v.price;
     return { id: v.id, productId: product.id, price: isNaN(Number(price)) ? 0 : Number(price) };

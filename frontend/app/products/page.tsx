@@ -56,7 +56,9 @@ function flattenCategories(res: { data?: Category[] } | CategoryTreeLike[]): Cat
 type CategoryTreeLike = Category & { children?: CategoryTreeLike[] };
 
 function hasActiveFilters(f: PlpFilterState): boolean {
-  const attrActive = Object.values(f.facetAttr).some((arr) => arr.length > 0);
+  const attrActive = Object.values(f.facetAttr).some(
+    (arr) => Array.isArray(arr) && arr.length > 0,
+  );
   return (
     f.categoryIds.length > 0 ||
     attrActive ||
@@ -66,9 +68,9 @@ function hasActiveFilters(f: PlpFilterState): boolean {
 }
 
 function countActiveFilters(f: PlpFilterState): number {
-  let count = f.categoryIds.length;
+  let count = Array.isArray(f.categoryIds) ? f.categoryIds.length : 0;
   for (const values of Object.values(f.facetAttr)) {
-    count += values.length;
+    if (Array.isArray(values)) count += values.length;
   }
   if (f.minPrice != null && Number.isFinite(f.minPrice)) count += 1;
   if (f.maxPrice != null && Number.isFinite(f.maxPrice)) count += 1;
@@ -137,7 +139,7 @@ function ProductsContent() {
       .then((res) => {
         if (cancelled) return;
         setBrowseLabel(res.data?.label ?? 'Categories');
-        setBrowseTree(res.data?.tree ?? []);
+        setBrowseTree(Array.isArray(res.data?.tree) ? res.data.tree : []);
       })
       .catch(() => {
         if (!cancelled) {
@@ -187,11 +189,29 @@ function ProductsContent() {
     productApi
       .listProducts(listQuery)
       .then((res) => {
-        if (!cancelled) setData(res);
-        const variantIds = (res?.data ?? []).map((p) => getVariantForCart(p)?.id).filter(Boolean) as string[];
+        const list = Array.isArray(res?.data) ? res.data : [];
+        const normalized: ProductListResponse = {
+          data: list,
+          meta: res?.meta ?? {
+            total: list.length,
+            page: 1,
+            limit: list.length || 12,
+            totalPages: 1,
+          },
+        };
+        if (!cancelled) setData(normalized);
+        const variantIds = list
+          .map((p) => getVariantForCart(p)?.id)
+          .filter((id): id is string => Boolean(id));
         if (variantIds.length > 0) {
           inventoryApi.getAvailability(variantIds).then((r) => {
-            if (!cancelled) setAvailability(r.data);
+            if (!cancelled) {
+              setAvailability(
+                r?.data && typeof r.data === 'object' && !Array.isArray(r.data)
+                  ? r.data
+                  : {},
+              );
+            }
           });
         } else if (!cancelled) setAvailability({});
       })
@@ -211,7 +231,16 @@ function ProductsContent() {
     productApi
       .getFacets(facetQuery)
       .then((f) => {
-        if (!cancelled) setFacets(f);
+        if (!cancelled) {
+          setFacets(
+            f && typeof f === 'object'
+              ? {
+                  ...f,
+                  filterPanels: Array.isArray(f.filterPanels) ? f.filterPanels : [],
+                }
+              : null,
+          );
+        }
       })
       .catch(() => {
         if (!cancelled) setFacets(null);
@@ -238,7 +267,16 @@ function ProductsContent() {
       productApi
         .getFacets(q)
         .then((f) => {
-          if (previewGen.current === gen) setPreviewFacets(f);
+          if (previewGen.current === gen) {
+            setPreviewFacets(
+              f && typeof f === 'object'
+                ? {
+                    ...f,
+                    filterPanels: Array.isArray(f.filterPanels) ? f.filterPanels : [],
+                  }
+                : null,
+            );
+          }
         })
         .catch(() => {
           if (previewGen.current === gen) setPreviewFacets(null);
@@ -252,10 +290,10 @@ function ProductsContent() {
     };
   }, [drawerOpen, draft]);
 
-  const products = data?.data ?? [];
+  const products = Array.isArray(data?.data) ? data.data : [];
   const displayProducts = useMemo(
-    () => sortProducts(data?.data ?? [], sortBy),
-    [data?.data, sortBy],
+    () => sortProducts(products, sortBy),
+    [products, sortBy],
   );
   const meta = data?.meta;
   const totalPages = meta?.totalPages ?? 1;
@@ -300,14 +338,15 @@ function ProductsContent() {
   }, [applied.search, browseTree, selectedCategoryId, categoryNameById, categoryIdBySlug]);
 
   useEffect(() => {
-    if (!data?.data?.length) return;
+    const list = Array.isArray(data?.data) ? data.data : [];
+    if (!list.length) return;
     if (viewListDebounce.current) clearTimeout(viewListDebounce.current);
     viewListDebounce.current = setTimeout(() => {
       const listId = selectedCategoryId ?? applied.search ?? 'all-products';
-      trackViewItemList(String(listId), pageTitle, data.data);
+      trackViewItemList(String(listId), pageTitle, list);
       if (applied.search?.trim()) {
         trackSearch(applied.search, {
-          contentIds: data.data.map((p) => p.sku).filter(Boolean),
+          contentIds: list.map((p) => p.sku).filter(Boolean),
         });
       }
     }, 300);

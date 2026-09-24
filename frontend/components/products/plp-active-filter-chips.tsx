@@ -41,13 +41,16 @@ export function PlpActiveFilterChips({ filters, categoryNameById, onChange, onCl
   }
 
   for (const [code, values] of Object.entries(filters.facetAttr)) {
+    if (!Array.isArray(values)) continue;
     for (const v of values) {
       chips.push({
         key: `${code}-${v}`,
         label: `${code}: ${v}`,
         onRemove: () => {
           const nextAttr = { ...filters.facetAttr };
-          const list = (nextAttr[code] ?? []).filter((x) => x !== v);
+          const list = (Array.isArray(nextAttr[code]) ? nextAttr[code]! : []).filter(
+            (x) => x !== v,
+          );
           if (list.length) nextAttr[code] = list;
           else delete nextAttr[code];
           onChange({ ...filters, page: 1, facetAttr: nextAttr });
