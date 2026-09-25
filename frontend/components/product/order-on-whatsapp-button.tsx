@@ -81,11 +81,12 @@ export function OrderOnWhatsAppButton({
       target="_blank"
       rel="noopener noreferrer"
       onClick={handleClick}
-      className={`flex h-10 w-full items-center justify-center gap-2 rounded-full bg-[#25D366] px-3 py-2 transition-colors duration-200 hover:bg-[#20bd5a] ${className}`}
+      className={`flex h-10 w-full items-center justify-center gap-1.5 rounded-full bg-[var(--brand-whatsapp,#25D366)] px-2 py-2 transition-colors duration-200 hover:brightness-95 sm:gap-2 sm:px-3 ${className}`}
     >
       <WhatsAppIcon className="h-4 w-4 min-w-[16px] shrink-0 sm:h-5 sm:w-5" />
-      <span className="whitespace-nowrap text-[11px] font-bold uppercase tracking-wider text-white sm:text-xs">
-        Order on WhatsApp
+      <span className="truncate text-[11px] font-bold uppercase tracking-wider text-white sm:whitespace-nowrap sm:text-xs">
+        <span className="sm:hidden">WhatsApp</span>
+        <span className="hidden sm:inline">Order on WhatsApp</span>
       </span>
     </a>
   );

@@ -1685,7 +1685,7 @@ export function OnePageCheckout() {
                 onClick={closeMinimumOrderModal}
                 className={storefrontUi.btnPrimary}
               >
-                Back to cart
+                Got it
               </button>
             </div>
           </div>

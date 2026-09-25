@@ -24,7 +24,12 @@ const FEATURES = [
 export function SmNimcoStoreFeatures() {
   return (
     <section
-      className="border-y border-gray-800 bg-gray-800 px-4 py-10 sm:px-8 sm:py-12"
+      className="border-y px-4 py-10 sm:px-8 sm:py-12"
+      style={{
+        backgroundColor: 'var(--brand-purple-deep, #2e1a47)',
+        borderColor:
+          'color-mix(in srgb, var(--brand-gold-primary, #d4af37) 18%, transparent)',
+      }}
       aria-label="Store features"
     >
       <div className="mx-auto grid max-w-7xl grid-cols-2 gap-6 md:grid-cols-4 md:gap-8">
@@ -34,7 +39,7 @@ export function SmNimcoStoreFeatures() {
               {feature.emoji}
             </span>
             <h3 className="text-sm font-bold text-white sm:text-base">{feature.title}</h3>
-            <p className="text-xs leading-relaxed text-gray-400 sm:text-sm">{feature.description}</p>
+            <p className="text-xs leading-relaxed text-white/65 sm:text-sm">{feature.description}</p>
           </div>
         ))}
       </div>

@@ -684,7 +684,7 @@ export function ProductDetailClient() {
 
           <div className="mt-6 px-4 sm:px-6 lg:sticky lg:top-24 lg:mt-0 lg:self-start lg:px-0">
             {/* Kalles PDP title: 16px / semibold / body font / no uppercase */}
-            <h1 className="font-sans text-base font-semibold leading-snug tracking-normal text-foreground">
+            <h1 className="font-display text-xl font-semibold leading-snug tracking-normal text-foreground sm:text-2xl">
               {product.name}
             </h1>
 

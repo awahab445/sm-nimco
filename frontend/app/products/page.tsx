@@ -37,6 +37,7 @@ import { findBrowseNodeLabel } from '@/lib/plp-browse-tree';
 import { useHydrated } from '@/lib/use-hydrated';
 import { useOverlayA11y } from '@/lib/use-overlay-a11y';
 import { trackSearch, trackViewItemList } from '@/lib/analytics/events';
+import { storefrontUi } from '@/lib/storefront-ui';
 
 function flattenCategories(res: { data?: Category[] } | CategoryTreeLike[]): Category[] {
   if (Array.isArray(res)) {
@@ -550,7 +551,7 @@ function ProductsContent() {
           />
 
           {error && (
-            <div className="mb-4 border border-destructive/20 bg-destructive/5 p-4 text-sm text-destructive">{error}</div>
+            <div className={`mb-4 text-sm ${storefrontUi.alertError}`}>{error}</div>
           )}
 
           {isInitialLoad ? (

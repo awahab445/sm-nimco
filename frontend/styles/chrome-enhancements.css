@@ -358,7 +358,7 @@ html[data-store-theme='essa_chemicals'] .mobile-nav-link:active {
 }
 
 .mobile-toolbar__item.is-active {
-  color: var(--navbar-link-hover, var(--primary-hover, #ff4800));
+  color: var(--brand-purple-dark, var(--navbar-link-hover, var(--primary, #1e1035)));
 }
 
 .mobile-toolbar__icon {

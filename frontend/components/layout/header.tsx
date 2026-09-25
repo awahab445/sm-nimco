@@ -598,7 +598,7 @@ export function Header({ theme = 'default' }: { theme?: StoreThemeCode }) {
                         href="/register"
                         className={
                           isSmNimco
-                            ? 'block w-full rounded-xl bg-[var(--brand-purple-dark,#1e1035)] py-2.5 text-center font-bold text-[var(--brand-gold-primary,#d4af37)] shadow-md transition-colors hover:bg-[#2d184f]'
+                            ? 'block w-full rounded-xl bg-[var(--brand-purple-dark,#1e1035)] py-2.5 text-center font-bold text-[var(--brand-gold-primary,#d4af37)] shadow-md transition-colors hover:bg-[var(--brand-purple-deep,#2e1a47)]'
                             : 'block w-full rounded-xl bg-primary py-2.5 text-center font-bold text-primary-foreground shadow-md transition-colors hover:bg-btn-hover'
                         }
                         onClick={closeMobileNav}
@@ -621,7 +621,7 @@ export function Header({ theme = 'default' }: { theme?: StoreThemeCode }) {
           type="button"
           className={`mobile-nav-drawer__close inline-flex h-[50px] w-[50px] shrink-0 items-center justify-center transition-colors ${
             isSmNimco
-              ? 'bg-[var(--brand-purple-dark,#1e1035)] text-[var(--brand-gold-primary,#d4af37)] hover:bg-[#2d184f]'
+              ? 'bg-[var(--brand-purple-dark,#1e1035)] text-[var(--brand-gold-primary,#d4af37)] hover:bg-[var(--brand-purple-deep,#2e1a47)]'
               : 'bg-primary text-primary-foreground hover:bg-btn-hover'
           }`}
           aria-label="Close menu"

@@ -297,7 +297,7 @@ export default function CartPage() {
                         <input
                           type="number"
                           min={1}
-                          className="w-16 rounded-sm border border-input bg-card px-2 py-1.5 text-center text-sm focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring/40"
+                          className={storefrontUi.inputCompact}
                           defaultValue={bundle.quantity}
                           onBlur={(e) => {
                             const q = Math.max(1, Number(e.target.value) || 1);
@@ -368,7 +368,7 @@ export default function CartPage() {
                           setLocalQty((prev) => ({ ...prev, [item.variantId]: q }));
                         }}
                         onBlur={() => handleQtyBlur(item.variantId)}
-                        className="w-16 rounded-sm border border-input bg-card px-2 py-1.5 text-center text-sm text-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring/40"
+                        className={storefrontUi.inputCompact}
                       />
                       <button
                         type="button"
@@ -410,7 +410,7 @@ export default function CartPage() {
                   </span>
                 </div>
               {couponMeta.discountAmount > 0 && (
-                <div className="flex items-center justify-between text-emerald-700 dark:text-emerald-400">
+                <div className="flex items-center justify-between text-success">
                   <span>Discount</span>
                   <span className="font-medium">−{formatPrice(couponMeta.discountAmount, displayCurrency)}</span>
                 </div>

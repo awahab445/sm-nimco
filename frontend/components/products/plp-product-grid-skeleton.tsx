@@ -36,7 +36,7 @@ export function PlpProductGridSkeleton({
     <div className={gridClass} aria-busy="true" aria-label="Loading products">
       {Array.from({ length: count }).map((_, i) => (
         <div key={i} className="flex min-w-0 flex-col bg-transparent">
-          <div className="aspect-[3/4] w-full animate-pulse bg-muted/50" />
+          <div className="aspect-square w-full animate-pulse bg-muted/50" />
           <div className="mt-3 space-y-2">
             <div className="h-3 w-[70%] max-w-full animate-pulse bg-muted/40" />
             <div className="h-3 w-[32%] max-w-full animate-pulse bg-muted/30" />

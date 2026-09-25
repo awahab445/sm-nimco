@@ -80,7 +80,10 @@ export function StorefrontToast() {
 
   return (
     <div
-      className="pointer-events-none fixed inset-x-0 top-0 z-[300] flex justify-end p-3 sm:inset-x-auto sm:right-4 sm:top-4 sm:left-auto sm:p-0"
+      className="pointer-events-none fixed inset-x-0 z-[300] flex justify-end p-3 sm:inset-x-auto sm:right-4 sm:left-auto sm:p-0"
+      style={{
+        top: 'calc(var(--site-header-height, 4.5rem) + 0.5rem)',
+      }}
       role={isError ? 'alert' : 'status'}
       aria-live="assertive"
       aria-atomic="true"

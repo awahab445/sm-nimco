@@ -34,10 +34,10 @@ type VariantChip = {
 };
 
 const SM_NIMCO_ATC_BUTTON_CLASSES =
-  'mb-2 flex h-10 w-full items-center justify-center rounded-full bg-[var(--brand-purple-dark,#1e1035)] text-xs font-bold uppercase tracking-wider text-[var(--brand-gold-primary,#C5A059)] shadow-sm transition-all duration-200 hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50 sm:text-sm';
+  'mb-2 flex h-10 w-full items-center justify-center rounded-full bg-[var(--brand-purple-dark,#1e1035)] text-xs font-bold uppercase tracking-wider text-[var(--brand-gold-primary,#d4af37)] shadow-sm transition-all duration-200 hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50 sm:text-sm';
 
 const SM_NIMCO_ATC_DISABLED_CLASSES =
-  'mb-2 flex h-10 w-full cursor-not-allowed items-center justify-center rounded-full bg-[var(--brand-purple-dark,#1e1035)] text-xs font-bold uppercase tracking-wider text-[var(--brand-gold-primary,#C5A059)] opacity-50 shadow-sm sm:text-sm';
+  'mb-2 flex h-10 w-full cursor-not-allowed items-center justify-center rounded-full bg-[var(--brand-purple-dark,#1e1035)] text-xs font-bold uppercase tracking-wider text-[var(--brand-gold-primary,#d4af37)] opacity-50 shadow-sm sm:text-sm';
 
 function parsePrice(value: string | number | undefined | null): number {
   return parseProductPrice(value);
@@ -146,14 +146,14 @@ export function SmNimcoProductCard({
 
   return (
     <>
-      <div className="sm-nimco-product-card group flex flex-col justify-between overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all">
+      <div className="sm-nimco-product-card group flex flex-col justify-between overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all">
         <div>
-          <div className="relative mb-3 aspect-square w-full overflow-hidden rounded-t-xl bg-[#f8f6f0]">
+          <div className="relative mb-3 aspect-square w-full overflow-hidden rounded-t-xl bg-[var(--brand-bg-light,#faf8f5)]">
             {badge ? (
               <span
                 className={`pointer-events-none absolute left-3 top-3 z-10 rounded px-2 py-0.5 text-[10px] font-bold uppercase ${
                   badge === 'HOT'
-                    ? 'bg-red-600 text-white'
+                    ? 'bg-destructive text-destructive-foreground'
                     : 'bg-[var(--brand-gold-primary,#d4af37)] text-[var(--brand-purple-dark,#1e1035)]'
                 }`}
               >
@@ -164,7 +164,7 @@ export function SmNimcoProductCard({
               productId={product.id}
               variant="icon"
               stopPropagation
-              className="absolute right-3 top-3 z-20 inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--brand-purple-dark,#1e1035)]/10 bg-white/95 text-[var(--brand-purple-dark,#1e1035)] shadow-sm transition-colors hover:border-[var(--brand-gold-primary,#d4af37)] hover:text-[var(--brand-gold-hover,#b89628)]"
+              className="absolute right-3 top-3 z-20 inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--brand-purple-dark,#1e1035)]/10 bg-card/95 text-[var(--brand-purple-dark,#1e1035)] shadow-sm transition-colors hover:border-[var(--brand-gold-primary,#d4af37)] hover:text-[var(--brand-gold-hover,#b89628)]"
               iconClassName="h-[18px] w-[18px]"
             />
             <Link
@@ -201,10 +201,10 @@ export function SmNimcoProductCard({
                 {product.name}
               </h3>
             </Link>
-            <p className="mt-1 line-clamp-2 text-xs text-gray-500">{description}</p>
+            <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{description}</p>
           {showVariantSelector ? (
             <div
-              className="my-3 flex flex-wrap gap-1"
+              className="my-3 flex min-h-[1.75rem] flex-wrap gap-1"
               role="group"
               aria-label={`${product.name} pack options`}
             >
@@ -220,7 +220,7 @@ export function SmNimcoProductCard({
                     className={
                       selected
                         ? 'rounded bg-[var(--brand-purple-dark,#1e1035)] px-2 py-0.5 text-xs font-bold text-[var(--brand-gold-primary,#d4af37)]'
-                        : 'rounded border border-gray-200 bg-white px-2 py-0.5 text-xs text-gray-600 transition-colors hover:border-[var(--brand-purple-dark,#1e1035)]/40'
+                        : 'rounded border border-border bg-card px-2 py-0.5 text-xs text-muted-foreground transition-colors hover:border-[var(--brand-purple-dark,#1e1035)]/40'
                     }
                   >
                     {chip.label}
@@ -228,9 +228,7 @@ export function SmNimcoProductCard({
                 );
               })}
             </div>
-          ) : (
-            <div className="my-3" />
-          )}
+          ) : null}
           </div>
         </div>
 

@@ -26,16 +26,16 @@ export function WhatsAppWidget() {
 
   return (
     <div
-      className="fixed bottom-[calc(3.4375rem+var(--mobile-mini-cart-height,0px)+4.25rem+env(safe-area-inset-bottom,0px))] right-4 z-[95] motion-safe:animate-whatsapp-bounce lg:bottom-6 lg:right-6 lg:z-[80]"
+      className="fixed bottom-[calc(3.4375rem+var(--mobile-mini-cart-height,0px)+3.25rem+env(safe-area-inset-bottom,0px))] right-3 z-[95] motion-safe:animate-whatsapp-bounce sm:right-4 lg:bottom-6 lg:right-6 lg:z-[80]"
     >
       <a
         href={whatsappUrl}
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Chat with us on WhatsApp"
-        className="group relative flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg transition-all duration-200 hover:scale-110 hover:bg-[#20bd5a] hover:shadow-xl active:scale-[0.95]"
+        className="group relative flex h-12 w-12 items-center justify-center rounded-full bg-[var(--brand-whatsapp,#25D366)] text-white shadow-lg transition-all duration-200 hover:scale-110 hover:brightness-95 hover:shadow-xl active:scale-[0.95] sm:h-14 sm:w-14"
       >
-        <WhatsAppIcon className="h-7 w-7" />
+        <WhatsAppIcon className="h-6 w-6 sm:h-7 sm:w-7" />
 
         <span
           className="pointer-events-none absolute right-full mr-3 whitespace-nowrap rounded-md bg-zinc-900 px-3 py-1.5 text-sm font-medium text-white opacity-0 shadow-md transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100 translate-x-1"

@@ -138,7 +138,7 @@ html[data-store-theme='sm_nimco'] .sm-nimco-product-card {
 }
 
 html[data-store-theme='sm_nimco'] .sm-nimco-product-card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-3px);
 }
 
 /* Chrome/navbar tokens live in store-themes.css ([data-store-theme]) — not in [data-theme]. */
