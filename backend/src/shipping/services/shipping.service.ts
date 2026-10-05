@@ -454,7 +454,7 @@ export class ShippingService {
 
   /**
    * Calculate shipping options for a cart.
-   * Karachi → Standard Delivery (≤7kg 200 PKR, else 250). Other cities → Economy & Overland.
+   * Karachi → Standard Delivery (≤2kg 200, ≤3kg 250, 4kg+ 300 PKR). Other cities → Economy & Overland.
    * Free delivery when subtotal meets storeSettings.freeDeliveryThreshold (default 2000).
    */
   async calculateShipping(

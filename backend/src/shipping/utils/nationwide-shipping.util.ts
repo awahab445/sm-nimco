@@ -74,7 +74,7 @@ export function calculateNationwideShippingCost(
   return 0;
 }
 
-/** Economy shipping — rates from zone config `economy_shipping` rules. */
+/** Economy shipping — outstation rates from zone config `economy_shipping` rules. */
 export function calculateEconomyShippingCost(
   totalWeightKg: number,
   config: NationwideShippingMethodConfig = DEFAULT_ZONE_CONFIG.economy_shipping,
@@ -82,7 +82,7 @@ export function calculateEconomyShippingCost(
   return calculateNationwideShippingCost(totalWeightKg, config);
 }
 
-/** Overland shipping — rates from zone config `overland_shipping` rules. */
+/** Overland shipping — outstation rates from zone config `overland_shipping` rules. */
 export function calculateOverlandShippingCost(
   totalWeightKg: number,
   config: NationwideShippingMethodConfig = DEFAULT_ZONE_CONFIG.overland_shipping,
@@ -90,13 +90,19 @@ export function calculateOverlandShippingCost(
   return calculateNationwideShippingCost(totalWeightKg, config);
 }
 
-/** Karachi standard delivery: billable <= 7 kg → 200 PKR; above 7 kg → 250 PKR flat. */
+/**
+ * Karachi standard delivery (billable kg = ceil of cart weight, min 1):
+ * ≤2 kg → 200 PKR; ≤3 kg → 250 PKR; 4 kg+ → 300 PKR.
+ */
 export function calculateKarachiShippingCost(totalWeightKg: number): number {
   const billableWeight = resolveBillableWeightKg(totalWeightKg);
-  if (billableWeight <= 7) {
+  if (billableWeight <= 2) {
     return roundShippingMoney(200);
   }
-  return roundShippingMoney(250);
+  if (billableWeight <= 3) {
+    return roundShippingMoney(250);
+  }
+  return roundShippingMoney(300);
 }
 
 export function buildKarachiShippingOption(

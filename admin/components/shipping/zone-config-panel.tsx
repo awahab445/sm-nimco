@@ -224,12 +224,12 @@ function MethodPanel({
 
   const addRule = () => {
     const nextRule: ShippingWeightRule =
-      methodKey === 'economy_shipping'
+      methodKey === 'economy_shipping' || methodKey === 'overland_shipping'
         ? {
             maxBillableKg: null,
-            baseCost: economyFlatRule?.cost ?? 275,
+            baseCost: economyFlatRule?.cost ?? 300,
             includedKg: economyFlatRule?.maxBillableKg ?? 3,
-            costPerExtraKg: 76,
+            costPerExtraKg: 70,
           }
         : { maxBillableKg: null, costPerKg: 70 };
     onChange({
@@ -246,9 +246,7 @@ function MethodPanel({
       <p className="mt-1 text-xs text-zinc-500">
         Billable weight = Math.ceil(cart kg), minimum {method.minBillableKg ?? 1}{' '}
         kg. Same nationwide rate for every Pakistani city.
-        {methodKey === 'economy_shipping'
-          ? ' Above the flat tier: base cost + (billable kg − included kg) × per extra kg.'
-          : ' Above the flat tier: full billable weight × per kg (no flat base added).'}
+        {' '}Above the flat tier: base cost + (billable kg − included kg) × per extra kg.
       </p>
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2">

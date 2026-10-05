@@ -40,7 +40,7 @@ export class ZoneConfigService {
         parsed.economy_shipping,
         DEFAULT_ZONE_CONFIG.economy_shipping,
       ),
-      overland_shipping: this.normalizeMethod(
+      overland_shipping: this.normalizeEconomyMethod(
         parsed.overland_shipping,
         DEFAULT_ZONE_CONFIG.overland_shipping,
       ),

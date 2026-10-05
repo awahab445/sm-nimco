@@ -96,19 +96,13 @@ describe('shipping-fee 4-tier slabs (Zone A)', () => {
   });
 });
 
-const ECONOMY_CONFIG = {
-  baseCost: 275,
-  costPerKg: 76,
+const OUTSTATION_CONFIG = {
+  baseCost: 300,
+  costPerKg: 70,
   baseCostKgLimit: 3,
 };
 
-const OVERLAND_CONFIG = {
-  baseCost: 342,
-  costPerKg: 70,
-  baseCostKgLimit: 5,
-};
-
-describe('weight-based shipping (economy / overland)', () => {
+describe('weight-based shipping (outstation)', () => {
   it('rounds weight UP to the nearest integer kilogram', () => {
     expect(toBillableKg(3.2)).toBe(4);
     expect(toBillableKg(5.1)).toBe(6);
@@ -116,48 +110,43 @@ describe('weight-based shipping (economy / overland)', () => {
     expect(toBillableKg(0.1)).toBe(1);
   });
 
-  it('economy: at or below 3kg returns baseCost 275', () => {
+  it('outstation: 1kg, 2kg, 3kg = PKR 300', () => {
     expect(
-      calculateWeightBasedShippingFee(2.4, ECONOMY_CONFIG, 'economy_shipping'),
-    ).toBe(275);
+      calculateWeightBasedShippingFee(1, OUTSTATION_CONFIG, 'economy_shipping'),
+    ).toBe(300);
     expect(
-      calculateWeightBasedShippingFee(3, ECONOMY_CONFIG, 'economy_shipping'),
-    ).toBe(275);
+      calculateWeightBasedShippingFee(2, OUTSTATION_CONFIG, 'economy_shipping'),
+    ).toBe(300);
+    expect(
+      calculateWeightBasedShippingFee(3, OUTSTATION_CONFIG, 'economy_shipping'),
+    ).toBe(300);
+    expect(
+      calculateWeightBasedShippingFee(2.4, OUTSTATION_CONFIG, 'economy_shipping'),
+    ).toBe(300); // ceil → 3
   });
 
-  it('economy: 3.2kg bills 4kg → 275 + (4-3)*76 = 351', () => {
+  it('outstation: 4kg = PKR 370', () => {
     expect(
-      calculateWeightBasedShippingFee(3.2, ECONOMY_CONFIG, 'economy_shipping'),
-    ).toBe(351);
+      calculateWeightBasedShippingFee(4, OUTSTATION_CONFIG, 'economy_shipping'),
+    ).toBe(370);
+    expect(
+      calculateWeightBasedShippingFee(3.2, OUTSTATION_CONFIG, 'economy_shipping'),
+    ).toBe(370); // ceil → 4 → 300 + 1*70
   });
 
-  it('economy: 5.1kg bills 6kg → 275 + (6-3)*76 = 503', () => {
+  it('outstation: 5kg = PKR 440', () => {
     expect(
-      calculateWeightBasedShippingFee(5.1, ECONOMY_CONFIG, 'economy_shipping'),
-    ).toBe(503);
+      calculateWeightBasedShippingFee(5, OUTSTATION_CONFIG, 'economy_shipping'),
+    ).toBe(440);
+    expect(
+      calculateWeightBasedShippingFee(5, OUTSTATION_CONFIG, 'overland_shipping'),
+    ).toBe(440);
   });
 
-  it('overland: at or below 5kg returns baseCost 342', () => {
+  it('outstation: 5.1kg bills 6kg → 300 + 3*70 = 510', () => {
     expect(
-      calculateWeightBasedShippingFee(
-        3.2,
-        OVERLAND_CONFIG,
-        'overland_shipping',
-      ),
-    ).toBe(342);
-    expect(
-      calculateWeightBasedShippingFee(5, OVERLAND_CONFIG, 'overland_shipping'),
-    ).toBe(342);
-  });
-
-  it('overland: 5.1kg bills 6kg → 6*70 = 420', () => {
-    expect(
-      calculateWeightBasedShippingFee(
-        5.1,
-        OVERLAND_CONFIG,
-        'overland_shipping',
-      ),
-    ).toBe(420);
+      calculateWeightBasedShippingFee(5.1, OUTSTATION_CONFIG, 'economy_shipping'),
+    ).toBe(510);
   });
 });
 
@@ -196,14 +185,20 @@ describe('Karachi local delivery', () => {
     expect(isKarachiCity('North Karachi')).toBe(false);
   });
 
-  it('charges Rs. 200 at or below 7 billable kg', () => {
+  it('charges Rs. 200 at or below 2 billable kg', () => {
     expect(calculateKarachiShippingFee(1)).toBe(200);
-    expect(calculateKarachiShippingFee(6.1)).toBe(200);
-    expect(calculateKarachiShippingFee(7)).toBe(200);
+    expect(calculateKarachiShippingFee(1.1)).toBe(200); // ceil → 2
+    expect(calculateKarachiShippingFee(2)).toBe(200);
   });
 
-  it('charges Rs. 250 above 7 billable kg', () => {
-    expect(calculateKarachiShippingFee(7.1)).toBe(250);
-    expect(calculateKarachiShippingFee(12)).toBe(250);
+  it('charges Rs. 250 for billable weight > 2 and <= 3 kg', () => {
+    expect(calculateKarachiShippingFee(2.1)).toBe(250); // ceil → 3
+    expect(calculateKarachiShippingFee(3)).toBe(250);
+  });
+
+  it('charges Rs. 300 for billable weight >= 4 kg', () => {
+    expect(calculateKarachiShippingFee(3.1)).toBe(300); // ceil → 4
+    expect(calculateKarachiShippingFee(4)).toBe(300);
+    expect(calculateKarachiShippingFee(12)).toBe(300);
   });
 });

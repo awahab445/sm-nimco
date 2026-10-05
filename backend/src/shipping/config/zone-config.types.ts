@@ -6,12 +6,12 @@ export type ShippingWeightRule = {
   cost?: number;
   /**
    * Full-weight per-kg fee: billableKg * costPerKg.
-   * Used for overland when weight > threshold (no baseCost added).
+   * Legacy; outstation defaults now use baseCost + costPerExtraKg.
    */
   costPerKg?: number;
   /**
    * Base + extra-kg formula: baseCost + max(0, billableKg - includedKg) * costPerExtraKg.
-   * Used for economy when weight exceeds included kg.
+   * Used for outstation (economy / overland) when weight exceeds included kg.
    */
   baseCost?: number;
   includedKg?: number;

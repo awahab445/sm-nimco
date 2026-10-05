@@ -105,19 +105,27 @@ export function toBillableKg(weightInKg: number): number {
 export const KARACHI_STANDARD_METHOD_CODE = 'standard_karachi';
 export const KARACHI_STANDARD_METHOD_NAME = 'Standard Delivery';
 export const KARACHI_FREE_DELIVERY_THRESHOLD = 2000;
-export const KARACHI_FLAT_RATE_UP_TO_7KG = 200;
-export const KARACHI_FLAT_RATE_OVER_7KG = 250;
+export const KARACHI_RATE_UP_TO_2KG = 200;
+export const KARACHI_RATE_UP_TO_3KG = 250;
+export const KARACHI_RATE_OVER_3KG = 300;
 
 export function isKarachiCity(city?: string | null): boolean {
   return city?.trim().toLowerCase() === 'karachi';
 }
 
-/** Karachi local delivery: ≤7 billable kg → Rs. 200; above 7 kg → Rs. 250. */
+/**
+ * Karachi local delivery (billable kg = ceil of cart weight):
+ * ≤2 kg → Rs. 200; ≤3 kg → Rs. 250; 4 kg+ → Rs. 300.
+ */
 export function calculateKarachiShippingFee(weightInKg: number): number {
   const billableKg = toBillableKg(weightInKg);
-  return roundShippingFee(
-    billableKg <= 7 ? KARACHI_FLAT_RATE_UP_TO_7KG : KARACHI_FLAT_RATE_OVER_7KG,
-  );
+  if (billableKg <= 2) {
+    return roundShippingFee(KARACHI_RATE_UP_TO_2KG);
+  }
+  if (billableKg <= 3) {
+    return roundShippingFee(KARACHI_RATE_UP_TO_3KG);
+  }
+  return roundShippingFee(KARACHI_RATE_OVER_3KG);
 }
 
 /** Free delivery when cart subtotal meets the admin-configured threshold. */
@@ -132,16 +140,16 @@ export function qualifiesForFreeDelivery(params: {
 }
 
 /**
- * Weight-based shipping from method Config JSON:
- * - Economy (`economy_shipping`): within limit → baseCost;
- *   else baseCost + ((billableKg - baseCostKgLimit) * costPerKg)
- * - Overland (`overland_shipping`): within limit → baseCost;
- *   else billableKg * costPerKg
+ * Weight-based shipping from method Config JSON (outstation):
+ * within limit → baseCost;
+ * else baseCost + ((billableKg - baseCostKgLimit) * costPerKg)
+ *
+ * Default: ≤3 kg → 300; above → 300 + (extra kg × 70).
  */
 export function calculateWeightBasedShippingFee(
   weightInKg: number,
   config: WeightBasedMethodConfig,
-  methodCode?: string,
+  _methodCode?: string,
 ): number {
   const billableKg = toBillableKg(weightInKg);
   const baseCost = parseNonNegativeAmount(config.baseCost);
@@ -150,10 +158,6 @@ export function calculateWeightBasedShippingFee(
 
   if (billableKg <= baseCostKgLimit) {
     return roundShippingFee(baseCost);
-  }
-
-  if (methodCode === 'overland_shipping') {
-    return roundShippingFee(billableKg * costPerKg);
   }
 
   return roundShippingFee(

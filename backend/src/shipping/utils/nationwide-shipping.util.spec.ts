@@ -20,36 +20,43 @@ describe('nationwide-shipping.util', () => {
   });
 
   describe('calculateEconomyShippingCost', () => {
-    it('charges 275 for billable weight <= 3 kg', () => {
-      expect(calculateEconomyShippingCost(0.5)).toBe(275);
-      expect(calculateEconomyShippingCost(1)).toBe(275);
-      expect(calculateEconomyShippingCost(2.1)).toBe(275); // ceil → 3
-      expect(calculateEconomyShippingCost(3)).toBe(275);
+    it('charges 300 for billable weight <= 3 kg', () => {
+      expect(calculateEconomyShippingCost(0.5)).toBe(300);
+      expect(calculateEconomyShippingCost(1)).toBe(300);
+      expect(calculateEconomyShippingCost(2)).toBe(300);
+      expect(calculateEconomyShippingCost(2.1)).toBe(300); // ceil → 3
+      expect(calculateEconomyShippingCost(3)).toBe(300);
     });
 
-    it('adds 76 PKR per kg above 3', () => {
-      // billable 4 → 275 + 1*76 = 351
-      expect(calculateEconomyShippingCost(3.1)).toBe(351);
-      expect(calculateEconomyShippingCost(4)).toBe(351);
-      // billable 5 → 275 + 2*76 = 427
-      expect(calculateEconomyShippingCost(5)).toBe(427);
-      // billable 10 → 275 + 7*76 = 807
-      expect(calculateEconomyShippingCost(10)).toBe(807);
+    it('adds 70 PKR per kg above 3', () => {
+      // billable 4 → 300 + 1*70 = 370
+      expect(calculateEconomyShippingCost(3.1)).toBe(370);
+      expect(calculateEconomyShippingCost(4)).toBe(370);
+      // billable 5 → 300 + 2*70 = 440
+      expect(calculateEconomyShippingCost(5)).toBe(440);
+      // billable 10 → 300 + 7*70 = 790
+      expect(calculateEconomyShippingCost(10)).toBe(790);
     });
   });
 
   describe('calculateKarachiShippingCost', () => {
-    it('charges 200 for billable weight <= 7 kg', () => {
+    it('charges 200 for billable weight <= 2 kg', () => {
       expect(calculateKarachiShippingCost(0.5)).toBe(200);
       expect(calculateKarachiShippingCost(1)).toBe(200);
-      expect(calculateKarachiShippingCost(7)).toBe(200);
-      expect(calculateKarachiShippingCost(6.1)).toBe(200); // ceil → 7
+      expect(calculateKarachiShippingCost(2)).toBe(200);
+      expect(calculateKarachiShippingCost(1.1)).toBe(200); // ceil → 2
     });
 
-    it('charges 250 for billable weight > 7 kg', () => {
-      expect(calculateKarachiShippingCost(7.1)).toBe(250);
-      expect(calculateKarachiShippingCost(8)).toBe(250);
-      expect(calculateKarachiShippingCost(12)).toBe(250);
+    it('charges 250 for billable weight > 2 and <= 3 kg', () => {
+      expect(calculateKarachiShippingCost(2.1)).toBe(250); // ceil → 3
+      expect(calculateKarachiShippingCost(3)).toBe(250);
+    });
+
+    it('charges 300 for billable weight >= 4 kg', () => {
+      expect(calculateKarachiShippingCost(3.1)).toBe(300); // ceil → 4
+      expect(calculateKarachiShippingCost(4)).toBe(300);
+      expect(calculateKarachiShippingCost(8)).toBe(300);
+      expect(calculateKarachiShippingCost(12)).toBe(300);
     });
   });
 
@@ -61,40 +68,48 @@ describe('nationwide-shipping.util', () => {
       expect(option.cost).toBe(200);
       expect(option.description).toContain('1 to 2 Days');
     });
+
+    it('applies mid and high weight tiers', () => {
+      expect(buildKarachiShippingOption(2.5, 'PKR').cost).toBe(250);
+      expect(buildKarachiShippingOption(4, 'PKR').cost).toBe(300);
+    });
   });
 
   describe('calculateOverlandShippingCost', () => {
-    it('charges flat 342 for billable weight <= 5 kg', () => {
-      expect(calculateOverlandShippingCost(0.5)).toBe(342);
-      expect(calculateOverlandShippingCost(1)).toBe(342);
-      expect(calculateOverlandShippingCost(5)).toBe(342);
-      expect(calculateOverlandShippingCost(4.1)).toBe(342); // ceil → 5
+    it('charges 300 for billable weight <= 3 kg', () => {
+      expect(calculateOverlandShippingCost(0.5)).toBe(300);
+      expect(calculateOverlandShippingCost(1)).toBe(300);
+      expect(calculateOverlandShippingCost(2)).toBe(300);
+      expect(calculateOverlandShippingCost(3)).toBe(300);
+      expect(calculateOverlandShippingCost(2.1)).toBe(300); // ceil → 3
     });
 
-    it('multiplies full billable weight by 70 with NO base when > 5 kg', () => {
-      // billable 6 → 6 * 70 = 420 (NOT 342 + anything)
-      expect(calculateOverlandShippingCost(5.1)).toBe(420);
-      expect(calculateOverlandShippingCost(6)).toBe(420);
-      // billable 10 → 700
-      expect(calculateOverlandShippingCost(10)).toBe(700);
-      // Ensure base 342 is never added
-      expect(calculateOverlandShippingCost(6)).not.toBe(342 + 6 * 70);
-      expect(calculateOverlandShippingCost(6)).not.toBe(342 + 70);
+    it('adds 70 PKR per kg above 3', () => {
+      // billable 4 → 300 + 1*70 = 370
+      expect(calculateOverlandShippingCost(3.1)).toBe(370);
+      expect(calculateOverlandShippingCost(4)).toBe(370);
+      // billable 5 → 300 + 2*70 = 440
+      expect(calculateOverlandShippingCost(5)).toBe(440);
+      // billable 6 → 300 + 3*70 = 510
+      expect(calculateOverlandShippingCost(6)).toBe(510);
     });
   });
 
   describe('calculateNationwideShippingCost with DEFAULT_ZONE_CONFIG rules', () => {
-    it('matches economy formula via rules', () => {
+    it('matches outstation formula via economy rules', () => {
       const economy = DEFAULT_ZONE_CONFIG.economy_shipping;
-      expect(calculateNationwideShippingCost(2, economy)).toBe(275);
-      expect(calculateNationwideShippingCost(4, economy)).toBe(351);
+      expect(calculateNationwideShippingCost(1, economy)).toBe(300);
+      expect(calculateNationwideShippingCost(2, economy)).toBe(300);
+      expect(calculateNationwideShippingCost(3, economy)).toBe(300);
+      expect(calculateNationwideShippingCost(4, economy)).toBe(370);
+      expect(calculateNationwideShippingCost(5, economy)).toBe(440);
     });
 
-    it('matches overland formula via rules (no base above 5kg)', () => {
+    it('matches outstation formula via overland rules', () => {
       const overland = DEFAULT_ZONE_CONFIG.overland_shipping;
-      expect(calculateNationwideShippingCost(3, overland)).toBe(342);
-      expect(calculateNationwideShippingCost(6, overland)).toBe(420);
-      expect(calculateNationwideShippingCost(10, overland)).toBe(700);
+      expect(calculateNationwideShippingCost(3, overland)).toBe(300);
+      expect(calculateNationwideShippingCost(4, overland)).toBe(370);
+      expect(calculateNationwideShippingCost(5, overland)).toBe(440);
     });
   });
 });
