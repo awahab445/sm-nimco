@@ -121,8 +121,16 @@ export class ShippingLabelService {
 
       const items: LabelItem[] = [];
       for (const item of order.items) {
+        const meta =
+          item.metadata &&
+          typeof item.metadata === 'object' &&
+          !Array.isArray(item.metadata)
+            ? (item.metadata as Record<string, unknown>)
+            : {};
+        const isCustom =
+          meta.isCustom === true || item.sku === 'CUSTOM';
         items.push({
-          name: item.name,
+          name: isCustom ? `${item.name} (Custom)` : item.name,
           quantity: item.quantity,
           lineTotal: this.formatMoney(item.rowTotal, order.currency),
         });
@@ -135,6 +143,19 @@ export class ShippingLabelService {
 
       const discountNumeric = this.toNumber(order.discountTotal);
       const taxNumeric = this.toNumber(order.taxTotal);
+
+      const orderMeta =
+        order.metadata &&
+        typeof order.metadata === 'object' &&
+        !Array.isArray(order.metadata)
+          ? (order.metadata as Record<string, unknown>)
+          : {};
+      const metaPayment =
+        orderMeta.paymentMethod === 'bank_transfer'
+          ? 'Bank Transfer'
+          : orderMeta.paymentMethod === 'cod'
+            ? 'Cash on Delivery'
+            : null;
 
       labels.push({
         storeName,
@@ -154,6 +175,7 @@ export class ShippingLabelService {
         singleItem: itemCount === 1,
         paymentMethod:
           paymentMethodByOrderId.get(order.id) ||
+          metaPayment ||
           this.formatPaymentStatus(order.paymentStatus),
         currency: order.currency,
         subtotal: this.formatMoney(order.subtotal, order.currency),

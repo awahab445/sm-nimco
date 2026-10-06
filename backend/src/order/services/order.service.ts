@@ -11,6 +11,11 @@ import { CartRedisService } from '../../cart/services/cart.redis';
 import { TaxCalculationService } from '../../tax/services/calculation.service';
 import { OrderFactory } from './order.factory';
 import { CreateOrderDto } from '../dto/create-order.dto';
+import {
+  CreateManualOrderDto,
+  CUSTOM_MANUAL_ORDER_PRODUCT_ID,
+} from '../dto/create-manual-order.dto';
+import { UpdateManualOrderDto } from '../dto/update-manual-order.dto';
 import { UpdateOrderStatusDto } from '../dto/update-order-status.dto';
 import { OrderQueryDto } from '../dto/order-query.dto';
 import { OrderStatus } from '../enums/order-status.enum';
@@ -20,6 +25,8 @@ import {
   OrderCancelledEvent,
 } from '../events/order.events';
 import { OrderCreatedEvent as InventoryOrderCreatedEvent } from '../../inventory/events/inventory.events';
+import { isCustomOrderItemMetadata } from '../../shipping/utils/shipping-weight';
+import { isAdminManualOrderSource } from '../constants/order.constants';
 
 @Injectable()
 export class OrderService {
@@ -37,7 +44,14 @@ export class OrderService {
     if (!items?.length) return items ?? [];
 
     const productIds = [
-      ...new Set(items.map((item) => item.productId).filter(Boolean)),
+      ...new Set(
+        items
+          .map((item) => item.productId)
+          .filter(
+            (id) =>
+              Boolean(id) && id !== CUSTOM_MANUAL_ORDER_PRODUCT_ID,
+          ),
+      ),
     ];
     const products =
       productIds.length > 0
@@ -66,7 +80,10 @@ export class OrderService {
         !Array.isArray(item.metadata)
           ? (item.metadata as Record<string, unknown>)
           : {};
-      const product = productById.get(item.productId);
+      const isCustom =
+        metadata.isCustom === true ||
+        item.productId === CUSTOM_MANUAL_ORDER_PRODUCT_ID;
+      const product = isCustom ? undefined : productById.get(item.productId);
       const productName =
         (metadata.productName as string) || product?.name || item.name;
       const productImage =
@@ -81,6 +98,7 @@ export class OrderService {
         productName,
         productImage,
         variantLabel,
+        isCustom,
         product: {
           name: product?.name ?? productName,
           image: productImage,
@@ -176,6 +194,225 @@ export class OrderService {
     );
 
     this.logger.log(`Order created: ${order.orderNumber} (${order.id})`);
+
+    return this.enrichOrder(order);
+  }
+
+  /**
+   * Create a manual order from the admin panel (no cart).
+   * Honors optional customUnitPrice / customDeliveryFee / customDiscount.
+   * Auto-calculates Karachi/outstation shipping from total weight when fee is unset.
+   */
+  async createManualOrder(
+    dto: CreateManualOrderDto,
+    requestMetadata?: {
+      ipAddress?: string;
+      userAgent?: string;
+      adminUserId?: string;
+    },
+  ) {
+    const { orderData, orderItemsData, taxCalculationItems } =
+      await this.orderFactory.createManualOrderData(dto, requestMetadata);
+
+    const order = await this.prisma.$transaction(async (tx) => {
+      return tx.order.create({
+        data: orderData,
+        include: {
+          items: true,
+        },
+      });
+    });
+
+    try {
+      await this.taxCalculationService.calculateAndStoreForOrder(
+        order.id,
+        taxCalculationItems,
+        {
+          country: dto.billingAddress.country,
+          region: dto.billingAddress.state,
+          currency: order.currency,
+        },
+      );
+    } catch (error) {
+      this.logger.error(
+        `Failed to store order taxes for manual order ${order.id}:`,
+        error,
+      );
+    }
+
+    // Inventory only for catalog lines — custom/unlisted lines have no stock row.
+    const inventoryItems = order.items
+      .map((item, index) => {
+        const factoryItem = orderItemsData[index] as
+          | {
+              inventoryVariantId?: string | null;
+              isCustom?: boolean;
+              metadata?: unknown;
+            }
+          | undefined;
+        if (
+          factoryItem?.isCustom ||
+          isCustomOrderItemMetadata(item.metadata) ||
+          item.productId === CUSTOM_MANUAL_ORDER_PRODUCT_ID
+        ) {
+          return null;
+        }
+        return {
+          variantId:
+            factoryItem?.inventoryVariantId ||
+            item.variantId ||
+            item.productId ||
+            '',
+          quantity: item.quantity,
+          reservationId: undefined as string | undefined,
+        };
+      })
+      .filter((row): row is NonNullable<typeof row> => Boolean(row?.variantId));
+
+    this.eventEmitter.emit(
+      'order.created',
+      new InventoryOrderCreatedEvent(order.id, inventoryItems),
+    );
+
+    this.eventEmitter.emit(
+      'order.domain.created',
+      new OrderCreatedEvent(
+        order.id,
+        order.orderNumber,
+        order.customerId,
+        inventoryItems,
+      ),
+    );
+
+    this.logger.log(`Manual order created: ${order.orderNumber} (${order.id})`);
+
+    return this.enrichOrder(order);
+  }
+
+  private static readonly MUTABLE_MANUAL_ORDER_STATUSES = new Set([
+    'pending',
+    'processing',
+  ]);
+
+  private assertManualOrderEditable(order: {
+    id: string;
+    status: string;
+    metadata: unknown;
+  }): void {
+    const meta =
+      order.metadata &&
+      typeof order.metadata === 'object' &&
+      !Array.isArray(order.metadata)
+        ? (order.metadata as Record<string, unknown>)
+        : {};
+
+    if (!isAdminManualOrderSource(meta.source)) {
+      throw new BadRequestException(
+        'Only manual orders can be edited with this endpoint',
+      );
+    }
+
+    if (!OrderService.MUTABLE_MANUAL_ORDER_STATUSES.has(order.status)) {
+      throw new BadRequestException(
+        `Cannot edit order in status "${order.status}". Only pending or processing manual orders can be edited.`,
+      );
+    }
+  }
+
+  /**
+   * Update a mutable manual order (items, addresses, customer, notes, fees).
+   * Recalculates totals. Inventory deltas are not adjusted on edit.
+   */
+  async updateManualOrder(
+    orderId: string,
+    dto: UpdateManualOrderDto,
+    requestMetadata?: {
+      ipAddress?: string;
+      userAgent?: string;
+      adminUserId?: string;
+    },
+  ) {
+    const existing = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      include: { items: true },
+    });
+
+    if (!existing) {
+      throw new NotFoundException(`Order ${orderId} not found`);
+    }
+
+    this.assertManualOrderEditable(existing);
+
+    const existingMeta =
+      existing.metadata &&
+      typeof existing.metadata === 'object' &&
+      !Array.isArray(existing.metadata)
+        ? (existing.metadata as Record<string, unknown>)
+        : {};
+
+    const { orderUpdateData, orderItemsData, taxCalculationItems } =
+      await this.orderFactory.buildManualOrderUpdateData(
+        dto,
+        existingMeta,
+        {
+          ...requestMetadata,
+          orderNumber: existing.orderNumber,
+        },
+      );
+
+    const order = await this.prisma.$transaction(async (tx) => {
+      await tx.orderItem.deleteMany({ where: { orderId } });
+      await tx.orderTax.deleteMany({ where: { orderId } });
+
+      const persistableItems = orderItemsData.map((row) => {
+        const {
+          _inventoryVariantId: _ignoredInventoryVariantId,
+          inventoryVariantId: _ignoredInventoryVariantIdAlias,
+          _taxKey: _ignoredTaxKey,
+          _isCustom: _ignoredIsCustom,
+          isCustom: _ignoredIsCustomAlias,
+          ...persistable
+        } = row as Record<string, unknown>;
+        void _ignoredInventoryVariantId;
+        void _ignoredInventoryVariantIdAlias;
+        void _ignoredTaxKey;
+        void _ignoredIsCustom;
+        void _ignoredIsCustomAlias;
+        return persistable;
+      });
+
+      return tx.order.update({
+        where: { id: orderId },
+        data: {
+          ...orderUpdateData,
+          items: {
+            create: persistableItems as any,
+          },
+        },
+        include: {
+          items: true,
+        },
+      });
+    });
+
+    try {
+      await this.taxCalculationService.calculateAndStoreForOrder(
+        order.id,
+        taxCalculationItems,
+        {
+          country: dto.billingAddress.country,
+          region: dto.billingAddress.state,
+          currency: order.currency,
+        },
+      );
+    } catch (error) {
+      this.logger.error(
+        `Failed to store order taxes for updated manual order ${order.id}:`,
+        error,
+      );
+    }
+
+    this.logger.log(`Manual order updated: ${order.orderNumber} (${order.id})`);
 
     return this.enrichOrder(order);
   }

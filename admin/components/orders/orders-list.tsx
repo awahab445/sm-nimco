@@ -283,13 +283,23 @@ export function OrdersList() {
         </div>
       ) : null}
 
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-          Orders
-        </h1>
-        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-          Operational list with status filters. Pagination is server-side via the API.
-        </p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+            Orders
+          </h1>
+          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+            Operational list with status filters. Pagination is server-side via the API.
+          </p>
+        </div>
+        <PermissionGate anyOf={['orders.create', 'orders.manage']}>
+          <Link
+            href="/orders/new"
+            className="inline-flex items-center justify-center rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+          >
+            Create manual order
+          </Link>
+        </PermissionGate>
       </div>
 
       {customerIdFromUrl ? (

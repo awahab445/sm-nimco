@@ -2,6 +2,7 @@ import {
   applyShippingGst,
   calculateDualTierBaseShipping,
   calculateKarachiShippingFee,
+  calculateShippingFee,
   calculateWeightBasedShippingFee,
   isKarachiCity,
   qualifiesForFreeDelivery,
@@ -200,5 +201,20 @@ describe('Karachi local delivery', () => {
     expect(calculateKarachiShippingFee(3.1)).toBe(300); // ceil → 4
     expect(calculateKarachiShippingFee(4)).toBe(300);
     expect(calculateKarachiShippingFee(12)).toBe(300);
+  });
+});
+
+describe('calculateShippingFee (manual orders)', () => {
+  it('uses Karachi slabs for Karachi city', () => {
+    expect(calculateShippingFee('Karachi', 1)).toBe(200);
+    expect(calculateShippingFee('Karachi', 2.5)).toBe(250);
+    expect(calculateShippingFee('Karachi', 5)).toBe(300);
+  });
+
+  it('uses outstation 300 + 70/kg above 3kg for other cities', () => {
+    expect(calculateShippingFee('Lahore', 2)).toBe(300);
+    expect(calculateShippingFee('Outstation', 3)).toBe(300);
+    expect(calculateShippingFee('Lahore', 4)).toBe(370);
+    expect(calculateShippingFee('Islamabad', 5)).toBe(440);
   });
 });

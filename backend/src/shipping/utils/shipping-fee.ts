@@ -164,3 +164,27 @@ export function calculateWeightBasedShippingFee(
     baseCost + (billableKg - baseCostKgLimit) * costPerKg,
   );
 }
+
+/** Default outstation: ≤3 kg → 300; above → 300 + (billable − 3) × 70. */
+export const OUTSTATION_DEFAULT_WEIGHT_CONFIG: WeightBasedMethodConfig = {
+  baseCost: 300,
+  costPerKg: 70,
+  baseCostKgLimit: 3,
+};
+
+/**
+ * Manual-order / admin shipping fee from city + total weight (kg).
+ * Karachi → 200 / 250 / 300 slabs; anything else → outstation 300 + 70/kg.
+ */
+export function calculateShippingFee(
+  city: string | null | undefined,
+  totalWeightKg: number,
+): number {
+  if (isKarachiCity(city)) {
+    return calculateKarachiShippingFee(totalWeightKg);
+  }
+  return calculateWeightBasedShippingFee(
+    totalWeightKg,
+    OUTSTATION_DEFAULT_WEIGHT_CONFIG,
+  );
+}

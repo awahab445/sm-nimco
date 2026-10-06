@@ -3,25 +3,31 @@ import {
   Get,
   Put,
   Post,
+  Patch,
   Delete,
   Param,
   Body,
   Query,
+  Req,
   HttpCode,
   HttpStatus,
   UseGuards,
   StreamableFile,
   Header,
 } from '@nestjs/common';
+import type { Request } from 'express';
 import { OrderService } from '../services/order.service';
 import { ShippingLabelService } from '../services/shipping-label.service';
 import { PackageInsertService } from '../services/package-insert.service';
 import { UpdateOrderStatusDto } from '../dto/update-order-status.dto';
 import { OrderQueryDto } from '../dto/order-query.dto';
 import { BulkShippingLabelsDto } from '../dto/bulk-shipping-labels.dto';
+import { CreateManualOrderDto } from '../dto/create-manual-order.dto';
+import { UpdateManualOrderDto } from '../dto/update-manual-order.dto';
 import { AdminJwtAuthGuard } from '../../admin/guards/admin-jwt-auth.guard';
 import { AdminPermissionsGuard } from '../../admin/guards/admin-permissions.guard';
 import { CheckPermission } from '../../admin/decorators/check-permission.decorator';
+import { CurrentAdminId } from '../../admin/decorators/current-admin.decorator';
 
 @Controller('admin/orders')
 @UseGuards(AdminJwtAuthGuard, AdminPermissionsGuard)
@@ -40,6 +46,37 @@ export class AdminOrderController {
   @CheckPermission('orders', 'read')
   async findAll(@Query() query: OrderQueryDto) {
     return this.orderService.findAll(query);
+  }
+
+  /**
+   * Create a manual order with catalog and/or custom items.
+   * POST /admin/orders/manual
+   */
+  @Post('manual')
+  @CheckPermission('orders', 'create')
+  @HttpCode(HttpStatus.CREATED)
+  async createManualOrder(
+    @Body() dto: CreateManualOrderDto,
+    @CurrentAdminId() adminUserId: string,
+    @Req() req: Request,
+  ) {
+    const forwarded = req.headers['x-forwarded-for'];
+    const ipAddress =
+      typeof forwarded === 'string'
+        ? forwarded.split(',')[0]?.trim()
+        : Array.isArray(forwarded)
+          ? forwarded[0]
+          : req.ip;
+    const userAgent =
+      typeof req.headers['user-agent'] === 'string'
+        ? req.headers['user-agent']
+        : undefined;
+
+    return this.orderService.createManualOrder(dto, {
+      adminUserId,
+      ipAddress,
+      userAgent,
+    });
   }
 
   /**
@@ -84,6 +121,38 @@ export class AdminOrderController {
   @CheckPermission('orders', 'read')
   async findOne(@Param('id') id: string) {
     return this.orderService.findOneById(id);
+  }
+
+  /**
+   * Edit a mutable manual order (items, addresses, customer, notes, fees).
+   * PATCH /admin/orders/:id
+   */
+  @Patch(':id')
+  @CheckPermission('orders', 'update')
+  @HttpCode(HttpStatus.OK)
+  async updateManualOrder(
+    @Param('id') id: string,
+    @Body() dto: UpdateManualOrderDto,
+    @CurrentAdminId() adminUserId: string,
+    @Req() req: Request,
+  ) {
+    const forwarded = req.headers['x-forwarded-for'];
+    const ipAddress =
+      typeof forwarded === 'string'
+        ? forwarded.split(',')[0]?.trim()
+        : Array.isArray(forwarded)
+          ? forwarded[0]
+          : req.ip;
+    const userAgent =
+      typeof req.headers['user-agent'] === 'string'
+        ? req.headers['user-agent']
+        : undefined;
+
+    return this.orderService.updateManualOrder(id, dto, {
+      adminUserId,
+      ipAddress,
+      userAgent,
+    });
   }
 
   /**

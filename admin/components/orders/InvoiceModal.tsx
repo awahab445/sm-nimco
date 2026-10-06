@@ -1,7 +1,11 @@
 'use client';
 
 import { useEffect } from 'react';
-import type { Order, OrderAddressSnapshot } from '@/lib/api/orders';
+import {
+  isCustomOrderItem,
+  type Order,
+  type OrderAddressSnapshot,
+} from '@/lib/api/orders';
 import { formatPrice } from '@/lib/currency';
 
 const COMPANY_NAME = 'SM NIMCO & SWEETS';
@@ -179,7 +183,14 @@ export function InvoiceModal({ order, open, onClose }: InvoiceModalProps) {
               {(order.items ?? []).map((item) => (
                 <tr key={item.id} className="border-b border-zinc-200">
                   <td className="py-2.5 pr-2 align-top">
-                    <div className="font-medium">{item.name}</div>
+                    <div className="font-medium">
+                      {item.name}
+                      {isCustomOrderItem(item) ? (
+                        <span className="ml-2 inline-block rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-violet-800">
+                          Custom Item
+                        </span>
+                      ) : null}
+                    </div>
                     {item.sku ? (
                       <div className="text-xs text-zinc-500">SKU: {item.sku}</div>
                     ) : null}

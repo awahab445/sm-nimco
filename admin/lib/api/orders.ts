@@ -59,6 +59,15 @@ export type OrderItem = {
   createdAt: string;
 };
 
+/** True when the line is an unlisted/custom manual order item. */
+export function isCustomOrderItem(
+  item: Pick<OrderItem, 'productId' | 'metadata' | 'sku'>,
+): boolean {
+  if (item.metadata?.isCustom === true) return true;
+  if (item.sku === 'CUSTOM') return true;
+  return item.productId === '00000000-0000-4000-8000-0000000000c1';
+}
+
 export type Order = {
   id: string;
   orderNumber: string;
@@ -88,6 +97,12 @@ export type Order = {
   completedAt: string | null;
   items: OrderItem[];
 };
+
+/** True when the order was created from admin manual entry. */
+export function isManualOrderSource(order: Pick<Order, 'metadata'>): boolean {
+  const source = order.metadata?.source;
+  return source === 'ADMIN_MANUAL' || source === 'manual';
+}
 
 export type OrdersListMeta = {
   total: number;
@@ -126,6 +141,82 @@ export async function fetchAdminOrders(params?: AdminOrdersQuery) {
 
 export async function fetchAdminOrder(id: string) {
   return fetchApi<Order>(`/admin/orders/${id}`);
+}
+
+export type ManualOrderAddressInput = {
+  firstName: string;
+  lastName: string;
+  company?: string;
+  addressLine1: string;
+  addressLine2?: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+  phone: string;
+};
+
+export type ManualOrderItemInput = {
+  /** Required for catalog products; omit for custom/unlisted lines. */
+  productId?: string;
+  variantId?: string;
+  quantity: number;
+  /** When set on a catalog line, charged instead of catalog unit price. */
+  customUnitPrice?: number;
+  /** Unlisted item flag (also implied when productId is omitted). */
+  isCustom?: boolean;
+  /** Display name for custom/unlisted items. */
+  title?: string;
+  /** Unit price for custom items. */
+  unitPrice?: number;
+  /** Unit weight in kg for custom items. */
+  weight?: number;
+};
+
+export type ManualOrderPaymentMethod = 'cod' | 'bank_transfer';
+
+export type CreateManualOrderBody = {
+  items: ManualOrderItemInput[];
+  customerEmail: string;
+  customerName?: string;
+  customerId?: string;
+  customerGroupId?: string;
+  billingAddress: ManualOrderAddressInput;
+  shippingAddress: ManualOrderAddressInput;
+  notes?: string;
+  customDeliveryFee?: number;
+  customDiscount?: number;
+  currency?: string;
+  paymentMethod?: ManualOrderPaymentMethod;
+  sendWhatsappConfirmation?: boolean;
+};
+
+/** Create a manual admin order with optional price/delivery/discount overrides. */
+export async function createManualOrder(body: CreateManualOrderBody) {
+  return fetchApi<Order>('/admin/orders/manual', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+}
+
+export type UpdateManualOrderBody = CreateManualOrderBody;
+
+/** Update a mutable manual order (pending/processing). */
+export async function updateManualOrder(id: string, body: UpdateManualOrderBody) {
+  return fetchApi<Order>(`/admin/orders/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  });
+}
+
+/** True when the admin UI should offer Edit Order for this row. */
+export function isManualOrderEditable(
+  order: Pick<Order, 'status' | 'metadata'>,
+): boolean {
+  return (
+    isManualOrderSource(order) &&
+    (order.status === 'pending' || order.status === 'processing')
+  );
 }
 
 export type UpdateOrderStatusBody = {
