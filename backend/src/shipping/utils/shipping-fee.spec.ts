@@ -122,7 +122,11 @@ describe('weight-based shipping (outstation)', () => {
       calculateWeightBasedShippingFee(3, OUTSTATION_CONFIG, 'economy_shipping'),
     ).toBe(300);
     expect(
-      calculateWeightBasedShippingFee(2.4, OUTSTATION_CONFIG, 'economy_shipping'),
+      calculateWeightBasedShippingFee(
+        2.4,
+        OUTSTATION_CONFIG,
+        'economy_shipping',
+      ),
     ).toBe(300); // ceil → 3
   });
 
@@ -131,7 +135,11 @@ describe('weight-based shipping (outstation)', () => {
       calculateWeightBasedShippingFee(4, OUTSTATION_CONFIG, 'economy_shipping'),
     ).toBe(370);
     expect(
-      calculateWeightBasedShippingFee(3.2, OUTSTATION_CONFIG, 'economy_shipping'),
+      calculateWeightBasedShippingFee(
+        3.2,
+        OUTSTATION_CONFIG,
+        'economy_shipping',
+      ),
     ).toBe(370); // ceil → 4 → 300 + 1*70
   });
 
@@ -140,13 +148,21 @@ describe('weight-based shipping (outstation)', () => {
       calculateWeightBasedShippingFee(5, OUTSTATION_CONFIG, 'economy_shipping'),
     ).toBe(440);
     expect(
-      calculateWeightBasedShippingFee(5, OUTSTATION_CONFIG, 'overland_shipping'),
+      calculateWeightBasedShippingFee(
+        5,
+        OUTSTATION_CONFIG,
+        'overland_shipping',
+      ),
     ).toBe(440);
   });
 
   it('outstation: 5.1kg bills 6kg → 300 + 3*70 = 510', () => {
     expect(
-      calculateWeightBasedShippingFee(5.1, OUTSTATION_CONFIG, 'economy_shipping'),
+      calculateWeightBasedShippingFee(
+        5.1,
+        OUTSTATION_CONFIG,
+        'economy_shipping',
+      ),
     ).toBe(510);
   });
 });

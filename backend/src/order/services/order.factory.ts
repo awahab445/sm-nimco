@@ -494,7 +494,7 @@ export class OrderFactory {
       );
       const productWeight = Number(product.shippingWeight);
       let unitWeightKg = DEFAULT_SHIPPING_WEIGHT_KG;
-      let weightUnit = product.shippingWeightUnit ?? 'KG';
+      const weightUnit = product.shippingWeightUnit ?? 'KG';
       if (Number.isFinite(variantWeight) && variantWeight > 0) {
         unitWeightKg = toShippingWeightKg(
           variantWeight,

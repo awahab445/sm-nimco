@@ -47,10 +47,7 @@ export class OrderService {
       ...new Set(
         items
           .map((item) => item.productId)
-          .filter(
-            (id) =>
-              Boolean(id) && id !== CUSTOM_MANUAL_ORDER_PRODUCT_ID,
-          ),
+          .filter((id) => Boolean(id) && id !== CUSTOM_MANUAL_ORDER_PRODUCT_ID),
       ),
     ];
     const products =
@@ -351,14 +348,10 @@ export class OrderService {
         : {};
 
     const { orderUpdateData, orderItemsData, taxCalculationItems } =
-      await this.orderFactory.buildManualOrderUpdateData(
-        dto,
-        existingMeta,
-        {
-          ...requestMetadata,
-          orderNumber: existing.orderNumber,
-        },
-      );
+      await this.orderFactory.buildManualOrderUpdateData(dto, existingMeta, {
+        ...requestMetadata,
+        orderNumber: existing.orderNumber,
+      });
 
     const order = await this.prisma.$transaction(async (tx) => {
       await tx.orderItem.deleteMany({ where: { orderId } });
@@ -425,6 +418,7 @@ export class OrderService {
       where: { id: orderId },
       include: {
         items: true,
+        shipping: true,
       },
     });
 
@@ -558,6 +552,7 @@ export class OrderService {
         where,
         include: {
           items: true,
+          shipping: true,
         },
         orderBy: {
           [sortBy]: sortOrder,
@@ -692,6 +687,7 @@ export class OrderService {
       data: updateData,
       include: {
         items: true,
+        shipping: true,
       },
     });
 

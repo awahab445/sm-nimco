@@ -27,6 +27,6 @@ import { AdminRbacService } from '../admin/services/admin-rbac.service';
     AdminJwtAuthGuard,
     AdminPermissionsGuard,
   ],
-  exports: [OrderService],
+  exports: [OrderService, ShippingLabelService],
 })
 export class OrderModule {}

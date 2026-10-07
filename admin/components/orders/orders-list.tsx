@@ -13,10 +13,27 @@ import {
   type OrderStatus,
   type PaymentStatus,
 } from '@/lib/api/orders';
+import {
+  bookOrderWithLeopards,
+  bulkBookLeopardsOrders,
+  openBulkLeopardsLabelsPdf,
+  type BookLeopardsShipmentType,
+  type BulkBookLeopardsResult,
+} from '@/lib/api/shipping';
 import { formatApiError } from '@/lib/api/error-message';
 import { formatPrice } from '@/lib/currency';
 import { InvoiceModal } from '@/components/orders/InvoiceModal';
+import { BulkBookLeopardsSummaryModal } from '@/components/orders/bulk-leopards-actions';
 import { PermissionGate } from '@/components/permission-gate';
+
+const LEOPARDS_SERVICE_TYPE_OPTIONS: Array<{
+  value: BookLeopardsShipmentType;
+  label: string;
+}> = [
+  { value: 'OVERNIGHT', label: 'Overnight (Air)' },
+  { value: 'OVERLAND', label: 'Overland (Surface / Cargo)' },
+  { value: 'DETAIN', label: 'Economy' },
+];
 
 function TrashIcon({ className }: { className?: string }) {
   return (
@@ -88,6 +105,14 @@ export function OrdersList() {
   const [labelsError, setLabelsError] = useState<string | null>(null);
   const [invoiceOrder, setInvoiceOrder] = useState<Order | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [bookingId, setBookingId] = useState<string | null>(null);
+  const [bulkBookLoading, setBulkBookLoading] = useState(false);
+  const [bulkLeopardsLabelsLoading, setBulkLeopardsLabelsLoading] =
+    useState(false);
+  const [bulkShipmentType, setBulkShipmentType] =
+    useState<BookLeopardsShipmentType>('OVERNIGHT');
+  const [bulkBookSummary, setBulkBookSummary] =
+    useState<BulkBookLeopardsResult | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Order | null>(null);
   const [toast, setToast] = useState<{ kind: 'success' | 'error'; message: string } | null>(
     null,
@@ -225,8 +250,112 @@ export function OrdersList() {
     }
   };
 
-  const bulkBusy = labelsLoading || insertsLoading;
+  const handleBookLeopards = async (order: Order) => {
+    const msg = `Book order ${order.orderNumber} via Leopards Courier?\n\nService type: Overnight (Air)`;
+    if (!window.confirm(msg)) return;
+    setBookingId(order.id);
+    try {
+      const result = await bookOrderWithLeopards(order.id, {
+        serviceType: 'OVERNIGHT',
+        shipmentType: 'OVERNIGHT',
+      });
+      setToast({
+        kind: 'success',
+        message: `Booked ${order.orderNumber}. CN: ${result.trackingNumber}`,
+      });
+      await load();
+    } catch (e) {
+      setToast({ kind: 'error', message: formatApiError(e) });
+    } finally {
+      setBookingId(null);
+    }
+  };
+
+  const handleBulkBookLeopards = async () => {
+    const orderIds = [...selectedIds];
+    if (orderIds.length === 0) {
+      setLabelsError('Select at least one order to book with Leopards.');
+      return;
+    }
+    const serviceLabel =
+      LEOPARDS_SERVICE_TYPE_OPTIONS.find((o) => o.value === bulkShipmentType)
+        ?.label ?? bulkShipmentType;
+    if (
+      !window.confirm(
+        `Bulk book ${orderIds.length} order(s) via Leopards?\n\nService type: ${serviceLabel}\nAlready-booked orders will be skipped.`,
+      )
+    ) {
+      return;
+    }
+
+    setLabelsError(null);
+    setBulkBookLoading(true);
+    try {
+      const summary = await bulkBookLeopardsOrders({
+        orderIds,
+        serviceType: bulkShipmentType,
+        shipmentType: bulkShipmentType,
+      });
+      setBulkBookSummary(summary);
+      setToast({
+        kind: summary.failedCount > 0 ? 'error' : 'success',
+        message: `Leopards bulk book: ${summary.successCount} booked, ${summary.skippedCount} skipped, ${summary.failedCount} failed.`,
+      });
+      await load();
+    } catch (e) {
+      setLabelsError(formatApiError(e));
+    } finally {
+      setBulkBookLoading(false);
+    }
+  };
+
+  const handleBulkPrintLeopardsLabels = async () => {
+    const orderIds = [...selectedIds];
+    if (orderIds.length === 0) {
+      setLabelsError('Select at least one order to print Leopards labels.');
+      return;
+    }
+
+    setLabelsError(null);
+    setBulkLeopardsLabelsLoading(true);
+    try {
+      await openBulkLeopardsLabelsPdf(orderIds);
+      setToast({
+        kind: 'success',
+        message:
+          'Opened compiled Leopards shipping label slips for selected orders with CN.',
+      });
+    } catch (e) {
+      setLabelsError(formatApiError(e));
+    } finally {
+      setBulkLeopardsLabelsLoading(false);
+    }
+  };
+
+  const handlePrintLeopardsLabel = async (order: Order) => {
+    const hasCn = Boolean(order.shipping?.trackingNumber?.trim());
+    setLabelsError(null);
+    setLabelsLoading(true);
+    try {
+      if (hasCn) {
+        await openBulkLeopardsLabelsPdf([order.id]);
+      } else {
+        await downloadBulkShippingLabels([order.id]);
+      }
+    } catch (e) {
+      setLabelsError(formatApiError(e));
+    } finally {
+      setLabelsLoading(false);
+    }
+  };
+
+  const bulkBusy =
+    labelsLoading ||
+    insertsLoading ||
+    bulkBookLoading ||
+    bulkLeopardsLabelsLoading;
   const deleteBusy = deletingId !== null;
+  const bookingBusy = bookingId !== null;
 
   return (
     <div className="mx-auto max-w-6xl">
@@ -397,9 +526,48 @@ export function OrdersList() {
           <span className="text-zinc-700 dark:text-zinc-300">
             {selectedIds.size} order{selectedIds.size === 1 ? '' : 's'} selected
           </span>
+          <PermissionGate anyOf={['shipping.manage', 'orders.manage']}>
+            <label className="flex items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400">
+              Service
+              <select
+                value={bulkShipmentType}
+                disabled={bulkBusy || deleteBusy || bookingBusy}
+                onChange={(e) =>
+                  setBulkShipmentType(e.target.value as BookLeopardsShipmentType)
+                }
+                className="rounded-lg border border-zinc-300 bg-white px-2 py-1.5 text-sm dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-50"
+              >
+                {LEOPARDS_SERVICE_TYPE_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <button
+              type="button"
+              disabled={bulkBusy || deleteBusy || bookingBusy}
+              onClick={() => void handleBulkBookLeopards()}
+              className="rounded-lg bg-emerald-700 px-3 py-1.5 font-medium text-white disabled:opacity-50"
+            >
+              {bulkBookLoading
+                ? 'Booking with Leopards…'
+                : 'Bulk Book via Leopards'}
+            </button>
+          </PermissionGate>
           <button
             type="button"
-            disabled={bulkBusy || deleteBusy}
+            disabled={bulkBusy || deleteBusy || bookingBusy}
+            onClick={() => void handleBulkPrintLeopardsLabels()}
+            className="rounded-lg bg-sky-700 px-3 py-1.5 font-medium text-white disabled:opacity-50"
+          >
+            {bulkLeopardsLabelsLoading
+              ? 'Generating PDF…'
+              : 'Bulk Print Leopards Labels'}
+          </button>
+          <button
+            type="button"
+            disabled={bulkBusy || deleteBusy || bookingBusy}
             onClick={() => void handleDownloadLabels()}
             className="rounded-lg bg-zinc-900 px-3 py-1.5 font-medium text-white disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
           >
@@ -407,7 +575,7 @@ export function OrdersList() {
           </button>
           <button
             type="button"
-            disabled={bulkBusy || deleteBusy}
+            disabled={bulkBusy || deleteBusy || bookingBusy}
             onClick={() => void handleDownloadInserts()}
             className="rounded-lg bg-blue-700 px-3 py-1.5 font-medium text-white disabled:opacity-50"
           >
@@ -415,7 +583,7 @@ export function OrdersList() {
           </button>
           <button
             type="button"
-            disabled={bulkBusy || deleteBusy}
+            disabled={bulkBusy || deleteBusy || bookingBusy}
             onClick={() => setSelectedIds(new Set())}
             className="font-medium text-zinc-700 underline disabled:opacity-50 dark:text-zinc-300"
           >
@@ -490,6 +658,23 @@ export function OrdersList() {
                     <div className="text-xs text-zinc-500">
                       {new Date(o.createdAt).toLocaleString()}
                     </div>
+                    {o.shipping?.trackingNumber ? (
+                      <div className="mt-0.5 text-xs text-sky-700 dark:text-sky-400">
+                        CN:{' '}
+                        {o.shipping.trackingUrl ? (
+                          <a
+                            href={o.shipping.trackingUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="underline"
+                          >
+                            {o.shipping.trackingNumber}
+                          </a>
+                        ) : (
+                          o.shipping.trackingNumber
+                        )}
+                      </div>
+                    ) : null}
                   </td>
                   <td className="px-4 py-3">
                     <div className="text-zinc-800 dark:text-zinc-200">{o.customerEmail}</div>
@@ -511,19 +696,33 @@ export function OrdersList() {
                   </td>
                   <td className="px-4 py-3 text-right">
                     <div className="flex flex-nowrap items-center justify-end gap-x-3 whitespace-nowrap">
+                      {(o.status === 'pending' || o.status === 'processing') &&
+                      !o.shipping?.trackingNumber ? (
+                        <PermissionGate anyOf={['shipping.manage', 'orders.manage']}>
+                          <button
+                            type="button"
+                            disabled={bulkBusy || deleteBusy || bookingBusy}
+                            onClick={() => void handleBookLeopards(o)}
+                            className="text-sm font-medium text-sky-700 underline disabled:opacity-40 dark:text-sky-400"
+                          >
+                            {bookingId === o.id ? 'Booking…' : 'Leopards'}
+                          </button>
+                        </PermissionGate>
+                      ) : null}
                       <button
                         type="button"
-                        disabled={bulkBusy || deleteBusy}
-                        onClick={() => {
-                          setLabelsError(null);
-                          setLabelsLoading(true);
-                          void downloadBulkShippingLabels([o.id])
-                            .catch((e) => setLabelsError(formatApiError(e)))
-                            .finally(() => setLabelsLoading(false));
-                        }}
-                        className="text-sm font-medium text-zinc-900 underline disabled:opacity-40 dark:text-zinc-100"
+                        disabled={bulkBusy || deleteBusy || bookingBusy}
+                        onClick={() => void handlePrintLeopardsLabel(o)}
+                        className="text-sm font-medium text-sky-700 underline disabled:opacity-40 dark:text-sky-400"
+                        title={
+                          o.shipping?.trackingNumber
+                            ? 'Open printable Leopards label slip'
+                            : 'Download shipping label'
+                        }
                       >
-                        Label
+                        {o.shipping?.trackingNumber
+                          ? 'Leopards Label'
+                          : 'Label'}
                       </button>
                       <button
                         type="button"
@@ -541,7 +740,7 @@ export function OrdersList() {
                       <PermissionGate anyOf={['orders.delete', 'orders.manage']}>
                         <button
                           type="button"
-                          disabled={bulkBusy || deleteBusy}
+                          disabled={bulkBusy || deleteBusy || bookingBusy}
                           onClick={() => setDeleteTarget(o)}
                           className="inline-flex items-center justify-center rounded-md p-1 text-red-700 hover:bg-red-50 disabled:opacity-50 dark:text-red-400 dark:hover:bg-red-950/40"
                           title={`Delete order ${o.orderNumber}`}
@@ -589,6 +788,13 @@ export function OrdersList() {
         order={invoiceOrder}
         onClose={() => setInvoiceOrder(null)}
       />
+
+      {bulkBookSummary ? (
+        <BulkBookLeopardsSummaryModal
+          summary={bulkBookSummary}
+          onClose={() => setBulkBookSummary(null)}
+        />
+      ) : null}
     </div>
   );
 }

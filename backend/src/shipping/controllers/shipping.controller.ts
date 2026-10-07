@@ -11,8 +11,14 @@ import {
   HttpStatus,
   UseGuards,
   Req,
+  Header,
+  StreamableFile,
+  BadRequestException,
 } from '@nestjs/common';
 import { ShippingService } from '../services/shipping.service';
+import { LeopardsShippingService } from '../services/leopards-shipping.service';
+import { ShippingLabelService } from '../../order/services/shipping-label.service';
+import { PrismaService } from '../../catalog/services/prisma.service';
 import { CreateZoneDto, UpdateZoneDto } from '../dto/create-zone.dto';
 import { CreateMethodDto, UpdateMethodDto } from '../dto/create-method.dto';
 import { CalculateShippingDto } from '../dto/calculate-shipping.dto';
@@ -24,6 +30,9 @@ import {
   AssignCustomerGroupDto,
   UpdateCustomerGroupPricingDto,
 } from '../dto/customer-group.dto';
+import { BookLeopardsDto } from '../dto/book-leopards.dto';
+import { BulkBookLeopardsDto } from '../dto/bulk-book-leopards.dto';
+import { BulkShippingLabelsDto } from '../../order/dto/bulk-shipping-labels.dto';
 import { AdminJwtAuthGuard } from '../../admin/guards/admin-jwt-auth.guard';
 import { AdminPermissionsGuard } from '../../admin/guards/admin-permissions.guard';
 import { RequirePermissions } from '../../admin/decorators/require-permissions.decorator';
@@ -66,7 +75,12 @@ export class ShippingController {
 @Controller('admin/shipping')
 @UseGuards(AdminJwtAuthGuard, AdminPermissionsGuard)
 export class AdminShippingController {
-  constructor(private readonly shippingService: ShippingService) {}
+  constructor(
+    private readonly shippingService: ShippingService,
+    private readonly leopardsShippingService: LeopardsShippingService,
+    private readonly shippingLabelService: ShippingLabelService,
+    private readonly prisma: PrismaService,
+  ) {}
 
   // ============================================================================
   // ZONE MANAGEMENT
@@ -223,6 +237,89 @@ export class AdminShippingController {
       dto.trackingNumber,
       dto.trackingUrl,
     );
+  }
+
+  // ============================================================================
+  // LEOPARDS COURIER
+  // ============================================================================
+
+  /**
+   * Book order packet with Leopards Merchant API
+   * POST /admin/shipping/leopards/book/:orderId
+   */
+  @Post('leopards/book/:orderId')
+  @RequirePermissions('shipping.manage')
+  @HttpCode(HttpStatus.OK)
+  async bookWithLeopards(
+    @Param('orderId') orderId: string,
+    @Body() dto: BookLeopardsDto,
+  ) {
+    return this.leopardsShippingService.bookOrder(orderId, {
+      serviceType: dto.serviceType ?? dto.shipmentType,
+      shipmentType: dto.shipmentType ?? dto.serviceType,
+      specialInstructions: dto.specialInstructions,
+    });
+  }
+
+  /**
+   * Bulk book packets with Leopards Merchant API
+   * POST /admin/shipping/leopards/bulk-book
+   */
+  @Post('leopards/bulk-book')
+  @RequirePermissions('shipping.manage')
+  @HttpCode(HttpStatus.OK)
+  async bulkBookWithLeopards(@Body() dto: BulkBookLeopardsDto) {
+    return this.leopardsShippingService.bulkBookOrders(dto.orderIds, {
+      serviceType: dto.serviceType ?? dto.shipmentType,
+      shipmentType: dto.shipmentType ?? dto.serviceType,
+    });
+  }
+
+  /**
+   * Bulk print shipping labels (with CN) for selected orders
+   * POST /admin/shipping/leopards/bulk-labels
+   */
+  @Post('leopards/bulk-labels')
+  @RequirePermissions('shipping.manage')
+  @HttpCode(HttpStatus.OK)
+  @Header('Content-Type', 'application/pdf')
+  @Header('Content-Disposition', 'inline; filename="bulk-leopards-labels.pdf"')
+  async bulkLeopardsLabels(@Body() dto: BulkShippingLabelsDto) {
+    const uniqueIds = [
+      ...new Set(dto.orderIds.map((id) => id.trim()).filter(Boolean)),
+    ];
+    const withCn = await this.prisma.orderShipping.findMany({
+      where: {
+        orderId: { in: uniqueIds },
+        trackingNumber: { not: null },
+      },
+      select: { orderId: true, trackingNumber: true },
+    });
+    const bookedIds = withCn
+      .filter((row) => Boolean(row.trackingNumber?.trim()))
+      .map((row) => row.orderId);
+
+    if (bookedIds.length === 0) {
+      throw new BadRequestException(
+        'None of the selected orders have a Leopards CN. Book shipments first.',
+      );
+    }
+
+    // Preserve selection order for booked IDs only.
+    const orderedIds = uniqueIds.filter((id) => bookedIds.includes(id));
+    const pdf = await this.shippingLabelService.generateBulkLabels(orderedIds);
+    return new StreamableFile(pdf);
+  }
+
+  /**
+   * Track booked packet(s) via Leopards Merchant API
+   * POST /admin/shipping/leopards/track
+   */
+  @Post('leopards/track')
+  @RequirePermissions('shipping.manage')
+  @HttpCode(HttpStatus.OK)
+  async trackLeopards(@Body() body: { trackNumbers: string | string[] }) {
+    return this.leopardsShippingService.trackBookedPacket(body.trackNumbers);
   }
 
   // ============================================================================

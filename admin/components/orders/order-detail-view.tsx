@@ -18,6 +18,7 @@ import {
 } from '@/lib/api/orders';
 import { formatApiError } from '@/lib/api/error-message';
 import { OrderPaymentsSection } from '@/components/payments/order-payments-section';
+import { LeopardsCourierPanel } from '@/components/orders/leopards-courier-panel';
 import { formatPrice } from '@/lib/currency';
 import { PermissionGate } from '@/components/permission-gate';
 
@@ -295,6 +296,8 @@ export function OrderDetailView({ orderId }: { orderId: string }) {
           </pre>
         </section>
       </div>
+
+      <LeopardsCourierPanel order={order} onOrderUpdated={load} />
 
       <section className="mt-6 rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
         <div className="border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">

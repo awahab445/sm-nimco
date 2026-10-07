@@ -167,6 +167,32 @@ export function InvoiceModal({ order, open, onClose }: InvoiceModalProps) {
                   <div>—</div>
                 )}
               </div>
+              {order.shipping?.trackingNumber ? (
+                <div className="mt-3 space-y-0.5 text-sm">
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                    Courier Tracking
+                  </h3>
+                  <div>
+                    {order.shipping.courierName
+                      ? `${order.shipping.courierName} · `
+                      : null}
+                    {order.shipping.trackingUrl ? (
+                      <a
+                        href={order.shipping.trackingUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-medium text-sky-700 underline"
+                      >
+                        CN {order.shipping.trackingNumber}
+                      </a>
+                    ) : (
+                      <span className="font-medium">
+                        CN {order.shipping.trackingNumber}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ) : null}
             </section>
           </div>
 

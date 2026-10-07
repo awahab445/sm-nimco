@@ -1,4 +1,5 @@
-import { fetchApi } from '../api-client';
+import { fetchApi, ApiError } from '../api-client';
+import { getToken } from '../auth-token';
 
 export type ZoneCoverage = {
   countries?: string[];
@@ -207,6 +208,140 @@ export async function updateOrderShippingStatus(
 
 export async function fetchPublicOrderShipping(orderId: string) {
   return fetchApi<OrderShipping>(`/shipping/order/${orderId}`);
+}
+
+export type BookLeopardsShipmentType =
+  | 'OVERNIGHT'
+  | 'OVERLAND'
+  | 'DETAIN';
+
+export type BookLeopardsResult = {
+  trackingNumber: string;
+  trackingUrl: string;
+  labelUrl: string | null;
+  courierCode: string;
+  courierName: string;
+  shipmentType: 'overnight' | 'overland' | 'detain';
+  shipping: OrderShipping;
+  apiResponse: Record<string, unknown>;
+};
+
+export type BookLeopardsBody = {
+  /** Preferred alias used by admin UI (ESSA parity). */
+  serviceType?: BookLeopardsShipmentType;
+  shipmentType?: BookLeopardsShipmentType;
+  specialInstructions?: string;
+};
+
+/** Book an order packet with Leopards Courier Merchant API. */
+export async function bookOrderWithLeopards(
+  orderId: string,
+  body: BookLeopardsBody = {},
+) {
+  return fetchApi<BookLeopardsResult>(
+    `/admin/shipping/leopards/book/${orderId}`,
+    {
+      method: 'POST',
+      body: JSON.stringify(body),
+    },
+  );
+}
+
+export type BulkBookLeopardsResultItem = {
+  orderId: string;
+  orderNumber?: string;
+  status: 'booked' | 'skipped' | 'failed';
+  cnNumber?: string;
+  trackingUrl?: string;
+  error?: string;
+};
+
+export type BulkBookLeopardsResult = {
+  successCount: number;
+  failedCount: number;
+  skippedCount: number;
+  results: BulkBookLeopardsResultItem[];
+};
+
+export async function bulkBookLeopardsOrders(body: {
+  orderIds: string[];
+  serviceType?: BookLeopardsShipmentType;
+  shipmentType?: BookLeopardsShipmentType;
+}) {
+  return fetchApi<BulkBookLeopardsResult>(
+    '/admin/shipping/leopards/bulk-book',
+    {
+      method: 'POST',
+      body: JSON.stringify({
+        orderIds: body.orderIds,
+        serviceType: body.serviceType ?? body.shipmentType,
+        shipmentType: body.shipmentType ?? body.serviceType,
+      }),
+    },
+  );
+}
+
+/** Opens compiled shipping labels PDF (orders with CN) in a new tab. */
+export async function openBulkLeopardsLabelsPdf(orderIds: string[]) {
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+  const token = getToken();
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+  };
+  if (token) headers.Authorization = `Bearer ${token}`;
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 180000);
+
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/admin/shipping/leopards/bulk-labels`,
+      {
+        method: 'POST',
+        credentials: 'include',
+        headers,
+        body: JSON.stringify({ orderIds }),
+        signal: controller.signal,
+      },
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      const rawMessage = (errorData as { message?: unknown })?.message;
+      const message =
+        typeof rawMessage === 'string'
+          ? rawMessage
+          : Array.isArray(rawMessage)
+            ? rawMessage.join(', ')
+            : `Request failed: ${response.statusText}`;
+      throw new ApiError(message, response.status, errorData);
+    }
+
+    const blob = await response.blob();
+    const pdfBlob =
+      blob.type === 'application/pdf'
+        ? blob
+        : new Blob([blob], { type: 'application/pdf' });
+    const url = URL.createObjectURL(pdfBlob);
+    const opened = window.open(url, '_blank', 'noopener,noreferrer');
+    if (!opened) {
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = 'bulk-leopards-labels.pdf';
+      anchor.click();
+    }
+    setTimeout(() => URL.revokeObjectURL(url), 60_000);
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      throw new ApiError(
+        'Leopards label PDF generation timed out. Try fewer orders.',
+        408,
+      );
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeoutId);
+  }
 }
 
 export async function fetchMethodCustomerGroups(methodId: string) {

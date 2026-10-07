@@ -68,6 +68,62 @@ export function isCustomOrderItem(
   return item.productId === '00000000-0000-4000-8000-0000000000c1';
 }
 
+export type OrderShippingSummary = {
+  id: string;
+  orderId: string;
+  status: string;
+  trackingNumber: string | null;
+  trackingUrl: string | null;
+  courierCode: string | null;
+  courierName: string | null;
+  shippedAt: string | null;
+  deliveredAt: string | null;
+  metadata?: Record<string, unknown> | null;
+};
+
+/** Leopards fields stored under OrderShipping.metadata.leopards after booking. */
+export function getLeopardsShippingDetails(
+  shipping?: OrderShippingSummary | null,
+): {
+  trackingNumber: string | null;
+  trackingUrl: string | null;
+  slipUrl: string | null;
+  loadSheetId: string | null;
+} {
+  const trackingNumber = shipping?.trackingNumber?.trim() || null;
+  const trackingUrl = shipping?.trackingUrl?.trim() || null;
+  const meta =
+    shipping?.metadata &&
+    typeof shipping.metadata === 'object' &&
+    !Array.isArray(shipping.metadata)
+      ? shipping.metadata
+      : null;
+  const leopards =
+    meta?.leopards &&
+    typeof meta.leopards === 'object' &&
+    !Array.isArray(meta.leopards)
+      ? (meta.leopards as Record<string, unknown>)
+      : null;
+
+  const slipRaw = leopards?.slip_link ?? leopards?.slipLink ?? leopards?.labelUrl;
+  const slipUrl =
+    typeof slipRaw === 'string' && slipRaw.trim() ? slipRaw.trim() : null;
+
+  const loadRaw =
+    leopards?.load_sheet_id ??
+    leopards?.loadSheetId ??
+    meta?.courierLoadSheetId ??
+    meta?.loadSheetId;
+  const loadSheetId =
+    typeof loadRaw === 'string' && loadRaw.trim()
+      ? loadRaw.trim()
+      : loadRaw != null && String(loadRaw).trim()
+        ? String(loadRaw).trim()
+        : null;
+
+  return { trackingNumber, trackingUrl, slipUrl, loadSheetId };
+}
+
 export type Order = {
   id: string;
   orderNumber: string;
@@ -96,6 +152,7 @@ export type Order = {
   cancelledAt: string | null;
   completedAt: string | null;
   items: OrderItem[];
+  shipping?: OrderShippingSummary | null;
 };
 
 /** True when the order was created from admin manual entry. */

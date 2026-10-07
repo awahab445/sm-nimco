@@ -49,6 +49,10 @@ type ShippingLabelViewModel = {
   hasDiscount: boolean;
   hasTax: boolean;
   grandTotal: string;
+  trackingNumber: string | null;
+  trackingUrl: string | null;
+  courierName: string | null;
+  hasTracking: boolean;
 };
 
 @Injectable()
@@ -74,7 +78,7 @@ export class ShippingLabelService {
 
     const orders = await this.prisma.order.findMany({
       where: { id: { in: uniqueIds } },
-      include: { items: true },
+      include: { items: true, shipping: true },
       orderBy: { createdAt: 'asc' },
     });
 
@@ -127,8 +131,7 @@ export class ShippingLabelService {
           !Array.isArray(item.metadata)
             ? (item.metadata as Record<string, unknown>)
             : {};
-        const isCustom =
-          meta.isCustom === true || item.sku === 'CUSTOM';
+        const isCustom = meta.isCustom === true || item.sku === 'CUSTOM';
         items.push({
           name: isCustom ? `${item.name} (Custom)` : item.name,
           quantity: item.quantity,
@@ -156,6 +159,10 @@ export class ShippingLabelService {
           : orderMeta.paymentMethod === 'cod'
             ? 'Cash on Delivery'
             : null;
+
+      const trackingNumber = order.shipping?.trackingNumber?.trim() || null;
+      const trackingUrl = order.shipping?.trackingUrl?.trim() || null;
+      const courierName = order.shipping?.courierName?.trim() || null;
 
       labels.push({
         storeName,
@@ -185,6 +192,10 @@ export class ShippingLabelService {
         hasDiscount: discountNumeric > 0,
         hasTax: taxNumeric > 0,
         grandTotal: this.formatMoney(order.grandTotal, order.currency),
+        trackingNumber,
+        trackingUrl,
+        courierName,
+        hasTracking: Boolean(trackingNumber),
       });
     }
 

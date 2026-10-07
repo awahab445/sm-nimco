@@ -10,6 +10,7 @@ import {
 import { ShippingService } from './services/shipping.service';
 import { ShippingRateService } from './services/shipping-rate.service';
 import { CourierService } from './services/courier.service';
+import { LeopardsShippingService } from './services/leopards-shipping.service';
 import { CourierCityService } from './services/courier-city.service';
 import { CourierCityController } from './controllers/courier-city.controller';
 import { AdminCourierZoneController } from './controllers/admin-courier-zone.controller';
@@ -18,6 +19,8 @@ import { ShippingEventHandlers } from './events/shipping.handlers';
 import { CatalogModule } from '../catalog/catalog.module';
 import { AuthModule } from '../auth/auth.module';
 import { StoreSettingsModule } from '../store-settings/store-settings.module';
+import { CommonModule } from '../common/common.module';
+import { OrderModule } from '../order/order.module';
 import { AdminJwtAuthGuard } from '../admin/guards/admin-jwt-auth.guard';
 import { AdminPermissionsGuard } from '../admin/guards/admin-permissions.guard';
 import { AdminRbacService } from '../admin/services/admin-rbac.service';
@@ -25,7 +28,13 @@ import { ZoneConfigService } from './services/zone-config.service';
 import { AdminZoneConfigController } from './controllers/admin-zone-config.controller';
 
 @Module({
-  imports: [CatalogModule, AuthModule, StoreSettingsModule],
+  imports: [
+    CatalogModule,
+    AuthModule,
+    StoreSettingsModule,
+    CommonModule,
+    OrderModule,
+  ],
   controllers: [
     ShippingController,
     AdminShippingController,
@@ -39,6 +48,7 @@ import { AdminZoneConfigController } from './controllers/admin-zone-config.contr
     ShippingService,
     ShippingRateService,
     CourierService,
+    LeopardsShippingService,
     CourierCityService,
     ZoneConfigService,
     ShippingEligibilityEvaluator,
@@ -51,6 +61,7 @@ import { AdminZoneConfigController } from './controllers/admin-zone-config.contr
     ShippingService,
     ShippingRateService,
     CourierService,
+    LeopardsShippingService,
     CourierCityService,
     ZoneConfigService,
     ShippingEligibilityEvaluator,

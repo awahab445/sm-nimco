@@ -285,64 +285,45 @@ class TcsProvider implements CourierProvider {
 }
 
 /**
- * Leopards Courier Provider
- * Placeholder implementation - should be replaced with actual API integration
+ * Leopards Courier Provider (cost estimate only).
+ * Live booking/tracking runs through LeopardsShippingService via
+ * POST /admin/shipping/leopards/book/:orderId and
+ * POST /admin/shipping/leopards/track.
  */
 class LeopardsProvider implements CourierProvider {
   code = 'leopards';
   name = 'Leopards Courier';
 
-  async calculateCost(params: CalculateCostParams): Promise<number> {
-    // Placeholder: Implement actual Leopards API call
-    const { weight, config } = params;
-    const baseCost = config.baseCost || 150;
-    const costPerKg = config.costPerKg || 40;
-    return baseCost + weight * costPerKg;
+  calculateCost(params: CalculateCostParams): Promise<number> {
+    const weight = Number(params.weight) || 0;
+    const config =
+      params.config && typeof params.config === 'object'
+        ? (params.config as Record<string, unknown>)
+        : {};
+    const baseCost = Number(config.baseCost) || 150;
+    const costPerKg = Number(config.costPerKg) || 40;
+    return Promise.resolve(baseCost + weight * costPerKg);
   }
 
-  async createShipment(
-    params: CreateShipmentParams,
-  ): Promise<CreateShipmentResult> {
-    // Placeholder: Implement actual Leopards API call
-    const trackingNumber = `LEO${Date.now()}${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
-
-    return {
-      trackingNumber,
-      trackingUrl: `https://leopards.com.pk/track/${trackingNumber}`,
-      cost: await this.calculateCost({
-        origin: params.origin,
-        destination: params.destination,
-        weight: params.weight,
-        dimensions: params.dimensions,
-        config: params.config,
-      }),
-      estimatedDelivery: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000), // 4 days
-    };
+  createShipment(params: CreateShipmentParams): Promise<CreateShipmentResult> {
+    void params;
+    return Promise.reject(
+      new BadRequestException(
+        'Use POST /admin/shipping/leopards/book/:orderId (LeopardsShippingService) to book shipments',
+      ),
+    );
   }
 
-  async trackShipment(
+  trackShipment(
     trackingNumber: string,
-    config: any,
+    config: unknown,
   ): Promise<TrackingResult> {
-    // Placeholder: Implement actual Leopards API call
-    return {
-      status: 'in_transit',
-      currentLocation: 'Lahore Hub',
-      estimatedDelivery: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
-      events: [
-        {
-          status: 'picked_up',
-          location: 'Karachi',
-          timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-          description: 'Shipment picked up',
-        },
-        {
-          status: 'in_transit',
-          location: 'Lahore Hub',
-          timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-          description: 'In transit',
-        },
-      ],
-    };
+    void trackingNumber;
+    void config;
+    return Promise.reject(
+      new BadRequestException(
+        'Use POST /admin/shipping/leopards/track (LeopardsShippingService) to track shipments',
+      ),
+    );
   }
 }
