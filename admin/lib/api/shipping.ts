@@ -281,6 +281,39 @@ export async function bulkBookLeopardsOrders(body: {
   );
 }
 
+export type LeopardsTrackEvent = {
+  status: string;
+  location: string | null;
+  activityDate: string | null;
+  activityTime: string | null;
+  activityAt: string | null;
+  remarks: string | null;
+};
+
+/** Normalized Leopards track response for TrackShipmentModal (ESSA parity). */
+export type LeopardsTrackResult = {
+  success: boolean;
+  cnNumber: string;
+  currentStatus: string;
+  message: string | null;
+  destination: string | null;
+  consigneeName: string | null;
+  bookingDate: string | null;
+  events: LeopardsTrackEvent[];
+  trackedAt: string;
+};
+
+/**
+ * Live-track a booked Leopards CN.
+ * POST /admin/shipping/leopards/track with `{ trackingNumber }`.
+ */
+export async function trackLeopardsShipment(trackingNumber: string) {
+  return fetchApi<LeopardsTrackResult>('/admin/shipping/leopards/track', {
+    method: 'POST',
+    body: JSON.stringify({ trackingNumber }),
+  });
+}
+
 /** Opens compiled shipping labels PDF (orders with CN) in a new tab. */
 export async function openBulkLeopardsLabelsPdf(orderIds: string[]) {
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';

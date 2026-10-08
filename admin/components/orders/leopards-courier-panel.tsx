@@ -9,10 +9,13 @@ import {
 import {
   bookOrderWithLeopards,
   openBulkLeopardsLabelsPdf,
+  trackLeopardsShipment,
   type BookLeopardsShipmentType,
+  type LeopardsTrackResult,
 } from '@/lib/api/shipping';
 import { formatApiError } from '@/lib/api/error-message';
 import { PermissionGate } from '@/components/permission-gate';
+import { TrackShipmentModal } from '@/components/orders/track-shipment-modal';
 
 const SERVICE_TYPE_OPTIONS: Array<{
   value: BookLeopardsShipmentType;
@@ -60,6 +63,14 @@ function CopyIcon({ className }: { className?: string }) {
   );
 }
 
+function buildLeopardsPublicTrackingUrl(
+  trackingNumber: string,
+  trackingUrl?: string | null,
+): string {
+  if (trackingUrl?.trim()) return trackingUrl.trim();
+  return `https://www.leopardscourier.com/tracking/?cn=${encodeURIComponent(trackingNumber)}`;
+}
+
 export function LeopardsCourierPanel({
   order,
   onOrderUpdated,
@@ -74,6 +85,12 @@ export function LeopardsCourierPanel({
   const [copied, setCopied] = useState(false);
   const [shipmentType, setShipmentType] =
     useState<BookLeopardsShipmentType>('OVERNIGHT');
+  const [trackOpen, setTrackOpen] = useState(false);
+  const [tracking, setTracking] = useState(false);
+  const [trackError, setTrackError] = useState<string | null>(null);
+  const [trackResult, setTrackResult] = useState<LeopardsTrackResult | null>(
+    null,
+  );
 
   const {
     trackingNumber,
@@ -85,6 +102,9 @@ export function LeopardsCourierPanel({
   const canBook =
     !hasCn &&
     (order.status === 'pending' || order.status === 'processing');
+  const publicTrackingUrl = trackingNumber
+    ? buildLeopardsPublicTrackingUrl(trackingNumber, trackingUrl)
+    : null;
 
   async function handleBook() {
     setError(null);
@@ -147,12 +167,26 @@ export function LeopardsCourierPanel({
     }
   }
 
-  function handleTrackShipment() {
-    if (!trackingUrl && !trackingNumber) return;
-    const url =
-      trackingUrl ||
-      `https://www.leopardscourier.com/tracking/?cn=${encodeURIComponent(trackingNumber!)}`;
-    window.open(url, '_blank', 'noopener,noreferrer');
+  async function loadTracking() {
+    if (!trackingNumber) return;
+    setTracking(true);
+    setTrackError(null);
+    try {
+      const result = await trackLeopardsShipment(trackingNumber);
+      setTrackResult(result);
+    } catch (err) {
+      setTrackError(formatApiError(err));
+    } finally {
+      setTracking(false);
+    }
+  }
+
+  async function handleOpenTrack() {
+    if (!trackingNumber) return;
+    setTrackOpen(true);
+    setTrackResult(null);
+    setTrackError(null);
+    await loadTracking();
   }
 
   if (!hasCn && !canBook) {
@@ -181,9 +215,21 @@ export function LeopardsCourierPanel({
               <span className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
                 Tracking CN
               </span>
-              <span className="font-mono text-sm font-semibold text-zinc-900 dark:text-zinc-50">
-                {trackingNumber}
-              </span>
+              {publicTrackingUrl ? (
+                <a
+                  href={publicTrackingUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-mono text-sm font-semibold text-sky-700 underline dark:text-sky-400"
+                  title="Open Leopards online tracking"
+                >
+                  {trackingNumber}
+                </a>
+              ) : (
+                <span className="font-mono text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+                  {trackingNumber}
+                </span>
+              )}
               <button
                 type="button"
                 onClick={() => void handleCopyTracking()}
@@ -215,7 +261,7 @@ export function LeopardsCourierPanel({
             {trackingNumber ? (
               <button
                 type="button"
-                onClick={handleTrackShipment}
+                onClick={() => void handleOpenTrack()}
                 className={adminUi.btnSecondary}
               >
                 Track Shipment
@@ -271,6 +317,19 @@ export function LeopardsCourierPanel({
           {success}
         </p>
       ) : null}
+
+      <TrackShipmentModal
+        open={trackOpen}
+        loading={tracking}
+        error={trackError}
+        result={trackResult}
+        trackingNumber={trackingNumber}
+        onRefresh={() => void loadTracking()}
+        onClose={() => {
+          setTrackOpen(false);
+          setTrackError(null);
+        }}
+      />
     </section>
   );
 }

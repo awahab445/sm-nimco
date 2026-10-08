@@ -55,10 +55,14 @@ describe('LeopardsShippingService', () => {
       'LEOPARDS_API_BASE_URL',
       'https://merchantapi.leopardscourier.com/api',
     );
-    setEnv('LEOPARDS_SHIPPER_NAME', 'self');
-    setEnv('LEOPARDS_SHIPPER_EMAIL', 'self');
-    setEnv('LEOPARDS_SHIPPER_PHONE', 'self');
-    setEnv('LEOPARDS_SHIPPER_ADDRESS', 'self');
+    setEnv('LEOPARDS_SHIPPER_ID', '2792661');
+    setEnv('LEOPARDS_SHIPPER_NAME', 'SM Nimco & Sweets');
+    setEnv('LEOPARDS_SHIPPER_EMAIL', 'info@smnimco.com');
+    setEnv('LEOPARDS_SHIPPER_PHONE', '03442394143');
+    setEnv(
+      'LEOPARDS_SHIPPER_ADDRESS',
+      'H. NO118, SEC B-3, SAEEDABAD, BALDIA TOWN, KARACHI',
+    );
 
     httpService = {
       post: jest.fn(),
@@ -135,11 +139,17 @@ describe('LeopardsShippingService', () => {
       expect(normalizeLeopardsCityName('karachi ')).toBe('karachi');
       expect(normalizeLeopardsCityName('Karachi, sindh')).toBe('karachi');
       expect(normalizeLeopardsCityName('Karachi, Sindh')).toBe('karachi');
-      expect(normalizeLeopardsCityName('Karachi, sindh, 75740')).toBe('karachi');
-      expect(normalizeLeopardsCityName('Karachi, Sindh, 75740')).toBe('karachi');
+      expect(normalizeLeopardsCityName('Karachi, sindh, 75740')).toBe(
+        'karachi',
+      );
+      expect(normalizeLeopardsCityName('Karachi, Sindh, 75740')).toBe(
+        'karachi',
+      );
       expect(normalizeLeopardsCityName('Lahore - Punjab')).toBe('lahore');
       expect(normalizeLeopardsCityName('Karachi City')).toBe('karachi');
-      expect(normalizeLeopardsCityName('75740, Karachi, sindh')).toBe('karachi');
+      expect(normalizeLeopardsCityName('75740, Karachi, sindh')).toBe(
+        'karachi',
+      );
     });
 
     it('resolves major cities via static dictionary', () => {
@@ -235,10 +245,20 @@ describe('LeopardsShippingService', () => {
         booked_packet_order_id: 'ORD-1001',
         origin_city: '592',
         destination_city: '789',
-        shipment_name_eng: 'self',
-        shipment_email: 'self',
-        shipment_phone: 'self',
-        shipment_address: 'self',
+        shipment_name_eng: 'SM Nimco & Sweets',
+        shipment_email: 'info@smnimco.com',
+        shipment_phone: '03442394143',
+        shipment_address:
+          'H. NO118, SEC B-3, SAEEDABAD, BALDIA TOWN, KARACHI',
+        shipper_name: 'SM Nimco & Sweets',
+        shipper_email: 'info@smnimco.com',
+        shipper_phone: '03442394143',
+        shipper_address:
+          'H. NO118, SEC B-3, SAEEDABAD, BALDIA TOWN, KARACHI',
+        return_address:
+          'H. NO118, SEC B-3, SAEEDABAD, BALDIA TOWN, KARACHI',
+        shipper_id: '2792661',
+        shipment_id: '2792661',
         consignment_name_eng: 'Ali Khan',
         consignment_email: 'ali@example.com',
         consignment_phone: '03001234567',
@@ -249,6 +269,38 @@ describe('LeopardsShippingService', () => {
       expect(payload.booked_packet_vol_weight_w).toBe('10');
       expect(payload.booked_packet_vol_weight_h).toBe('10');
       expect(payload.booked_packet_vol_weight_l).toBe('10');
+      // Never send placeholder merchant phones on the shipper side.
+      expect(payload.shipper_phone).not.toBe('03001234567');
+      expect(payload.shipment_phone).not.toBe('self');
+    });
+
+    it('falls back to SM Nimco shipper defaults when env shipper fields are empty', () => {
+      setEnv('LEOPARDS_SHIPPER_NAME', undefined);
+      setEnv('LEOPARDS_SHIPPER_EMAIL', undefined);
+      setEnv('LEOPARDS_SHIPPER_PHONE', undefined);
+      setEnv('LEOPARDS_SHIPPER_ADDRESS', undefined);
+      setEnv('LEOPARDS_SHIPPER_ID', undefined);
+
+      const payload = service.buildBookPacketPayload({
+        weightKg: 1,
+        pieces: 1,
+        collectAmount: 100,
+        orderReferenceId: 'ORD-DEF',
+        destinationCityId: 789,
+        consigneeName: 'Test',
+        consigneePhone: '03001111111',
+        consigneeAddress: 'Addr',
+      });
+
+      expect(payload.shipper_name).toBe('SM Nimco & Sweets');
+      expect(payload.shipper_phone).toBe('03442394143');
+      expect(payload.shipper_email).toBe('info@smnimco.com');
+      expect(payload.shipper_address).toBe(
+        'H. NO118, SEC B-3, SAEEDABAD, BALDIA TOWN, KARACHI',
+      );
+      expect(payload.return_address).toBe(payload.shipper_address);
+      expect(payload.shipper_id).toBe('2792661');
+      expect(payload.shipment_phone).toBe('03442394143');
     });
 
     it('converts fractional kg below 1g floor to at least 1 gram', () => {
@@ -341,7 +393,9 @@ describe('LeopardsShippingService', () => {
     });
 
     it('injects api_key and api_password from process.env at request time', async () => {
-      httpService.post.mockReturnValue(of({ data: { status: 1, track_number: 'LE222' } }));
+      httpService.post.mockReturnValue(
+        of({ data: { status: 1, track_number: 'LE222' } }),
+      );
 
       const payload = service.buildBookPacketPayload({
         weightKg: 1,
@@ -384,6 +438,63 @@ describe('LeopardsShippingService', () => {
         }),
       );
       expect(result).toEqual(apiBody);
+    });
+
+    it('trackShipment normalizes packet_list into modal payload', async () => {
+      httpService.post.mockReturnValue(
+        of({
+          data: {
+            status: 1,
+            packet_list: [
+              {
+                track_number: 'LE999',
+                booked_packet_status: 'In Transit',
+                destination_city_name: 'Lahore',
+                consignment_name_eng: 'Ali Khan',
+                'Tracking Detail': [
+                  {
+                    Status: 'Dispatched',
+                    Location: 'Karachi Hub',
+                    Activity_Date: '2026-03-01',
+                    Activity_Time: '10:00',
+                  },
+                  {
+                    Status: 'In Transit',
+                    Location: 'Lahore Hub',
+                    Activity_datetime: '2026-03-02 14:30',
+                  },
+                ],
+              },
+            ],
+          },
+        }),
+      );
+
+      const result = await service.trackShipment('LE999');
+
+      expect(result.success).toBe(true);
+      expect(result.cnNumber).toBe('LE999');
+      expect(result.currentStatus).toBe('In Transit');
+      expect(result.destination).toBe('Lahore');
+      expect(result.consigneeName).toBe('Ali Khan');
+      expect(result.events).toHaveLength(2);
+      expect(result.events[0].status).toBe('Dispatched');
+      expect(result.events[0].location).toBe('Karachi Hub');
+      expect(result.trackedAt).toBeTruthy();
+    });
+
+    it('trackShipment soft-falls back when packet_list is empty', async () => {
+      httpService.post.mockReturnValue(
+        of({ data: { status: 1, packet_list: [] } }),
+      );
+
+      const result = await service.trackShipment('LE-EMPTY');
+
+      expect(result.success).toBe(false);
+      expect(result.cnNumber).toBe('LE-EMPTY');
+      expect(result.currentStatus).toBe('BOOKED');
+      expect(result.events).toEqual([]);
+      expect(result.message).toMatch(/not yet scanned/i);
     });
   });
 
@@ -477,6 +588,11 @@ describe('LeopardsShippingService', () => {
         booked_packet_order_id: 'ORD-500',
         origin_city: '592',
         destination_city: '789',
+        shipper_phone: '03442394143',
+        shipper_name: 'SM Nimco & Sweets',
+        return_address:
+          'H. NO118, SEC B-3, SAEEDABAD, BALDIA TOWN, KARACHI',
+        shipper_id: '2792661',
         consignment_name_eng: 'Buyer Name',
         consignment_phone: '03211234567',
         shipment_type: 'overnight',

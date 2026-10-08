@@ -15,7 +15,10 @@ import {
   isCustomOrderItemMetadata,
 } from '../utils/shipping-weight';
 import { OrderShipping } from '../entities/shipping-zone.entity';
-import { cleanLeopardsEnvValue } from '../../common/utils/leopards-env.util';
+import {
+  cleanLeopardsEnvValue,
+  resolveLeopardsShipperDetails,
+} from '../../common/utils/leopards-env.util';
 
 const DEFAULT_LEOPARDS_API_BASE_URL =
   'https://merchantapi.leopardscourier.com/api';
@@ -130,13 +133,17 @@ export function normalizeLeopardsCityName(raw?: string | null): string {
   const citySegment =
     segments.find(
       (part) => !isPostalCodeSegment(part) && !isProvinceSegment(part),
-    ) ?? segments[0] ??
+    ) ??
+    segments[0] ??
     value;
 
   value = citySegment;
 
   // Remove embedded postal codes: "karachi 75740" → "karachi"
-  value = value.replace(/\b\d{4,6}\b/g, ' ').replace(/\s+/g, ' ').trim();
+  value = value
+    .replace(/\b\d{4,6}\b/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
 
   for (const suffix of PAKISTAN_PROVINCE_SUFFIXES) {
     if (value.endsWith(` ${suffix}`)) {
@@ -152,9 +159,7 @@ export function normalizeLeopardsCityName(raw?: string | null): string {
 }
 
 /** Resolve a city name against the static major-city dictionary. */
-export function resolveStaticLeopardsCityId(
-  cityName: string,
-): number | null {
+export function resolveStaticLeopardsCityId(cityName: string): number | null {
   const normalized = normalizeLeopardsCityName(cityName);
   if (!normalized) return null;
 
@@ -192,10 +197,20 @@ export type LeopardsBookPacketPayload = {
   booked_packet_order_id: string;
   origin_city: string;
   destination_city: string;
+  /** Official Leopards shipper fields (printed on AWB / slip). */
   shipment_name_eng: string;
   shipment_email: string;
   shipment_phone: string;
   shipment_address: string;
+  /** Explicit shipper aliases + return address (SM Nimco / ESSA parity). */
+  shipper_name: string;
+  shipper_email: string;
+  shipper_phone: string;
+  shipper_address: string;
+  return_address: string;
+  /** Merchant shipper Sys Id — required so Leopards does not use the wrong profile. */
+  shipper_id: string;
+  shipment_id: string;
   consignment_name_eng: string;
   consignment_email: string;
   consignment_phone: string;
@@ -220,6 +235,28 @@ export type LeopardsTrackPacketResponse = {
   error?: number | string;
   packet_list?: Array<Record<string, unknown>>;
   [key: string]: unknown;
+};
+
+export type LeopardsTrackEvent = {
+  status: string;
+  location: string | null;
+  activityDate: string | null;
+  activityTime: string | null;
+  activityAt: string | null;
+  remarks: string | null;
+};
+
+/** Normalized track result for admin Track Shipment modal (ESSA parity). */
+export type LeopardsTrackResult = {
+  success: boolean;
+  cnNumber: string;
+  currentStatus: string;
+  message: string | null;
+  destination: string | null;
+  consigneeName: string | null;
+  bookingDate: string | null;
+  events: LeopardsTrackEvent[];
+  trackedAt: string;
 };
 
 export type LeopardsCity = {
@@ -297,14 +334,7 @@ export class LeopardsShippingService {
       cleanLeopardsEnvValue(process.env.LEOPARDS_BASE_URL) ||
       DEFAULT_LEOPARDS_API_BASE_URL
     ).replace(/\/+$/, '');
-    const originCityId = (
-      process.env.LEOPARDS_ORIGIN_CITY_ID?.trim() || '592'
-    ).trim();
-    const shipperName = process.env.LEOPARDS_SHIPPER_NAME?.trim() || 'self';
-    const shipperEmail = process.env.LEOPARDS_SHIPPER_EMAIL?.trim() || 'self';
-    const shipperPhone = process.env.LEOPARDS_SHIPPER_PHONE?.trim() || 'self';
-    const shipperAddress =
-      process.env.LEOPARDS_SHIPPER_ADDRESS?.trim() || 'self';
+    const shipper = resolveLeopardsShipperDetails();
     const trackingBase =
       process.env.LEOPARDS_TRACKING_URL_BASE?.trim() ||
       LEOPARDS_PUBLIC_TRACKING_BASE;
@@ -313,11 +343,13 @@ export class LeopardsShippingService {
       apiKey,
       apiPassword,
       baseUrl,
-      originCityId,
-      shipperName,
-      shipperEmail,
-      shipperPhone,
-      shipperAddress,
+      originCityId: shipper.origin_city,
+      shipperName: shipper.shipper_name,
+      shipperEmail: shipper.shipper_email,
+      shipperPhone: shipper.shipper_phone,
+      shipperAddress: shipper.shipper_address,
+      returnAddress: shipper.return_address,
+      shipperId: shipper.shipper_id,
       trackingBase,
     };
   }
@@ -419,6 +451,11 @@ export class LeopardsShippingService {
       input.serviceType ?? input.shipmentType,
     );
 
+    const shipper = resolveLeopardsShipperDetails(
+      config.shipperId,
+      config.originCityId,
+    );
+
     return {
       api_key: config.apiKey,
       api_password: config.apiPassword,
@@ -429,12 +466,19 @@ export class LeopardsShippingService {
       booked_packet_no_piece: String(pieces),
       booked_packet_collect_amount: String(collectAmount),
       booked_packet_order_id: String(input.orderReferenceId),
-      origin_city: config.originCityId,
+      origin_city: shipper.origin_city,
       destination_city: String(input.destinationCityId),
-      shipment_name_eng: config.shipperName,
-      shipment_email: config.shipperEmail,
-      shipment_phone: config.shipperPhone,
-      shipment_address: config.shipperAddress,
+      shipment_name_eng: shipper.shipment_name_eng,
+      shipment_email: shipper.shipment_email,
+      shipment_phone: shipper.shipment_phone,
+      shipment_address: shipper.shipment_address,
+      shipper_name: shipper.shipper_name,
+      shipper_email: shipper.shipper_email,
+      shipper_phone: shipper.shipper_phone,
+      shipper_address: shipper.shipper_address,
+      return_address: shipper.return_address,
+      shipper_id: shipper.shipper_id,
+      shipment_id: shipper.shipper_id,
       consignment_name_eng: input.consigneeName,
       consignment_email: input.consigneeEmail?.trim() || '',
       consignment_phone: input.consigneePhone,
@@ -555,6 +599,213 @@ export class LeopardsShippingService {
   }
 
   /**
+   * Live-track a CN for the admin Track Shipment modal.
+   * Soft-falls back to "Booked - awaiting scan" when staging/API has no history yet.
+   */
+  async trackShipment(trackingNumber: string): Promise<LeopardsTrackResult> {
+    const cn = String(trackingNumber ?? '').trim();
+    if (!cn) {
+      throw new BadRequestException('trackingNumber is required');
+    }
+
+    try {
+      const data = await this.trackBookedPacket(cn);
+      if (!this.isLeopardsSuccessStatus(data.status)) {
+        const errorMessage = this.formatLeopardsApiError(
+          data.error,
+          'Leopards trackBookedPacket failed',
+        );
+        this.logger.warn(
+          `Leopards trackShipment non-success cn=${cn}: ${errorMessage}`,
+        );
+        return this.buildTrackUnavailableFallback(cn, errorMessage);
+      }
+
+      const packetList = Array.isArray(data.packet_list)
+        ? data.packet_list
+        : [];
+      if (packetList.length === 0) {
+        this.logger.warn(`Leopards trackShipment empty packet_list cn=${cn}`);
+        return this.buildTrackUnavailableFallback(
+          cn,
+          'Empty packet_list from Leopards',
+        );
+      }
+
+      const first =
+        packetList[0] && typeof packetList[0] === 'object' ? packetList[0] : {};
+
+      const status =
+        this.pickTrackString(
+          first.booked_packet_status,
+          first.packet_status,
+          first.status,
+        ) || 'BOOKED';
+      const destination = this.pickTrackString(
+        first.destination_city_name,
+        first.destination_city,
+        first.Destination,
+      );
+      const consigneeName = this.pickTrackString(
+        first.consignment_name_eng,
+        first.consignee_name,
+        first.Consignee_Name,
+      );
+      const bookingDate = this.pickTrackString(
+        first.booking_date,
+        first.booked_packet_date,
+      );
+      const cnFromApi = this.pickTrackString(
+        first.track_number,
+        first.cn_number,
+      );
+      const events = this.parseTrackingEvents(first);
+
+      return {
+        success: true,
+        cnNumber: cnFromApi || cn,
+        currentStatus: status,
+        message: null,
+        destination,
+        consigneeName,
+        bookingDate,
+        events,
+        trackedAt: new Date().toISOString(),
+      };
+    } catch (error) {
+      if (error instanceof BadRequestException) throw error;
+      const message =
+        error instanceof Error ? error.message : 'Leopards track failed';
+      this.logger.error(
+        `Leopards trackShipment exception cn=${cn}: ${message}`,
+      );
+      return this.buildTrackUnavailableFallback(cn, message);
+    }
+  }
+
+  private buildTrackUnavailableFallback(
+    cnNumber: string,
+    debugReason: string,
+  ): LeopardsTrackResult {
+    const message =
+      'Tracking details not yet scanned or unavailable on Staging.';
+    this.logger.warn(
+      `Leopards trackShipment fallback cn=${cnNumber} reason=${debugReason}`,
+    );
+    return {
+      success: false,
+      cnNumber,
+      currentStatus: 'BOOKED',
+      message,
+      destination: null,
+      consigneeName: null,
+      bookingDate: null,
+      events: [],
+      trackedAt: new Date().toISOString(),
+    };
+  }
+
+  private isLeopardsSuccessStatus(status: unknown): boolean {
+    if (status === 1 || status === '1') return true;
+    if (typeof status === 'string' && status.toLowerCase() === 'success') {
+      return true;
+    }
+    return false;
+  }
+
+  private parseTrackingEvents(
+    packet: Record<string, unknown>,
+  ): LeopardsTrackEvent[] {
+    const detailRaw =
+      packet['Tracking Detail'] ??
+      packet['TrackingDetail'] ??
+      packet.tracking_detail ??
+      packet.tracking_details ??
+      packet.activities ??
+      [];
+
+    const details = Array.isArray(detailRaw) ? detailRaw : [];
+    const events: LeopardsTrackEvent[] = [];
+
+    for (const item of details) {
+      if (!item || typeof item !== 'object' || Array.isArray(item)) {
+        continue;
+      }
+      const row = item as Record<string, unknown>;
+      const status =
+        this.pickTrackString(row.Status, row.status, row.activity_status) ||
+        'Update';
+      const activityDate = this.pickTrackString(
+        row.Activity_Date,
+        row.activity_date,
+        row.Date,
+      );
+      const activityTime = this.pickTrackString(
+        row.Activity_Time,
+        row.activity_time,
+        row.Time,
+      );
+      const activityAt =
+        this.pickTrackString(
+          row.Activity_datetime,
+          row.activity_datetime,
+          row.datetime,
+        ) ||
+        [activityDate, activityTime].filter(Boolean).join(' ') ||
+        null;
+
+      const location =
+        this.pickTrackString(
+          row.Location,
+          row.location,
+          row.City,
+          row.city,
+          row.Station,
+        ) || this.extractLocationFromStatus(status);
+
+      const receiver = this.pickTrackString(
+        row.Reciever_Name,
+        row.Receiver_Name,
+      );
+      const remarks =
+        this.pickTrackString(
+          row.Reason,
+          row.reason,
+          row.Remarks,
+          row.remarks,
+        ) || (receiver ? `Receiver: ${receiver}` : null);
+
+      events.push({
+        status,
+        location,
+        activityDate,
+        activityTime,
+        activityAt,
+        remarks,
+      });
+    }
+    return events;
+  }
+
+  private extractLocationFromStatus(status: string): string | null {
+    const match =
+      status.match(/\bin\s+(.+)$/i) || status.match(/\bto\s+(.+)$/i);
+    return match?.[1]?.trim() || null;
+  }
+
+  private pickTrackString(...values: Array<unknown>): string | null {
+    for (const value of values) {
+      if (typeof value === 'string' && value.trim()) {
+        return value.trim();
+      }
+      if (typeof value === 'number' && Number.isFinite(value)) {
+        return String(value);
+      }
+    }
+    return null;
+  }
+
+  /**
    * Fetch Leopards city list. Returns [] (does not throw) when the API fails
    * or the payload shape is unexpected — callers fall back to static IDs.
    */
@@ -626,8 +877,7 @@ export class LeopardsShippingService {
         !Array.isArray(candidate)
       ) {
         const nested = candidate as Record<string, unknown>;
-        const nestedList =
-          nested.city_list ?? nested.cityList ?? nested.cities;
+        const nestedList = nested.city_list ?? nested.cityList ?? nested.cities;
         if (Array.isArray(nestedList)) {
           list = nestedList;
           break;

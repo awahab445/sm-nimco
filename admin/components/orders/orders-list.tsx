@@ -661,18 +661,18 @@ export function OrdersList() {
                     {o.shipping?.trackingNumber ? (
                       <div className="mt-0.5 text-xs text-sky-700 dark:text-sky-400">
                         CN:{' '}
-                        {o.shipping.trackingUrl ? (
-                          <a
-                            href={o.shipping.trackingUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="underline"
-                          >
-                            {o.shipping.trackingNumber}
-                          </a>
-                        ) : (
-                          o.shipping.trackingNumber
-                        )}
+                        <a
+                          href={
+                            o.shipping.trackingUrl?.trim() ||
+                            `https://www.leopardscourier.com/tracking/?cn=${encodeURIComponent(o.shipping.trackingNumber)}`
+                          }
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="underline"
+                          title="Open Leopards online tracking"
+                        >
+                          {o.shipping.trackingNumber}
+                        </a>
                       </div>
                     ) : null}
                   </td>

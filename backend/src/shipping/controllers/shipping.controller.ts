@@ -32,6 +32,7 @@ import {
 } from '../dto/customer-group.dto';
 import { BookLeopardsDto } from '../dto/book-leopards.dto';
 import { BulkBookLeopardsDto } from '../dto/bulk-book-leopards.dto';
+import { TrackLeopardsDto } from '../dto/track-leopards.dto';
 import { BulkShippingLabelsDto } from '../../order/dto/bulk-shipping-labels.dto';
 import { AdminJwtAuthGuard } from '../../admin/guards/admin-jwt-auth.guard';
 import { AdminPermissionsGuard } from '../../admin/guards/admin-permissions.guard';
@@ -312,14 +313,27 @@ export class AdminShippingController {
   }
 
   /**
-   * Track booked packet(s) via Leopards Merchant API
+   * Track booked packet via Leopards Merchant API (normalized for admin modal)
    * POST /admin/shipping/leopards/track
+   * Body: `{ trackingNumber }` (preferred) or `{ trackNumbers }`
    */
   @Post('leopards/track')
   @RequirePermissions('shipping.manage')
   @HttpCode(HttpStatus.OK)
-  async trackLeopards(@Body() body: { trackNumbers: string | string[] }) {
-    return this.leopardsShippingService.trackBookedPacket(body.trackNumbers);
+  async trackLeopards(@Body() body: TrackLeopardsDto) {
+    const fromTracking = body.trackingNumber?.trim();
+    const fromTrackNumbers = Array.isArray(body.trackNumbers)
+      ? body.trackNumbers.map((n) => String(n).trim()).find(Boolean)
+      : typeof body.trackNumbers === 'string'
+        ? body.trackNumbers.trim()
+        : '';
+    const trackingNumber = fromTracking || fromTrackNumbers;
+    if (!trackingNumber) {
+      throw new BadRequestException(
+        'trackingNumber (or trackNumbers) is required',
+      );
+    }
+    return this.leopardsShippingService.trackShipment(trackingNumber);
   }
 
   // ============================================================================

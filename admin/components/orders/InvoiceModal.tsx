@@ -176,20 +176,18 @@ export function InvoiceModal({ order, open, onClose }: InvoiceModalProps) {
                     {order.shipping.courierName
                       ? `${order.shipping.courierName} · `
                       : null}
-                    {order.shipping.trackingUrl ? (
-                      <a
-                        href={order.shipping.trackingUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="font-medium text-sky-700 underline"
-                      >
-                        CN {order.shipping.trackingNumber}
-                      </a>
-                    ) : (
-                      <span className="font-medium">
-                        CN {order.shipping.trackingNumber}
-                      </span>
-                    )}
+                    <a
+                      href={
+                        order.shipping.trackingUrl?.trim() ||
+                        `https://www.leopardscourier.com/tracking/?cn=${encodeURIComponent(order.shipping.trackingNumber)}`
+                      }
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-medium text-sky-700 underline"
+                      title="Open Leopards online tracking"
+                    >
+                      CN {order.shipping.trackingNumber}
+                    </a>
                   </div>
                 </div>
               ) : null}
