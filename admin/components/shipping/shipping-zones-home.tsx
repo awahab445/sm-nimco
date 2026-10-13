@@ -42,7 +42,18 @@ export function ShippingZonesHome() {
             <Link href="/shipping/orders" className="font-medium underline">
               order tools
             </Link>
-            ).
+            ).{' '}
+            <Link href="/shipping/loadsheet" className="font-medium underline">
+              Loadsheet
+            </Link>
+            {' · '}
+            <Link
+              href="/shipping/loadsheets-history"
+              className="font-medium underline"
+            >
+              Loadsheets History
+            </Link>
+            .
           </p>
         </div>
         <div className="flex flex-wrap gap-2">

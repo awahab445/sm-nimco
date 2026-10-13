@@ -43,21 +43,36 @@ export async function fetchApi<T>(
     if (token) headers.set('Authorization', `Bearer ${token}`);
   }
 
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);
+  const timeoutController = new AbortController();
+  let timedOut = false;
+  const timeoutId = setTimeout(() => {
+    timedOut = true;
+    timeoutController.abort();
+  }, DEFAULT_TIMEOUT_MS);
+
+  const onExternalAbort = () => timeoutController.abort();
+  init.signal?.addEventListener('abort', onExternalAbort);
+
   const response = await fetch(url, {
     ...init,
     credentials: 'include',
     headers,
-    signal: init.signal ?? controller.signal,
-  }).catch((err: unknown) => {
-    if (err instanceof DOMException && err.name === 'AbortError') {
-      throw new ApiError('Request timed out. Please try again.', 408);
-    }
-    throw err;
-  }).finally(() => {
-    clearTimeout(timeoutId);
-  });
+    signal: timeoutController.signal,
+  })
+    .catch((err: unknown) => {
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        if (timedOut && !init.signal?.aborted) {
+          throw new ApiError('Request timed out. Please try again.', 408);
+        }
+        // Caller cancelled (e.g. stale filter request) — rethrow so UI can ignore
+        throw err;
+      }
+      throw err;
+    })
+    .finally(() => {
+      clearTimeout(timeoutId);
+      init.signal?.removeEventListener('abort', onExternalAbort);
+    });
 
   if (response.status === 401 && withAuth) {
     void clearSession();

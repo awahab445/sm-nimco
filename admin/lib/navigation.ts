@@ -135,6 +135,20 @@ export const adminNavGroups: NavGroup[] = [
         requirePermission: ['shipping.manage'],
       },
       {
+        href: '/shipping/loadsheet',
+        label: 'Loadsheet',
+        description: 'Leopards courier pickup loadsheet',
+        phase: 'J',
+        requirePermission: ['shipping.manage'],
+      },
+      {
+        href: '/shipping/loadsheets-history',
+        label: 'Loadsheets History',
+        description: 'Reprint saved Leopards loadsheets',
+        phase: 'J',
+        requirePermission: ['shipping.manage'],
+      },
+      {
         href: '/tax',
         label: 'Tax',
         description: 'Tax classes and rates',

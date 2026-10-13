@@ -11,9 +11,11 @@ import { ShippingService } from './services/shipping.service';
 import { ShippingRateService } from './services/shipping-rate.service';
 import { CourierService } from './services/courier.service';
 import { LeopardsShippingService } from './services/leopards-shipping.service';
+import { LeopardsLoadsheetService } from './services/leopards-loadsheet.service';
 import { CourierCityService } from './services/courier-city.service';
 import { CourierCityController } from './controllers/courier-city.controller';
 import { AdminCourierZoneController } from './controllers/admin-courier-zone.controller';
+import { AdminLeopardsLoadsheetController } from './controllers/admin-leopards-loadsheet.controller';
 import { ShippingEligibilityEvaluator } from './services/shipping-eligibility-evaluator.service';
 import { ShippingEventHandlers } from './events/shipping.handlers';
 import { CatalogModule } from '../catalog/catalog.module';
@@ -43,12 +45,14 @@ import { AdminZoneConfigController } from './controllers/admin-zone-config.contr
     CourierCityController,
     AdminCourierZoneController,
     AdminZoneConfigController,
+    AdminLeopardsLoadsheetController,
   ],
   providers: [
     ShippingService,
     ShippingRateService,
     CourierService,
     LeopardsShippingService,
+    LeopardsLoadsheetService,
     CourierCityService,
     ZoneConfigService,
     ShippingEligibilityEvaluator,
@@ -62,6 +66,7 @@ import { AdminZoneConfigController } from './controllers/admin-zone-config.contr
     ShippingRateService,
     CourierService,
     LeopardsShippingService,
+    LeopardsLoadsheetService,
     CourierCityService,
     ZoneConfigService,
     ShippingEligibilityEvaluator,

@@ -279,6 +279,8 @@ model Order {
   userAgent         String?        @map("user_agent")
   notes             String?
   metadata          Json           @default("{}")
+  /// Leopards generateLoadSheet id once the order is on a pickup loadsheet.
+  courierLoadSheetId String?       @map("courier_load_sheet_id") @db.VarChar(255)
   createdAt         DateTime       @default(now()) @map("created_at")
   updatedAt         DateTime       @updatedAt @map("updated_at")
   cancelledAt       DateTime?      @map("cancelled_at")
@@ -291,6 +293,7 @@ model Order {
   @@index([orderNumber])
   @@index([customerId])
   @@index([status])
+  @@index([courierLoadSheetId])
   @@index([createdAt(sort: Desc)])
   @@map("orders")
 }
@@ -529,6 +532,32 @@ model OrderShipping {
   @@index([courierCode])
   @@index([shippedAt])
   @@map("order_shipping")
+}
+
+/// Persisted Leopards loadsheet for reprint without re-booking.
+model LeopardLoadsheet {
+  id              String   @id @default(uuid())
+  /// Leopards `load_sheet_id` / challan reference.
+  referenceNumber String   @map("reference_number") @db.VarChar(255)
+  trackingNumbers Json     @map("tracking_numbers")
+  orderIds        Json     @map("order_ids")
+  /// Official PDF bytes when downloadable at generation time.
+  pdfData         Bytes?   @map("pdf_data")
+  hasStoredPdf    Boolean  @default(false) @map("has_stored_pdf")
+  pdfUrl          String?  @map("pdf_url")
+  printUrl        String?  @map("print_url")
+  html            String?
+  /// Snapshot of packets + totals for local BPS report reprint.
+  packetSnapshot  Json     @map("packet_snapshot")
+  companyName     String?  @map("company_name") @db.VarChar(255)
+  accountNumber   String?  @map("account_number") @db.VarChar(50)
+  packetCount     Int      @map("packet_count")
+  metadata        Json     @default("{}")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@index([referenceNumber])
+  @@index([createdAt(sort: Desc)])
+  @@map("leopard_loadsheets")
 }
 
 model ShippingMethodCustomerGroup {

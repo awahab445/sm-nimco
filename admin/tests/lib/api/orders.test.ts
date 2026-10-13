@@ -50,13 +50,15 @@ describe('orders API', () => {
       customerId: 'c1',
       status: 'processing',
       paymentStatus: 'paid',
+      search: 'ORD-2026',
+      cityRegion: 'karachi',
       page: 2,
       limit: 5,
       sortBy: 'grandTotal',
       sortOrder: 'desc',
     });
     expectLastFetch(fetchMock, {
-      path: '/admin/orders?customerId=c1&status=processing&paymentStatus=paid&page=2&limit=5&sortBy=grandTotal&sortOrder=desc',
+      path: '/admin/orders?customerId=c1&status=processing&paymentStatus=paid&search=ORD-2026&cityRegion=karachi&page=2&limit=5&sortBy=grandTotal&sortOrder=desc',
     });
   });
 

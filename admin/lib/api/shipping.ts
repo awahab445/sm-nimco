@@ -429,3 +429,171 @@ export async function removeMethodCustomerGroup(methodId: string, customerGroupI
     { method: 'DELETE' },
   );
 }
+
+export type LoadsheetOrderStatusFilter =
+  | 'pending_loadsheet'
+  | 'on_loadsheet'
+  | 'all';
+
+export type LoadsheetBookedOrder = {
+  id: string;
+  orderNumber: string;
+  customerName: string;
+  destinationCity: string;
+  cnNumber: string;
+  serviceType: string;
+  shipperName?: string;
+  pieces?: number;
+  weightGrams?: number;
+  codAmount: number;
+  currency: string;
+  loadSheetId: string | null;
+  bookedAt: string | null;
+  updatedAt: string;
+};
+
+export type LoadsheetBookedOrdersResponse = {
+  data: LoadsheetBookedOrder[];
+  meta: { total: number };
+};
+
+export type GenerateLoadsheetBody = {
+  cnNumbers?: string[];
+  orderIds?: string[];
+  courierName?: string;
+  courierCode?: string;
+};
+
+export type GenerateLoadsheetResult = {
+  id?: string;
+  loadSheetId: string;
+  pdfUrl: string | null;
+  html: string | null;
+  printUrl: string | null;
+  officialUrl?: string | null;
+  hasStoredPdf?: boolean;
+  companyName?: string;
+  accountNumber?: string;
+  cnNumbers: string[];
+  orderIds: string[];
+  packets: LoadsheetBookedOrder[];
+  totals: {
+    packetCount: number;
+    totalPieces?: number;
+    totalCod: number;
+    currency: string;
+  };
+  generatedAt: string;
+};
+
+export type LoadsheetHistoryRow = {
+  id: string;
+  loadSheetId: string;
+  packetCount: number;
+  totalCod?: number;
+  currency?: string;
+  trackingNumbers: string[];
+  hasStoredPdf: boolean;
+  officialUrl: string | null;
+  createdAt: string;
+};
+
+export type LoadsheetHistoryResponse = {
+  data: LoadsheetHistoryRow[];
+  meta: { total: number };
+};
+
+export async function fetchLeopardsBookedOrders(params?: {
+  dateFrom?: string;
+  dateTo?: string;
+  status?: LoadsheetOrderStatusFilter;
+}) {
+  const sp = new URLSearchParams();
+  if (params?.dateFrom) sp.set('dateFrom', params.dateFrom);
+  if (params?.dateTo) sp.set('dateTo', params.dateTo);
+  if (params?.status) sp.set('status', params.status);
+  const q = sp.toString();
+  return fetchApi<LoadsheetBookedOrdersResponse>(
+    `/admin/shipping/loadsheets/booked-packets${q ? `?${q}` : ''}`,
+  );
+}
+
+export async function generateLeopardsLoadsheet(body: GenerateLoadsheetBody) {
+  return fetchApi<GenerateLoadsheetResult>(
+    '/admin/shipping/loadsheets/generate',
+    {
+      method: 'POST',
+      body: JSON.stringify(body),
+    },
+  );
+}
+
+export async function fetchLeopardsLoadsheetHistory() {
+  return fetchApi<LoadsheetHistoryResponse>(
+    '/admin/shipping/loadsheets/history',
+  );
+}
+
+export async function fetchLeopardsLoadsheetManifest(id: string) {
+  return fetchApi<GenerateLoadsheetResult>(
+    `/admin/shipping/loadsheets/${encodeURIComponent(id)}`,
+  );
+}
+
+/** Opens stored/re-fetched loadsheet PDF in a new tab (no new booking). */
+export async function openLeopardsLoadsheetReprintPdf(id: string) {
+  const API_BASE_URL =
+    process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+  const token = getToken();
+  const headers: HeadersInit = {};
+  if (token) headers.Authorization = `Bearer ${token}`;
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 60_000);
+
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/admin/shipping/loadsheets/${encodeURIComponent(id)}/print`,
+      {
+        method: 'GET',
+        credentials: 'include',
+        headers,
+        signal: controller.signal,
+      },
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      const rawMessage = (errorData as { message?: unknown })?.message;
+      const message =
+        typeof rawMessage === 'string'
+          ? rawMessage
+          : Array.isArray(rawMessage)
+            ? rawMessage.join(', ')
+            : `Request failed: ${response.statusText}`;
+      throw new ApiError(message, response.status, errorData);
+    }
+
+    const blob = await response.blob();
+    const pdfBlob =
+      blob.type === 'application/pdf'
+        ? blob
+        : new Blob([blob], { type: 'application/pdf' });
+    const url = URL.createObjectURL(pdfBlob);
+    const opened = window.open(url, '_blank', 'noopener,noreferrer');
+    if (!opened) {
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = `leopards-loadsheet-${id}.pdf`;
+      anchor.click();
+    }
+    setTimeout(() => URL.revokeObjectURL(url), 60_000);
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      throw new ApiError('Loadsheet PDF reprint timed out.', 408);
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}

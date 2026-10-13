@@ -6,6 +6,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../catalog/services/prisma.service';
 import { CartRedisService } from '../../cart/services/cart.redis';
 import { TaxCalculationService } from '../../tax/services/calculation.service';
@@ -27,6 +28,60 @@ import {
 import { OrderCreatedEvent as InventoryOrderCreatedEvent } from '../../inventory/events/inventory.events';
 import { isCustomOrderItemMetadata } from '../../shipping/utils/shipping-weight';
 import { isAdminManualOrderSource } from '../constants/order.constants';
+
+type OrderCityRegionFilter = 'karachi' | 'out_of_karachi';
+
+function escapeIlikePattern(value: string): string {
+  return value.replace(/\\/g, '\\\\').replace(/%/g, '\\%').replace(/_/g, '\\_');
+}
+
+function normalizeCityRegion(
+  value?: string | null,
+): OrderCityRegionFilter | undefined {
+  if (!value?.trim()) return undefined;
+  const normalized = value.trim().toLowerCase().replace(/\s+/g, '_');
+  if (normalized === 'karachi') return 'karachi';
+  if (normalized === 'out_of_karachi' || normalized === 'outstation') {
+    return 'out_of_karachi';
+  }
+  return undefined;
+}
+
+/**
+ * Safe text extraction from a JSON address column path.
+ * `columnSql` must be a trusted identifier (e.g. o.shipping_address).
+ * Null / non-object JSON → empty string (never throws).
+ */
+function addressJsonTextSql(columnSql: string, key: string): Prisma.Sql {
+  const safeKey = key.replace(/[^a-zA-Z0-9_]/g, '');
+  return Prisma.raw(`
+    COALESCE(
+      CASE
+        WHEN ${columnSql} IS NULL THEN NULL
+        WHEN jsonb_typeof(COALESCE(${columnSql}::jsonb, 'null'::jsonb)) = 'object'
+          THEN ${columnSql}->>'${safeKey}'
+        ELSE NULL
+      END,
+      ''
+    )
+  `);
+}
+
+/** LOWER(city) for Karachi / Out of Karachi matching. */
+function addressCityLowerSql(columnSql: string): Prisma.Sql {
+  const safeKey = 'city';
+  return Prisma.raw(`
+    LOWER(COALESCE(
+      CASE
+        WHEN ${columnSql} IS NULL THEN NULL
+        WHEN jsonb_typeof(COALESCE(${columnSql}::jsonb, 'null'::jsonb)) = 'object'
+          THEN ${columnSql}->>'${safeKey}'
+        ELSE NULL
+      END,
+      ''
+    ))
+  `);
+}
 
 @Injectable()
 export class OrderService {
@@ -508,6 +563,73 @@ export class OrderService {
   }
 
   /**
+   * Resolve order IDs matching search and/or city region via ILIKE on scalars + JSON.
+   * Uses COALESCE / jsonb_typeof so malformed or null address JSON never crashes the query.
+   */
+  private async findOrderIdsBySearchAndCity(opts: {
+    search?: string;
+    cityRegion?: OrderCityRegionFilter;
+  }): Promise<string[]> {
+    const conditions: Prisma.Sql[] = [];
+
+    if (opts.search) {
+      const term = `%${escapeIlikePattern(opts.search)}%`;
+      conditions.push(Prisma.sql`(
+        o.order_number ILIKE ${term} ESCAPE '\\'
+        OR o.customer_email ILIKE ${term} ESCAPE '\\'
+        OR COALESCE(o.customer_name, '') ILIKE ${term} ESCAPE '\\'
+        OR COALESCE(os.tracking_number, '') ILIKE ${term} ESCAPE '\\'
+        OR COALESCE(c.first_name, '') ILIKE ${term} ESCAPE '\\'
+        OR COALESCE(c.last_name, '') ILIKE ${term} ESCAPE '\\'
+        OR COALESCE(c.email, '') ILIKE ${term} ESCAPE '\\'
+        OR COALESCE(c.phone, '') ILIKE ${term} ESCAPE '\\'
+        OR ${addressJsonTextSql('o.shipping_address', 'firstName')} ILIKE ${term} ESCAPE '\\'
+        OR ${addressJsonTextSql('o.shipping_address', 'lastName')} ILIKE ${term} ESCAPE '\\'
+        OR ${addressJsonTextSql('o.shipping_address', 'phone')} ILIKE ${term} ESCAPE '\\'
+        OR TRIM(CONCAT(
+          ${addressJsonTextSql('o.shipping_address', 'firstName')},
+          ' ',
+          ${addressJsonTextSql('o.shipping_address', 'lastName')}
+        )) ILIKE ${term} ESCAPE '\\'
+        OR ${addressJsonTextSql('o.billing_address', 'firstName')} ILIKE ${term} ESCAPE '\\'
+        OR ${addressJsonTextSql('o.billing_address', 'lastName')} ILIKE ${term} ESCAPE '\\'
+        OR ${addressJsonTextSql('o.billing_address', 'phone')} ILIKE ${term} ESCAPE '\\'
+        OR TRIM(CONCAT(
+          ${addressJsonTextSql('o.billing_address', 'firstName')},
+          ' ',
+          ${addressJsonTextSql('o.billing_address', 'lastName')}
+        )) ILIKE ${term} ESCAPE '\\'
+      )`);
+    }
+
+    if (opts.cityRegion === 'karachi') {
+      conditions.push(Prisma.sql`(
+        ${addressCityLowerSql('o.shipping_address')} LIKE ANY (ARRAY['%karachi%', '%khi%'])
+        OR ${addressCityLowerSql('o.billing_address')} LIKE ANY (ARRAY['%karachi%', '%khi%'])
+      )`);
+    } else if (opts.cityRegion === 'out_of_karachi') {
+      conditions.push(Prisma.sql`NOT (
+        ${addressCityLowerSql('o.shipping_address')} LIKE ANY (ARRAY['%karachi%', '%khi%'])
+        OR ${addressCityLowerSql('o.billing_address')} LIKE ANY (ARRAY['%karachi%', '%khi%'])
+      )`);
+    }
+
+    if (conditions.length === 0) {
+      return [];
+    }
+
+    const rows = await this.prisma.$queryRaw<{ id: string }[]>`
+      SELECT o.id
+      FROM orders o
+      LEFT JOIN order_shipping os ON os.order_id = o.id
+      LEFT JOIN customers c ON c.id = o.customer_id
+      WHERE ${Prisma.join(conditions, ' AND ')}
+    `;
+
+    return rows.map((row) => row.id);
+  }
+
+  /**
    * List orders (admin or user-scoped)
    */
   async findAll(
@@ -546,6 +668,30 @@ export class OrderService {
 
     const sortBy = query.sortBy || 'createdAt';
     const sortOrder = query.sortOrder || 'desc';
+
+    const search = query.search?.trim() || undefined;
+    const cityRegion = normalizeCityRegion(
+      query.cityRegion ?? query.city,
+    );
+
+    if (search || cityRegion) {
+      const matchingIds = await this.findOrderIdsBySearchAndCity({
+        search,
+        cityRegion,
+      });
+      if (matchingIds.length === 0) {
+        return {
+          data: [],
+          meta: {
+            total: 0,
+            page,
+            limit,
+            totalPages: 0,
+          },
+        };
+      }
+      where.id = { in: matchingIds };
+    }
 
     const [orders, total] = await Promise.all([
       this.prisma.order.findMany({

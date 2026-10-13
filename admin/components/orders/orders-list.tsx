@@ -10,6 +10,7 @@ import {
   downloadBulkPackageInserts,
   orderStatusLabel,
   type Order,
+  type OrderCityRegion,
   type OrderStatus,
   type PaymentStatus,
 } from '@/lib/api/orders';
@@ -94,6 +95,9 @@ export function OrdersList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [searchInput, setSearchInput] = useState('');
+  const [search, setSearch] = useState('');
+  const [cityRegion, setCityRegion] = useState<OrderCityRegion | ''>('');
   const [statusFilter, setStatusFilter] = useState<OrderStatus | ''>('');
   const [paymentFilter, setPaymentFilter] = useState<PaymentStatus | ''>('');
   const [sortBy, setSortBy] = useState<'createdAt' | 'updatedAt' | 'grandTotal'>('createdAt');
@@ -119,12 +123,20 @@ export function OrdersList() {
   );
 
   useEffect(() => {
+    const t = setTimeout(() => {
+      setSearch(searchInput);
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(t);
+  }, [searchInput]);
+
+  useEffect(() => {
     setSelectedIds(new Set());
-  }, [page, customerIdFromUrl, statusFilter, paymentFilter, sortBy, sortOrder]);
+  }, [page, customerIdFromUrl, search, cityRegion, statusFilter, paymentFilter, sortBy, sortOrder]);
 
   useEffect(() => {
     setPage(1);
-  }, [customerIdFromUrl, statusFilter, paymentFilter, sortBy, sortOrder]);
+  }, [customerIdFromUrl, search, cityRegion, statusFilter, paymentFilter, sortBy, sortOrder]);
 
   useEffect(() => {
     if (!toast) return;
@@ -132,31 +144,53 @@ export function OrdersList() {
     return () => window.clearTimeout(timer);
   }, [toast]);
 
-  const load = useCallback(async () => {
-    setError(null);
-    setLoading(true);
-    try {
-      const res = await fetchAdminOrders({
-        ...(customerIdFromUrl ? { customerId: customerIdFromUrl } : {}),
-        ...(statusFilter ? { status: statusFilter } : {}),
-        ...(paymentFilter ? { paymentStatus: paymentFilter } : {}),
-        page,
-        limit: 20,
-        sortBy,
-        sortOrder,
-      });
-      setRows(res.data);
-      setMeta(res.meta);
-    } catch (e) {
-      setError(formatApiError(e));
-      setRows([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [customerIdFromUrl, statusFilter, paymentFilter, sortBy, sortOrder, page]);
+  const load = useCallback(
+    async (signal?: AbortSignal) => {
+      setError(null);
+      setLoading(true);
+      try {
+        const res = await fetchAdminOrders(
+          {
+            ...(customerIdFromUrl ? { customerId: customerIdFromUrl } : {}),
+            ...(search.trim() ? { search: search.trim() } : {}),
+            ...(cityRegion ? { cityRegion } : {}),
+            ...(statusFilter ? { status: statusFilter } : {}),
+            ...(paymentFilter ? { paymentStatus: paymentFilter } : {}),
+            page,
+            limit: 20,
+            sortBy,
+            sortOrder,
+          },
+          signal ? { signal } : undefined,
+        );
+        if (signal?.aborted) return;
+        setRows(res.data);
+        setMeta(res.meta);
+      } catch (e) {
+        if (signal?.aborted) return;
+        if (e instanceof DOMException && e.name === 'AbortError') return;
+        setError(formatApiError(e));
+        setRows([]);
+      } finally {
+        if (!signal?.aborted) setLoading(false);
+      }
+    },
+    [
+      customerIdFromUrl,
+      search,
+      cityRegion,
+      statusFilter,
+      paymentFilter,
+      sortBy,
+      sortOrder,
+      page,
+    ],
+  );
 
   useEffect(() => {
-    void load();
+    const controller = new AbortController();
+    void load(controller.signal);
+    return () => controller.abort();
   }, [load]);
 
   const clearCustomerFilterHref =
@@ -453,6 +487,64 @@ export function OrdersList() {
       ) : null}
 
       <div className="mt-6 flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-end">
+        <div className="min-w-[200px] flex-1">
+          <label className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+            Search
+          </label>
+          <div className="relative mt-1">
+            <input
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              placeholder="Search orders..."
+              className="w-full rounded-lg border border-zinc-300 bg-white py-2 pl-3 pr-9 text-sm dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-50"
+              aria-label="Search orders"
+            />
+            {searchInput ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchInput('');
+                  setSearch('');
+                  setPage(1);
+                }}
+                className="absolute inset-y-0 right-0 flex items-center px-2.5 text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-100"
+                aria-label="Clear search"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="h-4 w-4"
+                  aria-hidden="true"
+                >
+                  <path d="M18 6 6 18" />
+                  <path d="m6 6 12 12" />
+                </svg>
+              </button>
+            ) : null}
+          </div>
+        </div>
+        <div className="w-full sm:w-48">
+          <label className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+            City / Region
+          </label>
+          <select
+            value={cityRegion}
+            onChange={(e) => {
+              setCityRegion(e.target.value as OrderCityRegion | '');
+              setPage(1);
+            }}
+            className="mt-1 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-50"
+          >
+            <option value="">All</option>
+            <option value="karachi">Karachi</option>
+            <option value="out_of_karachi">Out of Karachi</option>
+          </select>
+        </div>
         <div className="w-full sm:w-44">
           <label className="text-xs font-medium text-zinc-600 dark:text-zinc-400">Order status</label>
           <select

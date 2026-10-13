@@ -1431,4 +1431,180 @@ export class LeopardsShippingService {
       updatedAt: shipping.updatedAt,
     };
   }
+
+  /**
+   * Download a remote URL as PDF bytes (used to cache loadsheet PDFs for reprint).
+   */
+  async fetchPdfFromUrl(url: string): Promise<Buffer> {
+    const target = String(url ?? '').trim();
+    if (!target.startsWith('http')) {
+      throw new BadRequestException(
+        'A valid http(s) URL is required to fetch a PDF',
+      );
+    }
+
+    this.logger.log(`Fetching Leopards PDF from URL`);
+
+    try {
+      const response = await firstValueFrom(
+        this.httpService.get<ArrayBuffer>(target, {
+          responseType: 'arraybuffer',
+          timeout: 45_000,
+          maxRedirects: 5,
+          headers: { Accept: 'application/pdf,*/*' },
+        }),
+      );
+
+      const buffer = Buffer.from(response.data);
+      if (
+        buffer.length < 5 ||
+        buffer.subarray(0, 4).toString('utf8') !== '%PDF'
+      ) {
+        const contentType = String(
+          response.headers?.['content-type'] ?? '',
+        ).toLowerCase();
+        throw new BadRequestException(
+          `URL did not return a PDF` +
+            (contentType ? ` (content-type: ${contentType})` : ''),
+        );
+      }
+
+      return buffer;
+    } catch (error) {
+      if (error instanceof BadRequestException) throw error;
+      this.logger.error(
+        `Leopards PDF URL fetch failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      throw new ServiceUnavailableException(
+        'Failed to download Leopards PDF from URL',
+      );
+    }
+  }
+
+  /**
+   * Generate a load sheet for one or more CN (tracking) numbers.
+   * POST `${LEOPARDS_API_URL}/generateLoadSheet/format/json/`
+   */
+  async generateLoadsheet(
+    cnNumbers: string[],
+    courierInfo?: { name?: string; code?: string },
+  ): Promise<{
+    loadSheetId: string;
+    pdfUrl: string | null;
+    html: string | null;
+    printUrl: string | null;
+    raw: Record<string, unknown>;
+  }> {
+    this.assertConfigured();
+
+    const cnList = (cnNumbers ?? [])
+      .map((cn) => String(cn ?? '').trim())
+      .filter(Boolean);
+    if (cnList.length === 0) {
+      throw new BadRequestException(
+        'At least one CN (tracking) number is required to generate a loadsheet.',
+      );
+    }
+
+    const { apiKey, apiPassword } = this.getConfig();
+    const url = this.buildLeopardsApiUrl('generateLoadSheet');
+    const courierName =
+      cleanLeopardsEnvValue(courierInfo?.name) ||
+      cleanLeopardsEnvValue(process.env.LEOPARDS_COURIER_NAME) ||
+      'LEOPARDS';
+    const courierCode =
+      cleanLeopardsEnvValue(courierInfo?.code) ||
+      cleanLeopardsEnvValue(process.env.LEOPARDS_COURIER_CODE) ||
+      'LEOPARDS';
+
+    const body = {
+      api_key: apiKey,
+      api_password: apiPassword,
+      cn_numbers: cnList,
+      courier_name: courierName,
+      courier_code: courierCode,
+    };
+
+    this.logger.log(
+      `Leopards generateLoadsheet request cnCount=${cnList.length} courier_name=${courierName} courier_code=${courierCode}`,
+    );
+
+    try {
+      const response = await firstValueFrom(
+        this.httpService.post<Record<string, unknown>>(url, body, {
+          timeout: 30_000,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+      );
+
+      const data = (response.data ?? {}) as Record<string, unknown>;
+      if (!this.isLeopardsSuccessStatus(data.status)) {
+        const errorMessage = this.formatLeopardsApiError(
+          data.error ?? data.message ?? data.error_msg,
+          'Leopards generateLoadsheet failed',
+        );
+        this.logger.error(
+          `Leopards generateLoadsheet rejected: ${errorMessage}`,
+        );
+        throw new BadRequestException(errorMessage);
+      }
+
+      const loadSheetId = String(data.load_sheet_id ?? '').trim();
+      if (!loadSheetId) {
+        throw new BadRequestException(
+          'Leopards generateLoadsheet succeeded but returned no load_sheet_id',
+        );
+      }
+
+      const firstString = (...values: unknown[]): string | null => {
+        for (const value of values) {
+          if (typeof value === 'string' && value.trim()) return value.trim();
+        }
+        return null;
+      };
+
+      const pdfUrl = firstString(
+        data.pdf_url,
+        data.pdfUrl,
+        data.url,
+        data.sheet_url,
+        data.load_sheet_url,
+        data.slip_link,
+      );
+      const html = firstString(data.html, data.load_sheet_html);
+      const printUrl =
+        firstString(
+          data.print_url,
+          data.print_view,
+          data.sheet_url,
+          data.url,
+          pdfUrl,
+        ) || null;
+
+      this.logger.log(
+        `Leopards generateLoadsheet success loadSheetId=${loadSheetId} hasPdf=${Boolean(pdfUrl)} hasHtml=${Boolean(html)}`,
+      );
+
+      return {
+        loadSheetId,
+        pdfUrl,
+        html,
+        printUrl,
+        raw: data,
+      };
+    } catch (error) {
+      if (
+        error instanceof BadRequestException ||
+        error instanceof ServiceUnavailableException
+      ) {
+        throw error;
+      }
+      this.logger.error(
+        `Leopards generateLoadsheet network error: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      throw new ServiceUnavailableException(
+        'Failed to reach Leopards Courier generateLoadSheet API',
+      );
+    }
+  }
 }

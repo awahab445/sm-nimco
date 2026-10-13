@@ -84,6 +84,10 @@ export type OrderShippingSummary = {
 /** Leopards fields stored under OrderShipping.metadata.leopards after booking. */
 export function getLeopardsShippingDetails(
   shipping?: OrderShippingSummary | null,
+  order?: {
+    courierLoadSheetId?: string | null;
+    metadata?: Record<string, unknown> | null;
+  } | null,
 ): {
   trackingNumber: string | null;
   trackingUrl: string | null;
@@ -104,6 +108,18 @@ export function getLeopardsShippingDetails(
     !Array.isArray(meta.leopards)
       ? (meta.leopards as Record<string, unknown>)
       : null;
+  const orderMeta =
+    order?.metadata &&
+    typeof order.metadata === 'object' &&
+    !Array.isArray(order.metadata)
+      ? order.metadata
+      : null;
+  const orderLeopards =
+    orderMeta?.leopards &&
+    typeof orderMeta.leopards === 'object' &&
+    !Array.isArray(orderMeta.leopards)
+      ? (orderMeta.leopards as Record<string, unknown>)
+      : null;
 
   const slipRaw = leopards?.slip_link ?? leopards?.slipLink ?? leopards?.labelUrl;
   const slipUrl =
@@ -113,7 +129,10 @@ export function getLeopardsShippingDetails(
     leopards?.load_sheet_id ??
     leopards?.loadSheetId ??
     meta?.courierLoadSheetId ??
-    meta?.loadSheetId;
+    meta?.loadSheetId ??
+    order?.courierLoadSheetId ??
+    orderLeopards?.loadSheetId ??
+    orderLeopards?.load_sheet_id;
   const loadSheetId =
     typeof loadRaw === 'string' && loadRaw.trim()
       ? loadRaw.trim()
@@ -136,6 +155,8 @@ export type Order = {
   customerName: string | null;
   billingAddress: OrderAddressSnapshot;
   shippingAddress: OrderAddressSnapshot;
+  /** Set when the order is included on a Leopards pickup loadsheet. */
+  courierLoadSheetId?: string | null;
   currency: string;
   subtotal: string;
   discountTotal: string;
@@ -173,27 +194,39 @@ export type OrdersListResponse = {
   meta: OrdersListMeta;
 };
 
+export type OrderCityRegion = 'karachi' | 'out_of_karachi';
+
 export type AdminOrdersQuery = {
   customerId?: string;
   status?: OrderStatus;
   paymentStatus?: PaymentStatus;
+  search?: string;
+  cityRegion?: OrderCityRegion;
   page?: number;
   limit?: number;
   sortBy?: 'createdAt' | 'updatedAt' | 'grandTotal';
   sortOrder?: 'asc' | 'desc';
 };
 
-export async function fetchAdminOrders(params?: AdminOrdersQuery) {
+export async function fetchAdminOrders(
+  params?: AdminOrdersQuery,
+  init?: { signal?: AbortSignal },
+) {
   const sp = new URLSearchParams();
   if (params?.customerId) sp.set('customerId', params.customerId);
   if (params?.status) sp.set('status', params.status);
   if (params?.paymentStatus) sp.set('paymentStatus', params.paymentStatus);
+  if (params?.search?.trim()) sp.set('search', params.search.trim());
+  if (params?.cityRegion) sp.set('cityRegion', params.cityRegion);
   if (params?.page != null) sp.set('page', String(params.page));
   if (params?.limit != null) sp.set('limit', String(params.limit));
   if (params?.sortBy) sp.set('sortBy', params.sortBy);
   if (params?.sortOrder) sp.set('sortOrder', params.sortOrder);
   const q = sp.toString();
-  return fetchApi<OrdersListResponse>(`/admin/orders${q ? `?${q}` : ''}`);
+  return fetchApi<OrdersListResponse>(
+    `/admin/orders${q ? `?${q}` : ''}`,
+    init?.signal ? { signal: init.signal } : {},
+  );
 }
 
 export async function fetchAdminOrder(id: string) {

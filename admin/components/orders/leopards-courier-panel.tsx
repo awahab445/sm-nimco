@@ -97,7 +97,7 @@ export function LeopardsCourierPanel({
     trackingUrl,
     slipUrl,
     loadSheetId,
-  } = getLeopardsShippingDetails(order.shipping);
+  } = getLeopardsShippingDetails(order.shipping, order);
   const hasCn = Boolean(trackingNumber);
   const canBook =
     !hasCn &&
