@@ -248,15 +248,12 @@ describe('LeopardsShippingService', () => {
         shipment_name_eng: 'SM Nimco & Sweets',
         shipment_email: 'info@smnimco.com',
         shipment_phone: '03442394143',
-        shipment_address:
-          'H. NO118, SEC B-3, SAEEDABAD, BALDIA TOWN, KARACHI',
+        shipment_address: 'H. NO118, SEC B-3, SAEEDABAD, BALDIA TOWN, KARACHI',
         shipper_name: 'SM Nimco & Sweets',
         shipper_email: 'info@smnimco.com',
         shipper_phone: '03442394143',
-        shipper_address:
-          'H. NO118, SEC B-3, SAEEDABAD, BALDIA TOWN, KARACHI',
-        return_address:
-          'H. NO118, SEC B-3, SAEEDABAD, BALDIA TOWN, KARACHI',
+        shipper_address: 'H. NO118, SEC B-3, SAEEDABAD, BALDIA TOWN, KARACHI',
+        return_address: 'H. NO118, SEC B-3, SAEEDABAD, BALDIA TOWN, KARACHI',
         shipper_id: '2792661',
         shipment_id: '2792661',
         consignment_name_eng: 'Ali Khan',
@@ -590,8 +587,7 @@ describe('LeopardsShippingService', () => {
         destination_city: '789',
         shipper_phone: '03442394143',
         shipper_name: 'SM Nimco & Sweets',
-        return_address:
-          'H. NO118, SEC B-3, SAEEDABAD, BALDIA TOWN, KARACHI',
+        return_address: 'H. NO118, SEC B-3, SAEEDABAD, BALDIA TOWN, KARACHI',
         shipper_id: '2792661',
         consignment_name_eng: 'Buyer Name',
         consignment_phone: '03211234567',

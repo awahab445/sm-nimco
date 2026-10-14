@@ -242,10 +242,10 @@ export function LeopardsCourierPanel({
           ) : null}
 
           {loadSheetId ? (
-            <p className="text-xs text-zinc-600 dark:text-zinc-400">
-              Load sheet ID:{' '}
-              <span className="font-mono">{loadSheetId}</span>
-            </p>
+            <div className="inline-flex max-w-full flex-wrap items-center gap-1.5 rounded-full border border-zinc-200 bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-800 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
+              <span className="text-zinc-500 dark:text-zinc-400">Load sheet ID:</span>
+              <span className="font-mono tracking-tight">{loadSheetId}</span>
+            </div>
           ) : null}
 
           <div className="flex flex-wrap gap-2">

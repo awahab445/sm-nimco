@@ -102,18 +102,32 @@ export function LeopardsLoadsheetHistoryPanel() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-6">
+    <div className="mx-auto max-w-6xl">
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
+        <div className="min-w-0 flex-1">
+          <nav
+            aria-label="Breadcrumb"
+            className="flex flex-wrap items-center gap-1.5 text-xs text-zinc-500"
+          >
+            <Link href="/shipping" className={adminUi.link}>
+              Shipping
+            </Link>
+            <span aria-hidden>/</span>
+            <Link href="/shipping/loadsheet" className={adminUi.link}>
+              Loadsheet
+            </Link>
+            <span aria-hidden>/</span>
+            <span className="text-zinc-700 dark:text-zinc-300">History</span>
+          </nav>
+          <h1 className="mt-2 text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
             Loadsheets History
           </h1>
-          <p className="mt-1 text-sm text-zinc-500">
+          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
             Reprint previously generated Leopards loadsheets without creating a
             new booking.
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex shrink-0 flex-wrap gap-2">
           <Link href="/shipping/loadsheet" className={adminUi.btnSecondary}>
             Generate new
           </Link>
@@ -152,27 +166,41 @@ export function LeopardsLoadsheetHistoryPanel() {
           <table className="w-full min-w-[800px] text-left text-sm">
             <thead className="border-b border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900/50">
               <tr>
-                <th className="px-4 py-3 font-medium">Loadsheet ID</th>
-                <th className="px-4 py-3 font-medium">Date</th>
-                <th className="px-4 py-3 font-medium">Total Shipments</th>
-                <th className="px-4 py-3 font-medium text-right">Total COD</th>
-                <th className="px-4 py-3 font-medium text-right">Actions</th>
+                <th className="px-4 py-3 font-medium text-zinc-700 dark:text-zinc-300">
+                  Loadsheet ID
+                </th>
+                <th className="px-4 py-3 font-medium text-zinc-700 dark:text-zinc-300">
+                  Date
+                </th>
+                <th className="px-4 py-3 font-medium text-zinc-700 dark:text-zinc-300">
+                  Total Shipments
+                </th>
+                <th className="px-4 py-3 font-medium text-right text-zinc-700 dark:text-zinc-300">
+                  Total COD
+                </th>
+                <th className="px-4 py-3 font-medium text-right text-zinc-700 dark:text-zinc-300">
+                  Actions
+                </th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
               {rows.map((row) => (
                 <tr
                   key={row.id}
-                  className="border-b border-zinc-100 last:border-0 dark:border-zinc-900"
+                  className="hover:bg-zinc-50/80 dark:hover:bg-zinc-900/30"
                 >
-                  <td className="px-4 py-3 font-mono text-xs">
-                    {row.loadSheetId}
+                  <td className="px-4 py-3">
+                    <span className="inline-flex max-w-full items-center rounded-full border border-zinc-200 bg-zinc-100 px-2.5 py-1 font-mono text-xs font-medium tracking-tight text-zinc-800 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
+                      {row.loadSheetId}
+                    </span>
                   </td>
-                  <td className="px-4 py-3 whitespace-nowrap">
+                  <td className="px-4 py-3 whitespace-nowrap text-zinc-700 dark:text-zinc-300">
                     {formatDateTime(row.createdAt)}
                   </td>
-                  <td className="px-4 py-3">{row.packetCount}</td>
-                  <td className="px-4 py-3 text-right tabular-nums">
+                  <td className="px-4 py-3 font-mono text-sm tabular-nums text-zinc-800 dark:text-zinc-100">
+                    {row.packetCount}
+                  </td>
+                  <td className="px-4 py-3 text-right font-mono text-sm font-medium tabular-nums tracking-tight text-zinc-900 dark:text-zinc-50">
                     {formatMoney(row.totalCod ?? 0, row.currency || 'PKR')}
                   </td>
                   <td className="px-4 py-3 text-right">

@@ -574,8 +574,11 @@ export class OrderService {
 
     if (opts.search) {
       const term = `%${escapeIlikePattern(opts.search)}%`;
+      // Compact form (no hyphens) so short ORD2610140001 and legacy ORD-… both match
+      const compactTerm = `%${escapeIlikePattern(opts.search.replace(/-/g, ''))}%`;
       conditions.push(Prisma.sql`(
         o.order_number ILIKE ${term} ESCAPE '\\'
+        OR replace(o.order_number, '-', '') ILIKE ${compactTerm} ESCAPE '\\'
         OR o.customer_email ILIKE ${term} ESCAPE '\\'
         OR COALESCE(o.customer_name, '') ILIKE ${term} ESCAPE '\\'
         OR COALESCE(os.tracking_number, '') ILIKE ${term} ESCAPE '\\'
@@ -670,9 +673,7 @@ export class OrderService {
     const sortOrder = query.sortOrder || 'desc';
 
     const search = query.search?.trim() || undefined;
-    const cityRegion = normalizeCityRegion(
-      query.cityRegion ?? query.city,
-    );
+    const cityRegion = normalizeCityRegion(query.cityRegion ?? query.city);
 
     if (search || cityRegion) {
       const matchingIds = await this.findOrderIdsBySearchAndCity({

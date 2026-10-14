@@ -8,7 +8,9 @@ import {
   deleteAdminOrder,
   downloadBulkShippingLabels,
   downloadBulkPackageInserts,
+  isManualOrderEditable,
   orderStatusLabel,
+  paymentStatusLabel,
   type Order,
   type OrderCityRegion,
   type OrderStatus,
@@ -26,6 +28,7 @@ import { formatPrice } from '@/lib/currency';
 import { InvoiceModal } from '@/components/orders/InvoiceModal';
 import { BulkBookLeopardsSummaryModal } from '@/components/orders/bulk-leopards-actions';
 import { PermissionGate } from '@/components/permission-gate';
+import { adminUi } from '@/lib/admin-ui';
 
 const LEOPARDS_SERVICE_TYPE_OPTIONS: Array<{
   value: BookLeopardsShipmentType;
@@ -446,8 +449,8 @@ export function OrdersList() {
         </div>
       ) : null}
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
           <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
             Orders
           </h1>
@@ -456,10 +459,7 @@ export function OrdersList() {
           </p>
         </div>
         <PermissionGate anyOf={['orders.create', 'orders.manage']}>
-          <Link
-            href="/orders/new"
-            className="inline-flex items-center justify-center rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
-          >
+          <Link href="/orders/new" className={`${adminUi.btnPrimary} shrink-0`}>
             Create manual order
           </Link>
         </PermissionGate>
@@ -486,16 +486,22 @@ export function OrdersList() {
         </div>
       ) : null}
 
-      <div className="mt-6 flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-end">
-        <div className="min-w-[200px] flex-1">
-          <label className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+      <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
+        <div className="min-w-0 w-full flex-1 basis-full sm:min-w-[200px] sm:basis-[220px] lg:basis-[280px]">
+          <label
+            htmlFor="orders-search"
+            className="text-xs font-medium text-zinc-600 dark:text-zinc-400"
+          >
             Search
           </label>
           <div className="relative mt-1">
             <input
+              id="orders-search"
+              type="text"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               placeholder="Search orders..."
+              autoComplete="off"
               className="w-full rounded-lg border border-zinc-300 bg-white py-2 pl-3 pr-9 text-sm dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-50"
               aria-label="Search orders"
             />
@@ -507,7 +513,7 @@ export function OrdersList() {
                   setSearch('');
                   setPage(1);
                 }}
-                className="absolute inset-y-0 right-0 flex items-center px-2.5 text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-100"
+                className="absolute inset-y-0 right-0 flex items-center px-2.5 text-zinc-500 transition-colors hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-100"
                 aria-label="Clear search"
               >
                 <svg
@@ -546,7 +552,9 @@ export function OrdersList() {
           </select>
         </div>
         <div className="w-full sm:w-44">
-          <label className="text-xs font-medium text-zinc-600 dark:text-zinc-400">Order status</label>
+          <label className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+            Order status
+          </label>
           <select
             value={statusFilter}
             onChange={(e) => {
@@ -598,7 +606,9 @@ export function OrdersList() {
           </select>
         </div>
         <div className="w-full sm:w-36">
-          <label className="text-xs font-medium text-zinc-600 dark:text-zinc-400">Direction</label>
+          <label className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+            Direction
+          </label>
           <select
             value={sortOrder}
             onChange={(e) => {
@@ -744,14 +754,14 @@ export function OrdersList() {
                     />
                   </td>
                   <td className="px-4 py-3">
-                    <div className="font-medium text-zinc-900 dark:text-zinc-50">
+                    <div className="font-mono text-sm font-medium tracking-tight text-zinc-900 dark:text-zinc-50">
                       {o.orderNumber}
                     </div>
                     <div className="text-xs text-zinc-500">
                       {new Date(o.createdAt).toLocaleString()}
                     </div>
                     {o.shipping?.trackingNumber ? (
-                      <div className="mt-0.5 text-xs text-sky-700 dark:text-sky-400">
+                      <div className="mt-0.5 font-mono text-xs text-sky-700 dark:text-sky-400">
                         CN:{' '}
                         <a
                           href={
@@ -779,15 +789,15 @@ export function OrdersList() {
                   </td>
                   <td className="px-4 py-3">
                     {statusPill(
-                      o.paymentStatus ?? '—',
+                      paymentStatusLabel(o.paymentStatus),
                       paymentTone(o.paymentStatus),
                     )}
                   </td>
-                  <td className="px-4 py-3 text-right font-medium text-zinc-900 dark:text-zinc-50">
+                  <td className="px-4 py-3 text-right font-mono text-sm font-medium tabular-nums tracking-tight text-zinc-900 dark:text-zinc-50">
                     {formatPrice(o.grandTotal, o.currency)}
                   </td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="flex flex-nowrap items-center justify-end gap-x-3 whitespace-nowrap">
+                  <td className="px-4 py-3">
+                    <div className="flex flex-nowrap items-center justify-end gap-3 whitespace-nowrap">
                       {(o.status === 'pending' || o.status === 'processing') &&
                       !o.shipping?.trackingNumber ? (
                         <PermissionGate anyOf={['shipping.manage', 'orders.manage']}>
@@ -805,16 +815,14 @@ export function OrdersList() {
                         type="button"
                         disabled={bulkBusy || deleteBusy || bookingBusy}
                         onClick={() => void handlePrintLeopardsLabel(o)}
-                        className="text-sm font-medium text-sky-700 underline disabled:opacity-40 dark:text-sky-400"
+                        className="text-sm font-medium text-zinc-900 underline disabled:opacity-50 dark:text-zinc-100"
                         title={
                           o.shipping?.trackingNumber
                             ? 'Open printable Leopards label slip'
                             : 'Download shipping label'
                         }
                       >
-                        {o.shipping?.trackingNumber
-                          ? 'Leopards Label'
-                          : 'Label'}
+                        Label
                       </button>
                       <button
                         type="button"
@@ -823,6 +831,16 @@ export function OrdersList() {
                       >
                         Invoice
                       </button>
+                      {isManualOrderEditable(o) ? (
+                        <PermissionGate anyOf={['orders.update', 'orders.manage']}>
+                          <Link
+                            href={`/orders/${o.id}/edit`}
+                            className="text-sm font-medium text-amber-700 underline dark:text-amber-300"
+                          >
+                            Edit
+                          </Link>
+                        </PermissionGate>
+                      ) : null}
                       <Link
                         href={`/orders/${o.id}`}
                         className="text-sm font-medium text-zinc-900 underline dark:text-zinc-100"
@@ -834,7 +852,7 @@ export function OrdersList() {
                           type="button"
                           disabled={bulkBusy || deleteBusy || bookingBusy}
                           onClick={() => setDeleteTarget(o)}
-                          className="inline-flex items-center justify-center rounded-md p-1 text-red-700 hover:bg-red-50 disabled:opacity-50 dark:text-red-400 dark:hover:bg-red-950/40"
+                          className={`${adminUi.btnDestructive} !px-2 !py-1.5`}
                           title={`Delete order ${o.orderNumber}`}
                           aria-label={`Delete order ${o.orderNumber}`}
                         >

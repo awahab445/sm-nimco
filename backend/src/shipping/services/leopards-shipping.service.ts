@@ -1537,7 +1537,7 @@ export class LeopardsShippingService {
         }),
       );
 
-      const data = (response.data ?? {}) as Record<string, unknown>;
+      const data = response.data ?? {};
       if (!this.isLeopardsSuccessStatus(data.status)) {
         const errorMessage = this.formatLeopardsApiError(
           data.error ?? data.message ?? data.error_msg,

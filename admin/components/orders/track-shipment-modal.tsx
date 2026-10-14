@@ -81,17 +81,19 @@ export function TrackShipmentModal({
         aria-labelledby="track-shipment-title"
         className="relative my-8 w-full max-w-xl rounded-xl bg-white shadow-xl dark:bg-zinc-950"
       >
-        <div className="flex items-start justify-between gap-3 border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">
-          <div>
+        <div className="flex flex-col gap-3 border-b border-zinc-200 px-4 py-3 sm:flex-row sm:items-start sm:justify-between dark:border-zinc-800">
+          <div className="min-w-0">
             <h3
               id="track-shipment-title"
               className="text-sm font-semibold text-zinc-900 dark:text-zinc-50"
             >
               Track Shipment
             </h3>
-            <p className="mt-0.5 font-mono text-xs text-zinc-500">{cnDisplay}</p>
+            <p className="mt-0.5 font-mono text-xs tracking-tight text-zinc-500">
+              {cnDisplay}
+            </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <button
               type="button"
               onClick={onRefresh}

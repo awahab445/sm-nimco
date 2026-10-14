@@ -11,6 +11,8 @@ import {
   isCustomOrderItem,
   isManualOrderEditable,
   isManualOrderSource,
+  orderStatusLabel,
+  paymentStatusLabel,
   type FulfillmentStatus,
   type Order,
   type OrderStatus,
@@ -21,6 +23,34 @@ import { OrderPaymentsSection } from '@/components/payments/order-payments-secti
 import { LeopardsCourierPanel } from '@/components/orders/leopards-courier-panel';
 import { formatPrice } from '@/lib/currency';
 import { PermissionGate } from '@/components/permission-gate';
+
+function statusPill(label: string, tone: 'neutral' | 'success' | 'warning' | 'danger') {
+  const tones = {
+    neutral: 'bg-zinc-200 text-zinc-800 dark:bg-zinc-700 dark:text-zinc-200',
+    success: 'bg-emerald-100 text-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-200',
+    warning: 'bg-amber-100 text-amber-900 dark:bg-amber-950/50 dark:text-amber-200',
+    danger: 'bg-red-100 text-red-900 dark:bg-red-950/50 dark:text-red-200',
+  } as const;
+  return (
+    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${tones[tone]}`}>
+      {label}
+    </span>
+  );
+}
+
+function orderStatusTone(s: string): 'neutral' | 'success' | 'warning' | 'danger' {
+  if (s === 'completed') return 'success';
+  if (s === 'cancelled') return 'danger';
+  if (s === 'processing' || s === 'ready_for_pickup') return 'warning';
+  return 'neutral';
+}
+
+function paymentTone(s: string | null | undefined): 'neutral' | 'success' | 'warning' | 'danger' {
+  if (s === 'paid') return 'success';
+  if (s === 'failed') return 'danger';
+  if (s === 'refunded') return 'warning';
+  return 'neutral';
+}
 
 function formatAddress(a: Record<string, unknown> | null | undefined): string {
   if (!a || typeof a !== 'object') return '—';
@@ -228,16 +258,23 @@ export function OrderDetailView({ orderId }: { orderId: string }) {
           >
             ← Orders
           </Link>
-          <h1 className="mt-2 text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+          <h1 className="mt-2 font-mono text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
             {order.orderNumber}
           </h1>
-          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-            Placed {new Date(order.createdAt).toLocaleString()} · {order.currency}
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            {statusPill(orderStatusLabel(order.status), orderStatusTone(order.status))}
+            {statusPill(
+              paymentStatusLabel(order.paymentStatus),
+              paymentTone(order.paymentStatus),
+            )}
             {isManualOrderSource(order) ? (
-              <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-900 dark:bg-amber-950/50 dark:text-amber-200">
+              <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-900 dark:bg-amber-950/50 dark:text-amber-200">
                 Manual order
               </span>
             ) : null}
+          </div>
+          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+            Placed {new Date(order.createdAt).toLocaleString()} · {order.currency}
           </p>
           {typeof order.metadata?.paymentMethod === 'string' ? (
             <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
@@ -336,11 +373,13 @@ export function OrderDetailView({ orderId }: { orderId: string }) {
                       ) : null}
                     </span>
                   </td>
-                  <td className="px-4 py-2 text-right tabular-nums">{item.quantity}</td>
-                  <td className="px-4 py-2 text-right tabular-nums">
+                  <td className="px-4 py-2 text-right font-mono text-xs tabular-nums">
+                    {item.quantity}
+                  </td>
+                  <td className="px-4 py-2 text-right font-mono text-xs tabular-nums tracking-tight">
                     {formatPrice(item.unitPrice, order.currency)}
                   </td>
-                  <td className="px-4 py-2 text-right font-medium tabular-nums text-zinc-900 dark:text-zinc-50">
+                  <td className="px-4 py-2 text-right font-mono text-xs font-medium tabular-nums tracking-tight text-zinc-900 dark:text-zinc-50">
                     {formatPrice(item.rowTotal, order.currency)}
                   </td>
                 </tr>
@@ -355,31 +394,31 @@ export function OrderDetailView({ orderId }: { orderId: string }) {
         <dl className="mt-3 space-y-1 text-sm">
           <div className="flex justify-between gap-4">
             <dt className="text-zinc-600 dark:text-zinc-400">Subtotal</dt>
-            <dd className="tabular-nums text-zinc-900 dark:text-zinc-50">
+            <dd className="font-mono tabular-nums tracking-tight text-zinc-900 dark:text-zinc-50">
               {formatPrice(order.subtotal, order.currency)}
             </dd>
           </div>
           <div className="flex justify-between gap-4">
             <dt className="text-zinc-600 dark:text-zinc-400">Discount</dt>
-            <dd className="tabular-nums text-zinc-900 dark:text-zinc-50">
+            <dd className="font-mono tabular-nums tracking-tight text-zinc-900 dark:text-zinc-50">
               {formatPrice(order.discountTotal, order.currency)}
             </dd>
           </div>
           <div className="flex justify-between gap-4">
             <dt className="text-zinc-600 dark:text-zinc-400">Shipping</dt>
-            <dd className="tabular-nums text-zinc-900 dark:text-zinc-50">
+            <dd className="font-mono tabular-nums tracking-tight text-zinc-900 dark:text-zinc-50">
               {formatPrice(order.shippingTotal, order.currency)}
             </dd>
           </div>
           <div className="flex justify-between gap-4">
             <dt className="text-zinc-600 dark:text-zinc-400">Tax</dt>
-            <dd className="tabular-nums text-zinc-900 dark:text-zinc-50">
+            <dd className="font-mono tabular-nums tracking-tight text-zinc-900 dark:text-zinc-50">
               {formatPrice(order.taxTotal, order.currency)}
             </dd>
           </div>
           <div className="flex justify-between gap-4 border-t border-zinc-200 pt-2 dark:border-zinc-800">
             <dt className="font-medium text-zinc-900 dark:text-zinc-50">Grand total</dt>
-            <dd className="font-semibold tabular-nums text-zinc-900 dark:text-zinc-50">
+            <dd className="font-mono font-semibold tabular-nums tracking-tight text-zinc-900 dark:text-zinc-50">
               {formatPrice(order.grandTotal, order.currency)}
             </dd>
           </div>

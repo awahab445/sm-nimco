@@ -151,6 +151,58 @@ describe('OrderFactory', () => {
       expect(orderData.shippingTotal).toBe(99);
       expect(orderData.grandTotal).toBe(1099);
       expect(orderData.subtotal).toBe(1000);
+      expect(orderData.orderNumber).toMatch(/^ORD\d{6}\d{4}$/);
+      expect(orderData.orderNumber).not.toContain('-');
+    });
+
+    it('increments daily sequence for short ORD+YYMMDD format', async () => {
+      const parts = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Karachi',
+        year: '2-digit',
+        month: '2-digit',
+        day: '2-digit',
+      }).formatToParts(new Date());
+      const part = (type: Intl.DateTimeFormatPartTypes) =>
+        parts.find((p) => p.type === type)?.value ?? '';
+      const todayPrefix = `ORD${part('year')}${part('month')}${part('day')}`;
+
+      mockCartRedis.getCart.mockResolvedValue({
+        id: validCreateOrderDto.cartId,
+        items: [
+          {
+            productId: 'prod-1',
+            variantId: 'var-1',
+            quantity: 1,
+            price: 1000,
+            attributes: {},
+          },
+        ],
+        currency: 'PKR',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+      mockPrisma.order.findFirst.mockResolvedValue({
+        orderNumber: `${todayPrefix}0007`,
+      });
+      mockPrisma.product.findMany.mockResolvedValue([
+        { id: 'prod-1', taxClassId: null },
+      ]);
+      mockPrisma.product.findUnique.mockResolvedValue({
+        name: 'Test Product',
+        images: [],
+      });
+      mockVariantService.findOneOrForSimpleProduct.mockResolvedValue({
+        sku: 'SKU-1',
+        name: 'Test Product',
+      });
+      mockTaxCalculationService.calculate.mockResolvedValue({
+        taxTotal: 0,
+        items: [{ productId: 'prod-1', variantId: 'var-1', taxAmount: 0 }],
+      });
+
+      const { orderData } = await factory.createOrderData(validCreateOrderDto);
+
+      expect(orderData.orderNumber).toBe(`${todayPrefix}0008`);
     });
   });
 });

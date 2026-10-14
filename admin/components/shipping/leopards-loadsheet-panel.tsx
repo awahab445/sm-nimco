@@ -152,34 +152,37 @@ export function LeopardsLoadsheetPanel() {
 
   return (
     <div className="mx-auto max-w-6xl pb-24">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <nav
+            aria-label="Breadcrumb"
+            className="flex flex-wrap items-center gap-1.5 text-xs text-zinc-500"
+          >
+            <Link href="/shipping" className={adminUi.link}>
+              Shipping
+            </Link>
+            <span aria-hidden>/</span>
+            <span className="text-zinc-700 dark:text-zinc-300">Loadsheet</span>
+            <span aria-hidden className="text-zinc-300 dark:text-zinc-600">
+              ·
+            </span>
+            <Link href="/shipping/loadsheets-history" className={adminUi.link}>
+              History
+            </Link>
+          </nav>
+          <h1 className="mt-2 text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
             Leopards Loadsheet
           </h1>
           <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
             Select booked packets with CN numbers, generate a pickup loadsheet,
             then print the manifest for the courier boy and store manager.
           </p>
-          <p className="mt-2 text-xs text-zinc-500">
-            <Link href="/shipping" className={adminUi.link}>
-              Shipping
-            </Link>
-            {' · '}
-            <Link href="/shipping/orders" className={adminUi.link}>
-              Order tools
-            </Link>
-            {' · '}
-            <Link href="/shipping/loadsheets-history" className={adminUi.link}>
-              Loadsheets History
-            </Link>
-          </p>
         </div>
         <button
           type="button"
           onClick={() => void handleGenerate()}
           disabled={generating || selected.size === 0}
-          className={adminUi.btnPrimary}
+          className={`${adminUi.btnPrimary} shrink-0`}
         >
           {generating
             ? 'Generating…'
@@ -188,7 +191,7 @@ export function LeopardsLoadsheetPanel() {
       </div>
 
       <div className="sticky top-0 z-20 mt-6 rounded-xl border border-zinc-200 bg-white/95 p-4 shadow-sm backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/95">
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:items-end">
           <div>
             <label className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
               Date from
@@ -240,10 +243,12 @@ export function LeopardsLoadsheetPanel() {
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-zinc-600 dark:text-zinc-400">
           <span>
             {selected.size} selected — COD{' '}
-            {formatMoney(
-              selectedCodTotal,
-              selectedRows[0]?.currency || 'PKR',
-            )}
+            <span className="font-mono font-medium tabular-nums tracking-tight text-zinc-800 dark:text-zinc-200">
+              {formatMoney(
+                selectedCodTotal,
+                selectedRows[0]?.currency || 'PKR',
+              )}
+            </span>
           </span>
           <button
             type="button"
@@ -327,12 +332,12 @@ export function LeopardsLoadsheetPanel() {
                   <td className="px-3 py-3">
                     <Link
                       href={`/orders/${row.id}`}
-                      className={`${adminUi.link} font-mono text-xs`}
+                      className={`${adminUi.link} font-mono text-xs font-medium tracking-tight`}
                     >
                       {row.orderNumber}
                     </Link>
                     {row.loadSheetId ? (
-                      <div className="mt-0.5 text-[11px] text-zinc-500">
+                      <div className="mt-1 inline-flex max-w-full items-center rounded-full bg-zinc-100 px-2 py-0.5 font-mono text-[10px] tracking-tight text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
                         LS: {row.loadSheetId}
                       </div>
                     ) : null}
@@ -343,13 +348,13 @@ export function LeopardsLoadsheetPanel() {
                   <td className="px-3 py-3 text-zinc-700 dark:text-zinc-300">
                     {row.destinationCity}
                   </td>
-                  <td className="px-3 py-3 font-mono text-xs font-semibold text-zinc-900 dark:text-zinc-50">
+                  <td className="px-3 py-3 font-mono text-xs font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
                     {row.cnNumber}
                   </td>
                   <td className="px-3 py-3 text-zinc-700 dark:text-zinc-300">
                     {serviceTypeLabel(row.serviceType)}
                   </td>
-                  <td className="px-3 py-3 text-right tabular-nums text-zinc-800 dark:text-zinc-100">
+                  <td className="px-3 py-3 text-right font-mono text-xs font-medium tabular-nums tracking-tight text-zinc-800 dark:text-zinc-100">
                     {formatMoney(row.codAmount, row.currency)}
                   </td>
                 </tr>
@@ -363,7 +368,7 @@ export function LeopardsLoadsheetPanel() {
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3">
           <p className="text-sm text-zinc-600 dark:text-zinc-400">
             {selected.size} packet(s) selected · Total COD{' '}
-            <span className="font-semibold text-zinc-900 dark:text-zinc-50">
+            <span className="font-mono font-semibold tabular-nums tracking-tight text-zinc-900 dark:text-zinc-50">
               {formatMoney(
                 selectedCodTotal,
                 selectedRows[0]?.currency || 'PKR',

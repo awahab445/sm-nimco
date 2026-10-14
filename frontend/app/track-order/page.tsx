@@ -41,7 +41,7 @@ export default function TrackOrderPage() {
       return;
     }
     if (!trimmedOrderNumber) {
-      setValidationError('Please enter your order number (e.g. ORD-20241221-00001).');
+      setValidationError('Please enter your order number (e.g. ORD2610140001).');
       return;
     }
 
@@ -124,7 +124,7 @@ export default function TrackOrderPage() {
                 type="text"
                 value={orderNumber}
                 onChange={(e) => setOrderNumber(e.target.value)}
-                placeholder="e.g. ORD-20241221-00001"
+                placeholder="e.g. ORD2610140001"
                 className={storefrontUi.inputMt}
                 disabled={loading}
               />

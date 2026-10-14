@@ -35,15 +35,21 @@ export class OrderFactory {
   ) {}
 
   /**
-   * Generate human-readable order number
-   * Format: ORD-YYYYMMDD-XXXXX (e.g., ORD-20241221-00001)
+   * Generate human-readable order number (M. ESSA–aligned short format).
+   * Format: ORD + YYMMDD + 4-digit sequence (e.g., ORD2610140001)
    */
   private async generateOrderNumber(): Promise<string> {
-    const today = new Date();
-    const datePrefix = today.toISOString().slice(0, 10).replace(/-/g, '');
-    const prefix = `ORD-${datePrefix}-`;
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Karachi',
+      year: '2-digit',
+      month: '2-digit',
+      day: '2-digit',
+    }).formatToParts(new Date());
+    const part = (type: Intl.DateTimeFormatPartTypes) =>
+      parts.find((p) => p.type === type)?.value ?? '';
+    const prefix = `ORD${part('year')}${part('month')}${part('day')}`;
 
-    // Find the highest order number for today
+    // Highest order number for today (short format only; legacy ORD-YYYYMMDD-… ignored)
     const lastOrder = await this.prisma.order.findFirst({
       where: {
         orderNumber: {
@@ -60,12 +66,11 @@ export class OrderFactory {
 
     let sequence = 1;
     if (lastOrder) {
-      const lastSequence = parseInt(lastOrder.orderNumber.slice(-5), 10);
-      sequence = lastSequence + 1;
+      const lastSequence = parseInt(lastOrder.orderNumber.slice(-4), 10);
+      sequence = Number.isFinite(lastSequence) ? lastSequence + 1 : 1;
     }
 
-    const sequenceStr = sequence.toString().padStart(5, '0');
-    return `${prefix}${sequenceStr}`;
+    return `${prefix}${sequence.toString().padStart(4, '0')}`;
   }
 
   /**

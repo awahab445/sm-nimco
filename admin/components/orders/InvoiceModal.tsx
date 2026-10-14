@@ -90,7 +90,7 @@ export function InvoiceModal({ order, open, onClose }: InvoiceModalProps) {
         className="invoice-dialog relative z-10 my-4 w-full max-w-[210mm] rounded-xl border border-zinc-200 bg-white shadow-xl dark:border-zinc-700 dark:bg-zinc-950"
       >
         <div className="invoice-no-print flex items-center justify-between gap-3 border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">
-          <h2 id="invoice-modal-title" className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+          <h2 id="invoice-modal-title" className="font-mono text-sm font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
             Invoice — {order.orderNumber}
           </h2>
           <div className="flex flex-wrap items-center gap-2">
@@ -132,7 +132,9 @@ export function InvoiceModal({ order, open, onClose }: InvoiceModalProps) {
               <div className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
                 Invoice
               </div>
-              <div className="mt-1 text-base font-bold">Order #{order.orderNumber}</div>
+              <div className="mt-1 font-mono text-base font-bold tracking-tight">
+                Order #{order.orderNumber}
+              </div>
               <div className="mt-0.5 text-zinc-600">
                 {new Date(order.createdAt).toLocaleDateString('en-PK', {
                   year: 'numeric',
@@ -183,7 +185,7 @@ export function InvoiceModal({ order, open, onClose }: InvoiceModalProps) {
                       }
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="font-medium text-sky-700 underline"
+                      className="font-mono font-medium tracking-tight text-sky-700 underline"
                       title="Open Leopards online tracking"
                     >
                       CN {order.shipping.trackingNumber}
@@ -219,13 +221,13 @@ export function InvoiceModal({ order, open, onClose }: InvoiceModalProps) {
                       <div className="text-xs text-zinc-500">SKU: {item.sku}</div>
                     ) : null}
                   </td>
-                  <td className="py-2.5 px-2 text-center align-top tabular-nums">
+                  <td className="py-2.5 px-2 text-center align-top font-mono tabular-nums tracking-tight">
                     {item.quantity}
                   </td>
-                  <td className="py-2.5 px-2 text-right align-top tabular-nums">
+                  <td className="py-2.5 px-2 text-right align-top font-mono tabular-nums tracking-tight">
                     {formatPrice(item.unitPrice, order.currency)}
                   </td>
-                  <td className="py-2.5 pl-2 text-right align-top font-medium tabular-nums">
+                  <td className="py-2.5 pl-2 text-right align-top font-mono font-medium tabular-nums tracking-tight">
                     {formatPrice(item.rowTotal, order.currency)}
                   </td>
                 </tr>
@@ -237,35 +239,35 @@ export function InvoiceModal({ order, open, onClose }: InvoiceModalProps) {
             <dl className="invoice-totals w-full max-w-xs space-y-1.5 text-sm">
               <div className="flex justify-between gap-6">
                 <dt className="text-zinc-600">Subtotal</dt>
-                <dd className="tabular-nums font-medium">
+                <dd className="font-mono font-medium tabular-nums tracking-tight">
                   {formatPrice(order.subtotal, order.currency)}
                 </dd>
               </div>
               {Number.parseFloat(String(order.discountTotal)) > 0 ? (
                 <div className="flex justify-between gap-6">
                   <dt className="text-zinc-600">Discount</dt>
-                  <dd className="tabular-nums font-medium">
+                  <dd className="font-mono font-medium tabular-nums tracking-tight">
                     −{formatPrice(order.discountTotal, order.currency)}
                   </dd>
                 </div>
               ) : null}
               <div className="flex justify-between gap-6">
                 <dt className="text-zinc-600">Shipping</dt>
-                <dd className="tabular-nums font-medium">
+                <dd className="font-mono font-medium tabular-nums tracking-tight">
                   {formatPrice(order.shippingTotal, order.currency)}
                 </dd>
               </div>
               {Number.parseFloat(String(order.taxTotal)) > 0 ? (
                 <div className="flex justify-between gap-6">
                   <dt className="text-zinc-600">Tax</dt>
-                  <dd className="tabular-nums font-medium">
+                  <dd className="font-mono font-medium tabular-nums tracking-tight">
                     {formatPrice(order.taxTotal, order.currency)}
                   </dd>
                 </div>
               ) : null}
               <div className="flex justify-between gap-6 border-t-2 border-zinc-900 pt-2 text-base">
                 <dt className="font-bold">Order Total</dt>
-                <dd className="tabular-nums font-bold">
+                <dd className="font-mono font-bold tabular-nums tracking-tight">
                   {formatPrice(order.grandTotal, order.currency)}
                 </dd>
               </div>

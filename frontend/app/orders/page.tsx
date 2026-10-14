@@ -149,7 +149,7 @@ export default function OrdersPage() {
                 <div className="p-6">
                   <div className="flex justify-between items-start mb-4">
                     <div>
-                      <h3 className="text-lg font-semibold text-brand-text">
+                      <h3 className="font-mono text-lg font-semibold tracking-tight text-brand-text">
                         Order #{order.orderNumber}
                       </h3>
                       <p className="text-sm text-muted-foreground">

@@ -27,6 +27,18 @@ export function orderStatusLabel(status: string): string {
   return ORDER_STATUS_LABELS[status as OrderStatus] ?? status;
 }
 
+export const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
+  pending: 'Pending',
+  paid: 'Paid',
+  failed: 'Failed',
+  refunded: 'Refunded',
+};
+
+export function paymentStatusLabel(status: string | null | undefined): string {
+  if (!status) return '—';
+  return PAYMENT_STATUS_LABELS[status as PaymentStatus] ?? status;
+}
+
 export type OrderAddressSnapshot = {
   firstName?: string;
   lastName?: string;

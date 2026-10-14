@@ -130,10 +130,7 @@ export class LeopardsLoadsheetService {
         ...(status === 'pending_loadsheet'
           ? [
               {
-                OR: [
-                  { courierLoadSheetId: null },
-                  { courierLoadSheetId: '' },
-                ],
+                OR: [{ courierLoadSheetId: null }, { courierLoadSheetId: '' }],
               } satisfies Prisma.OrderWhereInput,
             ]
           : []),
@@ -208,9 +205,7 @@ export class LeopardsLoadsheetService {
       );
     }
 
-    const missingCn = orders.filter(
-      (o) => !o.shipping?.trackingNumber?.trim(),
-    );
+    const missingCn = orders.filter((o) => !o.shipping?.trackingNumber?.trim());
     if (missingCn.length > 0) {
       throw new BadRequestException(
         `Orders missing Leopards CN: ${missingCn.map((o) => o.orderNumber).join(', ')}`,
@@ -219,9 +214,7 @@ export class LeopardsLoadsheetService {
 
     const cnNumbers = [
       ...new Set(
-        orders
-          .map((o) => o.shipping!.trackingNumber!.trim())
-          .filter(Boolean),
+        orders.map((o) => o.shipping!.trackingNumber!.trim()).filter(Boolean),
       ),
     ];
 
