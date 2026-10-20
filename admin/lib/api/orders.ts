@@ -345,6 +345,23 @@ export async function deleteAdminOrder(id: string) {
   });
 }
 
+export type BulkDeleteAdminOrdersResult = {
+  success: boolean;
+  deletedCount: number;
+  failedCount: number;
+  deleted: Array<{ id: string; orderNumber: string }>;
+  failed: Array<{ id: string; reason: string }>;
+  message: string;
+};
+
+/** Permanently delete multiple orders. DELETE /admin/orders/bulk */
+export async function bulkDeleteAdminOrders(orderIds: string[]) {
+  return fetchApi<BulkDeleteAdminOrdersResult>('/admin/orders/bulk', {
+    method: 'DELETE',
+    body: JSON.stringify({ orderIds }),
+  });
+}
+
 export async function downloadBulkPackageInserts(orderIds: string[]) {
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
   const token = getToken();

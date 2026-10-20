@@ -22,6 +22,7 @@ import { PackageInsertService } from '../services/package-insert.service';
 import { UpdateOrderStatusDto } from '../dto/update-order-status.dto';
 import { OrderQueryDto } from '../dto/order-query.dto';
 import { BulkShippingLabelsDto } from '../dto/bulk-shipping-labels.dto';
+import { BulkDeleteOrdersDto } from '../dto/bulk-delete-orders.dto';
 import { CreateManualOrderDto } from '../dto/create-manual-order.dto';
 import { UpdateManualOrderDto } from '../dto/update-manual-order.dto';
 import { AdminJwtAuthGuard } from '../../admin/guards/admin-jwt-auth.guard';
@@ -111,6 +112,18 @@ export class AdminOrderController {
       dto.orderIds,
     );
     return new StreamableFile(pdf);
+  }
+
+  /**
+   * Permanently delete multiple orders (admin).
+   * DELETE /admin/orders/bulk  body: { orderIds: string[] }
+   * Registered before :id routes so "bulk" is not parsed as an id.
+   */
+  @Delete('bulk')
+  @CheckPermission('orders', 'delete')
+  @HttpCode(HttpStatus.OK)
+  async bulkDeleteOrders(@Body() dto: BulkDeleteOrdersDto) {
+    return this.orderService.deleteOrdersBulk(dto.orderIds);
   }
 
   /**

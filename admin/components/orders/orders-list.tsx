@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import {
   fetchAdminOrders,
   deleteAdminOrder,
+  bulkDeleteAdminOrders,
   downloadBulkShippingLabels,
   downloadBulkPackageInserts,
   isManualOrderEditable,
@@ -121,6 +122,8 @@ export function OrdersList() {
   const [bulkBookSummary, setBulkBookSummary] =
     useState<BulkBookLeopardsResult | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Order | null>(null);
+  const [bulkDeleteConfirmOpen, setBulkDeleteConfirmOpen] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
   const [toast, setToast] = useState<{ kind: 'success' | 'error'; message: string } | null>(
     null,
   );
@@ -287,6 +290,30 @@ export function OrdersList() {
     }
   };
 
+  const confirmBulkDeleteOrders = async () => {
+    const orderIds = [...selectedIds];
+    if (orderIds.length === 0) return;
+
+    setBulkDeleting(true);
+    try {
+      const result = await bulkDeleteAdminOrders(orderIds);
+      setBulkDeleteConfirmOpen(false);
+      setSelectedIds(new Set());
+      setToast({
+        kind: result.failedCount > 0 ? 'error' : 'success',
+        message:
+          result.failedCount > 0
+            ? `Deleted ${result.deletedCount} order(s); ${result.failedCount} failed.`
+            : `Deleted ${result.deletedCount} selected order(s).`,
+      });
+      await load();
+    } catch (e) {
+      setToast({ kind: 'error', message: formatApiError(e) });
+    } finally {
+      setBulkDeleting(false);
+    }
+  };
+
   const handleBookLeopards = async (order: Order) => {
     const msg = `Book order ${order.orderNumber} via Leopards Courier?\n\nService type: Overnight (Air)`;
     if (!window.confirm(msg)) return;
@@ -390,8 +417,9 @@ export function OrdersList() {
     labelsLoading ||
     insertsLoading ||
     bulkBookLoading ||
-    bulkLeopardsLabelsLoading;
-  const deleteBusy = deletingId !== null;
+    bulkLeopardsLabelsLoading ||
+    bulkDeleting;
+  const deleteBusy = deletingId !== null || bulkDeleting;
   const bookingBusy = bookingId !== null;
 
   return (
@@ -443,6 +471,46 @@ export function OrdersList() {
                 className="rounded-lg bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-800 disabled:opacity-50"
               >
                 {deletingId === deleteTarget.id ? 'Deleting…' : 'Delete permanently'}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {bulkDeleteConfirmOpen ? (
+        <div
+          className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="bulk-delete-orders-title"
+        >
+          <div className="w-full max-w-md rounded-xl border border-zinc-200 bg-white p-5 shadow-xl dark:border-zinc-700 dark:bg-zinc-950">
+            <h2
+              id="bulk-delete-orders-title"
+              className="text-lg font-semibold text-zinc-900 dark:text-zinc-50"
+            >
+              Delete selected orders
+            </h2>
+            <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+              Are you sure you want to delete {selectedIds.size} selected order
+              {selectedIds.size === 1 ? '' : 's'}? This cannot be undone.
+            </p>
+            <div className="mt-5 flex flex-wrap justify-end gap-2">
+              <button
+                type="button"
+                disabled={bulkDeleting}
+                onClick={() => setBulkDeleteConfirmOpen(false)}
+                className={adminUi.btnSecondary}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={bulkDeleting}
+                onClick={() => void confirmBulkDeleteOrders()}
+                className={adminUi.btnDestructive}
+              >
+                {bulkDeleting ? 'Deleting…' : 'Delete Selected Orders'}
               </button>
             </div>
           </div>
@@ -683,6 +751,16 @@ export function OrdersList() {
           >
             {insertsLoading ? 'Generating inserts…' : 'Download package inserts'}
           </button>
+          <PermissionGate anyOf={['orders.delete', 'orders.manage']}>
+            <button
+              type="button"
+              disabled={bulkBusy || deleteBusy || bookingBusy}
+              onClick={() => setBulkDeleteConfirmOpen(true)}
+              className={adminUi.btnDestructive}
+            >
+              {bulkDeleting ? 'Deleting…' : 'Delete Selected Orders'}
+            </button>
+          </PermissionGate>
           <button
             type="button"
             disabled={bulkBusy || deleteBusy || bookingBusy}

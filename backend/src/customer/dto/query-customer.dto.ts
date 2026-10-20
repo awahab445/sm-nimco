@@ -11,5 +11,5 @@ export class QueryCustomerDto {
 
   @IsString()
   @IsOptional()
-  search?: string; // Search by email, firstName, lastName
+  search?: string; // Search by email, firstName, lastName, or phone
 }

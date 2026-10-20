@@ -957,6 +957,95 @@ export class OrderService {
       throw new NotFoundException(`Order ${id} not found`);
     }
 
+    await this.deleteOrderRecords(id);
+
+    this.logger.log(`Order ${order.orderNumber} permanently deleted`);
+
+    return {
+      success: true,
+      message: 'Order deleted successfully',
+    };
+  }
+
+  /**
+   * Permanently delete multiple orders concurrently.
+   * Cleans up payments, promotion logs, and inventory reservations per order.
+   */
+  async deleteOrdersBulk(orderIds: string[]) {
+    const uniqueIds = [...new Set(orderIds.filter(Boolean))];
+    if (uniqueIds.length === 0) {
+      throw new BadRequestException('No order IDs provided');
+    }
+
+    const existing = await this.prisma.order.findMany({
+      where: { id: { in: uniqueIds } },
+      select: { id: true, orderNumber: true },
+    });
+    const existingById = new Map(existing.map((o) => [o.id, o]));
+
+    type BulkDeleteItem =
+      | { id: string; deleted: true; orderNumber: string }
+      | { id: string; deleted: false; reason: string };
+
+    const results = await Promise.allSettled(
+      uniqueIds.map(async (id): Promise<BulkDeleteItem> => {
+        const order = existingById.get(id);
+        if (!order) {
+          return { id, deleted: false, reason: 'not_found' };
+        }
+        await this.deleteOrderRecords(id);
+        this.logger.log(
+          `Order ${order.orderNumber} permanently deleted (bulk)`,
+        );
+        return {
+          id,
+          deleted: true,
+          orderNumber: order.orderNumber,
+        };
+      }),
+    );
+
+    const deleted: Array<{ id: string; orderNumber: string }> = [];
+    const failed: Array<{ id: string; reason: string }> = [];
+
+    for (let i = 0; i < results.length; i++) {
+      const result = results[i];
+      const id = uniqueIds[i]!;
+      if (result.status === 'fulfilled') {
+        const value = result.value;
+        if (value.deleted) {
+          deleted.push({
+            id: value.id,
+            orderNumber: value.orderNumber,
+          });
+        } else {
+          failed.push({
+            id: value.id,
+            reason: value.reason,
+          });
+        }
+      } else {
+        failed.push({
+          id,
+          reason:
+            result.reason instanceof Error
+              ? result.reason.message
+              : 'delete_failed',
+        });
+      }
+    }
+
+    return {
+      success: failed.length === 0,
+      deletedCount: deleted.length,
+      failedCount: failed.length,
+      deleted,
+      failed,
+      message: `Deleted ${deleted.length} of ${uniqueIds.length} order(s)`,
+    };
+  }
+
+  private async deleteOrderRecords(id: string) {
     await this.prisma.$transaction(async (tx) => {
       await tx.payment.deleteMany({ where: { orderId: id } });
       await tx.promotionLog.deleteMany({ where: { orderId: id } });
@@ -965,12 +1054,5 @@ export class OrderService {
       });
       await tx.order.delete({ where: { id } });
     });
-
-    this.logger.log(`Order ${order.orderNumber} permanently deleted`);
-
-    return {
-      success: true,
-      message: 'Order deleted successfully',
-    };
   }
 }

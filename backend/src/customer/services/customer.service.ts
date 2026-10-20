@@ -85,6 +85,7 @@ export class CustomerService {
         { email: { contains: query.search, mode: 'insensitive' } },
         { firstName: { contains: query.search, mode: 'insensitive' } },
         { lastName: { contains: query.search, mode: 'insensitive' } },
+        { phone: { contains: query.search, mode: 'insensitive' } },
       ];
     }
 
