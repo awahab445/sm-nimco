@@ -8,6 +8,7 @@ import {
 } from '@/lib/api/orders';
 import {
   bookOrderWithLeopards,
+  estimateOrderWeightGrams,
   openBulkLeopardsLabelsPdf,
   trackLeopardsShipment,
   type BookLeopardsShipmentType,
@@ -85,6 +86,9 @@ export function LeopardsCourierPanel({
   const [copied, setCopied] = useState(false);
   const [shipmentType, setShipmentType] =
     useState<BookLeopardsShipmentType>('OVERNIGHT');
+  const [weightGramsInput, setWeightGramsInput] = useState(() =>
+    String(estimateOrderWeightGrams(order.items ?? [])),
+  );
   const [trackOpen, setTrackOpen] = useState(false);
   const [tracking, setTracking] = useState(false);
   const [trackError, setTrackError] = useState<string | null>(null);
@@ -106,15 +110,26 @@ export function LeopardsCourierPanel({
     ? buildLeopardsPublicTrackingUrl(trackingNumber, trackingUrl)
     : null;
 
+  const parsedWeightGrams = (() => {
+    const n = Number(weightGramsInput);
+    return Number.isFinite(n) ? Math.floor(n) : NaN;
+  })();
+
   async function handleBook() {
     setError(null);
     setSuccess(null);
+
+    if (!Number.isFinite(parsedWeightGrams) || parsedWeightGrams < 1) {
+      setError('Weight must be at least 1 gram.');
+      return;
+    }
+
     const serviceLabel =
       SERVICE_TYPE_OPTIONS.find((o) => o.value === shipmentType)?.label ??
       shipmentType;
     if (
       !window.confirm(
-        `Book order ${order.orderNumber} with Leopards Courier?\n\nService type: ${serviceLabel}\n\nThis creates a CN and shipping label via the Leopards API.`,
+        `Book order ${order.orderNumber} with Leopards Courier?\n\nService type: ${serviceLabel}\nWeight: ${parsedWeightGrams} g\n\nThis creates a CN and shipping label via the Leopards API.`,
       )
     ) {
       return;
@@ -125,6 +140,7 @@ export function LeopardsCourierPanel({
       const result = await bookOrderWithLeopards(order.id, {
         serviceType: shipmentType,
         shipmentType,
+        weightGrams: parsedWeightGrams,
       });
       setSuccess(
         result.trackingNumber
@@ -294,6 +310,28 @@ export function LeopardsCourierPanel({
                   </option>
                 ))}
               </select>
+            </div>
+            <div className="min-w-[10rem] flex-1 sm:max-w-[11rem]">
+              <label
+                htmlFor="leopards-weight-grams"
+                className="text-xs font-medium text-zinc-600 dark:text-zinc-400"
+              >
+                Weight (grams)
+              </label>
+              <input
+                id="leopards-weight-grams"
+                type="number"
+                min={1}
+                step={1}
+                inputMode="numeric"
+                value={weightGramsInput}
+                onChange={(e) => setWeightGramsInput(e.target.value)}
+                disabled={booking}
+                className="mt-1 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 font-mono text-sm tabular-nums dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-50"
+              />
+              <p className="mt-1 text-[11px] leading-snug text-zinc-500 dark:text-zinc-400">
+                Enter exact scale weight in grams (e.g., 1000 for 1kg).
+              </p>
             </div>
             <button
               type="button"

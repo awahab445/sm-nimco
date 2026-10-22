@@ -259,6 +259,7 @@ export class AdminShippingController {
       serviceType: dto.serviceType ?? dto.shipmentType,
       shipmentType: dto.shipmentType ?? dto.serviceType,
       specialInstructions: dto.specialInstructions,
+      weightGrams: dto.weightGrams,
     });
   }
 

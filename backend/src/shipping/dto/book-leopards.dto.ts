@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer';
-import { IsIn, IsOptional, IsString } from 'class-validator';
+import { IsIn, IsInt, IsOptional, IsString, Min } from 'class-validator';
 
 /** Admin/API service type codes for Leopards booking (ESSA-compatible). */
 export const BOOK_LEOPARDS_SHIPMENT_TYPES = [
@@ -28,9 +28,25 @@ function normalizeShipmentTypeInput(
   return normalized || undefined;
 }
 
+function normalizeWeightGramsInput(
+  value: unknown,
+  obj: Record<string, unknown>,
+): number | undefined {
+  const raw =
+    value ??
+    obj.weight_grams ??
+    obj.booked_packet_weight ??
+    obj.bookedPacketWeight;
+  if (raw == null || raw === '') return undefined;
+  const n = typeof raw === 'number' ? raw : Number(raw);
+  if (!Number.isFinite(n)) return undefined;
+  return Math.floor(n);
+}
+
 /**
  * Body for POST /admin/shipping/leopards/book/:orderId
  * Accepts `shipmentType`, `serviceType`, or snake_case aliases.
+ * Optional `weightGrams` / `weight_grams` overrides auto-calculated packet weight.
  */
 export class BookLeopardsDto {
   @IsOptional()
@@ -58,4 +74,16 @@ export class BookLeopardsDto {
     message: `serviceType must be one of: ${BOOK_LEOPARDS_SHIPMENT_TYPES.join(', ')}`,
   })
   serviceType?: BookLeopardsShipmentType;
+
+  /**
+   * Manual parcel weight in grams (scale weight). When >= 1, sent as
+   * booked_packet_weight to Leopards; otherwise order calculated weight is used.
+   */
+  @IsOptional()
+  @Transform(({ value, obj }) =>
+    normalizeWeightGramsInput(value, obj as Record<string, unknown>),
+  )
+  @IsInt()
+  @Min(1)
+  weightGrams?: number;
 }

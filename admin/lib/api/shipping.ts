@@ -231,7 +231,43 @@ export type BookLeopardsBody = {
   serviceType?: BookLeopardsShipmentType;
   shipmentType?: BookLeopardsShipmentType;
   specialInstructions?: string;
+  /** Manual scale weight in grams; overrides auto-calculated order weight when >= 1. */
+  weightGrams?: number;
 };
+
+/** Default unit weight (kg) matching backend shipping-label / Leopards fallback. */
+const DEFAULT_SHIPPING_WEIGHT_KG = 1;
+
+/**
+ * Estimate order shipping weight in grams from line-item metadata
+ * (same rules as backend calculateOrderWeightKg).
+ */
+export function estimateOrderWeightGrams(
+  items: Array<{ quantity: number; metadata?: Record<string, unknown> | null }>,
+): number {
+  let totalKg = 0;
+  for (const item of items) {
+    const qty = Math.max(0, item.quantity || 0);
+    const meta = item.metadata ?? {};
+    let unitKg = DEFAULT_SHIPPING_WEIGHT_KG;
+    for (const key of ['weightKg', 'weight', 'shippingWeightKg'] as const) {
+      const raw = meta[key];
+      const n =
+        typeof raw === 'number'
+          ? raw
+          : typeof raw === 'string'
+            ? Number(raw)
+            : NaN;
+      if (Number.isFinite(n) && n >= 0) {
+        unitKg = n;
+        break;
+      }
+    }
+    totalKg += unitKg * qty;
+  }
+  const kg = totalKg > 0 ? totalKg : DEFAULT_SHIPPING_WEIGHT_KG;
+  return Math.max(1, Math.round(kg * 1000));
+}
 
 /** Book an order packet with Leopards Courier Merchant API. */
 export async function bookOrderWithLeopards(

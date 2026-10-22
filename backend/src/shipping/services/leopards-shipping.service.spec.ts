@@ -635,6 +635,83 @@ describe('LeopardsShippingService', () => {
       );
     });
 
+    it('uses manual weightGrams as booked_packet_weight when >= 1', async () => {
+      prisma.order.findUnique.mockResolvedValue({
+        id: 'order-weight',
+        orderNumber: 'ORD-W',
+        status: 'processing',
+        paymentStatus: 'paid',
+        customerEmail: 'buyer@example.com',
+        customerName: 'Buyer',
+        notes: null,
+        grandTotal: { toString: () => '1000' },
+        shippingTotal: 200,
+        currency: 'PKR',
+        shippingAddress: {
+          firstName: 'Buyer',
+          lastName: 'Name',
+          addressLine1: 'Street 1',
+          city: 'Lahore',
+          phone: '03211234567',
+        },
+        billingAddress: {},
+        metadata: {},
+        items: [{ quantity: 1, metadata: { weightKg: 2 } }],
+        shipping: null,
+      });
+
+      httpService.post
+        .mockReturnValueOnce(
+          of({
+            data: {
+              status: 1,
+              city_list: [{ id: 789, name: 'Lahore' }],
+            },
+          }),
+        )
+        .mockReturnValueOnce(
+          of({
+            data: {
+              status: 1,
+              track_number: 'LE999',
+              slip_link: null,
+            },
+          }),
+        );
+
+      prisma.shippingMethod.findFirst.mockResolvedValue({
+        id: 'method-leopards',
+      });
+      prisma.orderShipping.create.mockResolvedValue({
+        id: 'ship-w',
+        orderId: 'order-weight',
+        shippingMethodId: 'method-leopards',
+        cost: 200,
+        currency: 'PKR',
+        status: 'shipped',
+        trackingNumber: 'LE999',
+        trackingUrl: 'https://www.leopardscourier.com/tracking/?cn=LE999',
+        courierCode: 'leopards',
+        courierName: 'Leopards Courier',
+        shippedAt: new Date('2026-01-01T00:00:00Z'),
+        deliveredAt: null,
+        cancelledAt: null,
+        shippingAddress: {},
+        metadata: {},
+        createdAt: new Date('2026-01-01T00:00:00Z'),
+        updatedAt: new Date('2026-01-01T00:00:00Z'),
+      });
+      prisma.order.update.mockResolvedValue({});
+
+      await service.bookOrder('order-weight', { weightGrams: 750 });
+
+      const bookCall = httpService.post.mock.calls[1] as unknown as [
+        string,
+        Record<string, string>,
+      ];
+      expect(bookCall[1].booked_packet_weight).toBe('750');
+    });
+
     it('rejects non-pending/processing orders', async () => {
       prisma.order.findUnique.mockResolvedValue({
         id: 'order-2',

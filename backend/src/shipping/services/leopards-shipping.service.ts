@@ -280,6 +280,11 @@ export type BookLeopardsOptions = {
   serviceType?: string | null;
   shipmentType?: string | null;
   specialInstructions?: string | null;
+  /**
+   * Manual scale weight in grams. When provided and >= 1, used as
+   * booked_packet_weight instead of the order's calculated shipping weight.
+   */
+  weightGrams?: number | null;
 };
 
 export type BulkBookLeopardsResultItem = {
@@ -1075,7 +1080,17 @@ export class LeopardsShippingService {
       );
     }
 
-    const weightKg = this.calculateOrderWeightKg(order.items);
+    const calculatedWeightKg = this.calculateOrderWeightKg(order.items);
+    const manualWeightGrams =
+      typeof options.weightGrams === 'number' &&
+      Number.isFinite(options.weightGrams) &&
+      options.weightGrams >= 1
+        ? Math.floor(options.weightGrams)
+        : null;
+    const weightKg =
+      manualWeightGrams != null
+        ? manualWeightGrams / 1000
+        : calculatedWeightKg;
     const pieces = order.items.reduce(
       (sum, item) => sum + Math.max(0, item.quantity || 0),
       0,
@@ -1102,6 +1117,10 @@ export class LeopardsShippingService {
       specialInstructions,
       serviceType: apiShipmentType,
     });
+    const bookedWeightGrams = Math.max(
+      1,
+      Math.round(Math.max(0, weightKg) * 1000),
+    );
 
     const apiResponse = await this.bookPacket(payload);
     const { trackNumber, slipLink } = this.parseBookPacketResponse(apiResponse);
@@ -1127,6 +1146,9 @@ export class LeopardsShippingService {
         shipment_type: apiShipmentType,
         booked_at: new Date().toISOString(),
         api_status: apiResponse.status,
+        weightGrams: bookedWeightGrams,
+        weight_grams: bookedWeightGrams,
+        booked_packet_weight: String(bookedWeightGrams),
       },
     };
 
