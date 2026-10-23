@@ -7,6 +7,7 @@ import {
   type Order,
 } from '@/lib/api/orders';
 import {
+  assignManualLeopardsCn,
   bookOrderWithLeopards,
   estimateOrderWeightGrams,
   openBulkLeopardsLabelsPdf,
@@ -17,6 +18,28 @@ import {
 import { formatApiError } from '@/lib/api/error-message';
 import { PermissionGate } from '@/components/permission-gate';
 import { TrackShipmentModal } from '@/components/orders/track-shipment-modal';
+
+function getLeopardsCnSource(
+  shipping?: Order['shipping'] | null,
+): 'portal' | 'api' | null {
+  const meta = shipping?.metadata;
+  if (!meta || typeof meta !== 'object' || Array.isArray(meta)) return null;
+  const leopards = meta.leopards;
+  if (!leopards || typeof leopards !== 'object' || Array.isArray(leopards)) {
+    return null;
+  }
+  const source = (leopards as Record<string, unknown>).source;
+  if (source === 'portal') return 'portal';
+  if (typeof source === 'string' && source.trim()) return 'api';
+  // API-booked rows typically have api_status / slip_link
+  if (
+    (leopards as Record<string, unknown>).api_status != null ||
+    (leopards as Record<string, unknown>).slip_link != null
+  ) {
+    return 'api';
+  }
+  return null;
+}
 
 const SERVICE_TYPE_OPTIONS: Array<{
   value: BookLeopardsShipmentType;
@@ -80,6 +103,8 @@ export function LeopardsCourierPanel({
   onOrderUpdated: () => void | Promise<void>;
 }) {
   const [booking, setBooking] = useState(false);
+  const [savingCn, setSavingCn] = useState(false);
+  const [manualCnInput, setManualCnInput] = useState('');
   const [printing, setPrinting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -103,9 +128,13 @@ export function LeopardsCourierPanel({
     loadSheetId,
   } = getLeopardsShippingDetails(order.shipping, order);
   const hasCn = Boolean(trackingNumber);
+  const cnSource = getLeopardsCnSource(order.shipping);
+  const isPortalBooking = cnSource === 'portal';
   const canBook =
     !hasCn &&
     (order.status === 'pending' || order.status === 'processing');
+  /** Show manual CN entry when no CN yet (portal-booked packets). */
+  const canAssignManualCn = !hasCn && canBook;
   const publicTrackingUrl = trackingNumber
     ? buildLeopardsPublicTrackingUrl(trackingNumber, trackingUrl)
     : null;
@@ -152,6 +181,33 @@ export function LeopardsCourierPanel({
       setError(formatApiError(err));
     } finally {
       setBooking(false);
+    }
+  }
+
+  async function handleSaveManualCn() {
+    setError(null);
+    setSuccess(null);
+
+    const trimmed = manualCnInput.trim();
+    if (!trimmed) {
+      setError('Enter a tracking CN before saving.');
+      return;
+    }
+
+    setSavingCn(true);
+    try {
+      const result = await assignManualLeopardsCn(order.id, trimmed);
+      setManualCnInput('');
+      setSuccess(
+        result.trackingNumber
+          ? `Manual CN saved: ${result.trackingNumber}`
+          : 'Manual tracking CN saved.',
+      );
+      await onOrderUpdated();
+    } catch (err) {
+      setError(formatApiError(err));
+    } finally {
+      setSavingCn(false);
     }
   }
 
@@ -205,7 +261,7 @@ export function LeopardsCourierPanel({
     await loadTracking();
   }
 
-  if (!hasCn && !canBook) {
+  if (!hasCn && !canBook && !canAssignManualCn) {
     return null;
   }
 
@@ -218,8 +274,10 @@ export function LeopardsCourierPanel({
           </h2>
           <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
             {hasCn
-              ? 'CN generated. Print the shipping label or track the shipment.'
-              : 'Book a packet to generate a CN and downloadable shipping label slip.'}
+              ? isPortalBooking
+                ? 'Portal CN saved. Track the shipment or print a label if available.'
+                : 'CN generated. Print the shipping label or track the shipment.'
+              : 'Book via API, or enter a CN from a Leopards portal booking.'}
           </p>
         </div>
       </div>
@@ -246,6 +304,11 @@ export function LeopardsCourierPanel({
                   {trackingNumber}
                 </span>
               )}
+              {isPortalBooking ? (
+                <span className="rounded border border-zinc-300 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-zinc-600 dark:border-zinc-600 dark:text-zinc-300">
+                  Portal
+                </span>
+              ) : null}
               <button
                 type="button"
                 onClick={() => void handleCopyTracking()}
@@ -287,60 +350,104 @@ export function LeopardsCourierPanel({
         </div>
       ) : (
         <PermissionGate anyOf={['shipping.manage', 'orders.manage']}>
-          <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
-            <div className="min-w-[12rem] flex-1 sm:max-w-xs">
-              <label
-                htmlFor="leopards-service-type"
-                className="text-xs font-medium text-zinc-600 dark:text-zinc-400"
+          <div className="mt-4 space-y-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
+              <div className="min-w-[12rem] flex-1 sm:max-w-xs">
+                <label
+                  htmlFor="leopards-service-type"
+                  className="text-xs font-medium text-zinc-600 dark:text-zinc-400"
+                >
+                  Service Type
+                </label>
+                <select
+                  id="leopards-service-type"
+                  value={shipmentType}
+                  onChange={(e) =>
+                    setShipmentType(e.target.value as BookLeopardsShipmentType)
+                  }
+                  disabled={booking || savingCn}
+                  className="mt-1 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-50"
+                >
+                  {SERVICE_TYPE_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="min-w-[10rem] flex-1 sm:max-w-[11rem]">
+                <label
+                  htmlFor="leopards-weight-grams"
+                  className="text-xs font-medium text-zinc-600 dark:text-zinc-400"
+                >
+                  Weight (grams)
+                </label>
+                <input
+                  id="leopards-weight-grams"
+                  type="number"
+                  min={1}
+                  step={1}
+                  inputMode="numeric"
+                  value={weightGramsInput}
+                  onChange={(e) => setWeightGramsInput(e.target.value)}
+                  disabled={booking || savingCn}
+                  className="mt-1 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 font-mono text-sm tabular-nums dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-50"
+                />
+                <p className="mt-1 text-[11px] leading-snug text-zinc-500 dark:text-zinc-400">
+                  Enter exact scale weight in grams (e.g., 1000 for 1kg).
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => void handleBook()}
+                disabled={booking || savingCn}
+                className={adminUi.btnPrimary}
               >
-                Service Type
-              </label>
-              <select
-                id="leopards-service-type"
-                value={shipmentType}
-                onChange={(e) =>
-                  setShipmentType(e.target.value as BookLeopardsShipmentType)
-                }
-                disabled={booking}
-                className="mt-1 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-50"
-              >
-                {SERVICE_TYPE_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+                {booking ? 'Booking with Leopards…' : 'Book via Leopards Courier'}
+              </button>
             </div>
-            <div className="min-w-[10rem] flex-1 sm:max-w-[11rem]">
-              <label
-                htmlFor="leopards-weight-grams"
-                className="text-xs font-medium text-zinc-600 dark:text-zinc-400"
-              >
-                Weight (grams)
-              </label>
-              <input
-                id="leopards-weight-grams"
-                type="number"
-                min={1}
-                step={1}
-                inputMode="numeric"
-                value={weightGramsInput}
-                onChange={(e) => setWeightGramsInput(e.target.value)}
-                disabled={booking}
-                className="mt-1 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 font-mono text-sm tabular-nums dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-50"
-              />
-              <p className="mt-1 text-[11px] leading-snug text-zinc-500 dark:text-zinc-400">
-                Enter exact scale weight in grams (e.g., 1000 for 1kg).
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => void handleBook()}
-              disabled={booking}
-              className={adminUi.btnPrimary}
-            >
-              {booking ? 'Booking with Leopards…' : 'Book via Leopards Courier'}
-            </button>
+
+            {canAssignManualCn ? (
+              <div className="border-t border-zinc-200 pt-4 dark:border-zinc-800">
+                <p className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
+                  Already booked on Leopards portal?
+                </p>
+                <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-end">
+                  <div className="min-w-[14rem] flex-1 sm:max-w-sm">
+                    <label
+                      htmlFor="leopards-manual-cn"
+                      className="text-xs font-medium text-zinc-600 dark:text-zinc-400"
+                    >
+                      Manual Tracking CN (Portal Booking)
+                    </label>
+                    <input
+                      id="leopards-manual-cn"
+                      type="text"
+                      value={manualCnInput}
+                      onChange={(e) => setManualCnInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          void handleSaveManualCn();
+                        }
+                      }}
+                      disabled={booking || savingCn}
+                      placeholder="e.g. LE123456789"
+                      autoComplete="off"
+                      className="mt-1 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 font-mono text-sm dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-50"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => void handleSaveManualCn()}
+                    disabled={booking || savingCn || !manualCnInput.trim()}
+                    className={adminUi.btnSecondary}
+                  >
+                    {savingCn ? 'Saving…' : 'Save CN'}
+                  </button>
+                </div>
+              </div>
+            ) : null}
           </div>
         </PermissionGate>
       )}

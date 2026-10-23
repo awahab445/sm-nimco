@@ -287,6 +287,15 @@ export type BookLeopardsOptions = {
   weightGrams?: number | null;
 };
 
+/** Result of assigning a CN booked on the Leopards portal (no API book). */
+export type ManualCnLeopardsResult = {
+  trackingNumber: string;
+  trackingUrl: string;
+  courierCode: string;
+  courierName: string;
+  shipping: OrderShipping;
+};
+
 export type BulkBookLeopardsResultItem = {
   orderId: string;
   orderNumber?: string;
@@ -1213,6 +1222,126 @@ export class LeopardsShippingService {
       shipmentType: apiShipmentType,
       shipping: this.mapToOrderShippingEntity(orderShipping),
       apiResponse,
+    };
+  }
+
+  /**
+   * Persist a CN booked externally on the Leopards portal (no Merchant API call).
+   * Writes the same OrderShipping / order metadata fields as API booking so
+   * list, loadsheet, invoice, and live track UIs work unchanged.
+   */
+  async assignManualCn(
+    orderId: string,
+    trackingCnRaw: string,
+  ): Promise<ManualCnLeopardsResult> {
+    const trackingNumber = String(trackingCnRaw ?? '').trim();
+    if (!trackingNumber) {
+      throw new BadRequestException('trackingCn cannot be empty');
+    }
+
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      include: { shipping: true },
+    });
+
+    if (!order) {
+      throw new NotFoundException(`Order ${orderId} not found`);
+    }
+
+    const existingCn = order.shipping?.trackingNumber?.trim();
+    if (existingCn) {
+      throw new BadRequestException(
+        `Order already has tracking number ${existingCn}`,
+      );
+    }
+
+    const trackingUrl = this.buildTrackingUrl(trackingNumber);
+    const courierCode =
+      order.shipping?.courierCode?.trim() || 'leopards';
+    const courierName =
+      order.shipping?.courierName?.trim() || 'Leopards Courier';
+
+    const existingMeta =
+      order.shipping?.metadata &&
+      typeof order.shipping.metadata === 'object' &&
+      !Array.isArray(order.shipping.metadata)
+        ? (order.shipping.metadata as Record<string, unknown>)
+        : {};
+    const existingLeopards =
+      existingMeta.leopards &&
+      typeof existingMeta.leopards === 'object' &&
+      !Array.isArray(existingMeta.leopards)
+        ? (existingMeta.leopards as Record<string, unknown>)
+        : {};
+
+    const metadata: Prisma.InputJsonValue = {
+      ...existingMeta,
+      leopards: {
+        ...existingLeopards,
+        track_number: trackingNumber,
+        booked_at: new Date().toISOString(),
+        source: 'portal',
+      },
+    };
+
+    let orderShipping: PrismaOrderShipping;
+    if (order.shipping) {
+      orderShipping = await this.prisma.orderShipping.update({
+        where: { orderId },
+        data: {
+          trackingNumber,
+          trackingUrl,
+          courierCode,
+          courierName,
+          status: 'shipped',
+          shippedAt: order.shipping.shippedAt ?? new Date(),
+          metadata,
+        },
+      });
+    } else {
+      const shippingMethodId = await this.resolveLeopardsShippingMethodId();
+      orderShipping = await this.prisma.orderShipping.create({
+        data: {
+          orderId,
+          shippingMethodId,
+          cost: order.shippingTotal,
+          currency: order.currency,
+          status: 'shipped',
+          trackingNumber,
+          trackingUrl,
+          courierCode,
+          courierName,
+          shippedAt: new Date(),
+          shippingAddress: order.shippingAddress as Prisma.InputJsonValue,
+          metadata,
+        },
+      });
+    }
+
+    await this.prisma.order.update({
+      where: { id: orderId },
+      data: {
+        fulfillmentStatus: 'shipped',
+        metadata: {
+          ...this.asRecord(order.metadata),
+          courierName,
+          courierCode,
+          trackingNumber,
+          trackingUrl,
+        },
+      },
+    });
+
+    this.logger.log(
+      `Leopards manual CN assigned on order ${order.orderNumber}: CN ${trackingNumber} (portal)`,
+    );
+
+    return {
+      trackingNumber,
+      trackingUrl,
+      courierCode,
+      courierName,
+      shipping: this.mapToOrderShippingEntity(orderShipping),
     };
   }
 

@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Put,
+  Patch,
   Delete,
   Param,
   Body,
@@ -32,6 +33,7 @@ import {
 } from '../dto/customer-group.dto';
 import { BookLeopardsDto } from '../dto/book-leopards.dto';
 import { BulkBookLeopardsDto } from '../dto/bulk-book-leopards.dto';
+import { ManualCnLeopardsDto } from '../dto/manual-cn-leopards.dto';
 import { TrackLeopardsDto } from '../dto/track-leopards.dto';
 import { BulkShippingLabelsDto } from '../../order/dto/bulk-shipping-labels.dto';
 import { AdminJwtAuthGuard } from '../../admin/guards/admin-jwt-auth.guard';
@@ -261,6 +263,24 @@ export class AdminShippingController {
       specialInstructions: dto.specialInstructions,
       weightGrams: dto.weightGrams,
     });
+  }
+
+  /**
+   * Assign a CN booked externally on the Leopards portal (no API book).
+   * PATCH /admin/shipping/leopards/manual-cn/:orderId
+   * Body: `{ trackingCn: string }`
+   */
+  @Patch('leopards/manual-cn/:orderId')
+  @RequirePermissions('shipping.manage')
+  @HttpCode(HttpStatus.OK)
+  async assignManualLeopardsCn(
+    @Param('orderId') orderId: string,
+    @Body() dto: ManualCnLeopardsDto,
+  ) {
+    return this.leopardsShippingService.assignManualCn(
+      orderId,
+      dto.trackingCn,
+    );
   }
 
   /**

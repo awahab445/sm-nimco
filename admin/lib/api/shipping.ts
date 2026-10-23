@@ -283,6 +283,30 @@ export async function bookOrderWithLeopards(
   );
 }
 
+export type ManualCnLeopardsResult = {
+  trackingNumber: string;
+  trackingUrl: string;
+  courierCode: string;
+  courierName: string;
+};
+
+/**
+ * Persist a CN booked on the Leopards portal (no Merchant API book).
+ * PATCH /admin/shipping/leopards/manual-cn/:orderId with `{ trackingCn }`.
+ */
+export async function assignManualLeopardsCn(
+  orderId: string,
+  trackingCn: string,
+) {
+  return fetchApi<ManualCnLeopardsResult>(
+    `/admin/shipping/leopards/manual-cn/${orderId}`,
+    {
+      method: 'PATCH',
+      body: JSON.stringify({ trackingCn }),
+    },
+  );
+}
+
 export type BulkBookLeopardsResultItem = {
   orderId: string;
   orderNumber?: string;

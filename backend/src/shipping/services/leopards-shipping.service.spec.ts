@@ -837,4 +837,77 @@ describe('LeopardsShippingService', () => {
       expect(bookCall?.[1].shipment_type).toBe('detain');
     });
   });
+
+  describe('assignManualCn', () => {
+    it('persists trimmed portal CN and sets Leopards courier when missing', async () => {
+      prisma.order.findUnique.mockResolvedValue({
+        id: 'ord-1',
+        orderNumber: 'ORD-1',
+        shippingTotal: 200,
+        currency: 'PKR',
+        shippingAddress: { city: 'Karachi' },
+        metadata: {},
+        shipping: {
+          orderId: 'ord-1',
+          trackingNumber: null,
+          courierCode: null,
+          courierName: null,
+          shippedAt: null,
+          metadata: {},
+        },
+      });
+      prisma.orderShipping.update.mockResolvedValue({
+        id: 'ship-1',
+        orderId: 'ord-1',
+        shippingMethodId: 'method-1',
+        cost: 200,
+        currency: 'PKR',
+        status: 'shipped',
+        trackingNumber: 'LE999888777',
+        trackingUrl:
+          'https://www.leopardscourier.com/tracking?cn=LE999888777',
+        courierCode: 'leopards',
+        courierName: 'Leopards Courier',
+        estimatedDelivery: null,
+        shippedAt: new Date(),
+        deliveredAt: null,
+        shippingAddress: {},
+        metadata: { leopards: { source: 'portal' } },
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+      prisma.order.update.mockResolvedValue({});
+
+      const result = await service.assignManualCn('ord-1', '  LE999888777  ');
+
+      expect(result.trackingNumber).toBe('LE999888777');
+      expect(prisma.orderShipping.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { orderId: 'ord-1' },
+          data: expect.objectContaining({
+            trackingNumber: 'LE999888777',
+            courierCode: 'leopards',
+            courierName: 'Leopards Courier',
+            status: 'shipped',
+          }),
+        }),
+      );
+      expect(httpService.post).not.toHaveBeenCalled();
+    });
+
+    it('rejects empty CN and existing CN', async () => {
+      await expect(service.assignManualCn('ord-1', '   ')).rejects.toThrow(
+        BadRequestException,
+      );
+
+      prisma.order.findUnique.mockResolvedValue({
+        id: 'ord-1',
+        orderNumber: 'ORD-1',
+        shipping: { trackingNumber: 'LE-EXISTING' },
+      });
+      await expect(
+        service.assignManualCn('ord-1', 'LE-NEW'),
+      ).rejects.toThrow(BadRequestException);
+    });
+  });
 });
