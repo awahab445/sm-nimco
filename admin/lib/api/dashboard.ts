@@ -24,6 +24,8 @@ export type DashboardStats = {
   completedCount: number;
   cancelledCount: number;
   lowStockCount: number;
+  /** Courier RTO / delivery failures (optional; also available via courier-performance). */
+  rtoCount?: number;
   recentOrders: DashboardRecentOrder[];
 };
 

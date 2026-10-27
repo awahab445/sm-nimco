@@ -27,6 +27,8 @@ export type DashboardStatsDto = {
   completedCount: number;
   cancelledCount: number;
   lowStockCount: number;
+  /** Leopards RTO / returned / cancelled shipments. */
+  rtoCount: number;
   recentOrders: DashboardRecentOrder[];
 };
 
@@ -91,6 +93,7 @@ export class AdminDashboardService {
       totalOrdersAll,
       recentOrdersRaw,
       lowStockRows,
+      courierPerf,
     ] = await Promise.all([
       this.prisma.order.aggregate({
         where: paidOrCompletedWhere,
@@ -145,6 +148,7 @@ export class AdminDashboardService {
         FROM inventory_items
         WHERE available_quantity <= low_stock_threshold
       `,
+      this.getCourierPerformance(),
     ]);
 
     const totalRevenue = Number(revenueAgg._sum.grandTotal ?? 0);
@@ -164,6 +168,7 @@ export class AdminDashboardService {
       completedCount,
       cancelledCount,
       lowStockCount: Number(lowStockRows[0]?.count ?? 0),
+      rtoCount: courierPerf.rto,
       recentOrders: recentOrdersRaw.map((o) => ({
         id: o.id,
         orderNumber: o.orderNumber,

@@ -7,16 +7,21 @@ import {
   DEFAULT_WAREHOUSE_ID,
   bulkAdjustInventoryStock,
   fetchProductInventoryMatrix,
+  setProductInventoryQuantities,
 } from '@/lib/api/inventory';
 import { formatApiError } from '@/lib/api/error-message';
 import { fetchAdminProducts } from '@/lib/api/products';
+import { StockHealthBar } from '@/components/inventory/stock-health-bar';
 
 type GridRow = {
   targetId: string;
   sku: string;
   name: string;
   quantity: number;
+  availableQuantity: number;
+  lowStockThreshold: number;
   quantityDelta: string;
+  quickSet: string;
 };
 
 export function InventoryVariantGridPanel() {
@@ -30,6 +35,7 @@ export function InventoryVariantGridPanel() {
   const [matrixError, setMatrixError] = useState<string | null>(null);
   const [defaultReason, setDefaultReason] = useState('');
   const [updating, setUpdating] = useState(false);
+  const [quickSettingId, setQuickSettingId] = useState<string | null>(null);
   const [updateError, setUpdateError] = useState<string | null>(null);
   const [updateSuccess, setUpdateSuccess] = useState<string | null>(null);
 
@@ -66,7 +72,10 @@ export function InventoryVariantGridPanel() {
           sku: row.sku,
           name: row.name,
           quantity: row.quantity,
+          availableQuantity: row.availableQuantity,
+          lowStockThreshold: row.lowStockThreshold,
           quantityDelta: '',
+          quickSet: '',
         })),
       );
     } catch (e) {
@@ -77,14 +86,24 @@ export function InventoryVariantGridPanel() {
   }
 
   useEffect(() => {
-    if (selectedProductId) {
+    if (!selectedProductId) return;
+    const kickoff = window.setTimeout(() => {
       void loadMatrix(selectedProductId);
-    }
+    }, 0);
+    return () => window.clearTimeout(kickoff);
+    // loadMatrix closes over warehouseId; reload when either changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional deps
   }, [selectedProductId, warehouseId]);
 
   function updateRowDelta(targetId: string, value: string) {
     setRows((prev) =>
       prev.map((row) => (row.targetId === targetId ? { ...row, quantityDelta: value } : row)),
+    );
+  }
+
+  function updateRowQuickSet(targetId: string, value: string) {
+    setRows((prev) =>
+      prev.map((row) => (row.targetId === targetId ? { ...row, quickSet: value } : row)),
     );
   }
 
@@ -125,12 +144,39 @@ export function InventoryVariantGridPanel() {
     }
   }
 
+  async function submitQuickSet(row: GridRow) {
+    if (!selectedProductId) return;
+    setUpdateError(null);
+    setUpdateSuccess(null);
+
+    const trimmed = row.quickSet.trim();
+    const quantity = parseInt(trimmed, 10);
+    if (!Number.isFinite(quantity) || quantity < 0) {
+      setUpdateError('Quick set requires a non-negative whole number.');
+      return;
+    }
+
+    setQuickSettingId(row.targetId);
+    try {
+      await setProductInventoryQuantities(selectedProductId, {
+        warehouseId: warehouseId.trim() || DEFAULT_WAREHOUSE_ID,
+        items: [{ targetId: row.targetId, quantity }],
+      });
+      setUpdateSuccess(`Set ${row.sku} to ${quantity}.`);
+      await loadMatrix(selectedProductId);
+    } catch (e) {
+      setUpdateError(formatApiError(e));
+    } finally {
+      setQuickSettingId(null);
+    }
+  }
+
   return (
     <div className="space-y-6">
       <section className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950 sm:p-6">
         <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">Product variant grid</h2>
         <p className="mt-1 text-xs text-zinc-500">
-          Select a product to load all variants and apply signed quantity deltas in one request.
+          Select a product to load all variants. Use signed deltas for bulk changes, or Quick set for an absolute quantity.
         </p>
 
         <div className="mt-4 space-y-3">
@@ -210,8 +256,9 @@ export function InventoryVariantGridPanel() {
               <thead>
                 <tr className="text-left text-xs font-medium uppercase tracking-wide text-zinc-500">
                   <th className="px-3 py-2">Variant / SKU</th>
-                  <th className="px-3 py-2">Current stock</th>
+                  <th className="px-3 py-2">Stock health</th>
                   <th className="px-3 py-2">Quantity delta</th>
+                  <th className="px-3 py-2">Quick set</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-100 dark:divide-zinc-900">
@@ -221,7 +268,18 @@ export function InventoryVariantGridPanel() {
                       <div className="font-medium text-zinc-900 dark:text-zinc-50">{row.name}</div>
                       <div className="font-mono text-xs text-zinc-500">{row.sku}</div>
                     </td>
-                    <td className="px-3 py-3 font-semibold text-zinc-900 dark:text-zinc-50">{row.quantity}</td>
+                    <td className="px-3 py-3">
+                      <StockHealthBar
+                        availableQuantity={row.availableQuantity}
+                        lowStockThreshold={row.lowStockThreshold}
+                      />
+                      <p className="mt-1 text-[11px] text-zinc-500">
+                        On hand {row.quantity}
+                        {row.lowStockThreshold > 0
+                          ? ` · threshold ${row.lowStockThreshold}`
+                          : null}
+                      </p>
+                    </td>
                     <td className="px-3 py-3">
                       <input
                         type="number"
@@ -232,6 +290,38 @@ export function InventoryVariantGridPanel() {
                         className="w-full min-w-[8rem] rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-50"
                       />
                     </td>
+                    <td className="px-3 py-3">
+                      <div className="flex min-w-[10rem] items-center gap-2">
+                        <input
+                          type="number"
+                          min={0}
+                          step={1}
+                          value={row.quickSet}
+                          onChange={(e) => updateRowQuickSet(row.targetId, e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              void submitQuickSet(row);
+                            }
+                          }}
+                          placeholder="Absolute qty"
+                          disabled={quickSettingId === row.targetId || updating}
+                          className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 font-mono text-sm tabular-nums dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-50"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => void submitQuickSet(row)}
+                          disabled={
+                            quickSettingId === row.targetId ||
+                            updating ||
+                            !row.quickSet.trim()
+                          }
+                          className="shrink-0 rounded-lg border border-zinc-300 px-2.5 py-2 text-xs font-medium text-zinc-700 hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-600 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                        >
+                          {quickSettingId === row.targetId ? '…' : 'Set'}
+                        </button>
+                      </div>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -241,7 +331,7 @@ export function InventoryVariantGridPanel() {
               <button
                 type="button"
                 onClick={() => void submitBulkUpdate()}
-                disabled={updating}
+                disabled={updating || quickSettingId != null}
                 className={adminUi.btnPrimary}
               >
                 {updating ? 'Updating…' : 'Update all variants'}

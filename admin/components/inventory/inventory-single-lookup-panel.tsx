@@ -11,6 +11,7 @@ import {
 } from '@/lib/api/inventory';
 import { formatApiError } from '@/lib/api/error-message';
 import { fetchAdminProduct, fetchAdminProducts } from '@/lib/api/products';
+import { StockHealthBar } from '@/components/inventory/stock-health-bar';
 
 export function InventorySingleLookupPanel() {
   const [variantId, setVariantId] = useState('');
@@ -27,7 +28,9 @@ export function InventorySingleLookupPanel() {
 
   const [adjQty, setAdjQty] = useState('');
   const [adjReason, setAdjReason] = useState('');
+  const [quickSetQty, setQuickSetQty] = useState('');
   const [adjusting, setAdjusting] = useState(false);
+  const [quickSetting, setQuickSetting] = useState(false);
   const [adjustError, setAdjustError] = useState<string | null>(null);
   const [adjustSuccess, setAdjustSuccess] = useState<string | null>(null);
 
@@ -127,6 +130,48 @@ export function InventorySingleLookupPanel() {
       setAdjustError(formatApiError(e));
     } finally {
       setAdjusting(false);
+    }
+  }
+
+  async function submitQuickSet() {
+    setAdjustError(null);
+    setAdjustSuccess(null);
+    const id = variantId.trim();
+    if (!id) {
+      setAdjustError('Enter a variant ID or simple product ID first.');
+      return;
+    }
+    if (!status) {
+      setAdjustError('Load stock status before using Quick set.');
+      return;
+    }
+    const target = parseInt(quickSetQty.trim(), 10);
+    if (!Number.isFinite(target) || target < 0) {
+      setAdjustError('Quick set requires a non-negative whole number.');
+      return;
+    }
+    const delta = target - status.quantity;
+    if (delta === 0) {
+      setAdjustSuccess(`Already at ${target}.`);
+      return;
+    }
+    setQuickSetting(true);
+    try {
+      const res = await adjustInventoryStock({
+        variantId: id,
+        quantity: delta,
+        reason: adjReason.trim() || 'Quick set absolute quantity',
+        warehouseId: warehouseId.trim() || DEFAULT_WAREHOUSE_ID,
+      });
+      setAdjustSuccess(
+        `Quick set: on-hand ${res.data.previousQuantity} → ${res.data.newQuantity} (available ${res.data.availableQuantity}).`,
+      );
+      setQuickSetQty('');
+      await loadStatus();
+    } catch (e) {
+      setAdjustError(formatApiError(e));
+    } finally {
+      setQuickSetting(false);
     }
   }
 
@@ -243,31 +288,38 @@ export function InventorySingleLookupPanel() {
         ) : null}
 
         {status ? (
-          <dl className="mt-6 grid gap-3 border-t border-zinc-200 pt-6 text-sm dark:border-zinc-800 sm:grid-cols-2">
-            <div>
-              <dt className="text-zinc-500">On hand</dt>
-              <dd className="font-semibold text-zinc-900 dark:text-zinc-50">{status.quantity}</dd>
-            </div>
-            <div>
-              <dt className="text-zinc-500">Reserved</dt>
-              <dd className="font-semibold text-zinc-900 dark:text-zinc-50">{status.reservedQuantity}</dd>
-            </div>
-            <div>
-              <dt className="text-zinc-500">Available</dt>
-              <dd className="font-semibold text-zinc-900 dark:text-zinc-50">{status.availableQuantity}</dd>
-            </div>
-            <div>
-              <dt className="text-zinc-500">Low-stock threshold</dt>
-              <dd className="font-semibold text-zinc-900 dark:text-zinc-50">{status.lowStockThreshold}</dd>
-            </div>
-          </dl>
+          <div className="mt-6 space-y-4 border-t border-zinc-200 pt-6 dark:border-zinc-800">
+            <StockHealthBar
+              availableQuantity={status.availableQuantity}
+              lowStockThreshold={status.lowStockThreshold}
+              className="max-w-xs"
+            />
+            <dl className="grid gap-3 text-sm sm:grid-cols-2">
+              <div>
+                <dt className="text-zinc-500">On hand</dt>
+                <dd className="font-semibold text-zinc-900 dark:text-zinc-50">{status.quantity}</dd>
+              </div>
+              <div>
+                <dt className="text-zinc-500">Reserved</dt>
+                <dd className="font-semibold text-zinc-900 dark:text-zinc-50">{status.reservedQuantity}</dd>
+              </div>
+              <div>
+                <dt className="text-zinc-500">Available</dt>
+                <dd className="font-semibold text-zinc-900 dark:text-zinc-50">{status.availableQuantity}</dd>
+              </div>
+              <div>
+                <dt className="text-zinc-500">Low-stock threshold</dt>
+                <dd className="font-semibold text-zinc-900 dark:text-zinc-50">{status.lowStockThreshold}</dd>
+              </div>
+            </dl>
+          </div>
         ) : null}
       </section>
 
       <section className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950 sm:p-6">
         <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">Adjust stock</h2>
         <p className="mt-1 text-xs text-zinc-500">
-          Enter a signed integer: positive to receive stock, negative to shrink.
+          Enter a signed integer: positive to receive stock, negative to shrink. Or Quick set an absolute on-hand quantity.
         </p>
         <form onSubmit={(e) => void submitAdjust(e)} className="mt-4 space-y-3">
           <div>
@@ -292,12 +344,48 @@ export function InventorySingleLookupPanel() {
           </div>
           <button
             type="submit"
-            disabled={adjusting}
+            disabled={adjusting || quickSetting}
             className={adminUi.btnPrimary}
           >
             {adjusting ? 'Applying…' : 'Apply adjustment'}
           </button>
         </form>
+
+        <div className="mt-6 border-t border-zinc-200 pt-4 dark:border-zinc-800">
+          <label
+            htmlFor="inventory-quick-set"
+            className="text-xs font-medium text-zinc-600 dark:text-zinc-400"
+          >
+            Quick set (absolute on-hand)
+          </label>
+          <div className="mt-1 flex flex-wrap items-center gap-2">
+            <input
+              id="inventory-quick-set"
+              type="number"
+              min={0}
+              step={1}
+              value={quickSetQty}
+              onChange={(e) => setQuickSetQty(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  void submitQuickSet();
+                }
+              }}
+              placeholder="e.g. 50"
+              disabled={adjusting || quickSetting || !status}
+              className="min-w-[8rem] flex-1 rounded-lg border border-zinc-300 bg-white px-3 py-2 font-mono text-sm tabular-nums dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-50"
+            />
+            <button
+              type="button"
+              onClick={() => void submitQuickSet()}
+              disabled={adjusting || quickSetting || !status || !quickSetQty.trim()}
+              className={adminUi.btnSecondary}
+            >
+              {quickSetting ? 'Setting…' : 'Set'}
+            </button>
+          </div>
+        </div>
 
         {adjustError ? (
           <p className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-200">

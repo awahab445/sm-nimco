@@ -58,13 +58,13 @@ export function AppSidebar({ mobileOpen, onMobileClose }: AppSidebarProps) {
       />
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-zinc-200 bg-white transition-transform duration-200 ease-out dark:border-zinc-800 dark:bg-zinc-950 md:static md:z-0 md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-border bg-card text-card-foreground transition-transform duration-200 ease-out dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 md:static md:z-0 md:translate-x-0 ${
           mobileOpen ? 'translate-x-0 shadow-xl' : '-translate-x-full md:translate-x-0 md:shadow-none'
         }`}
       >
-        <div className="flex h-14 shrink-0 items-center border-b border-zinc-200 px-4 dark:border-zinc-800">
+        <div className="flex h-14 shrink-0 items-center border-b border-border px-4 dark:border-zinc-800">
           <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+            <p className="truncate text-sm font-semibold text-foreground dark:text-zinc-50">
               {appName}
             </p>
             <p className="text-xs text-zinc-500 dark:text-zinc-400">Operations</p>

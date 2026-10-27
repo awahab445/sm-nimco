@@ -3,6 +3,8 @@
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/auth.store';
 import { adminUi } from '@/lib/admin-ui';
+import { NotificationBell } from '@/components/notification-bell';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 type AdminHeaderProps = {
   /** Opens the sidebar on small screens */
@@ -21,7 +23,7 @@ export function AdminHeader({ onMenuOpen, onSearchOpen }: AdminHeaderProps) {
   };
 
   return (
-    <header className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-zinc-200 bg-white px-3 sm:px-4 dark:border-zinc-800 dark:bg-zinc-950">
+    <header className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-border bg-card px-3 text-card-foreground sm:px-4 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100">
       <div className="flex min-w-0 flex-1 items-center gap-2">
         {onMenuOpen ? (
           <button
@@ -64,6 +66,8 @@ export function AdminHeader({ onMenuOpen, onSearchOpen }: AdminHeaderProps) {
             </kbd>
           </button>
         ) : null}
+        <NotificationBell />
+        <ThemeToggle />
         <button
           type="button"
           onClick={handleLogout}

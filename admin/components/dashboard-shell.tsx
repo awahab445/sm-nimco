@@ -25,11 +25,11 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <div className="flex min-h-screen bg-zinc-100 dark:bg-zinc-950">
+    <div className="flex min-h-screen bg-background text-foreground dark:bg-zinc-950">
       <AppSidebar mobileOpen={mobileNavOpen} onMobileClose={closeMobile} />
-      <div className="flex min-h-screen min-w-0 flex-1 flex-col">
+      <div className="flex min-h-screen min-w-0 flex-1 flex-col bg-background dark:bg-zinc-950">
         <AdminHeader onMenuOpen={openMobile} onSearchOpen={openCommand} />
-        <main className="flex-1 overflow-auto p-4 sm:p-6 dark:bg-black">
+        <main className="flex-1 overflow-auto bg-background p-4 text-foreground sm:p-6 dark:bg-zinc-950 dark:text-zinc-100">
           {children}
         </main>
       </div>
