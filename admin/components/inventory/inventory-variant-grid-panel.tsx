@@ -252,18 +252,18 @@ export function InventoryVariantGridPanel() {
 
         {rows.length > 0 ? (
           <div className="mt-6 overflow-x-auto">
-            <table className="min-w-full divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
-              <thead>
-                <tr className="text-left text-xs font-medium uppercase tracking-wide text-zinc-500">
-                  <th className="px-3 py-2">Variant / SKU</th>
-                  <th className="px-3 py-2">Stock health</th>
-                  <th className="px-3 py-2">Quantity delta</th>
-                  <th className="px-3 py-2">Quick set</th>
+            <table className="min-w-full divide-y divide-border text-sm">
+              <thead className={adminUi.tableHead}>
+                <tr>
+                  <th className={adminUi.tableHeadCell}>Variant / SKU</th>
+                  <th className={adminUi.tableHeadCell}>Stock health</th>
+                  <th className={adminUi.tableHeadCell}>Quantity delta</th>
+                  <th className={adminUi.tableHeadCell}>Quick set</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-100 dark:divide-zinc-900">
+              <tbody className="divide-y divide-border">
                 {rows.map((row) => (
-                  <tr key={row.targetId}>
+                  <tr key={row.targetId} className={adminUi.tableRow}>
                     <td className="px-3 py-3">
                       <div className="font-medium text-zinc-900 dark:text-zinc-50">{row.name}</div>
                       <div className="font-mono text-xs text-zinc-500">{row.sku}</div>

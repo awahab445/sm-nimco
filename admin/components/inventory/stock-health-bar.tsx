@@ -1,5 +1,7 @@
 'use client';
 
+import { statusPillClass, stockHealthTone } from '@/lib/status-tones';
+
 export type StockHealthLevel = 'healthy' | 'low' | 'out';
 
 export function resolveStockHealth(
@@ -27,30 +29,20 @@ export function stockHealthFillPercent(
     lowStockThreshold > 0
       ? lowStockThreshold
       : 5;
-  // Visual capacity: ~3× threshold so healthy stock fills most of the bar.
   const capacity = Math.max(threshold * 3, 10);
   return Math.max(0, Math.min(100, Math.round((available / capacity) * 100)));
 }
 
-const LEVEL_STYLES: Record<
-  StockHealthLevel,
-  { bar: string; label: string; text: string }
-> = {
-  healthy: {
-    bar: 'bg-emerald-500 dark:bg-emerald-400',
-    label: 'Healthy',
-    text: 'text-emerald-700 dark:text-emerald-300',
-  },
-  low: {
-    bar: 'bg-amber-500 dark:bg-amber-400',
-    label: 'Low',
-    text: 'text-amber-700 dark:text-amber-300',
-  },
-  out: {
-    bar: 'bg-red-500 dark:bg-red-400',
-    label: 'Out of stock',
-    text: 'text-red-700 dark:text-red-300',
-  },
+const LEVEL_BAR: Record<StockHealthLevel, string> = {
+  healthy: 'bg-gradient-to-r from-emerald-500 to-emerald-400',
+  low: 'bg-brand-gradient',
+  out: 'bg-gradient-to-r from-red-600 to-red-500',
+};
+
+const LEVEL_LABEL: Record<StockHealthLevel, string> = {
+  healthy: 'Healthy',
+  low: 'Low',
+  out: 'Out of stock',
 };
 
 export function StockHealthBar({
@@ -66,29 +58,28 @@ export function StockHealthBar({
 }) {
   const level = resolveStockHealth(availableQuantity, lowStockThreshold);
   const fill = stockHealthFillPercent(availableQuantity, lowStockThreshold);
-  const styles = LEVEL_STYLES[level];
 
   return (
     <div className={`min-w-[7rem] max-w-[11rem] ${className}`}>
       <div className="flex items-baseline justify-between gap-2">
-        <span className="font-semibold tabular-nums text-zinc-900 dark:text-zinc-50">
+        <span className="font-semibold tabular-nums text-foreground">
           {availableQuantity}
         </span>
         {showLabel ? (
-          <span className={`text-[10px] font-medium uppercase tracking-wide ${styles.text}`}>
-            {styles.label}
+          <span className={statusPillClass(stockHealthTone(level))}>
+            {LEVEL_LABEL[level]}
           </span>
         ) : null}
       </div>
       <div
-        className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800"
+        className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-stone-200/80 dark:bg-stone-800"
         role="meter"
         aria-valuenow={availableQuantity}
         aria-valuemin={0}
-        aria-label={`Stock health: ${styles.label}`}
+        aria-label={`Stock health: ${LEVEL_LABEL[level]}`}
       >
         <div
-          className={`h-full rounded-full transition-[width] duration-300 ${styles.bar}`}
+          className={`h-full rounded-full transition-[width] duration-300 ${LEVEL_BAR[level]}`}
           style={{ width: `${level === 'out' ? 0 : Math.max(fill, 6)}%` }}
         />
       </div>

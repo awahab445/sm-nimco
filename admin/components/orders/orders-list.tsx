@@ -30,6 +30,12 @@ import { InvoiceModal } from '@/components/orders/InvoiceModal';
 import { BulkBookLeopardsSummaryModal } from '@/components/orders/bulk-leopards-actions';
 import { PermissionGate } from '@/components/permission-gate';
 import { adminUi } from '@/lib/admin-ui';
+import {
+  orderStatusTone,
+  paymentStatusTone,
+  statusPillClass,
+  type StatusTone,
+} from '@/lib/status-tones';
 
 const LEOPARDS_SERVICE_TYPE_OPTIONS: Array<{
   value: BookLeopardsShipmentType;
@@ -62,32 +68,8 @@ function TrashIcon({ className }: { className?: string }) {
   );
 }
 
-function statusPill(label: string, tone: 'neutral' | 'success' | 'warning' | 'danger') {
-  const tones = {
-    neutral: 'bg-zinc-200 text-zinc-800 dark:bg-zinc-700 dark:text-zinc-200',
-    success: 'bg-emerald-100 text-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-200',
-    warning: 'bg-amber-100 text-amber-900 dark:bg-amber-950/50 dark:text-amber-200',
-    danger: 'bg-red-100 text-red-900 dark:bg-red-950/50 dark:text-red-200',
-  } as const;
-  return (
-    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${tones[tone]}`}>
-      {label}
-    </span>
-  );
-}
-
-function orderStatusTone(s: string): 'neutral' | 'success' | 'warning' | 'danger' {
-  if (s === 'completed') return 'success';
-  if (s === 'cancelled') return 'danger';
-  if (s === 'processing' || s === 'ready_for_pickup') return 'warning';
-  return 'neutral';
-}
-
-function paymentTone(s: string | null | undefined): 'neutral' | 'success' | 'warning' | 'danger' {
-  if (s === 'paid') return 'success';
-  if (s === 'failed') return 'danger';
-  if (s === 'refunded') return 'warning';
-  return 'neutral';
+function statusPill(label: string, tone: StatusTone) {
+  return <span className={statusPillClass(tone)}>{label}</span>;
 }
 
 export function OrdersList() {
@@ -791,7 +773,7 @@ export function OrdersList() {
           <div className="p-8 text-center text-sm text-zinc-500">No orders match.</div>
         ) : (
           <table className="w-full min-w-[980px] text-left text-sm">
-            <thead className="border-b border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900/50">
+            <thead className={adminUi.tableHead}>
               <tr>
                 <th className="w-10 px-4 py-3">
                   <input
@@ -804,24 +786,22 @@ export function OrdersList() {
                       }
                     }}
                     onChange={toggleSelectAll}
-                    className="h-4 w-4 rounded border-zinc-300"
+                    className="h-4 w-4 rounded border-border"
                   />
                 </th>
-                <th className="px-4 py-3 font-medium text-zinc-700 dark:text-zinc-300">Order</th>
-                <th className="px-4 py-3 font-medium text-zinc-700 dark:text-zinc-300">Customer</th>
-                <th className="px-4 py-3 font-medium text-zinc-700 dark:text-zinc-300">Status</th>
-                <th className="px-4 py-3 font-medium text-zinc-700 dark:text-zinc-300">Payment</th>
-                <th className="px-4 py-3 font-medium text-zinc-700 dark:text-zinc-300 text-right">
-                  Total
-                </th>
-                <th className="min-w-[200px] px-4 py-3 font-medium text-zinc-700 dark:text-zinc-300 text-right">
+                <th className={adminUi.tableHeadCell}>Order</th>
+                <th className={adminUi.tableHeadCell}>Customer</th>
+                <th className={adminUi.tableHeadCell}>Status</th>
+                <th className={adminUi.tableHeadCell}>Payment</th>
+                <th className={`${adminUi.tableHeadCell} text-right`}>Total</th>
+                <th className={`min-w-[200px] ${adminUi.tableHeadCell} text-right`}>
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
+            <tbody className="divide-y divide-border">
               {rows.map((o) => (
-                <tr key={o.id} className="hover:bg-zinc-50/80 dark:hover:bg-zinc-900/30">
+                <tr key={o.id} className={adminUi.tableRow}>
                   <td className="px-4 py-3">
                     <input
                       type="checkbox"
@@ -868,7 +848,7 @@ export function OrdersList() {
                   <td className="px-4 py-3">
                     {statusPill(
                       paymentStatusLabel(o.paymentStatus),
-                      paymentTone(o.paymentStatus),
+                      paymentStatusTone(o.paymentStatus),
                     )}
                   </td>
                   <td className="px-4 py-3 text-right font-mono text-sm font-medium tabular-nums tracking-tight text-zinc-900 dark:text-zinc-50">

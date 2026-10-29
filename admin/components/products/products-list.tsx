@@ -27,6 +27,10 @@ import {
 } from '@/lib/resolve-image-url';
 import { PermissionGate } from '@/components/permission-gate';
 import { formatPrice } from '@/lib/currency';
+import {
+  productStatusTone,
+  statusPillClass,
+} from '@/lib/status-tones';
 
 const STATUS_OPTIONS: { value: '' | ProductStatus; label: string }[] = [
   { value: '', label: 'All statuses' },
@@ -509,7 +513,7 @@ export function ProductsList() {
           <div className="p-8 text-center text-sm text-zinc-500">No products found.</div>
         ) : (
           <table className="w-full min-w-[880px] text-left text-sm">
-            <thead className="border-b border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900/50">
+            <thead className={adminUi.tableHead}>
               <tr>
                 <th className="w-10 px-3 py-3">
                   <PermissionGate anyOf={['products.delete']}>
@@ -521,27 +525,25 @@ export function ProductsList() {
                       }}
                       onChange={toggleSelectAll}
                       aria-label="Select all products on this page"
-                      className="h-4 w-4 rounded border-zinc-300"
+                      className="h-4 w-4 rounded border-border"
                     />
                   </PermissionGate>
                 </th>
-                <th className="w-14 px-3 py-3 font-medium text-zinc-700 dark:text-zinc-300" />
-                <th className="px-3 py-3 font-medium text-zinc-700 dark:text-zinc-300">Product</th>
-                <th className="px-3 py-3 font-medium text-zinc-700 dark:text-zinc-300">SKU</th>
-                <th className="px-3 py-3 font-medium text-zinc-700 dark:text-zinc-300">Type</th>
-                <th className="px-3 py-3 font-medium text-zinc-700 dark:text-zinc-300">Price</th>
-                <th className="px-3 py-3 font-medium text-zinc-700 dark:text-zinc-300">Status</th>
-                <th className="px-3 py-3 font-medium text-zinc-700 dark:text-zinc-300">Variants</th>
-                <th className="px-3 py-3 text-right font-medium text-zinc-700 dark:text-zinc-300">
-                  Actions
-                </th>
+                <th className={`w-14 ${adminUi.tableHeadCell}`} />
+                <th className={adminUi.tableHeadCell}>Product</th>
+                <th className={adminUi.tableHeadCell}>SKU</th>
+                <th className={adminUi.tableHeadCell}>Type</th>
+                <th className={adminUi.tableHeadCell}>Price</th>
+                <th className={adminUi.tableHeadCell}>Status</th>
+                <th className={adminUi.tableHeadCell}>Variants</th>
+                <th className={`${adminUi.tableHeadCell} text-right`}>Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
+            <tbody className="divide-y divide-border">
               {rows.map((row) => {
                 const img = row.images[0];
                 return (
-                  <tr key={row.id} className="hover:bg-zinc-50/80 dark:hover:bg-zinc-900/30">
+                  <tr key={row.id} className={adminUi.tableRow}>
                     <td className="px-3 py-2">
                       <PermissionGate anyOf={['products.delete']}>
                         <input
@@ -579,15 +581,7 @@ export function ProductsList() {
                       {formatPrice(moneyToNumber(row.basePrice))}
                     </td>
                     <td className="px-3 py-2">
-                      <span
-                        className={
-                          row.status === 'active'
-                            ? 'rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-200'
-                            : row.status === 'draft'
-                              ? 'rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-900 dark:bg-amber-950/50 dark:text-amber-200'
-                              : 'rounded-full bg-zinc-200 px-2 py-0.5 text-xs font-medium text-zinc-800 dark:bg-zinc-700 dark:text-zinc-200'
-                        }
-                      >
+                      <span className={statusPillClass(productStatusTone(row.status))}>
                         {row.status}
                       </span>
                     </td>
@@ -595,10 +589,10 @@ export function ProductsList() {
                       {row._count?.variants ?? 0}
                     </td>
                     <td className="px-3 py-2 text-right">
-                      <div className="inline-flex items-center gap-3">
+                      <div className="inline-flex items-center gap-3 transition-opacity">
                         <Link
                           href={`/products/${row.id}`}
-                          className="text-sm font-medium text-zinc-900 underline dark:text-zinc-100"
+                          className={`text-sm ${adminUi.link}`}
                         >
                           Open
                         </Link>
