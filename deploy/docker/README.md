@@ -205,4 +205,4 @@ After restore, log in with your **local admin credentials**. Re-check **Payment 
 | CORS errors | `SHOP_URL` / `ADMIN_URL` must match browser origins exactly |
 | Build OOM | Ensure swap is enabled (`setup-docker-server.sh`); build one service at a time |
 | `/uploads/...` 404 on API | Image files missing from Docker volume — run `restore-uploads.sh` or `push-uploads-to-vps.sh` |
-| P3009 failed migration / API boot loop | `bash deploy/docker/fix-migration-history.sh` then `compose.sh up -d api` |
+| P3009 failed migration / API boot loop | The API entrypoint stops on any `migrate deploy` failure (it never falls back to `db push --accept-data-loss`; only an empty database is created with `db push`). Check `compose.sh logs api`, take a DB backup, then `bash deploy/docker/fix-migration-history.sh` (it runs `db push --accept-data-loss`) and `compose.sh up -d api` |
