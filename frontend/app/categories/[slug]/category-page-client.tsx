@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useParams, usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useParams, usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { productApi, categoryApi, inventoryApi, type ProductListResponse, type Category } from '@/lib/api-client';
@@ -21,18 +21,48 @@ import { storefrontUi } from '@/lib/storefront-ui';
 
 const PAGE_LIMIT = 12;
 
-export function CategoryPageClient() {
+function normalizeCategory(raw: unknown): Category | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const obj = raw as Record<string, unknown>;
+  const nested =
+    obj.data && typeof obj.data === 'object' ? (obj.data as Record<string, unknown>) : obj;
+  const id = typeof nested.id === 'string' ? nested.id : '';
+  const slug = typeof nested.slug === 'string' ? nested.slug : '';
+  const name = typeof nested.name === 'string' ? nested.name : '';
+  if (!id && !slug) return null;
+  return { ...(nested as unknown as Category), id, slug, name };
+}
+
+export type CategoryPageClientProps = {
+  /** Current page from the server's ?page= (keeps the listing server-rendered). */
+  page?: number;
+  /** Server-resolved category (avoids a client round-trip for SEO/name). */
+  initialCategory?: Category | null;
+  /** Server-fetched first page of products for this category. */
+  initialProducts?: ProductListResponse | null;
+  /** Server-fetched category list for the sidebar (internal links in HTML). */
+  initialCategories?: Category[];
+};
+
+export function CategoryPageClient({
+  page = 1,
+  initialCategory = null,
+  initialProducts = null,
+  initialCategories = [],
+}: CategoryPageClientProps = {}) {
   const params = useParams();
   const slug = params.slug as string;
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10) || 1);
 
-  const [category, setCategory] = useState<Category | null>(null);
-  const [data, setData] = useState<ProductListResponse | null>(null);
+  const [category, setCategory] = useState<Category | null>(() =>
+    initialCategory && initialCategory.slug === slug ? initialCategory : null,
+  );
+  const [data, setData] = useState<ProductListResponse | null>(() =>
+    initialCategory && initialCategory.slug === slug ? initialProducts : null,
+  );
   const [availability, setAvailability] = useState<Record<string, number>>({});
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => !(initialCategory && initialProducts));
   const [error, setError] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<PlpSortOption>('featured');
   const [listingMode, setListingMode] = useState<PlpListingMode>('grid-4');
@@ -40,9 +70,16 @@ export function CategoryPageClient() {
   useEffect(() => {
     if (!slug) return;
     let cancelled = false;
-    void Promise.resolve().then(() => {
-      if (cancelled) return;
-      setLoading(true);
+
+    const canUseInitial =
+      initialCategory?.slug === slug &&
+      initialProducts != null &&
+      Boolean(initialCategory.id || initialCategory.slug);
+
+    if (canUseInitial) {
+      setCategory(initialCategory);
+      setData(initialProducts);
+      setLoading(false);
       setError(null);
     });
     categoryApi
@@ -85,13 +122,9 @@ export function CategoryPageClient() {
 
   const hrefForPage = useCallback(
     (p: number) => {
-      const qs = new URLSearchParams(searchParams.toString());
-      if (p <= 1) qs.delete('page');
-      else qs.set('page', String(p));
-      const s = qs.toString();
-      return s ? `${pathname}?${s}` : pathname;
+      return p <= 1 ? pathname : `${pathname}?page=${p}`;
     },
-    [pathname, searchParams],
+    [pathname],
   );
 
   // Keep URL page in range when meta arrives
