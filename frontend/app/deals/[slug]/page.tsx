@@ -57,7 +57,7 @@ export default async function DealDetailPage({ params }: Props) {
           {deal.title}
         </h1>
         {deal.description ? (
-          <p className="mt-3 max-w-3xl text-muted-foreground">{deal.description}</p>
+          <p className="mt-3 max-w-3xl whitespace-pre-line text-muted-foreground">{deal.description}</p>
         ) : null}
       </div>
 
