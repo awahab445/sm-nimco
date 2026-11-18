@@ -24,10 +24,11 @@ export class FeedsController {
   ) {}
 
   /**
-   * RSS 2.0 product catalog for Meta Commerce Manager.
-   * GET /meta-catalog.xml
+   * RSS 2.0 (Google format) product catalog, fetched on a schedule by
+   * Meta Commerce Manager and TikTok Catalog Manager.
+   * GET /meta-catalog.xml, GET /tiktok-catalog.xml
    */
-  @Get('meta-catalog.xml')
+  @Get(['meta-catalog.xml', 'tiktok-catalog.xml'])
   @HttpCode(HttpStatus.OK)
   @Header('Content-Type', 'application/xml; charset=utf-8')
   @Header('Cache-Control', 'public, max-age=300')
@@ -57,7 +58,7 @@ export class FeedsController {
   <channel>
     <title>${this.escapeXml(META_BRAND)} Product Catalog</title>
     <link>https://shop.essachemicals.pk/</link>
-    <description>Product feed for Meta Commerce Manager</description>
+    <description>Product feed for Meta Commerce Manager and TikTok Catalog Manager</description>
 ${items}
   </channel>
 </rss>
