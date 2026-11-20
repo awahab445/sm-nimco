@@ -18,6 +18,10 @@ import { PdpLowStockUrgency, PdpTrustReassurance } from '@/components/product/pd
 import { resolveImageUrl } from '@/lib/resolve-image-url';
 import { getVariantCompareAtPrice } from '@/lib/product-display-price';
 import { trackCustomizeProduct, trackViewItem } from '@/lib/analytics/events';
+import { brandHref, isOwnBrandName, matchBrandFromProduct } from '@/lib/brands/brand-config';
+import { categoryHrefFromSlug } from '@/lib/catalog/category-tree';
+import { STORE_NAME } from '@/lib/config';
+import { primaryProductCategory, productBrand, productSpecs } from '@/lib/seo/schemas';
 
 type OptionDefinition = { code: string; label: string; values: string[] };
 
@@ -648,7 +652,15 @@ export function ProductDetailClient() {
   const primaryImage =
     orderedGalleryImages.find((i) => i.id === selectedImageId) ?? orderedGalleryImages[0];
   const stickyThumb = resolveImageUrl(primaryImage?.url);
-  const categoryId = product.categories?.[0]?.id ?? null;
+  const category = primaryProductCategory(product);
+  const brand = matchBrandFromProduct({
+    name: product.name,
+    sku: product.sku,
+    attributes: product.attributes,
+  });
+  const brandAttr = productBrand(product.attributes);
+  const ownProduct = isOwnBrandName(brandAttr);
+  const specs = productSpecs(product.attributes);
 
   return (
     <>

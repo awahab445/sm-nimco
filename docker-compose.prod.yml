@@ -103,6 +103,9 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       COOKIE_SECURE: ${COOKIE_SECURE:-true}
       REVALIDATE_SECRET: ${REVALIDATE_SECRET:-}
+      # Read at request time by /indexnow-key.txt and /api/revalidate; unset = IndexNow off.
+      INDEXNOW_KEY: ${INDEXNOW_KEY:-}
+      INTERNAL_API_URL: http://api:3000
     ports:
       - "127.0.0.1:${HOST_STOREFRONT_PORT:-3101}:3001"
 
