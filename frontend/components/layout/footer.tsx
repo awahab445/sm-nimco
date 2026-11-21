@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useId, useState, type FormEvent, type ReactNode } from 'react';
-import { RotateCcw, ShieldCheck, Truck, type LucideIcon } from 'lucide-react';
+import { Award, Banknote, Truck, type LucideIcon } from 'lucide-react';
 import { STORE_NAME } from '@/lib/config';
 import {
   categoryApi,
@@ -13,6 +13,8 @@ import {
   type StorefrontSocialPlatform,
 } from '@/lib/api-client';
 import { policyPageHref } from '@/lib/cms/policy-pages';
+import { formatPhone } from '@/lib/store-facts';
+import { getDefaultWhatsappPhone, normalizeWhatsappNumber } from '@/lib/whatsapp-order';
 import type { StoreThemeCode } from '@/lib/theme/types';
 import { Reveal } from '@/components/ui/reveal';
 import { SmNimcoFooter } from '@/components/themes/sm-nimco/footer';
@@ -328,9 +330,9 @@ const ESSA_SERVICE_ITEMS: Array<{
     Icon: RotateCcw,
   },
   {
-    title: 'Security Payment',
-    description: 'We ensure secure payment on every order',
-    Icon: ShieldCheck,
+    title: 'Cash on Delivery',
+    description: 'Pay in cash when your order arrives',
+    Icon: Banknote,
   },
 ];
 
@@ -471,6 +473,21 @@ function LinkList({ links }: { links: FooterLink[] }) {
   );
 }
 
+/** Admin WhatsApp number (site config), else the env/default store number. */
+function useStorePhone() {
+  const [phone, setPhone] = useState(getDefaultWhatsappPhone());
+  useEffect(() => {
+    siteConfigApi
+      .getSiteConfig()
+      .then((res) => {
+        const n = normalizeWhatsappNumber(res.data?.whatsappNumber);
+        if (n) setPhone(n);
+      })
+      .catch(() => {});
+  }, []);
+  return phone;
+}
+
 function useCategoryLinks() {
   const [categoryLinks, setCategoryLinks] = useState<CategoryTreeItem[]>([]);
 
@@ -518,6 +535,7 @@ function DefaultFooter() {
           <FooterAccordion title="Information">
             <LinkList
               links={[
+                { href: '/contact', label: 'Contact us' },
                 { href: '/track-order', label: 'Track order' },
                 { href: '/cart', label: 'Shopping cart' },
                 { href: policyPageHref('shipping-returns'), label: 'Shipping & returns' },
@@ -569,8 +587,10 @@ function DefaultFooter() {
 function EssaFooter() {
   const categoryLinks = useCategoryLinks();
   const year = new Date().getFullYear();
+  const phone = useStorePhone();
 
   const aboutLinks: FooterLink[] = [
+    { href: '/contact', label: 'Contact us' },
     { href: policyPageHref('shipping-returns'), label: 'Shipping & returns' },
     { href: policyPageHref('terms-conditions'), label: 'Terms & conditions' },
     { href: policyPageHref('privacy-policy'), label: 'Privacy policy' },
@@ -596,6 +616,7 @@ function EssaFooter() {
   ];
 
   const bottomLinks: FooterLink[] = [
+    { href: '/contact', label: 'Contact' },
     { href: policyPageHref('shipping-returns'), label: 'Shipping & returns' },
     { href: policyPageHref('privacy-policy'), label: 'Privacy policy' },
     { href: policyPageHref('terms-conditions'), label: 'Terms' },
@@ -670,6 +691,12 @@ function EssaFooter() {
         <div className="mx-auto flex w-full max-w-[100rem] flex-col gap-3 px-4 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8 sm:py-6 lg:px-12 xl:px-16">
           <p className="site-footer__muted text-[13px] text-[var(--footer-muted-foreground,#878787)] sm:text-[14px]">
             All Rights Reserved © {year} {STORE_NAME}
+            <span className="block sm:inline sm:before:mx-2 sm:before:content-['·']">
+              Call / WhatsApp{' '}
+              <a href={`tel:+${phone}`} className="site-footer__bar-link whitespace-nowrap hover:text-[var(--footer-link-hover,var(--foreground))]">
+                {formatPhone(phone)}
+              </a>
+            </span>
           </p>
           <nav aria-label="Footer secondary">
             <ul className="flex flex-wrap items-center gap-x-4 gap-y-2 sm:justify-end">

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { fetchAllProductsForFeed } from '@/lib/catalog/catalog.server';
+import { isOwnBrandName } from '@/lib/brands/brand-config';
 import { STORE_NAME } from '@/lib/config';
 import { APP_CURRENCY } from '@/lib/currency';
 import { absoluteUrl, getSiteUrl, plainText } from '@/lib/seo';
@@ -44,8 +45,11 @@ function mapProductToItem(product: Product): string | null {
     title;
   const price = formatMerchantPrice(product.basePrice);
   const availability = availabilityForProduct(product);
-  // Real brand only; untagged items omit <g:brand> rather than claim the store made them.
-  const brand = productBrand(product.attributes);
+  const attributes = product.attributes ?? {};
+  // Third-party products (Dettol, Viva, …) must carry their own brand, as in the Product JSON-LD.
+  const brandAttr = String(attributes.brand ?? attributes.Brand ?? '').trim();
+  const brand = brandAttr || STORE_NAME;
+  const ownBrand = !brandAttr || isOwnBrandName(brandAttr);
 
   const lines = [
     '    <item>',
@@ -58,6 +62,8 @@ function mapProductToItem(product: Product): string | null {
     `      <g:availability>${escapeXml(availability)}</g:availability>`,
     ...(brand ? [`      <g:brand>${escapeXml(brand)}</g:brand>`] : []),
     `      <g:condition>new</g:condition>`,
+    // Own-made products have no GTIN; third-party brands do, so Google should keep asking for theirs.
+    ...(ownBrand ? [`      <g:identifier_exists>no</g:identifier_exists>`] : []),
     '    </item>',
   ];
 
