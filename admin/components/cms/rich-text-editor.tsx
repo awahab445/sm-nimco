@@ -1,6 +1,17 @@
 'use client';
 
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useId, useRef, type ClipboardEvent } from 'react';
+
+function escapeHtml(text: string): string {
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+/**
+ * Editor area styles mirror the storefront `.cms-content-wrapper` so admins see the real
+ * heading / paragraph hierarchy (Tailwind preflight otherwise makes headings look like body text).
+ */
+const EDITOR_CONTENT_CLASSES =
+  '[&_h1]:mt-5 [&_h1]:mb-2 [&_h1]:text-xl [&_h1]:font-bold [&_h2]:mt-5 [&_h2]:mb-2 [&_h2]:text-xl [&_h2]:font-bold [&_h3]:mt-4 [&_h3]:mb-2 [&_h3]:text-lg [&_h3]:font-bold [&_p]:mb-3 [&_ul]:mb-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:mb-3 [&_ol]:list-decimal [&_ol]:pl-5 [&_a]:text-blue-600 [&_a]:underline [&>*:first-child]:mt-0';
 
 type RichTextEditorProps = {
   value: string;
@@ -10,10 +21,12 @@ type RichTextEditorProps = {
 
 export function RichTextEditor({ value, onChange, label }: RichTextEditorProps) {
   const editorRef = useRef<HTMLDivElement | null>(null);
-  const toolbarId = useMemo(
-    () => `rte-${Math.random().toString(36).slice(2, 10)}`,
-    [],
-  );
+  const toolbarId = `rte-${useId()}`;
+
+  useEffect(() => {
+    // Enter starts a <p>, not a <div> or a continued heading.
+    document.execCommand('defaultParagraphSeparator', false, 'p');
+  }, []);
 
   useEffect(() => {
     const el = editorRef.current;
@@ -28,6 +41,23 @@ export function RichTextEditor({ value, onChange, label }: RichTextEditorProps) 
     editorRef.current.focus();
     document.execCommand(command, false, commandValue);
     onChange(editorRef.current.innerHTML);
+  };
+
+  /** Paste as plain text so source formatting (e.g. headings from a chat or web page) can't wrap body text. */
+  const handlePaste = (e: ClipboardEvent<HTMLDivElement>) => {
+    const text = e.clipboardData.getData('text/plain');
+    if (!text) return;
+    e.preventDefault();
+    const blocks = text
+      .replace(/\r\n?/g, '\n')
+      .split('\n')
+      .map((line) => line.trim())
+      .filter(Boolean);
+    if (blocks.length <= 1) {
+      exec('insertText', blocks[0] ?? '');
+    } else {
+      exec('insertHTML', blocks.map((line) => `<p>${escapeHtml(line)}</p>`).join(''));
+    }
   };
 
   const addLink = () => {
@@ -45,6 +75,15 @@ export function RichTextEditor({ value, onChange, label }: RichTextEditorProps) 
       ) : null}
       <div id={toolbarId} className="rounded-lg border border-zinc-300 dark:border-zinc-700">
         <div className="flex flex-wrap gap-1 border-b border-zinc-200 bg-zinc-50 p-2 dark:border-zinc-800 dark:bg-zinc-900">
+          <ToolbarButton onClick={() => exec('formatBlock', '<h2>')} title="Heading">
+            H2
+          </ToolbarButton>
+          <ToolbarButton onClick={() => exec('formatBlock', '<h3>')} title="Subheading">
+            H3
+          </ToolbarButton>
+          <ToolbarButton onClick={() => exec('formatBlock', '<p>')} title="Normal paragraph text">
+            Paragraph
+          </ToolbarButton>
           <ToolbarButton onClick={() => exec('bold')} title="Bold">
             B
           </ToolbarButton>
@@ -71,8 +110,9 @@ export function RichTextEditor({ value, onChange, label }: RichTextEditorProps) 
           ref={editorRef}
           contentEditable
           suppressContentEditableWarning
-          className="min-h-[160px] w-full rounded-b-lg bg-white p-3 text-sm text-zinc-900 outline-none dark:bg-zinc-950 dark:text-zinc-100"
+          className={`min-h-[160px] w-full rounded-b-lg bg-white p-3 text-sm text-zinc-900 outline-none dark:bg-zinc-950 dark:text-zinc-100 ${EDITOR_CONTENT_CLASSES}`}
           onInput={(e) => onChange((e.currentTarget as HTMLDivElement).innerHTML)}
+          onPaste={handlePaste}
         />
       </div>
     </div>

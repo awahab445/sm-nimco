@@ -94,6 +94,8 @@ services:
         NEXT_PUBLIC_CURRENCY: ${NEXT_PUBLIC_CURRENCY:-PKR}
         NEXT_PUBLIC_STORE_THEME: ${NEXT_PUBLIC_STORE_THEME:-mehfil_shereen}
         NEXT_PUBLIC_STOREFRONT_HOME_LAYOUT_IDENTIFIER: ${NEXT_PUBLIC_STOREFRONT_HOME_LAYOUT_IDENTIFIER:-home-page-layout}
+        # Shown on /contact, the footer and policy pages.
+        NEXT_PUBLIC_STORE_EMAIL: ${NEXT_PUBLIC_STORE_EMAIL:-}
     container_name: ecommerce-storefront
     restart: unless-stopped
     depends_on:

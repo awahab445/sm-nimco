@@ -23,6 +23,8 @@ function sortByPosition<T extends { position?: number }>(items: T[]): T[] {
   return [...items].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
 }
 
+const STORE_EMAIL = process.env.NEXT_PUBLIC_STORE_EMAIL?.trim() || '';
+
 const EMAIL_RE =
   /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
 
@@ -697,6 +699,13 @@ function EssaFooter() {
                 {formatPhone(phone)}
               </a>
             </span>
+            {STORE_EMAIL ? (
+              <span className="block sm:inline sm:before:mx-2 sm:before:content-['·']">
+                <a href={`mailto:${STORE_EMAIL}`} className="site-footer__bar-link hover:text-[var(--footer-link-hover,var(--foreground))]">
+                  {STORE_EMAIL}
+                </a>
+              </span>
+            ) : null}
           </p>
           <nav aria-label="Footer secondary">
             <ul className="flex flex-wrap items-center gap-x-4 gap-y-2 sm:justify-end">

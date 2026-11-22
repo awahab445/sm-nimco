@@ -107,6 +107,7 @@ Copy from `backend/.env.example`.
 | `NEXT_PUBLIC_APP_URL` | No | Storefront URL (checkout return URLs) |
 | `NEXT_PUBLIC_CURRENCY` | No | Display currency |
 | `NEXT_PUBLIC_STORE_THEME` | No | e.g. `mehfil_shereen` |
+| `NEXT_PUBLIC_STORE_EMAIL` | No | Public contact email on `/contact`, the footer and policy pages (build-time), e.g. `info@smnimco.com` |
 | `NEXT_PUBLIC_STORE_NAME` | No | Header branding |
 | `NEXT_PUBLIC_STORE_LOGO` | No | Logo URL or path |
 | `NEXT_PUBLIC_STOREFRONT_HOME_LAYOUT_IDENTIFIER` | No | CMS block id for homepage layout |
