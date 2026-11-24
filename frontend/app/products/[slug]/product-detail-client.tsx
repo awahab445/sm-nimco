@@ -357,7 +357,15 @@ function QuantityStepper({
   );
 }
 
-export function ProductDetailClient() {
+export function ProductDetailClient({
+  initialProduct = null,
+  assurances = null,
+}: {
+  /** Server-fetched product for SSR (critical for Google indexing). */
+  initialProduct?: Product | null;
+  /** Server-rendered payment / delivery / returns facts shown under the buy buttons. */
+  assurances?: ReactNode;
+} = {}) {
   const params = useParams();
   const slug = typeof params.slug === 'string' ? params.slug : '';
   const [product, setProduct] = useState<Product | null>(null);
@@ -840,9 +848,7 @@ export function ProductDetailClient() {
                 stopPropagation={false}
               />
 
-              <PdpLowStockUrgency availableQty={availableQty} />
-
-              <PdpTrustReassurance />
+              {assurances}
 
               {added ? (
                 <Link

@@ -10,6 +10,8 @@ import {
   plainText,
 } from '@/lib/seo';
 import { ProductDetailClient } from './product-detail-client';
+import { BuyingAssurances } from '@/components/product/buying-assurances';
+import { getStoreFacts } from '@/lib/store-facts';
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -47,9 +49,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function ProductDetailPage({ params }: Props) {
-  const { slug: rawSlug } = await params;
-  const slug = decodeURIComponent(rawSlug).toLowerCase().trim().replace(/\s+/g, '-');
-  const product = await fetchProductBySlug(slug);
+  const { slug } = await params;
+  const [product, facts] = await Promise.all([fetchProductBySlug(slug), getStoreFacts()]);
   if (!product) notFound();
 
   const image = primaryImage(product);
@@ -131,8 +132,16 @@ export default async function ProductDetailPage({ params }: Props) {
 
   return (
     <>
-      <JsonLd data={faqLd ? [jsonLd, breadcrumbLd, faqLd] : [jsonLd, breadcrumbLd]} />
-      <ProductDetailClient />
+      <JsonLd data={[productLd, breadcrumbLd, ...(faqLd ? [faqLd] : [])]} />
+      <ProductDetailClient initialProduct={product} assurances={<BuyingAssurances facts={facts} />} />
+      <RelatedProductsShelf
+        productId={product.id}
+        relatedSkus={product.relatedProductSkus}
+        categoryId={category?.id ?? null}
+        categorySlug={category?.slug ?? null}
+        categoryName={category?.name ?? null}
+      />
+      <RelatedArticles title="Cleaning guides" limit={3} />
     </>
   );
 }

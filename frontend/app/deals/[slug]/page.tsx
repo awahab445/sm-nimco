@@ -4,7 +4,10 @@ import { notFound } from 'next/navigation';
 import { formatPrice } from '@/lib/currency';
 import { resolveImageUrl } from '@/lib/resolve-image-url';
 import { DealPricingPanel } from '@/components/deals/deal-pricing-panel';
-import { DealIncludedItems } from '@/components/deals/deal-included-items';
+import { BuyingAssurances } from '@/components/product/buying-assurances';
+import { getStoreFacts } from '@/lib/store-facts';
+import { DealIncludedProducts } from '@/components/deals/deal-included-products';
+import { DealBannerImage } from '@/components/deals/deal-banner-image';
 import { fetchBundleDealBySlug } from '@/lib/deals/deals.server';
 import { buildPageMetadata, plainText } from '@/lib/seo';
 import { storefrontUi } from '@/lib/storefront-ui';
@@ -29,7 +32,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function DealDetailPage({ params }: Props) {
   const { slug } = await params;
-  const deal = await fetchBundleDealBySlug(slug);
+  const [deal, facts] = await Promise.all([fetchBundleDealBySlug(slug), getStoreFacts()]);
   if (!deal) notFound();
 
   const heroImageSrc = resolveImageUrl(deal.imageUrl);
@@ -69,8 +72,9 @@ export default async function DealDetailPage({ params }: Props) {
           <DealIncludedItems items={deal.items ?? []} />
         </section>
 
-        <aside>
+        <aside className="space-y-4">
           <DealPricingPanel deal={deal} />
+          <BuyingAssurances facts={facts} />
         </aside>
       </div>
     </div>

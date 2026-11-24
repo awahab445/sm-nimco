@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { fetchAllProductsForFeed } from '@/lib/catalog/catalog.server';
+import { fetchBundleDeals, type StorefrontBundleDeal } from '@/lib/deals/deals.server';
 import { isOwnBrandName } from '@/lib/brands/brand-config';
 import { STORE_NAME } from '@/lib/config';
 import { APP_CURRENCY } from '@/lib/currency';
@@ -70,15 +71,43 @@ function mapProductToItem(product: Product): string | null {
   return lines.join('\n');
 }
 
+/** Bundle deals (/deals/[slug]) as their own items so Google can advertise the higher-value kits. */
+function mapDealToItem(deal: StorefrontBundleDeal): string | null {
+  const title = deal.title?.trim();
+  const firstProduct = deal.items?.[0]?.product;
+  const imagePath =
+    resolveImageUrl(deal.imageUrl) || resolveImageUrl(firstProduct?.images?.[0]?.url);
+  if (!deal.slug || !title || !imagePath || !(deal.dealPrice > 0)) return null;
+
+  const brand = productBrand(firstProduct?.attributes);
+  const lines = [
+    '    <item>',
+    `      <g:id>${escapeXml(`DEAL-${deal.slug}`)}</g:id>`,
+    `      <g:title>${escapeXml(title)}</g:title>`,
+    `      <g:description>${escapeXml(plainText(deal.description, 5000) || title)}</g:description>`,
+    `      <g:link>${escapeXml(absoluteUrl(`/deals/${deal.slug}`))}</g:link>`,
+    `      <g:image_link>${escapeXml(absoluteUrl(imagePath))}</g:image_link>`,
+    `      <g:price>${escapeXml(formatMerchantPrice(deal.dealPrice))}</g:price>`,
+    `      <g:availability>in_stock</g:availability>`,
+    ...(brand ? [`      <g:brand>${escapeXml(brand)}</g:brand>`] : []),
+    `      <g:condition>new</g:condition>`,
+    // A store-made bundle has no GTIN of its own.
+    `      <g:is_bundle>yes</g:is_bundle>`,
+    `      <g:identifier_exists>no</g:identifier_exists>`,
+    '    </item>',
+  ];
+  return lines.join('\n');
+}
+
 /**
  * Google Merchant Center product feed (RSS 2.0 + Google g: namespace).
  * GET /api/feeds/google-merchant
  */
 export async function GET() {
   try {
-    const products = await fetchAllProductsForFeed();
-    const items = products
-      .map(mapProductToItem)
+    // fetchBundleDeals returns only active deals inside their validity window, and [] on error.
+    const [products, deals] = await Promise.all([fetchAllProductsForFeed(), fetchBundleDeals(300)]);
+    const items = [...products.map(mapProductToItem), ...deals.map(mapDealToItem)]
       .filter((item): item is string => Boolean(item))
       .join('\n');
 
