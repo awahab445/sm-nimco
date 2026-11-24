@@ -26,19 +26,77 @@ function remotePatternFromOrigin(origin: string): {
   hostname: string;
   port?: string;
   pathname: string;
-} | null {
-  try {
-    const url = new URL(origin);
-    const protocol = url.protocol.replace(':', '') as 'http' | 'https';
-    if (protocol !== 'http' && protocol !== 'https') return null;
-    return {
-      protocol,
-      hostname: url.hostname,
-      ...(url.port ? { port: url.port } : {}),
-      pathname: '/**',
-    };
-  } catch {
-    return null;
+};
+
+function stripTrailingSlashes(value: string): string {
+  return value.replace(/\/+$/, '');
+}
+
+const backendOrigin = stripTrailingSlashes(
+  process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000',
+);
+
+/**
+ * Build remotePatterns for every known media host.
+ * Includes env origins plus production Essa Chemicals hosts, both http + https,
+ * so next/image accepts absolute upload URLs even if build-time API_URL drifts.
+ */
+function collectImageRemotePatterns(): ImageRemotePattern[] {
+  const origins = [
+    backendOrigin,
+    process.env.NEXT_PUBLIC_APP_URL,
+    process.env.NEXT_PUBLIC_BACKEND_URL,
+    // StorefrontImage optimizes URLs on this origin (getPublicApiOrigin), so it must be allowed.
+    process.env.NEXT_PUBLIC_IMAGE_BASE_URL,
+    // Production storefront / API (hardcoded fallbacks for image optimization)
+    'https://api.essachemicals.pk',
+    'http://api.essachemicals.pk',
+    'https://shop.essachemicals.pk',
+    'http://shop.essachemicals.pk',
+    // Local / Docker defaults
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'http://127.0.0.1:3000',
+    'http://127.0.0.1:3001',
+  ]
+    .map((o) => (o ? stripTrailingSlashes(o.trim()) : ''))
+    .filter(Boolean);
+
+  const seen = new Set<string>();
+  const patterns: ImageRemotePattern[] = [];
+
+  for (const origin of origins) {
+    let parsed: URL;
+    try {
+      parsed = new URL(origin.includes('://') ? origin : `https://${origin}`);
+    } catch {
+      continue;
+    }
+
+    const hostname = parsed.hostname;
+    if (!hostname) continue;
+
+    for (const protocol of ['https', 'http'] as const) {
+      const key = `${protocol}://${hostname}${parsed.port ? `:${parsed.port}` : ''}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+
+      const pattern: ImageRemotePattern = {
+        protocol,
+        hostname,
+        pathname: '/**',
+      };
+      // Only attach port for localhost/dev — production hosts should not pin a port.
+      if (
+        parsed.port &&
+        (hostname === 'localhost' ||
+          hostname === '127.0.0.1' ||
+          hostname.endsWith('.local'))
+      ) {
+        pattern.port = parsed.port;
+      }
+      patterns.push(pattern);
+    }
   }
 }
 

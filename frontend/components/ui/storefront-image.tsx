@@ -2,10 +2,8 @@
 
 import Image, { type ImageProps } from 'next/image';
 import { useState } from 'react';
-import {
-  PRODUCT_IMAGE_PLACEHOLDER,
-  isBackendAssetUrl,
-} from '@/lib/resolve-image-url';
+import { DEFAULT_BANNER_IMAGE } from '@/lib/brands/brand-config';
+import { getPublicApiOrigin, resolveImageUrl } from '@/lib/resolve-image-url';
 
 type Props = Omit<ImageProps, 'src'> & {
   src: string;
@@ -13,10 +11,18 @@ type Props = Omit<ImageProps, 'src'> & {
   fallbackSrcs?: string[];
 };
 
+function shouldSkipOptimization(src: string): boolean {
+  if (src.endsWith('.svg')) return true;
+  // API uploads are in next.config remotePatterns; other hosts would get a 400 from `/_next/image`.
+  if (/^https?:\/\//i.test(src)) return !src.startsWith(`${getPublicApiOrigin()}/`);
+  return false;
+}
+
 /**
  * next/image wrapper for storefront media.
- * Absolute / API-hosted assets use `unoptimized` to avoid optimizer 400s on
- * cross-origin uploads. On load failure, tries `fallbackSrcs` then placeholder.
+ * - Resolves `/uploads` to absolute API/CDN URLs
+ * - Defaults to native lazy loading unless `priority` is set
+ * - Resizes API uploads via `/_next/image` (skips other remote hosts); swaps to placeholder on error
  */
 export function StorefrontImage({
   src,
