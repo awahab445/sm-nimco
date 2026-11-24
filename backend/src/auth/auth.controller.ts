@@ -13,6 +13,8 @@ import {
   Res,
 } from '@nestjs/common';
 import type { Response } from 'express';
+import { Throttle } from '@nestjs/throttler';
+import { AUTH_THROTTLE } from '../common/auth-throttle';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
@@ -35,6 +37,7 @@ export class AuthController {
 
   @Public()
   @Post('login')
+  @Throttle(AUTH_THROTTLE)
   @HttpCode(HttpStatus.OK)
   @UsePipes(new ValidationPipe({ whitelist: true }))
   async login(
@@ -48,6 +51,7 @@ export class AuthController {
 
   @Public()
   @Post('register')
+  @Throttle(AUTH_THROTTLE)
   @HttpCode(HttpStatus.CREATED)
   @UsePipes(new ValidationPipe({ whitelist: true }))
   async register(@Body() registerDto: RegisterDto) {
@@ -67,6 +71,7 @@ export class AuthController {
 
   @Public()
   @Post('request-account-creation')
+  @Throttle(AUTH_THROTTLE)
   @HttpCode(HttpStatus.OK)
   @UsePipes(new ValidationPipe({ whitelist: true }))
   async requestAccountCreation(@Body() dto: RequestAccountCreationDto) {
@@ -75,6 +80,7 @@ export class AuthController {
 
   @Public()
   @Post('set-password')
+  @Throttle(AUTH_THROTTLE)
   @HttpCode(HttpStatus.OK)
   @UsePipes(new ValidationPipe({ whitelist: true }))
   async setPassword(
@@ -91,6 +97,7 @@ export class AuthController {
 
   @Public()
   @Post('forgot-password')
+  @Throttle(AUTH_THROTTLE)
   @HttpCode(HttpStatus.OK)
   @UsePipes(new ValidationPipe({ whitelist: true }))
   async forgotPassword(@Body() dto: ForgotPasswordDto) {
@@ -99,6 +106,7 @@ export class AuthController {
 
   @Public()
   @Post('reset-password')
+  @Throttle(AUTH_THROTTLE)
   @HttpCode(HttpStatus.OK)
   @UsePipes(new ValidationPipe({ whitelist: true }))
   async resetPassword(@Body() dto: ResetPasswordDto) {

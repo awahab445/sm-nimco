@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
-import { NestExpressApplication } from '@nestjs/platform-express';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import * as express from 'express';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
@@ -67,8 +67,10 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     rawBody: true,
   });
-  // Needed so req.ip reflects X-Forwarded-For behind reverse proxies.
-  app.set('trust proxy', 1);
+  // Nginx and the storefront proxy are on loopback/private (Docker) addresses:
+  // skip them so req.ip (rate limiting, order IP) is the real visitor, and a
+  // client-sent X-Forwarded-For can't override the IP Nginx appended.
+  app.set('trust proxy', 'loopback, linklocal, uniquelocal');
 
   // Create directories asynchronously (Non-blocking)
   const uploadsRoot = join(process.cwd(), 'uploads');
@@ -76,6 +78,7 @@ async function bootstrap() {
     join(uploadsRoot, 'products'),
     join(uploadsRoot, 'cms-slides'),
     join(uploadsRoot, 'storefront-nav'),
+    join(uploadsRoot, 'categories'),
     join(uploadsRoot, 'site-config'),
     join(uploadsRoot, 'deals'),
   ];
