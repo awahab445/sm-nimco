@@ -59,7 +59,9 @@ export function useRevealOnScroll(options: UseRevealOnScrollOptions = {}) {
 
     document.documentElement.classList.add(ENABLE_CLASS);
 
-    if (prefersReducedMotion()) {
+    // Already on (or above) the screen at hydration: keep the server-rendered content visible.
+    // Hiding and re-animating it makes the page blink and hurts Speed Index / LCP.
+    if (prefersReducedMotion() || el.getBoundingClientRect().top < window.innerHeight) {
       markRevealed(el);
       return;
     }
