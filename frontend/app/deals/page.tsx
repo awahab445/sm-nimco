@@ -5,8 +5,7 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = buildPageMetadata({
   title: 'Bundle Deals',
-  description:
-    'Save on bundle deals of ESSA cleaning products: floor cleaners, toilet cleaner, bleach, hand wash and soaps in money-saving packs, delivered across Pakistan.',
+  description: 'Save more when you buy curated product bundles.',
   path: '/deals',
 });
 
@@ -22,7 +21,7 @@ export default async function DealsPage() {
           Bundle Deals
         </h1>
         <p className="mx-auto mt-2 max-w-3xl text-muted-foreground">
-          Our bundles combine M. Essa Chemicals&apos; most-used cleaners, soaps and laundry products into ready-made sets for every need, from a six-item starter kit to a full month of household supplies. Each deal costs less than buying the items separately.
+          Hand-picked product bundles at special prices — more value in every order.
         </p>
       </header>
 
