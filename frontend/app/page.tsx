@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import { getHomePageSections } from '@/lib/cms/home-page.service';
+import { fetchCategoryTree } from '@/lib/catalog/catalog.server';
+import { fetchBundleDeals } from '@/lib/deals/deals.server';
 import { HomePageView } from '@/components/home/home-page-view';
 import { SmNimcoHomeView } from '@/components/themes/sm-nimco/home-view';
 import { JsonLd } from '@/components/seo/json-ld';
@@ -30,29 +32,11 @@ export default async function HomePage() {
     url: siteUrl,
   };
 
-  const websiteLd = {
-    '@context': 'https://schema.org',
-    '@type': 'WebSite',
-    name: STORE_NAME,
-    url: siteUrl,
-    potentialAction: {
-      '@type': 'SearchAction',
-      target: {
-        '@type': 'EntryPoint',
-        urlTemplate: `${absoluteUrl('/products')}?search={search_term_string}`,
-      },
-      'query-input': 'required name=search_term_string',
-    },
-  };
+  const [sections, categories, deals] = await Promise.all([
+    getHomePageSections(),
+    fetchCategoryTree(),
+    fetchBundleDeals(),
+  ]);
 
-  return (
-    <>
-      <JsonLd data={[organizationLd, websiteLd]} />
-      {storeTheme === 'sm_nimco' ? (
-        <SmNimcoHomeView />
-      ) : (
-        <HomePageView sections={await getHomePageSections()} />
-      )}
-    </>
-  );
+  return <HomePageView sections={sections} categories={categories} deals={deals} />;
 }
