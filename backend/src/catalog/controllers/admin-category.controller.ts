@@ -26,6 +26,7 @@ import { SyncCategoryProductsDto } from '../dto/sync-category-products.dto';
 import { AdminJwtAuthGuard } from '../../admin/guards/admin-jwt-auth.guard';
 import { AdminPermissionsGuard } from '../../admin/guards/admin-permissions.guard';
 import { RequirePermissions } from '../../admin/decorators/require-permissions.decorator';
+import { compressImageInPlace } from '../../common/utils/compress-image.util';
 
 @Controller('admin/categories')
 @UseGuards(AdminJwtAuthGuard, AdminPermissionsGuard)
@@ -71,7 +72,7 @@ export class AdminCategoryController {
     }),
   )
   @HttpCode(HttpStatus.CREATED)
-  uploadImage(
+  async uploadBannerImage(
     @UploadedFile(
       new ParseFilePipeBuilder()
         .addMaxSizeValidator({ maxSize: 5 * 1024 * 1024 })
@@ -79,6 +80,13 @@ export class AdminCategoryController {
     )
     file: any,
   ) {
+    // Category cards show at most ~700px wide.
+    await compressImageInPlace((file as { path: string }).path, 1200);
+    const publicBaseUrl = process.env.PUBLIC_BASE_URL?.trim();
+    const protoRaw =
+      (req.headers['x-forwarded-proto'] as string | undefined) || req.protocol;
+    const proto = protoRaw === 'https' ? 'https' : 'http';
+    const host = req.get('host')?.trim() || 'localhost:3000';
     const normalizedPath = file.path.replace(/\\/g, '/');
     const publicPath = normalizedPath.startsWith('uploads/')
       ? `/${normalizedPath}`

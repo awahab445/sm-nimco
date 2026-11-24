@@ -8,15 +8,18 @@ const logger = new Logger('compressImageInPlace');
 export const MAX_IMAGE_SIDE = 1600;
 
 /**
- * Shrink an uploaded image in place: auto-rotate, fit within MAX_IMAGE_SIDE, re-encode in the
+ * Shrink an uploaded image in place: auto-rotate, fit within `maxSide` (default MAX_IMAGE_SIDE), re-encode in the
  * same format (so the file name and public URL stay the same). GIFs are left alone.
  * Keeps the original when compression fails or would not make the file smaller.
  */
-export async function compressImageInPlace(path: string): Promise<void> {
+export async function compressImageInPlace(
+  path: string,
+  maxSide = MAX_IMAGE_SIDE,
+): Promise<void> {
   const tmp = `${path}.tmp`;
   try {
     const meta = await sharp(path).metadata();
-    let pipeline = sharp(path).rotate().resize(MAX_IMAGE_SIDE, MAX_IMAGE_SIDE, {
+    let pipeline = sharp(path).rotate().resize(maxSide, maxSide, {
       fit: 'inside',
       withoutEnlargement: true,
     });

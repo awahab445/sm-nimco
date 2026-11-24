@@ -22,7 +22,7 @@ import { AdminPermissionsGuard } from '../../admin/guards/admin-permissions.guar
 import { RequirePermissions } from '../../admin/decorators/require-permissions.decorator';
 import { UpdateSiteConfigDto } from '../dto/update-site-config.dto';
 import { SiteConfigService } from '../services/site-config.service';
-import { SiteConfigLogoImageService } from '../services/site-config-logo-image.service';
+import { compressImageInPlace } from '../../common/utils/compress-image.util';
 
 type AdminRequest = Request & { user?: { sub?: string; id?: string } };
 
@@ -90,10 +90,14 @@ export class AdminSiteConfigController {
     }
 
     if (file) {
-      const processed = await this.logoImageService.processUploadedLogo(file);
-      patchDto.logoUrl = processed.publicPath;
-      patchDto.logoWidth = processed.width;
-      patchDto.logoHeight = processed.height;
+      // The logo renders small in the header; keep it light.
+      await compressImageInPlace((file as { path: string }).path, 600);
+      const normalizedPath = file.path.replace(/\\/g, '/');
+      const publicPath = normalizedPath.startsWith('uploads/')
+        ? `/${normalizedPath}`
+        : `/uploads/site-config/${file.filename}`;
+      // Persist clean relative path; frontend resolves /uploads/* via API host.
+      patchDto.logoUrl = publicPath;
     }
 
     const data = await this.siteConfigService.updateConfig(
