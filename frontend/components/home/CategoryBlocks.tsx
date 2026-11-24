@@ -187,6 +187,7 @@ export async function CategoryBlocks({
                     className="object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
                     // First card is the mobile LCP image; don't lazy-load the top row.
                     priority={index < 2}
+                    fetchPriority={index === 0 ? 'high' : undefined}
                     quality={75}
                   />
                 ) : (
