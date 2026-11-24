@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Prisma } from '@prisma/client';
+import { InventoryService } from '../../inventory/services/inventory.service';
 import { PrismaService } from '../../catalog/services/prisma.service';
 import { CartRedisService } from '../../cart/services/cart.redis';
 import { TaxCalculationService } from '../../tax/services/calculation.service';
@@ -93,6 +94,7 @@ export class OrderService {
     private readonly orderFactory: OrderFactory,
     private readonly taxCalculationService: TaxCalculationService,
     private readonly eventEmitter: EventEmitter2,
+    private readonly inventoryService: InventoryService,
   ) {}
 
   private async enrichItemsWithProductDetails(items: any[]): Promise<any[]> {
@@ -345,6 +347,72 @@ export class OrderService {
     'pending',
     'processing',
   ]);
+
+  private shouldSkipInventoryForPersistedItem(item: {
+    productId: string;
+    metadata?: unknown;
+  }): boolean {
+    if (item.productId === CUSTOM_MANUAL_ORDER_PRODUCT_ID) return true;
+    if (isCustomOrderItemMetadata(item.metadata)) return true;
+    return false;
+  }
+
+  /** Return stock for persisted order lines; mirrors the deduction done at order creation. */
+  private async restoreStockForPersistedItems(
+    items: {
+      productId: string;
+      variantId: string | null;
+      quantity: number;
+      metadata?: unknown;
+    }[],
+    tx: Prisma.TransactionClient,
+  ): Promise<void> {
+    for (const item of items) {
+      if (this.shouldSkipInventoryForPersistedItem(item)) {
+        continue;
+      }
+      await this.inventoryService.restoreStockForOrder(
+        item.variantId || item.productId,
+        item.quantity,
+        { tx },
+      );
+    }
+  }
+
+  /**
+   * Cancel an order and restore its stock in one transaction.
+   * The status claim is atomic, so concurrent/repeated cancels restore stock once.
+   * Returns null when the order is not in a cancellable status (already cancelled,
+   * completed, or not in `fromStatuses`). Callers emit `order.cancelled`.
+   */
+  async cancelOrderAndRestoreStock(
+    orderId: string,
+    data: Prisma.OrderUpdateManyMutationInput = {},
+    fromStatuses?: string[],
+  ) {
+    return this.prisma.$transaction(async (tx) => {
+      const claimed = await tx.order.updateMany({
+        where: {
+          id: orderId,
+          status: {
+            notIn: ['cancelled', 'completed'],
+            ...(fromStatuses && { in: fromStatuses }),
+          },
+        },
+        data: { ...data, status: 'cancelled', cancelledAt: new Date() },
+      });
+      if (claimed.count === 0) {
+        return null;
+      }
+
+      const order = await tx.order.findUniqueOrThrow({
+        where: { id: orderId },
+        include: { items: true },
+      });
+      await this.restoreStockForPersistedItems(order.items, tx);
+      return order;
+    });
+  }
 
   private assertManualOrderEditable(order: {
     id: string;
@@ -790,6 +858,20 @@ export class OrderService {
       }
     }
 
+    // Stock was returned on cancel; reopening would oversell.
+    if (
+      order.status === OrderStatus.CANCELLED &&
+      nextStatus !== OrderStatus.CANCELLED
+    ) {
+      throw new BadRequestException(
+        'Cannot reopen a cancelled order; create a new order instead',
+      );
+    }
+
+    const isCancelling =
+      nextStatus === OrderStatus.CANCELLED &&
+      order.status !== OrderStatus.CANCELLED;
+
     const updateData: Record<string, unknown> = {};
 
     if (nextStatus !== order.status) {
@@ -810,14 +892,6 @@ export class OrderService {
       updateData.fulfillmentStatus = updateDto.fulfillmentStatus;
     }
 
-    // Set cancelled_at or completed_at timestamps
-    if (
-      nextStatus === OrderStatus.CANCELLED &&
-      order.status !== OrderStatus.CANCELLED
-    ) {
-      updateData.cancelledAt = new Date();
-    }
-
     if (
       nextStatus === OrderStatus.COMPLETED &&
       order.status !== OrderStatus.COMPLETED
@@ -829,20 +903,33 @@ export class OrderService {
       return order;
     }
 
-    const updatedOrder = await this.prisma.order.update({
-      where: { id: orderId },
-      data: updateData,
-      include: {
-        items: true,
-        shipping: true,
-      },
-    });
+    if (isCancelling) {
+      // cancelOrderAndRestoreStock sets status + cancelledAt itself
+      const { status: _status, ...rest } = updateData;
+      const cancelled = await this.cancelOrderAndRestoreStock(orderId, rest);
+      if (!cancelled) {
+        throw new BadRequestException(
+          `Order ${order.orderNumber} can no longer be cancelled`,
+        );
+      }
+    }
+
+    const updatedOrder = isCancelling
+      ? await this.prisma.order.findUniqueOrThrow({
+          where: { id: orderId },
+          include: { items: true, shipping: true },
+        })
+      : await this.prisma.order.update({
+          where: { id: orderId },
+          data: updateData,
+          include: {
+            items: true,
+            shipping: true,
+          },
+        });
 
     // Emit events based on status changes
-    if (
-      nextStatus === OrderStatus.CANCELLED &&
-      order.status !== OrderStatus.CANCELLED
-    ) {
+    if (isCancelling) {
       this.eventEmitter.emit(
         'order.cancelled',
         new OrderCancelledEvent(updatedOrder.id, updatedOrder.orderNumber),
@@ -917,16 +1004,13 @@ export class OrderService {
       throw new BadRequestException('Cannot cancel a completed order');
     }
 
-    const updatedOrder = await this.prisma.order.update({
-      where: { id: orderId },
-      data: {
-        status: 'cancelled',
-        paymentStatus: 'failed',
-        cancelledAt: new Date(),
-      },
+    const updatedOrder = await this.cancelOrderAndRestoreStock(orderId, {
+      paymentStatus: 'failed',
     });
+    if (!updatedOrder) {
+      return order; // Cancelled or completed concurrently
+    }
 
-    // Emit cancellation event (inventory module will handle stock release if needed)
     this.eventEmitter.emit(
       'order.cancelled',
       new OrderCancelledEvent(
