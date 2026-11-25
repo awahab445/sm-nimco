@@ -812,9 +812,13 @@ export function OrdersList() {
                     />
                   </td>
                   <td className="px-4 py-3">
-                    <div className="font-mono text-sm font-medium tracking-tight text-zinc-900 dark:text-zinc-50">
+                    <Link
+                      href={`/orders/${o.id}`}
+                      className={`font-mono text-sm font-medium tracking-tight ${adminUi.link}`}
+                      title={`Open order ${o.orderNumber}`}
+                    >
                       {o.orderNumber}
-                    </div>
+                    </Link>
                     <div className="text-xs text-zinc-500">
                       {new Date(o.createdAt).toLocaleString()}
                     </div>

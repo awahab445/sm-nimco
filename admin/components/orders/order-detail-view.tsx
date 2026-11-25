@@ -181,14 +181,26 @@ export function OrderDetailView({ orderId }: { orderId: string }) {
   }
 
   if (loading) {
-    return <p className="text-sm text-zinc-500">Loading order…</p>;
+    return (
+      <div className="mx-auto max-w-4xl animate-pulse space-y-4">
+        <div className="h-8 w-48 rounded bg-zinc-200 dark:bg-zinc-800" />
+        <div className="h-40 rounded-xl bg-zinc-100 dark:bg-zinc-900" />
+        <div className="h-64 rounded-xl bg-zinc-100 dark:bg-zinc-900" />
+        <p className="text-sm text-zinc-500">Loading order…</p>
+      </div>
+    );
   }
 
   if (error || !order) {
     return (
-      <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-200">
-        {error ?? 'Order not found.'}
-      </p>
+      <div className="mx-auto max-w-4xl space-y-4">
+        <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-200">
+          {error ?? 'Order not found.'}
+        </p>
+        <Link href="/orders" className={adminUi.link}>
+          ← Back to orders
+        </Link>
+      </div>
     );
   }
 
