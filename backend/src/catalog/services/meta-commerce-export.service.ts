@@ -35,7 +35,6 @@ export const META_COMMERCE_COLUMNS = [
 export type MetaCommerceColumn = (typeof META_COMMERCE_COLUMNS)[number];
 export type MetaCommerceRow = Record<MetaCommerceColumn, string>;
 
-const META_BRAND = 'SM NIMCO & Sweets';
 
 type ProductForExport = Prisma.ProductGetPayload<{
   include: {
@@ -210,8 +209,8 @@ export class MetaCommerceExportService {
 
   private resolveBrand(product: ProductForExport): string {
     const fromAttr = readAttributeValue(product.attributes, 'brand');
-    if (fromAttr) return fromAttr;
-    return process.env.STORE_NAME?.trim() || META_BRAND;
+    // Untagged products get no brand rather than defaulting to the store name.
+    return fromAttr || '';
   }
 
   private primaryCategoryName(product: ProductForExport): string {

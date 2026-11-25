@@ -49,9 +49,15 @@ function whenFbqReady(fn: () => void, attempts = 50): void {
 export type MetaPixelAdvancedMatching = {
   em?: string;
   ph?: string;
+  fn?: string;
+  ln?: string;
   external_id?: string;
   fb_login_id?: string;
 };
+
+function cleanName(value: string): string {
+  return value.trim().toLowerCase().replace(/[\s.'-]/g, '');
+}
 
 function cleanAdvancedMatching(
   userData?: MetaPixelAdvancedMatching | null,
@@ -63,6 +69,10 @@ function cleanAdvancedMatching(
     const digits = userData.ph.replace(/[^\d]/g, '');
     if (digits) cleaned.ph = digits;
   }
+  const firstName = userData.fn ? cleanName(userData.fn) : '';
+  const lastName = userData.ln ? cleanName(userData.ln) : '';
+  if (firstName) cleaned.fn = firstName;
+  if (lastName) cleaned.ln = lastName;
   if (userData.external_id?.trim()) {
     cleaned.external_id = userData.external_id.trim();
   }

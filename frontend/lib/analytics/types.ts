@@ -4,6 +4,8 @@ export type Ga4PublicConfig = {
   gtmId: string | null;
   metaPixelId: string | null;
   metaPixelEnabled: boolean;
+  tiktokPixelId: string | null;
+  tiktokPixelEnabled: boolean;
   debugMode: boolean;
   trackPageViews: boolean;
   trackCartEvents: boolean;
@@ -38,5 +40,14 @@ declare global {
     dataLayer?: unknown[];
     fbq?: (...args: unknown[]) => void;
     _fbq?: unknown;
+    ttq?: {
+      page: () => void;
+      track: (
+        event: string,
+        params?: Record<string, unknown>,
+        options?: { event_id: string },
+      ) => void;
+      identify: (data: Record<string, string>) => void;
+    };
   }
 }

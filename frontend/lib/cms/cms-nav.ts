@@ -21,6 +21,7 @@ export const STOREFRONT_RESERVED_SLUGS = new Set(
     'profile',
     'register',
     'track-order',
+    'contact',
     'shipping-returns',
     'privacy-policy',
     'terms-conditions',

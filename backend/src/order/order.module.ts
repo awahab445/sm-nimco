@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { InventoryModule } from '../inventory/inventory.module';
 import { OrderController } from './controllers/order.controller';
 import { AdminOrderController } from './controllers/admin-order.controller';
 import { OrderService } from './services/order.service';
@@ -15,7 +16,7 @@ import { AdminPermissionsGuard } from '../admin/guards/admin-permissions.guard';
 import { AdminRbacService } from '../admin/services/admin-rbac.service';
 
 @Module({
-  imports: [CatalogModule, CartModule, TaxModule, AuthModule],
+  imports: [CatalogModule, CartModule, TaxModule, AuthModule, InventoryModule],
   controllers: [OrderController, AdminOrderController],
   providers: [
     OrderService,

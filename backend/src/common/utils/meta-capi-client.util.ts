@@ -10,7 +10,11 @@ export function resolveMetaCapiClient(dto: {
   externalId?: string;
   email?: string;
   phone?: string;
+  firstName?: string;
+  lastName?: string;
   fbLoginId?: string;
+  ttp?: string;
+  ttclid?: string;
 }): MetaCapiClientDto {
   return {
     eventId: dto.meta?.eventId ?? dto.eventId,
@@ -20,6 +24,10 @@ export function resolveMetaCapiClient(dto: {
     externalId: dto.meta?.externalId ?? dto.externalId,
     email: dto.meta?.email ?? dto.email,
     phone: dto.meta?.phone ?? dto.phone,
+    firstName: dto.meta?.firstName ?? dto.firstName,
+    lastName: dto.meta?.lastName ?? dto.lastName,
     fbLoginId: dto.meta?.fbLoginId ?? dto.fbLoginId,
+    ttp: dto.meta?.ttp ?? dto.ttp,
+    ttclid: dto.meta?.ttclid ?? dto.ttclid,
   };
 }

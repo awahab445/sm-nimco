@@ -49,12 +49,16 @@ services:
       # Meta Conversions API (optional; leave unset to skip server events)
       META_CAPI_ACCESS_TOKEN: ${META_CAPI_ACCESS_TOKEN:-}
       META_CAPI_TEST_EVENT_CODE: ${META_CAPI_TEST_EVENT_CODE:-}
+      # TikTok Events API (optional; leave unset to skip server events)
+      TIKTOK_EVENTS_API_ACCESS_TOKEN: ${TIKTOK_EVENTS_API_ACCESS_TOKEN:-}
+      TIKTOK_EVENTS_API_TEST_EVENT_CODE: ${TIKTOK_EVENTS_API_TEST_EVENT_CODE:-}
+      INDEXNOW_KEY: ${INDEXNOW_KEY:-}
       CORS_ORIGIN: ${SHOP_URL},${ADMIN_URL}
       FRONTEND_URL: ${SHOP_URL}
       APP_URL: ${API_URL}
       PUBLIC_BASE_URL: ${API_URL}
       # Customer email branding (absolute logo URL recommended for inbox clients)
-      STORE_NAME: ${STORE_NAME:-M. ESSA CHEMICALS}
+      STORE_NAME: ${STORE_NAME:-SM NIMCO & Sweets}
       STORE_LOGO_URL: ${STORE_LOGO_URL:-}
       STORE_SOCIAL_FACEBOOK: ${STORE_SOCIAL_FACEBOOK:-}
       STORE_SOCIAL_INSTAGRAM: ${STORE_SOCIAL_INSTAGRAM:-}
@@ -90,6 +94,8 @@ services:
         NEXT_PUBLIC_CURRENCY: ${NEXT_PUBLIC_CURRENCY:-PKR}
         NEXT_PUBLIC_STORE_THEME: ${NEXT_PUBLIC_STORE_THEME:-mehfil_shereen}
         NEXT_PUBLIC_STOREFRONT_HOME_LAYOUT_IDENTIFIER: ${NEXT_PUBLIC_STOREFRONT_HOME_LAYOUT_IDENTIFIER:-home-page-layout}
+        # Shown on /contact, the footer and policy pages.
+        NEXT_PUBLIC_STORE_EMAIL: ${NEXT_PUBLIC_STORE_EMAIL:-}
     container_name: ecommerce-storefront
     restart: unless-stopped
     depends_on:
@@ -97,8 +103,11 @@ services:
     environment:
       NODE_ENV: production
       JWT_SECRET: ${JWT_SECRET}
-      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      COOKIE_SECURE: ${COOKIE_SECURE:-true}
       REVALIDATE_SECRET: ${REVALIDATE_SECRET:-}
+      # Read at request time by /indexnow-key.txt and /api/revalidate; unset = IndexNow off.
+      INDEXNOW_KEY: ${INDEXNOW_KEY:-}
+      INTERNAL_API_URL: http://api:3000
     ports:
       - "127.0.0.1:${HOST_STOREFRONT_PORT:-3101}:3001"
 
@@ -116,7 +125,7 @@ services:
     environment:
       NODE_ENV: production
       JWT_SECRET: ${JWT_SECRET}
-      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      COOKIE_SECURE: ${COOKIE_SECURE:-true}
     ports:
       - "127.0.0.1:${HOST_ADMIN_PORT:-3102}:3002"
 

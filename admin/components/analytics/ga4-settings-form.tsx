@@ -16,6 +16,8 @@ export function Ga4SettingsForm() {
   const [gtmId, setGtmId] = useState('');
   const [metaPixelId, setMetaPixelId] = useState('');
   const [metaPixelEnabled, setMetaPixelEnabled] = useState(false);
+  const [tiktokPixelId, setTiktokPixelId] = useState('');
+  const [tiktokPixelEnabled, setTiktokPixelEnabled] = useState(false);
   const [debugMode, setDebugMode] = useState(false);
   const [trackPageViews, setTrackPageViews] = useState(true);
   const [trackCartEvents, setTrackCartEvents] = useState(true);
@@ -37,6 +39,8 @@ export function Ga4SettingsForm() {
     setGtmId(data.gtmId ?? '');
     setMetaPixelId(data.metaPixelId ?? '');
     setMetaPixelEnabled(data.metaPixelEnabled);
+    setTiktokPixelId(data.tiktokPixelId ?? '');
+    setTiktokPixelEnabled(data.tiktokPixelEnabled);
     setDebugMode(data.debugMode);
     setTrackPageViews(data.trackPageViews);
     setTrackCartEvents(data.trackCartEvents);
@@ -76,6 +80,8 @@ export function Ga4SettingsForm() {
         gtmId: gtmId.trim() || null,
         metaPixelId: metaPixelId.trim() || null,
         metaPixelEnabled,
+        tiktokPixelId: tiktokPixelId.trim().toUpperCase() || null,
+        tiktokPixelEnabled,
         debugMode,
         trackPageViews,
         trackCartEvents,
@@ -122,7 +128,8 @@ export function Ga4SettingsForm() {
           Analytics &amp; tagging
         </h1>
         <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-          Configure Google Analytics 4, Google Tag Manager, and Meta Pixel for the storefront.
+          Configure Google Analytics 4, Google Tag Manager, Meta Pixel, and TikTok Pixel for the
+          storefront.
           IDs are public; no secrets are stored.
         </p>
         {settings ? (
@@ -149,6 +156,18 @@ export function Ga4SettingsForm() {
                 }
               >
                 {settings.metaPixelEnabled ? 'Enabled' : 'Disabled'}
+              </span>
+            </p>
+            <p>
+              TikTok Pixel:{' '}
+              <span
+                className={
+                  settings.tiktokPixelEnabled
+                    ? 'font-medium text-emerald-700 dark:text-emerald-400'
+                    : 'font-medium text-zinc-500'
+                }
+              >
+                {settings.tiktokPixelEnabled ? 'Enabled' : 'Disabled'}
               </span>
             </p>
           </div>
@@ -209,6 +228,26 @@ export function Ga4SettingsForm() {
               onChange={(e) => setMetaPixelEnabled(e.target.checked)}
             />
             Enable Meta Pixel tracking
+          </label>
+          <label className="block text-sm">
+            <span className="text-zinc-700 dark:text-zinc-300">TikTok Pixel ID</span>
+            <input
+              className="mt-1 w-full rounded-lg border border-zinc-300 px-3 py-2 font-mono text-sm uppercase dark:border-zinc-600 dark:bg-zinc-900"
+              value={tiktokPixelId}
+              onChange={(e) => setTiktokPixelId(e.target.value)}
+              placeholder="C4A1B2C3D4E5F6G7H8I9"
+            />
+            <span className="mt-1 block text-xs text-zinc-500">
+              Pixel code from TikTok Ads Manager → Events Manager. Enable below after saving.
+            </span>
+          </label>
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={tiktokPixelEnabled}
+              onChange={(e) => setTiktokPixelEnabled(e.target.checked)}
+            />
+            Enable TikTok Pixel tracking
           </label>
           <label className="block text-sm">
             <span className="text-zinc-700 dark:text-zinc-300">Currency</span>

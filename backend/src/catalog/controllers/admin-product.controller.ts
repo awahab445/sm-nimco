@@ -20,7 +20,8 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { randomUUID } from 'crypto';
-import type { Response } from 'express';
+import type { Request, Response } from 'express';
+import { compressImageInPlace } from '../../common/utils/compress-image.util';
 import { ProductService } from '../services/product.service';
 import { VariantService } from '../services/variant.service';
 import { ImageService } from '../services/image.service';
@@ -248,6 +249,7 @@ export class AdminProductController {
     )
     file: any,
   ) {
+    await compressImageInPlace((file as { path: string }).path);
     const normalizedPath = file.path.replace(/\\/g, '/');
     // Store relative /uploads/... paths; storefront resolves via Next rewrite.
     const publicPath = normalizedPath.startsWith('uploads/')

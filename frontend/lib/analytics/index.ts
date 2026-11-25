@@ -14,5 +14,11 @@ export {
   beginCheckoutEventId,
   purchaseEventId,
   metaMatchUserToPixelData,
+  enqueueMetaCapiPageView,
+  ensureMetaFbcFromUrl,
+  ensureTikTokClickIdFromUrl,
+  getMetaFbc,
+  getMetaFbp,
+  resolveMetaMatchUser,
 } from './meta-capi-client';
 export type { MetaMatchUser, MetaPixelUserData } from './meta-capi-client';

@@ -105,6 +105,46 @@ bash deploy/docker/backup.sh
 bash deploy/docker/install-backup-cron.sh   # daily 02:30 UTC
 ```
 
+`backup.sh` writes the DB dump, the uploads archive and the WhatsApp session (`ecommerce-*-whatsapp.tar.gz`) to `backups/` with owner-only permissions. It deletes its own files older than `BACKUP_RETENTION_DAYS` (default 14).
+
+Backups on the same VPS are lost with the VPS, so copy them off-server daily. For example, with [rclone](https://rclone.org) set up once with `rclone config` as remote `offsite` (Google Drive, S3, Backblaze B2…), add this cron line after the backup one:
+
+```bash
+0 3 * * * rclone copy /var/www/ecommerce-platform/backups offsite:ecommerce-backups --include 'ecommerce-*' --max-age 48h
+```
+
+The WhatsApp archive contains the logged-in session, and the DB dump contains customer data: keep the remote private.
+
+### Security checklist (VPS)
+
+The repo already handles: services bound to `127.0.0.1` only, UFW (SSH + Nginx), helmet, CORS, DTO whitelisting, rate limiting by real client IP (`trust proxy` for loopback and private hops), 5/min caps on login, signup and password endpoints, Secure cookies, and HSTS plus `server_tokens off` in the Nginx template.
+
+Run these on the server once:
+
+1. **SSH keys only.** Add your key to the deploy user, test a new login, then in `/etc/ssh/sshd_config` set `PasswordAuthentication no` and `PermitRootLogin no`, and run `sudo systemctl reload ssh`. Keep the current session open until the new login works.
+2. **fail2ban:** `sudo apt install -y fail2ban` (bans IPs that brute-force SSH).
+3. **Security updates:** `sudo apt install -y unattended-upgrades && sudo dpkg-reconfigure -plow unattended-upgrades`.
+4. **Ports:**
+   - `sudo ufw status` should allow only 22, 80 and 443.
+   - `sudo ss -tlnp` should show 3100–3102 only on `127.0.0.1`.
+   - Docker bypasses UFW for published ports, so never publish on `0.0.0.0`.
+5. **Secrets:**
+   - `chmod 600 deploy/env/*.env backend/.env`.
+   - `grep COOKIE_SECURE deploy/env/docker.env` should be `true` once HTTPS is on.
+   - Rotate any token or password that was ever shared or committed.
+6. **Docker log size:**
+   - In `/etc/docker/daemon.json` set `{"log-driver":"json-file","log-opts":{"max-size":"10m","max-file":"3"}}`.
+   - Then `sudo systemctl restart docker` and `bash deploy/docker/compose.sh up -d`.
+7. **Nginx changes:**
+   - After pulling template changes, run `configure-nginx.sh` and then `enable-https.sh` (certbot re-adds the 443 blocks).
+   - `sudo nginx -t && sudo systemctl reload nginx`.
+   - `curl -sI https://<shop>` should show `Strict-Transport-Security` and no nginx version.
+8. **Admin hygiene:** one account per staff member, the smallest RBAC role that works, and remove leavers.
+9. **Monitoring:** an uptime check (e.g. UptimeRobot) on the shop and the API, plus `bash deploy/docker/doctor.sh` after deploys.
+10. **Cloudflare (optional):**
+    - If you proxy through Cloudflare, add `set_real_ip_from` for Cloudflare's ranges and `real_ip_header CF-Connecting-IP;` in Nginx. Otherwise rate limits see Cloudflare's IPs instead of visitors.
+    - Then allow 80/443 only from Cloudflare.
+
 ### Container management
 
 ```bash
@@ -205,4 +245,4 @@ After restore, log in with your **local admin credentials**. Re-check **Payment 
 | CORS errors | `SHOP_URL` / `ADMIN_URL` must match browser origins exactly |
 | Build OOM | Ensure swap is enabled (`setup-docker-server.sh`); build one service at a time |
 | `/uploads/...` 404 on API | Image files missing from Docker volume — run `restore-uploads.sh` or `push-uploads-to-vps.sh` |
-| P3009 failed migration / API boot loop | `bash deploy/docker/fix-migration-history.sh` then `compose.sh up -d api` |
+| P3009 failed migration / API boot loop | The API entrypoint stops on any `migrate deploy` failure (it never falls back to `db push --accept-data-loss`; only an empty database is created with `db push`). Check `compose.sh logs api`, take a DB backup, then `bash deploy/docker/fix-migration-history.sh` (it runs `db push --accept-data-loss`) and `compose.sh up -d api` |

@@ -8,6 +8,8 @@ const DISABLED: Ga4PublicConfig = {
   gtmId: null,
   metaPixelId: null,
   metaPixelEnabled: false,
+  tiktokPixelId: null,
+  tiktokPixelEnabled: false,
   debugMode: false,
   trackPageViews: true,
   trackCartEvents: true,

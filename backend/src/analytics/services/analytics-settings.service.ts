@@ -4,6 +4,7 @@ import { PrismaService } from '../../catalog/services/prisma.service';
 import {
   GA4_MEASUREMENT_ID_REGEX,
   META_PIXEL_ID_REGEX_EXPORT as META_PIXEL_ID_REGEX,
+  TIKTOK_PIXEL_ID_REGEX_EXPORT as TIKTOK_PIXEL_ID_REGEX,
   ToggleGa4SettingsDto,
   UpdateGa4SettingsDto,
 } from '../dto/update-ga4-settings.dto';
@@ -14,6 +15,8 @@ export type PublicGa4Config = {
   gtmId: string | null;
   metaPixelId: string | null;
   metaPixelEnabled: boolean;
+  tiktokPixelId: string | null;
+  tiktokPixelEnabled: boolean;
   debugMode: boolean;
   trackPageViews: boolean;
   trackCartEvents: boolean;
@@ -44,6 +47,8 @@ export class AnalyticsSettingsService {
       gtmId: row.gtmId,
       metaPixelId: row.metaPixelId,
       metaPixelEnabled: row.metaPixelEnabled,
+      tiktokPixelId: row.tiktokPixelId,
+      tiktokPixelEnabled: row.tiktokPixelEnabled,
       debugMode: row.debugMode,
       trackPageViews: row.trackPageViews,
       trackCartEvents: row.trackCartEvents,
@@ -113,6 +118,19 @@ export class AnalyticsSettingsService {
     }
   }
 
+  private validateTikTokPixelEnable(
+    tiktokPixelId: string | null | undefined,
+    tiktokPixelEnabled: boolean,
+  ): void {
+    if (!tiktokPixelEnabled) return;
+    const id = tiktokPixelId?.trim();
+    if (!id || !TIKTOK_PIXEL_ID_REGEX.test(id)) {
+      throw new BadRequestException(
+        'A valid TikTok Pixel ID is required before enabling TikTok Pixel.',
+      );
+    }
+  }
+
   async updateSettings(
     dto: UpdateGa4SettingsDto,
     adminUserId?: string,
@@ -126,11 +144,18 @@ export class AnalyticsSettingsService {
       dto.metaPixelId !== undefined
         ? dto.metaPixelId?.trim() || null
         : current.metaPixelId;
+    const tiktokPixelId =
+      dto.tiktokPixelId !== undefined
+        ? dto.tiktokPixelId?.trim() || null
+        : current.tiktokPixelId;
     const isEnabled = dto.isEnabled ?? current.isEnabled;
     const metaPixelEnabled = dto.metaPixelEnabled ?? current.metaPixelEnabled;
+    const tiktokPixelEnabled =
+      dto.tiktokPixelEnabled ?? current.tiktokPixelEnabled;
 
     this.validateEnable(measurementId, isEnabled);
     this.validateMetaPixelEnable(metaPixelId, metaPixelEnabled);
+    this.validateTikTokPixelEnable(tiktokPixelId, tiktokPixelEnabled);
 
     const row = await this.prisma.analyticsGa4Settings.update({
       where: { id: this.singletonId },
@@ -139,6 +164,8 @@ export class AnalyticsSettingsService {
         ...(dto.gtmId !== undefined && { gtmId: dto.gtmId?.trim() || null }),
         ...(dto.metaPixelId !== undefined && { metaPixelId }),
         ...(dto.metaPixelEnabled !== undefined && { metaPixelEnabled }),
+        ...(dto.tiktokPixelId !== undefined && { tiktokPixelId }),
+        ...(dto.tiktokPixelEnabled !== undefined && { tiktokPixelEnabled }),
         ...(dto.isEnabled !== undefined && { isEnabled: dto.isEnabled }),
         ...(dto.debugMode !== undefined && { debugMode: dto.debugMode }),
         ...(dto.trackPageViews !== undefined && {

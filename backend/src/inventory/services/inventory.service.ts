@@ -306,6 +306,31 @@ export class InventoryService {
   }
 
   /**
+   * Return sellable stock for a cancelled order line (inverse of the consume on order.created).
+   */
+  async restoreStockForOrder(
+    variantId: string,
+    quantity: number,
+    options?: { warehouseId?: string; tx?: TransactionClient },
+  ): Promise<void> {
+    if (quantity <= 0) return;
+    const warehouseId = options?.warehouseId ?? DEFAULT_WAREHOUSE_ID;
+    const run = async (tx: TransactionClient) => {
+      const item = await this.getOrCreateInventoryItemInTx(tx, variantId, warehouseId);
+      const newQuantity = item.quantity + quantity;
+      await tx.inventoryItem.update({
+        where: { id: item.id },
+        data: {
+          quantity: newQuantity,
+          availableQuantity: newQuantity - item.reservedQuantity,
+        },
+      });
+    };
+    if (options?.tx) return run(options.tx);
+    await this.prisma.$transaction((tx) => run(tx));
+  }
+
+  /**
    * Adjust stock quantity (increase or decrease)
    * Prevents negative stock unless explicitly allowed
    */

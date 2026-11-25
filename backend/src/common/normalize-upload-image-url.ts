@@ -1,6 +1,6 @@
 /**
  * Normalize CMS/upload image URLs to same-origin `/uploads/...` paths for the storefront.
- * Strips environment-specific hosts (e.g. api.messa-chemicals.local, localhost:3000).
+ * Strips environment-specific hosts (e.g. api.example.local, localhost:3000).
  */
 export function normalizeCmsUploadImageUrl(value?: string | null): string {
   const trimmed = value?.trim() ?? '';

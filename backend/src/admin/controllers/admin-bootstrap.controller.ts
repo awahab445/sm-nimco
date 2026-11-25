@@ -11,6 +11,8 @@ import {
   Res,
 } from '@nestjs/common';
 import type { Response } from 'express';
+import { Throttle } from '@nestjs/throttler';
+import { AUTH_THROTTLE } from '../../common/auth-throttle';
 import { PrismaService } from '../../catalog/services/prisma.service';
 import { AdminUserService } from '../services/admin-user.service';
 import { AdminAuthService } from '../services/admin-auth.service';
@@ -29,6 +31,7 @@ export class AdminBootstrapController {
   ) {}
 
   @Post('first-user')
+  @Throttle(AUTH_THROTTLE)
   @HttpCode(HttpStatus.CREATED)
   @UsePipes(new ValidationPipe({ whitelist: true }))
   async createFirstUser(

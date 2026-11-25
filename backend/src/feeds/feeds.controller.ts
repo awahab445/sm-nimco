@@ -12,8 +12,18 @@ import {
   type MetaCommerceRow,
 } from '../catalog/services/meta-commerce-export.service';
 
-const PRODUCT_BASE_URL = 'https://shop.essachemicals.pk/products/';
-const META_BRAND = 'SM NIMCO & Sweets';
+/** Storefront origin for this deployment (compose sets FRONTEND_URL=${SHOP_URL}). */
+function storefrontOrigin(): string {
+  return (
+    process.env.FRONTEND_URL ||
+    process.env.NEXT_PUBLIC_APP_URL ||
+    'http://localhost:3001'
+  ).replace(/\/$/, '');
+}
+
+function storeName(): string {
+  return process.env.STORE_NAME?.trim() || 'SM NIMCO & Sweets';
+}
 
 @Controller()
 export class FeedsController {
@@ -24,10 +34,11 @@ export class FeedsController {
   ) {}
 
   /**
-   * RSS 2.0 product catalog for Meta Commerce Manager.
-   * GET /meta-catalog.xml
+   * RSS 2.0 (Google format) product catalog, fetched on a schedule by
+   * Meta Commerce Manager and TikTok Catalog Manager.
+   * GET /meta-catalog.xml, GET /tiktok-catalog.xml
    */
-  @Get('meta-catalog.xml')
+  @Get(['meta-catalog.xml', 'tiktok-catalog.xml'])
   @HttpCode(HttpStatus.OK)
   @Header('Content-Type', 'application/xml; charset=utf-8')
   @Header('Cache-Control', 'public, max-age=300')
@@ -55,9 +66,9 @@ export class FeedsController {
     return `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:g="http://base.google.com/ns/1.0">
   <channel>
-    <title>${this.escapeXml(META_BRAND)} Product Catalog</title>
-    <link>https://shop.essachemicals.pk/</link>
-    <description>Product feed for Meta Commerce Manager</description>
+    <title>${this.escapeXml(storeName())} Product Catalog</title>
+    <link>${this.escapeXml(`${storefrontOrigin()}/`)}</link>
+    <description>Product feed for Meta Commerce Manager and TikTok Catalog Manager</description>
 ${items}
   </channel>
 </rss>
@@ -74,8 +85,8 @@ ${items}
     const imageLink = row.image_link?.trim();
     if (!id || !title || !imageLink) return null;
 
-    const slugSegment = this.slugFromProductLink(row.link);
-    const link = `${PRODUCT_BASE_URL}${slugSegment}`;
+    const link = `${storefrontOrigin()}/products/${this.slugFromProductLink(row.link)}`;
+    const brand = row.brand?.trim() || '';
     const description = row.description?.trim() || title;
     const availability = row.availability || 'out of stock';
     const price = row.price || '0.00 PKR';
@@ -90,9 +101,13 @@ ${items}
       `      <g:image_link>${this.escapeXml(imageLink)}</g:image_link>`,
       `      <g:availability>${this.escapeXml(availability)}</g:availability>`,
       `      <g:price>${this.escapeXml(price)}</g:price>`,
-      `      <g:brand>${this.escapeXml(META_BRAND)}</g:brand>`,
       `      <g:condition>new</g:condition>`,
     ];
+
+    // Only a product explicitly tagged with a brand gets one; never default to the store name.
+    if (brand) {
+      lines.push(`      <g:brand>${this.escapeXml(brand)}</g:brand>`);
+    }
 
     if (googleCategory) {
       lines.push(
@@ -110,7 +125,7 @@ ${items}
     return lines.join('\n');
   }
 
-  /** Pull `/products/{slug}` segment so we can rebuild with the Meta storefront base URL. */
+  /** Pull the `/products/{slug}` segment so the link always uses this store's origin. */
   private slugFromProductLink(link: string): string {
     const trimmed = (link || '').trim();
     const match = trimmed.match(/\/products\/([^?#]+)/i);

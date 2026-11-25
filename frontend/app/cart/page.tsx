@@ -239,6 +239,17 @@ export default function CartPage() {
           </Link>
         </div>
       ) : (
+        <>
+        {!meetsMinimumOrder && items.length + bundles.length > 0 ? (
+          <div
+            role="status"
+            className="mt-6 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-900 sm:text-base dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-100"
+          >
+            A minimum order of {formatPrice(minimumOrderAmount, displayCurrency)} is required to
+            checkout. Add {formatPrice(Math.max(0, minimumOrderAmount - subtotal), displayCurrency)}{' '}
+            more to continue.
+          </div>
+        ) : null}
         <div className="mt-8 lg:grid lg:grid-cols-3 lg:gap-8">
           <div className="lg:col-span-2">
             <div className={`${storefrontUi.card} overflow-hidden`}>
@@ -429,14 +440,6 @@ export default function CartPage() {
                 </div>
               )}
               </div>
-              {!meetsMinimumOrder && items.length + bundles.length > 0 ? (
-                <p className="mt-3 rounded-sm bg-secondary/50 px-3 py-2 text-xs font-medium text-foreground">
-                  A minimum order of {formatPrice(minimumOrderAmount, displayCurrency)} is required
-                  to checkout. Add{' '}
-                  {formatPrice(Math.max(0, minimumOrderAmount - subtotal), displayCurrency)} more to
-                  continue.
-                </p>
-              ) : null}
               <div className="mt-4">
                 <CouponApplySection
                   appliedCouponCode={couponMeta.code}
@@ -486,6 +489,7 @@ export default function CartPage() {
             </div>
           </div>
         </div>
+        </>
       )}
     </div>
   );

@@ -261,7 +261,7 @@ export function MailMailboxForm({ mailboxId }: Props) {
                 className="mt-1 w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900"
                 value={smtpHost}
                 onChange={(e) => setSmtpHost(e.target.value)}
-                placeholder="mail.messa-chemicals.com"
+                placeholder="mail.smnimco.com"
                 required
               />
             </label>
@@ -328,7 +328,7 @@ export function MailMailboxForm({ mailboxId }: Props) {
                 className="mt-1 w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-900"
                 value={fromAddress}
                 onChange={(e) => setFromAddress(e.target.value)}
-                placeholder="orders@messa-chemicals.com"
+                placeholder="orders@smnimco.com"
                 required
               />
             </label>

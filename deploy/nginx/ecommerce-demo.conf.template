@@ -21,9 +21,12 @@ server {
   listen [::]:80;
   server_name SHOP_DOMAIN;
 
+  server_tokens off;
   add_header X-Frame-Options "DENY" always;
   add_header X-Content-Type-Options "nosniff" always;
   add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+  # Browsers only honour HSTS on HTTPS responses (the certbot-added 443 block).
+  add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
 
   location / {
     proxy_pass http://ecommerce_storefront;
@@ -42,9 +45,12 @@ server {
   listen [::]:80;
   server_name ADMIN_DOMAIN;
 
+  server_tokens off;
   add_header X-Frame-Options "DENY" always;
   add_header X-Content-Type-Options "nosniff" always;
   add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+  # Browsers only honour HSTS on HTTPS responses (the certbot-added 443 block).
+  add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
 
   location / {
     proxy_pass http://ecommerce_admin;
@@ -65,9 +71,12 @@ server {
 
   client_max_body_size 10M;
 
+  server_tokens off;
   add_header X-Frame-Options "DENY" always;
   add_header X-Content-Type-Options "nosniff" always;
   add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+  # Browsers only honour HSTS on HTTPS responses (the certbot-added 443 block).
+  add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
 
   location / {
     proxy_pass http://ecommerce_api;

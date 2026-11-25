@@ -30,6 +30,7 @@ import { ListBundleDealsQueryDto } from '../dto/list-bundle-deals-query.dto';
 import { AdminJwtAuthGuard } from '../../admin/guards/admin-jwt-auth.guard';
 import { AdminPermissionsGuard } from '../../admin/guards/admin-permissions.guard';
 import { RequirePermissions } from '../../admin/decorators/require-permissions.decorator';
+import { compressImageInPlace } from '../../common/utils/compress-image.util';
 
 function dealImagePublicPath(file: {
   path?: string;
@@ -120,6 +121,7 @@ export class AdminBundleDealController {
       filename: string;
     },
   ) {
+    if (file.path) await compressImageInPlace(file.path);
     return {
       url: dealImagePublicPath(file),
       filename: file.filename,

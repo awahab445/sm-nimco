@@ -11,6 +11,8 @@ import {
   Res,
 } from '@nestjs/common';
 import type { Response } from 'express';
+import { Throttle } from '@nestjs/throttler';
+import { AUTH_THROTTLE } from '../../common/auth-throttle';
 import { AdminAuthService } from '../services/admin-auth.service';
 import { LoginDto } from '../../auth/dto/login.dto';
 import { AdminJwtAuthGuard } from '../guards/admin-jwt-auth.guard';
@@ -25,6 +27,7 @@ export class AdminAuthController {
   constructor(private readonly adminAuthService: AdminAuthService) {}
 
   @Post('login')
+  @Throttle(AUTH_THROTTLE)
   @HttpCode(HttpStatus.OK)
   @UsePipes(new ValidationPipe({ whitelist: true }))
   async login(

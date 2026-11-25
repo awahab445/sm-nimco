@@ -1,14 +1,14 @@
 import { unstable_noStore as noStore } from 'next/cache';
 import { pagesApi } from '@/lib/api-client';
 import {
-  POLICY_PAGE_DEFAULTS,
+  buildPolicyPageDefault,
   type PolicyPageContent,
   type PolicyPageSlug,
 } from '@/lib/cms/policy-pages';
+import { getStoreFacts } from '@/lib/store-facts';
 
 export async function getPolicyPageBySlug(slug: PolicyPageSlug): Promise<PolicyPageContent> {
-  noStore();
-  const defaults = POLICY_PAGE_DEFAULTS[slug];
+  const defaults = buildPolicyPageDefault(slug, await getStoreFacts());
 
   try {
     const page = await pagesApi.getBySlug(slug);

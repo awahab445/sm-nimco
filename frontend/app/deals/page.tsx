@@ -20,7 +20,7 @@ export default async function DealsPage() {
         <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
           Bundle Deals
         </h1>
-        <p className="mt-2 text-muted-foreground">
+        <p className="mx-auto mt-2 max-w-3xl text-muted-foreground">
           Hand-picked product bundles at special prices — more value in every order.
         </p>
       </header>

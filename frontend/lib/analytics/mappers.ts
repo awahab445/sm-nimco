@@ -1,10 +1,9 @@
 import type { CartItem, CheckoutItem, Product } from '@/lib/api-client';
+import { parseOrderAmount, roundMoney } from '@/lib/order-totals';
 import type { Ga4Item } from './types';
 
-function toNumber(value: string | number | undefined | null): number {
-  if (value == null) return 0;
-  const n = typeof value === 'string' ? parseFloat(value) : value;
-  return Number.isFinite(n) ? n : 0;
+function toNumber(value: unknown): number {
+  return parseOrderAmount(value);
 }
 
 /** Detect DB UUIDs so we never send them as Meta catalog content_ids. */
@@ -88,18 +87,28 @@ export function checkoutItemToGa4Item(item: CheckoutItem): Ga4Item {
 export function orderLineToGa4Item(line: {
   sku?: string;
   name: string;
-  unitPrice?: number | string;
+  unitPrice?: unknown;
+  price?: unknown;
+  rowTotal?: unknown;
   quantity?: number;
 }): Ga4Item {
   const sku = line.sku?.trim();
+  const quantity = line.quantity ?? 1;
+  let price = toNumber(line.unitPrice ?? line.price);
+  if (price === 0 && quantity > 0) {
+    const rowTotal = toNumber(line.rowTotal);
+    if (rowTotal > 0) {
+      price = roundMoney(rowTotal / quantity);
+    }
+  }
   return {
     item_id: sku && !isCatalogUuid(sku) ? sku : '',
     item_name: line.name,
-    price: toNumber(line.unitPrice),
-    quantity: line.quantity ?? 1,
+    price,
+    quantity,
   };
 }
 
 export function sumItemValue(items: Ga4Item[]): number {
-  return items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  return roundMoney(items.reduce((sum, i) => sum + i.price * i.quantity, 0));
 }
