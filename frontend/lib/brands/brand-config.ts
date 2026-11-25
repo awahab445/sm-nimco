@@ -1,4 +1,4 @@
-import type { FaqItem } from '@/lib/seo/schemas';
+export type FaqItem = { question: string; answer: string };
 
 /** Local fallback banner — always present under `public/`. */
 export const DEFAULT_BANNER_IMAGE = '/placeholder.svg';

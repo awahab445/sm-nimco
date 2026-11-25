@@ -1,25 +1,13 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import { JsonLd } from '@/components/seo/json-ld';
 import { fetchCategoryBySlug } from '@/lib/catalog/catalog.server';
 import { absoluteUrl, buildPageMetadata, plainText } from '@/lib/seo';
 import { CategoryPageClient } from './category-page-client';
+import { PlpProductGridSkeleton } from '@/components/products/plp-product-grid-skeleton';
 
-type Props = {
-  params: Promise<{ slug: string }>;
-  searchParams?: Promise<{ page?: string }>;
-};
-
-const PAGE_LIMIT = 12;
-
-export const revalidate = 300;
-
-export async function generateStaticParams() {
-  const categories = await fetchAllCategories(3600);
-  return categories
-    .filter((category) => Boolean(category.slug?.trim()))
-    .map((category) => ({ slug: category.slug }));
-}
+type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
@@ -37,41 +25,56 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   });
 }
 
-export default async function CategoryPage({ params, searchParams }: Props) {
+export default async function CategoryPage({ params }: Props) {
   const { slug } = await params;
-  // Read ?page= on the server: useSearchParams in the client made the whole listing client-only, so crawlers saw no H1 or products.
-  const page = Math.max(1, parseInt((await searchParams)?.page || '1', 10) || 1);
   const category = await fetchCategoryBySlug(slug);
   if (!category) notFound();
 
-  // Always filter by the route slug (API resolves UUID + descendants).
-  // Also accept resolved id when present for clients that only send UUIDs.
-  const categoryFilter = category.slug?.trim() || slug.trim() || category.id?.trim();
-  const [initialProducts, allCategories] = await Promise.all([
-    categoryFilter
-      ? fetchProductsByCategorySlug(categoryFilter, {
-          page,
-          limit: PAGE_LIMIT,
-        })
-      : Promise.resolve(null),
-    fetchAllCategories(),
-  ]);
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: category.name,
+    description: plainText(category.description),
+    url: absoluteUrl(`/categories/${category.slug}`),
+  };
 
-  const ancestors = categoryAncestors(category, allCategories);
-  const collectionLd = buildCollectionPageLd(category);
-  const breadcrumbLd = buildBreadcrumbListLd(
-    buildCategoryBreadcrumbItems(category, ancestors),
-  );
+  const breadcrumbLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: absoluteUrl('/'),
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Products',
+        item: absoluteUrl('/products'),
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: category.name,
+        item: absoluteUrl(`/categories/${category.slug}`),
+      },
+    ],
+  };
 
   return (
     <>
-      <JsonLd data={[collectionLd, breadcrumbLd]} />
-      <CategoryPageClient
-        page={page}
-        initialCategory={category}
-        initialProducts={initialProducts}
-        initialCategories={allCategories}
-      />
+      <JsonLd data={[jsonLd, breadcrumbLd]} />
+      <Suspense
+        fallback={
+          <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+            <PlpProductGridSkeleton count={6} />
+          </div>
+        }
+      >
+        <CategoryPageClient />
+      </Suspense>
     </>
   );
 }

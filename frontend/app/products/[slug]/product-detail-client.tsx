@@ -18,10 +18,6 @@ import { PdpLowStockUrgency, PdpTrustReassurance } from '@/components/product/pd
 import { resolveImageUrl } from '@/lib/resolve-image-url';
 import { getVariantCompareAtPrice } from '@/lib/product-display-price';
 import { trackCustomizeProduct, trackViewItem } from '@/lib/analytics/events';
-import { brandHref, isOwnBrandName, matchBrandFromProduct } from '@/lib/brands/brand-config';
-import { categoryHrefFromSlug } from '@/lib/catalog/category-tree';
-import { STORE_NAME } from '@/lib/config';
-import { primaryProductCategory, productBrand, productSpecs } from '@/lib/seo/schemas';
 
 type OptionDefinition = { code: string; label: string; values: string[] };
 
@@ -357,15 +353,7 @@ function QuantityStepper({
   );
 }
 
-export function ProductDetailClient({
-  initialProduct = null,
-  assurances = null,
-}: {
-  /** Server-fetched product for SSR (critical for Google indexing). */
-  initialProduct?: Product | null;
-  /** Server-rendered payment / delivery / returns facts shown under the buy buttons. */
-  assurances?: ReactNode;
-} = {}) {
+export function ProductDetailClient() {
   const params = useParams();
   const slug = typeof params.slug === 'string' ? params.slug : '';
   const [product, setProduct] = useState<Product | null>(null);
@@ -660,15 +648,7 @@ export function ProductDetailClient({
   const primaryImage =
     orderedGalleryImages.find((i) => i.id === selectedImageId) ?? orderedGalleryImages[0];
   const stickyThumb = resolveImageUrl(primaryImage?.url);
-  const category = primaryProductCategory(product);
-  const brand = matchBrandFromProduct({
-    name: product.name,
-    sku: product.sku,
-    attributes: product.attributes,
-  });
-  const brandAttr = productBrand(product.attributes);
-  const ownProduct = isOwnBrandName(brandAttr);
-  const specs = productSpecs(product.attributes);
+  const categoryId = product.categories?.[0]?.id ?? null;
 
   return (
     <>
@@ -848,7 +828,9 @@ export function ProductDetailClient({
                 stopPropagation={false}
               />
 
-              {assurances}
+              <PdpLowStockUrgency availableQty={availableQty} />
+
+              <PdpTrustReassurance />
 
               {added ? (
                 <Link

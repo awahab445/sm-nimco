@@ -250,11 +250,6 @@ export class AdminProductController {
     file: any,
   ) {
     await compressImageInPlace((file as { path: string }).path);
-    const publicBaseUrl = process.env.PUBLIC_BASE_URL?.trim();
-    const protoRaw =
-      (req.headers['x-forwarded-proto'] as string | undefined) || req.protocol;
-    const proto = protoRaw === 'https' ? 'https' : 'http';
-    const host = req.get('host')?.trim() || 'localhost:3000';
     const normalizedPath = file.path.replace(/\\/g, '/');
     // Store relative /uploads/... paths; storefront resolves via Next rewrite.
     const publicPath = normalizedPath.startsWith('uploads/')

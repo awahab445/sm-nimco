@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useId, useState, type FormEvent, type ReactNode } from 'react';
-import { Award, Banknote, Truck, type LucideIcon } from 'lucide-react';
+import { Award, Banknote, RotateCcw, Truck, type LucideIcon } from 'lucide-react';
 import { STORE_NAME } from '@/lib/config';
 import {
   categoryApi,

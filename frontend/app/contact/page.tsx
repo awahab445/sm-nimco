@@ -1,13 +1,12 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { CmsHtmlContent } from '@/components/cms/cms-html-content';
 import { JsonLd } from '@/components/seo/json-ld';
 import { getCmsPageBySlug } from '@/lib/cms/cms-page.service';
 import { policyPageHref } from '@/lib/cms/policy-pages';
 import { STORE_NAME } from '@/lib/config';
 import { absoluteUrl, buildPageMetadata } from '@/lib/seo';
-import { organizationId } from '@/lib/seo/schemas';
 import { formatPhone, getStoreFacts } from '@/lib/store-facts';
+import { sanitizeCmsHtml } from '@/lib/sanitize-html';
 import { storefrontUi } from '@/lib/storefront-ui';
 
 export const revalidate = 300;
@@ -31,7 +30,6 @@ export default async function ContactPage() {
           '@type': 'ContactPage',
           url: absoluteUrl('/contact'),
           name: `Contact ${facts.storeName}`,
-          mainEntity: { '@id': organizationId() },
         }}
       />
       <div className="mx-auto w-full max-w-4xl px-4 py-10">
@@ -87,7 +85,12 @@ export default async function ContactPage() {
           .
         </p>
 
-        {cms?.contentHtml ? <CmsHtmlContent html={cms.contentHtml} /> : null}
+        {cms?.contentHtml ? (
+          <article
+            className="prose prose-slate mt-8 max-w-none prose-headings:text-brand-text prose-p:text-brand-text/90 prose-a:text-primary"
+            dangerouslySetInnerHTML={{ __html: sanitizeCmsHtml(cms.contentHtml) }}
+          />
+        ) : null}
       </div>
     </>
   );

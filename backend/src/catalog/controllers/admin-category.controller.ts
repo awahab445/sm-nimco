@@ -82,11 +82,6 @@ export class AdminCategoryController {
   ) {
     // Category cards show at most ~700px wide.
     await compressImageInPlace((file as { path: string }).path, 1200);
-    const publicBaseUrl = process.env.PUBLIC_BASE_URL?.trim();
-    const protoRaw =
-      (req.headers['x-forwarded-proto'] as string | undefined) || req.protocol;
-    const proto = protoRaw === 'https' ? 'https' : 'http';
-    const host = req.get('host')?.trim() || 'localhost:3000';
     const normalizedPath = file.path.replace(/\\/g, '/');
     const publicPath = normalizedPath.startsWith('uploads/')
       ? `/${normalizedPath}`
