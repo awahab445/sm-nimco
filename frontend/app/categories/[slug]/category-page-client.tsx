@@ -76,10 +76,32 @@ export function CategoryPageClient({
       initialProducts != null &&
       Boolean(initialCategory.id || initialCategory.slug);
 
+    const loadAvailability = (res: ProductListResponse) => {
+      const variantIds = (res.data ?? []).map((p) => getVariantForCart(p)?.id).filter(Boolean) as string[];
+      if (variantIds.length > 0) {
+        inventoryApi.getAvailability(variantIds).then((r) => {
+          if (!cancelled) setAvailability(r.data);
+        });
+      } else {
+        setAvailability({});
+      }
+    };
+
     if (canUseInitial) {
+      // Server already rendered this page; only availability is fetched client-side.
       setCategory(initialCategory);
       setData(initialProducts);
       setLoading(false);
+      setError(null);
+      loadAvailability(initialProducts);
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    void Promise.resolve().then(() => {
+      if (cancelled) return;
+      setLoading(true);
       setError(null);
     });
     categoryApi
@@ -92,14 +114,7 @@ export function CategoryPageClient({
       .then((res) => {
         if (cancelled || !res) return;
         setData(res);
-        const variantIds = (res.data ?? []).map((p) => getVariantForCart(p)?.id).filter(Boolean) as string[];
-        if (variantIds.length > 0) {
-          inventoryApi.getAvailability(variantIds).then((r) => {
-            if (!cancelled) setAvailability(r.data);
-          });
-        } else if (!cancelled) {
-          setAvailability({});
-        }
+        loadAvailability(res);
       })
       .catch((err) => {
         if (!cancelled) setError(err instanceof Error ? err.message : 'Failed to load category');
@@ -110,7 +125,7 @@ export function CategoryPageClient({
     return () => {
       cancelled = true;
     };
-  }, [slug, page]);
+  }, [slug, page, initialCategory, initialProducts]);
 
   const products = useMemo(() => data?.data ?? [], [data?.data]);
   const displayProducts = useMemo(() => sortProducts(products, sortBy), [products, sortBy]);
