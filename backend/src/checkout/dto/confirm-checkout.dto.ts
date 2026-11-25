@@ -87,4 +87,47 @@ export class ConfirmCheckoutDto {
   @IsString()
   @MaxLength(2048)
   eventSourceUrl?: string;
+
+  /** Meta CAPI matching — also accepted at top level (same as StartCheckoutDto). */
+  @IsOptional()
+  @IsString()
+  @MaxLength(256)
+  externalId?: string;
+
+  @IsOptional()
+  @IsEmail()
+  @MaxLength(255)
+  email?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(50)
+  phone?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  firstName?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  lastName?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(256)
+  fbLoginId?: string;
+
+  /** TikTok pixel cookie `_ttp` (Events API matching). */
+  @IsOptional()
+  @IsString()
+  @MaxLength(512)
+  ttp?: string;
+
+  /** TikTok ad click id from the landing URL. */
+  @IsOptional()
+  @IsString()
+  @MaxLength(512)
+  ttclid?: string;
 }

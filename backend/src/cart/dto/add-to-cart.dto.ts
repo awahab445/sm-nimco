@@ -72,4 +72,16 @@ export class AddToCartDto {
   @IsString()
   @MaxLength(256)
   fbLoginId?: string;
+
+  /** TikTok pixel cookie `_ttp` (Events API matching). */
+  @IsOptional()
+  @IsString()
+  @MaxLength(512)
+  ttp?: string;
+
+  /** TikTok ad click id from the landing URL. */
+  @IsOptional()
+  @IsString()
+  @MaxLength(512)
+  ttclid?: string;
 }

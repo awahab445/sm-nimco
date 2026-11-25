@@ -43,6 +43,28 @@ export class MetaCapiClientDto {
   @MaxLength(50)
   phone?: string;
 
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  firstName?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  lastName?: string;
+
+  /** TikTok pixel cookie `_ttp` (Events API matching). */
+  @IsOptional()
+  @IsString()
+  @MaxLength(512)
+  ttp?: string;
+
+  /** TikTok ad click id captured from the landing URL. */
+  @IsOptional()
+  @IsString()
+  @MaxLength(512)
+  ttclid?: string;
+
   /** Only when the app already has a Facebook Login ID — never invent. */
   @IsOptional()
   @IsString()

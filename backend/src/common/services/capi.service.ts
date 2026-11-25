@@ -4,7 +4,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { AxiosError } from 'axios';
 import { firstValueFrom } from 'rxjs';
 import { AnalyticsSettingsService } from '../../analytics/services/analytics-settings.service';
-import { APP_CURRENCY } from '../currency';
+import { APP_CURRENCY, toMoneyNumber } from '../currency';
+import { TikTokEventsService } from './tiktok-events.service';
 
 /** Browser / request context forwarded for Meta matching. */
 export type CapiUserData = {
@@ -14,6 +15,8 @@ export type CapiUserData = {
   client_user_agent?: string | null;
   email?: string | null;
   phone?: string | null;
+  first_name?: string | null;
+  last_name?: string | null;
   /** Already-hashed SHA-256 hex values (skip re-hashing). */
   em?: string | string[] | null;
   ph?: string | string[] | null;
@@ -24,6 +27,9 @@ export type CapiUserData = {
   external_id?: string | null;
   /** Facebook Login ID when available — plain, never invented. */
   fb_login_id?: string | null;
+  /** TikTok pixel cookie `_ttp` and ad click id `ttclid` (Events API matching). */
+  ttp?: string | null;
+  ttclid?: string | null;
   event_source_url?: string | null;
 };
 
@@ -101,6 +107,7 @@ export class CapiService {
   constructor(
     private readonly httpService: HttpService,
     private readonly analyticsSettings: AnalyticsSettingsService,
+    private readonly tiktokEvents: TikTokEventsService,
   ) {}
 
   /**
@@ -138,10 +145,24 @@ export class CapiService {
     );
 
     const contents = (productData.contents ?? [])
-      .map((c) => ({
-        ...c,
-        id: String(c.id ?? '').trim(),
-      }))
+      .map((c) => {
+        const id = String(c.id ?? '').trim();
+        const quantity =
+          c.quantity != null && Number.isFinite(c.quantity)
+            ? c.quantity
+            : undefined;
+        const payload: {
+          id: string;
+          quantity?: number;
+          item_price?: number;
+        } = { id };
+        if (quantity != null) payload.quantity = quantity;
+        if (c.item_price != null) {
+          const itemPrice = toMoneyNumber(c.item_price);
+          if (Number.isFinite(itemPrice)) payload.item_price = itemPrice;
+        }
+        return payload;
+      })
       .filter((c) => c.id && !isUuid(c.id));
 
     if (
@@ -172,8 +193,11 @@ export class CapiService {
       customData.content_category = productData.content_category;
     }
     if (contents.length > 0) customData.contents = contents;
-    if (productData.value != null && Number.isFinite(productData.value)) {
-      customData.value = productData.value;
+    if (productData.value != null) {
+      const value = toMoneyNumber(productData.value);
+      if (Number.isFinite(value)) {
+        customData.value = value;
+      }
     }
     if (
       productData.num_items != null &&
@@ -238,7 +262,10 @@ export class CapiService {
     return this.sendEvent('ViewContent', eventId, userData, productData);
   }
 
-  /** Fire-and-forget; never throws into the request path. */
+  /**
+   * Fire-and-forget; never throws into the request path.
+   * Also forwards to the TikTok Events API (same event_id → dedupes with ttq).
+   */
   enqueue(
     eventName: CapiEventName,
     eventId: string,
@@ -253,6 +280,7 @@ export class CapiService {
         );
       },
     );
+    this.tiktokEvents.enqueue(eventName, eventId, userData, productData);
   }
 
   private buildUserData(userData: CapiUserData): Record<string, unknown> {
@@ -279,7 +307,23 @@ export class CapiService {
     const ph = this.resolveHashedField(userData.ph, userData.phone, 'phone');
     if (ph.length) payload.ph = ph;
 
+    const fn = this.hashName(userData.first_name);
+    if (fn) payload.fn = [fn];
+    const ln = this.hashName(userData.last_name);
+    if (ln) payload.ln = [ln];
+
     return payload;
+  }
+
+  /** Meta: lowercase, strip punctuation/spaces, then SHA-256. */
+  private hashName(raw: string | null | undefined): string | null {
+    if (!raw?.trim()) return null;
+    const normalized = raw
+      .trim()
+      .toLowerCase()
+      .replace(/[\s.'\-_,]/g, '');
+    if (!normalized) return null;
+    return this.hashSha256(normalized);
   }
 
   private resolveHashedField(

@@ -1,4 +1,5 @@
 import type { Product } from '@/lib/api-client';
+import { parseOrderAmount, roundMoney } from '@/lib/order-totals';
 import type { Ga4Item } from './types';
 import { markOnce } from './dedupe';
 import {
@@ -13,6 +14,12 @@ import {
   type MetaPixelAdvancedMatching,
 } from './fbq';
 import {
+  canTrackTikTok,
+  sendTikTokEvent,
+  sendTikTokPageView,
+  ttContentFromItems,
+} from './ttq';
+import {
   cartItemToGa4Item,
   isCatalogUuid,
   orderLineToGa4Item,
@@ -20,7 +27,9 @@ import {
   sumItemValue,
 } from './mappers';
 import {
+  enqueueMetaCapiPageView,
   metaMatchUserToPixelData,
+  resolveMetaMatchUser,
   type MetaMatchUser,
 } from './meta-capi-client';
 
@@ -50,11 +59,14 @@ function fbContentFromItems(items: Ga4Item[]): {
   );
   return {
     content_ids: catalogContentIds(withSku.map((i) => i.item_id)),
-    contents: withSku.map((i) => ({
-      id: i.item_id,
-      quantity: i.quantity,
-      item_price: i.price,
-    })),
+    contents: withSku.map((i) => {
+      const itemPrice = roundMoney(i.price);
+      return {
+        id: i.item_id,
+        quantity: i.quantity,
+        ...(Number.isFinite(itemPrice) ? { item_price: itemPrice } : {}),
+      };
+    }),
     content_type: 'product',
     content_name: withSku.length === 1 ? withSku[0]?.item_name : undefined,
     num_items: withSku.reduce((sum, i) => sum + i.quantity, 0),
@@ -85,7 +97,13 @@ export function trackViewItem(
   product: Product,
   options?: { variantName?: string; price?: number; variantSku?: string },
 ): void {
-  if (!canTrack('trackCartEvents') && !canTrackMeta('trackCartEvents')) return;
+  if (
+    !canTrack('trackCartEvents') &&
+    !canTrackMeta('trackCartEvents') &&
+    !canTrackTikTok('trackCartEvents')
+  ) {
+    return;
+  }
   if (!markOnce(`view_item_${product.id}`)) return;
   const items = [
     productToGa4Item(product, {
@@ -104,6 +122,9 @@ export function trackViewItem(
   }
   if (canTrackMeta('trackCartEvents')) {
     sendFBEvent('ViewContent', fbContentFromItems(items));
+  }
+  if (canTrackTikTok('trackCartEvents')) {
+    sendTikTokEvent('ViewContent', ttContentFromItems(items, currency()));
   }
 }
 
@@ -164,6 +185,12 @@ function trackAddToCart(
       userData: options?.userData,
     });
   }
+  if (canTrackTikTok('trackCartEvents')) {
+    sendTikTokEvent('AddToCart', ttContentFromItems(items, currency()), {
+      eventID: options?.eventID,
+      userData: options?.userData,
+    });
+  }
 }
 
 export function trackAddToCartFromProduct(
@@ -177,7 +204,13 @@ export function trackAddToCartFromProduct(
     matchUser?: MetaMatchUser | null;
   },
 ): void {
-  if (!canTrack('trackCartEvents') && !canTrackMeta('trackCartEvents')) return;
+  if (
+    !canTrack('trackCartEvents') &&
+    !canTrackMeta('trackCartEvents') &&
+    !canTrackTikTok('trackCartEvents')
+  ) {
+    return;
+  }
   const items = [
     productToGa4Item(product, {
       variantSku: options?.variantSku,
@@ -196,7 +229,13 @@ export function trackAddToCartFromCartItem(
   item: Parameters<typeof cartItemToGa4Item>[0],
   options?: { eventID?: string; matchUser?: MetaMatchUser | null },
 ): void {
-  if (!canTrack('trackCartEvents') && !canTrackMeta('trackCartEvents')) return;
+  if (
+    !canTrack('trackCartEvents') &&
+    !canTrackMeta('trackCartEvents') &&
+    !canTrackTikTok('trackCartEvents')
+  ) {
+    return;
+  }
   trackAddToCart([cartItemToGa4Item(item)], {
     eventID: options?.eventID,
     userData: metaMatchUserToPixelData(options?.matchUser),
@@ -217,7 +256,13 @@ export function trackAddBundleToCart(
   },
   quantity: number,
 ): void {
-  if (!canTrack('trackCustomEvents') && !canTrackMeta('trackCartEvents')) return;
+  if (
+    !canTrack('trackCustomEvents') &&
+    !canTrackMeta('trackCartEvents') &&
+    !canTrackTikTok('trackCartEvents')
+  ) {
+    return;
+  }
   const value = deal.dealPrice * quantity;
   // Prefer component SKUs so Meta can match catalog rows (never send deal UUID).
   const componentItems: Ga4Item[] = (deal.items ?? [])
@@ -252,6 +297,12 @@ export function trackAddBundleToCart(
       content_name: deal.title,
     });
   }
+  if (canTrackTikTok('trackCartEvents') && componentItems.length > 0) {
+    sendTikTokEvent('AddToCart', {
+      ...ttContentFromItems(componentItems, currency()),
+      value,
+    });
+  }
 }
 
 export function trackRemoveFromCart(
@@ -284,7 +335,11 @@ export function trackBeginCheckout(
   coupon?: string,
   matchUser?: MetaMatchUser | null,
 ): void {
-  if (!canTrack('trackCheckoutSteps') && !canTrackMeta('trackCheckoutSteps')) {
+  if (
+    !canTrack('trackCheckoutSteps') &&
+    !canTrackMeta('trackCheckoutSteps') &&
+    !canTrackTikTok('trackCheckoutSteps')
+  ) {
     return;
   }
   if (!markOnce(`begin_checkout_${checkoutId}`)) return;
@@ -299,6 +354,12 @@ export function trackBeginCheckout(
   }
   if (canTrackMeta('trackCheckoutSteps')) {
     sendFBEvent('InitiateCheckout', fbContentFromItems(items), {
+      eventID,
+      userData: metaMatchUserToPixelData(matchUser),
+    });
+  }
+  if (canTrackTikTok('trackCheckoutSteps')) {
+    sendTikTokEvent('InitiateCheckout', ttContentFromItems(items, currency()), {
       eventID,
       userData: metaMatchUserToPixelData(matchUser),
     });
@@ -322,7 +383,11 @@ export function trackAddPaymentInfo(
   paymentType: string,
   items: Ga4Item[],
 ): void {
-  if (!canTrack('trackCheckoutSteps') && !canTrackMeta('trackCheckoutSteps')) {
+  if (
+    !canTrack('trackCheckoutSteps') &&
+    !canTrackMeta('trackCheckoutSteps') &&
+    !canTrackTikTok('trackCheckoutSteps')
+  ) {
     return;
   }
   if (canTrack('trackCheckoutSteps')) {
@@ -339,6 +404,9 @@ export function trackAddPaymentInfo(
       payment_type: paymentType,
     });
   }
+  if (canTrackTikTok('trackCheckoutSteps')) {
+    sendTikTokEvent('AddPaymentInfo', ttContentFromItems(items, currency()));
+  }
 }
 
 export function trackPurchase(order: {
@@ -351,21 +419,32 @@ export function trackPurchase(order: {
   items: Array<{
     sku?: string;
     name: string;
-    unitPrice?: number | string;
+    unitPrice?: unknown;
+    price?: unknown;
+    rowTotal?: unknown;
     quantity?: number;
   }>;
 }): void {
-  if (!canTrack('trackPurchases') && !canTrackMeta('trackPurchases')) return;
+  if (
+    !canTrack('trackPurchases') &&
+    !canTrackMeta('trackPurchases') &&
+    !canTrackTikTok('trackPurchases')
+  ) {
+    return;
+  }
   if (!markOnce(`purchase_${order.orderNumber}`)) return;
   const items = order.items.map((line) => orderLineToGa4Item(line));
-  const orderCurrency = order.currency ?? currency();
+  const orderCurrency = (order.currency ?? currency()).toUpperCase();
+  const value = parseOrderAmount(order.grandTotal);
+  const tax = parseOrderAmount(order.taxTotal);
+  const shipping = parseOrderAmount(order.shippingTotal);
   if (canTrack('trackPurchases')) {
     sendGAEvent('purchase', {
       transaction_id: order.orderNumber,
-      value: order.grandTotal,
+      value,
       currency: orderCurrency,
-      tax: order.taxTotal ?? 0,
-      shipping: order.shippingTotal ?? 0,
+      tax,
+      shipping,
       coupon: order.couponCode,
       items,
     });
@@ -375,8 +454,19 @@ export function trackPurchase(order: {
       'Purchase',
       {
         ...fbContentFromItems(items),
-        value: order.grandTotal,
+        value,
         currency: orderCurrency,
+      },
+      { eventID: `purchase_${order.orderNumber}` },
+    );
+  }
+  if (canTrackTikTok('trackPurchases')) {
+    sendTikTokEvent(
+      'CompletePayment',
+      {
+        ...ttContentFromItems(items, orderCurrency),
+        value,
+        order_id: order.orderNumber,
       },
       { eventID: `purchase_${order.orderNumber}` },
     );
@@ -403,7 +493,13 @@ export function trackSearch(
 ): void {
   const q = searchString.trim();
   if (!q) return;
-  if (!canTrack('trackCustomEvents') && !canTrackMeta('trackCustomEvents')) return;
+  if (
+    !canTrack('trackCustomEvents') &&
+    !canTrackMeta('trackCustomEvents') &&
+    !canTrackTikTok('trackCustomEvents')
+  ) {
+    return;
+  }
   const key = `search_${q.toLowerCase()}`;
   if (!markOnce(key)) return;
   if (canTrack('trackCustomEvents')) {
@@ -418,6 +514,15 @@ export function trackSearch(
       content_type: 'product',
     });
   }
+  if (canTrackTikTok('trackCustomEvents')) {
+    sendTikTokEvent('Search', {
+      query: q,
+      contents: catalogContentIds(options?.contentIds ?? [])
+        .slice(0, 30)
+        .map((id) => ({ content_id: id, content_type: 'product' })),
+      content_type: 'product',
+    });
+  }
 }
 
 /**
@@ -428,7 +533,13 @@ export function trackCompleteRegistration(options?: {
   method?: string;
   status?: boolean;
 }): void {
-  if (!canTrack('trackCustomEvents') && !canTrackMeta('trackCustomEvents')) return;
+  if (
+    !canTrack('trackCustomEvents') &&
+    !canTrackMeta('trackCustomEvents') &&
+    !canTrackTikTok('trackCustomEvents')
+  ) {
+    return;
+  }
   if (canTrack('trackCustomEvents')) {
     sendGAEvent('sign_up', {
       method: options?.method ?? 'email',
@@ -441,6 +552,9 @@ export function trackCompleteRegistration(options?: {
       currency: currency(),
     });
   }
+  if (canTrackTikTok('trackCustomEvents')) {
+    sendTikTokEvent('CompleteRegistration');
+  }
 }
 
 export function trackCustomEvent(
@@ -451,14 +565,33 @@ export function trackCustomEvent(
   sendGAEvent(eventName, params);
 }
 
-export function trackPageView(path: string): void {
+let lastPageView: { path: string; at: number } = { path: '', at: 0 };
+
+export function trackPageView(
+  path: string,
+  matchUser?: MetaMatchUser | null,
+): void {
   if (canTrack('trackPageViews')) {
     sendGAEvent('page_view', {
       page_path: path,
     });
   }
-  // SPA route changes — base pixel no longer auto-fires PageView (avoids double count).
-  if (canTrackMeta('trackPageViews')) {
-    sendFBEvent('PageView');
-  }
+  // SPA route changes — base pixels no longer auto-fire PageView (avoids double count).
+  const meta = canTrackMeta('trackPageViews');
+  const tiktok = canTrackTikTok('trackPageViews');
+  if (!meta && !tiktok) return;
+  const now = Date.now();
+  if (lastPageView.path === path && now - lastPageView.at < 400) return;
+  lastPageView = { path, at: now };
+
+  if (tiktok) sendTikTokPageView();
+  if (!meta) return;
+
+  const resolved = matchUser ?? resolveMetaMatchUser();
+  const eventID = `pageview_${now}`;
+  sendFBEvent('PageView', undefined, {
+    eventID,
+    userData: metaMatchUserToPixelData(resolved),
+  });
+  enqueueMetaCapiPageView(eventID, resolved);
 }

@@ -6,6 +6,8 @@ export type Ga4Settings = {
   gtmId: string | null;
   metaPixelId: string | null;
   metaPixelEnabled: boolean;
+  tiktokPixelId: string | null;
+  tiktokPixelEnabled: boolean;
   isEnabled: boolean;
   debugMode: boolean;
   trackPageViews: boolean;
@@ -27,6 +29,8 @@ export type Ga4SettingsInput = Partial<
     | 'gtmId'
     | 'metaPixelId'
     | 'metaPixelEnabled'
+    | 'tiktokPixelId'
+    | 'tiktokPixelEnabled'
     | 'isEnabled'
     | 'debugMode'
     | 'trackPageViews'

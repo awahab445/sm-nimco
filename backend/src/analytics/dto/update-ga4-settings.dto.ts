@@ -10,6 +10,8 @@ import {
 const MEASUREMENT_ID_REGEX = /^G-[A-Z0-9]{6,}$/;
 const GTM_ID_REGEX = /^GTM-[A-Z0-9]+$/;
 const META_PIXEL_ID_REGEX = /^\d{15,16}$/;
+// TikTok pixel codes are ~20 uppercase alphanumerics (e.g. C4A1B2C3D4E5F6G7H8I9).
+const TIKTOK_PIXEL_ID_REGEX = /^[A-Z0-9]{16,24}$/;
 
 export class UpdateGa4SettingsDto {
   @IsOptional()
@@ -36,6 +38,18 @@ export class UpdateGa4SettingsDto {
   @IsOptional()
   @IsBoolean()
   metaPixelEnabled?: boolean;
+
+  @IsOptional()
+  @IsString()
+  @Matches(TIKTOK_PIXEL_ID_REGEX, {
+    message:
+      'tiktokPixelId must be a valid TikTok Pixel ID (uppercase letters/digits, e.g. C4A1B2C3D4E5F6G7H8I9)',
+  })
+  tiktokPixelId?: string | null;
+
+  @IsOptional()
+  @IsBoolean()
+  tiktokPixelEnabled?: boolean;
 
   @IsOptional()
   @IsBoolean()
@@ -88,3 +102,4 @@ export class ToggleGa4SettingsDto {
 export const GA4_MEASUREMENT_ID_REGEX = MEASUREMENT_ID_REGEX;
 export const GTM_CONTAINER_ID_REGEX = GTM_ID_REGEX;
 export const META_PIXEL_ID_REGEX_EXPORT = META_PIXEL_ID_REGEX;
+export const TIKTOK_PIXEL_ID_REGEX_EXPORT = TIKTOK_PIXEL_ID_REGEX;
