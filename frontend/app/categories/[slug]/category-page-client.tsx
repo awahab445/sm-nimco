@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useParams, usePathname, useRouter } from 'next/navigation';
+import { useParams, usePathname, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { productApi, categoryApi, inventoryApi, type ProductListResponse, type Category } from '@/lib/api-client';
@@ -34,8 +34,6 @@ function normalizeCategory(raw: unknown): Category | null {
 }
 
 export type CategoryPageClientProps = {
-  /** Current page from the server's ?page= (keeps the listing server-rendered). */
-  page?: number;
   /** Server-resolved category (avoids a client round-trip for SEO/name). */
   initialCategory?: Category | null;
   /** Server-fetched first page of products for this category. */
@@ -45,7 +43,6 @@ export type CategoryPageClientProps = {
 };
 
 export function CategoryPageClient({
-  page = 1,
   initialCategory = null,
   initialProducts = null,
   initialCategories = [],
@@ -54,6 +51,7 @@ export function CategoryPageClient({
   const slug = params.slug as string;
   const router = useRouter();
   const pathname = usePathname();
+  const page = Math.max(1, parseInt(useSearchParams().get('page') || '1', 10) || 1);
 
   const [category, setCategory] = useState<Category | null>(() =>
     initialCategory && initialCategory.slug === slug ? initialCategory : null,
@@ -74,6 +72,7 @@ export function CategoryPageClient({
     const canUseInitial =
       initialCategory?.slug === slug &&
       initialProducts != null &&
+      (initialProducts.meta?.page ?? 1) === page &&
       Boolean(initialCategory.id || initialCategory.slug);
 
     const loadAvailability = (res: ProductListResponse) => {
